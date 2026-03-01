@@ -374,7 +374,7 @@ public class TestHCatMultiOutputFormat {
     Hive hive = Hive.get(conf);
     org.apache.hadoop.hive.ql.metadata.Table tbl = hive.getTable(database, table);
     FetchWork work;
-    if (!tbl.getPartCols().isEmpty()) {
+    if (!tbl.getPartCols(true).isEmpty()) {
       List<Partition> partitions = hive.getPartitions(tbl);
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
       List<Path> partLocs = new ArrayList<Path>();

@@ -73,7 +73,7 @@ public class TextShowTableStatusFormatter extends ShowTableStatusFormatter {
   private void writeColumnsInfo(DataOutputStream out, Table table) throws IOException, UnsupportedEncodingException {
     String columns = MetaStoreUtils.getDDLFromFieldSchema("columns", table.getCols());
     String partitionColumns = table.isPartitioned() ?
-        MetaStoreUtils.getDDLFromFieldSchema("partition_columns", table.getPartCols()) : "";
+        MetaStoreUtils.getDDLFromFieldSchema("partition_columns", table.getPartCols(true)) : "";
 
     out.write(Utilities.newLineCode);
     out.write(("columns:" + columns).getBytes(StandardCharsets.UTF_8));

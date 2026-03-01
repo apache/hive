@@ -36,7 +36,7 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   @Override
   public void appendAcidSelectColumns(Operation operation) {
     queryStr.append("ROW__ID,");
-    for (FieldSchema fieldSchema : targetTable.getPartCols()) {
+    for (FieldSchema fieldSchema : targetTable.getPartCols(true)) {
       String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
       queryStr.append(identifier);
       queryStr.append(",");
@@ -45,9 +45,9 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
 
   @Override
   public List<String> getDeleteValues(Operation operation) {
-    List<String> deleteValues = new ArrayList<>(1 + targetTable.getPartCols().size());
+    List<String> deleteValues = new ArrayList<>(1 + targetTable.getPartCols(true).size());
     deleteValues.add(qualify("ROW__ID"));
-    for (FieldSchema fieldSchema : targetTable.getPartCols()) {
+    for (FieldSchema fieldSchema : targetTable.getPartCols(true)) {
       deleteValues.add(qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf)));
     }
     return deleteValues;

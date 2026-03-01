@@ -692,7 +692,7 @@ public final class ParseUtils {
    */
   private static int calculatePartPrefix(Table tbl, Set<String> partSpecKeys) {
     int partPrefixToDrop = 0;
-    for (FieldSchema fs : tbl.getPartCols()) {
+    for (FieldSchema fs : tbl.getPartCols(true)) {
       if (!partSpecKeys.contains(fs.getName())) {
         break;
       }

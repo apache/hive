@@ -146,7 +146,7 @@ public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchi
     // to keep backward compatibility
     if (partitions.isEmpty()) {
       throw new HiveException("No partition matches the specification");
-    } else if (partitionSpecInfo.values.size() != table.getPartCols().size()) {
+    } else if (partitionSpecInfo.values.size() != table.getPartCols(true).size()) {
       // for partial specifications we need partitions to follow the scheme
       for (Partition partition : partitions) {
         if (AlterTableArchiveUtils.partitionInCustomLocation(table, partition)) {

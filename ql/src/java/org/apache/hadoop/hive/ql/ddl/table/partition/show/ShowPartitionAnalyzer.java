@@ -102,7 +102,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
       if (astChild.getType() == HiveParser.TOK_WHERE) {
         RowResolver rwsch = new RowResolver();
         Map<String, String> colTypes = new HashMap<String, String>();
-        for (FieldSchema fs : table.getPartCols()) {
+        for (FieldSchema fs : table.getPartCols(true)) {
           rwsch.put(table.getTableName(), fs.getName(), new ColumnInfo(fs.getName(),
               TypeInfoFactory.stringTypeInfo, null, true));
           colTypes.put(fs.getName().toLowerCase(), fs.getType());
@@ -202,8 +202,8 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
       if (astChild.getType() == HiveParser.TOK_ORDERBY) {
         Map<String,  Integer> poses = new HashMap<String, Integer>();
         RowResolver rwsch = new RowResolver();
-        for (int i = 0; i < table.getPartCols().size(); i++) {
-          FieldSchema fs = table.getPartCols().get(i);
+        for (int i = 0; i < table.getPartCols(true).size(); i++) {
+          FieldSchema fs = table.getPartCols(true).get(i);
           rwsch.put(table.getTableName(), fs.getName(), new ColumnInfo(fs.getName(),
               TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()), null, true));
           poses.put(fs.getName().toLowerCase(), i);

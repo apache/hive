@@ -202,7 +202,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
         sqlGenerator.append(hintStr);
         hintStr = null;
       }
-      List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
+      List<String> values = new ArrayList<>(targetTable.getAllCols().size());
       values.addAll(sqlGenerator.getDeleteValues(Context.Operation.MERGE));
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
       addValuesForRowLineageForCopyOnMerge(isRowLineageSupported, values,
