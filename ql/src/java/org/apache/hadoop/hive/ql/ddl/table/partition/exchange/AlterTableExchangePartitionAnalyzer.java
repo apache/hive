@@ -84,7 +84,7 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
     if (AcidUtils.isTransactionalTable(sourceTable) || AcidUtils.isTransactionalTable(destTable)) {
       throw new SemanticException(ErrorMsg.EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES.getMsg());
     }
-    List<String> sourceProjectFilters = MetaStoreUtils.getPvals(sourceTable.getPartCols(), partitionSpecs);
+    List<String> sourceProjectFilters = MetaStoreUtils.getPvals(sourceTable.getPartCols(true), partitionSpecs);
 
     // check if source partition exists
     GetPartitionsFilterSpec sourcePartitionsFilterSpec = new GetPartitionsFilterSpec();
@@ -106,7 +106,7 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
       throw new SemanticException(ErrorMsg.PARTITION_VALUE_NOT_CONTINUOUS.getMsg(partitionSpecs.toString()));
     }
 
-    List<String> destProjectFilters = MetaStoreUtils.getPvals(destTable.getPartCols(), partitionSpecs);
+    List<String> destProjectFilters = MetaStoreUtils.getPvals(destTable.getPartCols(true), partitionSpecs);
 
     // check if dest partition exists
     GetPartitionsFilterSpec getDestPartitionsFilterSpec = new GetPartitionsFilterSpec();

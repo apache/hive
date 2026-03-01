@@ -111,7 +111,7 @@ public abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
 
   protected void validateReplaceWithPartitions(String viewName, Table oldView, List<FieldSchema> partitionColumns)
       throws SemanticException {
-    if (oldView.getPartCols().isEmpty() || oldView.getPartCols().equals(partitionColumns)) {
+    if (oldView.getPartCols(true).isEmpty() || oldView.getPartCols(true).equals(partitionColumns)) {
       return;
     }
 

@@ -230,7 +230,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
                                                    String deleteExtraPredicate) throws SemanticException {
     assert whenMatchedUpdateClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedUpdateClause).getType() == HiveParser.TOK_UPDATE;
-    Map<String, String> newValuesMap = new HashMap<>(targetTable.getCols().size() + targetTable.getPartCols().size());
+    Map<String, String> newValuesMap = new HashMap<>(targetTable.getAllCols().size());
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
     //columns being updated -> update expressions; "setRCols" (last param) is null because we use actual expressions
     //before re-parsing, i.e. they are known to SemanticAnalyzer logic
@@ -432,7 +432,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
                      HiveConf conf, String onClauseAsString) {
       this.onClause = onClause;
       allTargetTableColumns.addAll(targetTable.getCols());
-      allTargetTableColumns.addAll(targetTable.getPartCols());
+      allTargetTableColumns.addAll(targetTable.getPartCols(true));
       this.targetTableNameInSourceQuery = unescapeIdentifier(targetTableNameInSourceQuery);
       this.conf = conf;
       this.onClauseAsString = onClauseAsString;
