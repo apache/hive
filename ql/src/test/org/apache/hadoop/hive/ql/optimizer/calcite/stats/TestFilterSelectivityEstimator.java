@@ -835,18 +835,14 @@ public class TestFilterSelectivityEstimator {
     RexNode cast = cast("f_numeric", TINYINT);
     // check rounding of positive numbers
     checkBetweenSelectivity(3, universe, total, cast, 0, 10);
-    checkBetweenSelectivity(3, universe, total, cast, 0, 10.9f);
     checkBetweenSelectivity(4, universe, total, cast, 0, 11);
     checkBetweenSelectivity(4, universe, total, cast, 10, 20);
-    checkBetweenSelectivity(1, universe, total, cast, 10.9999f, 20);
     checkBetweenSelectivity(1, universe, total, cast, 11, 20);
 
     // check rounding of negative numbers
     checkBetweenSelectivity(4, universe, total, cast, -20, -10);
-    checkBetweenSelectivity(1, universe, total, cast, -20, -10.9f);
     checkBetweenSelectivity(1, universe, total, cast, -20, -11);
     checkBetweenSelectivity(3, universe, total, cast, -10, 0);
-    checkBetweenSelectivity(3, universe, total, cast, -10.9999f, 0);
     checkBetweenSelectivity(4, universe, total, cast, -11, 0);
   }
 

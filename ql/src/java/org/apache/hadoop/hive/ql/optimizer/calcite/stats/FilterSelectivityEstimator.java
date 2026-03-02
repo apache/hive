@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.GregorianCalendar;
@@ -221,26 +220,35 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     SqlTypeName sourceType = op0.getType().getSqlTypeName();
     SqlTypeName targetType = cast.getType().getSqlTypeName();
 
-    return switch (sourceType) {
-      case TINYINT, SMALLINT, INTEGER, BIGINT -> switch (targetType) {
-        case TINYINT, SMALLINT, INTEGER, BIGINT ->
-          // additional checks are needed
-            isRemovableIntegerCast(cast, op0, colStats);
-        case FLOAT, DOUBLE, DECIMAL -> true;
-        default -> false;
-      };
-      case FLOAT, DOUBLE, DECIMAL -> switch (targetType) {
-        // these CASTs do not show a modulo behavior, so it's ok to remove such a cast
-        case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, DECIMAL -> true;
-        default -> false;
-      };
-      case TIMESTAMP, DATE -> switch (targetType) {
-        case TIMESTAMP, DATE -> true;
-        default -> false;
-      };
+    switch (sourceType) {
+    case TINYINT, SMALLINT, INTEGER, BIGINT:
+      switch (targetType) {// additional checks are needed
+      case TINYINT, SMALLINT, INTEGER, BIGINT:
+        return isRemovableIntegerCast(cast, op0, colStats);
+      case FLOAT, DOUBLE, DECIMAL:
+        return true;
+      default:
+        return false;
+      }
+    case FLOAT, DOUBLE, DECIMAL:
+      switch (targetType) {
+      // these CASTs do not show a modulo behavior, so it's ok to remove such a cast
+      case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, DECIMAL:
+        return true;
+      default:
+        return false;
+      }
+    case TIMESTAMP, DATE:
+      switch (targetType) {
+      case TIMESTAMP, DATE:
+        return true;
+      default:
+        return false;
+      }
       // unknown type, do not remove the cast
-      default -> false;
-    };
+    default:
+      return false;
+    }
   }
 
   private static boolean isRemovableIntegerCast(RexCall cast, RexNode op0, List<ColStatistics> colStats) {
