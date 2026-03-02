@@ -41,7 +41,7 @@ public class TezRuntimeContext {
   // llap/container
   private String executionMode;
 
-  public void init(TezSessionState sessionState) {
+  public void init(TezSession sessionState) {
     this.amAddress = sessionState.getAppMasterUri();
   }
 

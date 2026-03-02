@@ -62,7 +62,6 @@ import org.slf4j.LoggerFactory;
 
 @RunWith(RetryTestRunner.class)
 public class TestWorkloadManager {
-  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TestWorkloadManager.class);
 
   private final class GetSessionRunnable implements Runnable {
@@ -227,7 +226,7 @@ public class TestWorkloadManager {
 
     @Override
     public WmTezSession getSession(
-      TezSessionState session, MappingInput input, HiveConf conf,
+        TezSession session, MappingInput input, HiveConf conf,
       final WmContext wmContext) throws Exception {
       // We want to wait for the iteration to finish and set the cluster fraction.
       WmTezSession state = super.getSession(session, input, conf, null);
@@ -236,7 +235,7 @@ public class TestWorkloadManager {
     }
 
     @Override
-    public void destroy(TezSessionState session) throws Exception {
+    public void destroy(TezSession session) throws Exception {
       super.destroy(session);
       ensureWm();
     }
@@ -252,7 +251,7 @@ public class TestWorkloadManager {
     }
 
     @Override
-    public TezSessionState reopen(TezSessionState session) throws Exception {
+    public TezSession reopen(TezSession session) throws Exception {
       session = super.reopen(session);
       ensureWm();
       return session;
@@ -269,10 +268,10 @@ public class TestWorkloadManager {
     MockQam qam = new MockQam();
     WorkloadManager wm = new WorkloadManagerForTest("test", conf, 1, qam);
     wm.start();
-    TezSessionState nonPool = mock(TezSessionState.class);
+    TezSession nonPool = mock(TezSession.class);
     when(nonPool.getConf()).thenReturn(conf);
     doNothing().when(nonPool).close(anyBoolean());
-    TezSessionState session = wm.getSession(nonPool, mappingInput("user"), conf);
+    TezSession session = wm.getSession(nonPool, mappingInput("user"), conf);
     verify(nonPool).close(anyBoolean());
     assertNotSame(nonPool, session);
     session.returnToSessionManager();
@@ -282,7 +281,7 @@ public class TestWorkloadManager {
     session = wm.getSession(diffPool, mappingInput("user"), conf);
     verify(diffPool).returnToSessionManager();
     assertNotSame(diffPool, session);
-    TezSessionState session2 = wm.getSession(session, mappingInput("user"), conf);
+    TezSession session2 = wm.getSession(session, mappingInput("user"), conf);
     assertSame(session, session2);
   }
 
@@ -294,7 +293,7 @@ public class TestWorkloadManager {
     wm.start();
     // The queue should be ignored.
     conf.set(TezConfiguration.TEZ_QUEUE_NAME, "test2");
-    TezSessionState session = wm.getSession(null, mappingInput("user"), conf);
+    TezSession session = wm.getSession(null, mappingInput("user"), conf);
     assertEquals("test", session.getQueueName());
     assertEquals("test", conf.get(TezConfiguration.TEZ_QUEUE_NAME));
     session.setQueueName("test2");
@@ -415,7 +414,7 @@ public class TestWorkloadManager {
     verifyMapping(wm, conf, mappingInput("zzz", groups("g0", "g1"), "g1"), "g1");
     // Explicit pool specification - invalid - there's no mapping that matches.
     try {
-      TezSessionState r = wm.getSession(
+      TezSession r = wm.getSession(
         null, mappingInput("u0", groups("g0", "g1"), "u2"), conf);
       fail("Expected failure, but got " + r);
     } catch (Exception ex) {
@@ -428,7 +427,7 @@ public class TestWorkloadManager {
     verifyMapping(wm, conf, mappingInput("u0", groups("g0", "g1"), "u2"), "u2");
     // The mapping that doesn't exist still shouldn't work.
     try {
-      TezSessionState r = wm.getSession(
+      TezSession r = wm.getSession(
         null, mappingInput("u0", groups("g0", "g1"), "zzz"), conf);
       fail("Expected failure, but got " + r);
     } catch (Exception ex) {
@@ -824,7 +823,7 @@ public class TestWorkloadManager {
     assertEquals(0, tezAmPool.getCurrentSize());
 
     try {
-      TezSessionState r =  wm.getSession(null, mappingInput("A", null), conf, null);
+      TezSession r =  wm.getSession(null, mappingInput("A", null), conf, null);
       fail("Expected an error but got " + r);
     } catch (WorkloadManager.NoPoolMappingException ex) {
       // Ignore, this particular error is expected.
@@ -1316,7 +1315,7 @@ public class TestWorkloadManager {
     SettableFuture<Boolean> failedWait = SettableFuture.create();
     failedWait.setException(new Exception("foo"));
     theOnlySession.setWaitForAmRegistryFuture(failedWait);
-    TezSessionState retriedSession = wm.getSession(null, mappingInput("A"), conf);
+    TezSession retriedSession = wm.getSession(null, mappingInput("A"), conf);
     assertNotNull(retriedSession);
     assertNotSame(theOnlySession, retriedSession); // Should have been replaced.
     retriedSession.returnToSessionManager();
@@ -1326,7 +1325,7 @@ public class TestWorkloadManager {
     theOnlySession.setWaitForAmRegistryFuture(failedWait);
     wm.setNextWaitForAmRegistryFuture(failedWait); // Fail the retry.
     try {
-      TezSessionState r = wm.getSession(null, mappingInput("A"), conf);
+      TezSession r = wm.getSession(null, mappingInput("A"), conf);
       fail("Expected an error but got " + r);
     } catch (Exception ex) {
       // Expected.

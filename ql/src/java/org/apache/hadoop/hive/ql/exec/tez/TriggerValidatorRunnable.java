@@ -43,10 +43,10 @@ public class TriggerValidatorRunnable implements Runnable {
   @Override
   public void run() {
     try {
-      Map<TezSessionState, Trigger> violatedSessions = new HashMap<>();
-      final List<TezSessionState> sessions = sessionTriggerProvider.getSessions();
+      Map<TezSession, Trigger> violatedSessions = new HashMap<>();
+      final List<TezSession> sessions = sessionTriggerProvider.getSessions();
       final List<Trigger> triggers = sessionTriggerProvider.getTriggers();
-      for (TezSessionState sessionState : sessions) {
+      for (TezSession sessionState : sessions) {
         WmContext wmContext = sessionState.getWmContext();
         if (wmContext != null && !wmContext.isQueryCompleted()
           && !wmContext.getSubscribedCounters().isEmpty()) {

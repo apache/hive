@@ -178,7 +178,7 @@ public class TestTezTask {
     SessionState.start(hiveConf);
     session = mock(TezClient.class);
     sessionState = mock(TezSessionState.class);
-    when(sessionState.getSession()).thenReturn(session);
+    when(sessionState.getTezClient()).thenReturn(session);
     when(sessionState.reopen()).thenReturn(sessionState);
     when(session.submitDAG(any(DAG.class)))
       .thenThrow(new SessionNotRunning(""))
@@ -240,7 +240,7 @@ public class TestTezTask {
     TezSessionState tezSessionState = mock(TezSessionState.class);
     TezClient tezClient = mock(TezClient.class);
     when(tezSessionState.reopen()).thenThrow(new HiveException("Dag cannot be submitted"));
-    when(tezSessionState.getSession()).thenReturn(tezClient);
+    when(tezSessionState.getTezClient()).thenReturn(tezClient);
     when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
     doNothing().when(tezSessionState).destroy();
     boolean isException = false;
@@ -264,7 +264,7 @@ public class TestTezTask {
     TezClient tezClient = mock(TezClient.class);
     when(tezSessionPoolSession.reopen()).thenThrow(new HiveException("Dag cannot be submitted"));
     doNothing().when(tezSessionPoolSession).returnToSessionManager();
-    when(tezSessionPoolSession.getSession()).thenReturn(tezClient);
+    when(tezSessionPoolSession.getTezClient()).thenReturn(tezClient);
     when(tezSessionPoolSession.isDefault()).thenReturn(true);
     when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
     boolean isException = false;
