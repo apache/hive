@@ -24,13 +24,13 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
+
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.tez.dag.api.TezException;
-
 
 /**
  * This class is needed for writing junit tests. For testing the multi-session
@@ -48,8 +48,9 @@ public class SampleTezSessionState extends WmTezSession {
 
   public SampleTezSessionState(
       String sessionId, TezSessionPoolSession.Manager parent, HiveConf conf) {
-    super(sessionId, parent, (parent instanceof TezSessionPoolManager)
-        ? ((TezSessionPoolManager)parent).getExpirationTracker() : null, conf);
+    super(parent, (parent instanceof TezSessionPoolManager)
+        ? ((TezSessionPoolManager)parent).getExpirationTracker() : null,
+            new TezSessionState(sessionId, conf));
     this.sessionId = sessionId;
     this.hiveConf = conf;
     waitForAmRegFuture = createDefaultWaitForAmRegistryFuture();
@@ -89,7 +90,7 @@ public class SampleTezSessionState extends WmTezSession {
   }
 
   @Override
-  void close(boolean keepTmpDir) throws TezException, IOException {
+  public void close(boolean keepTmpDir) throws TezException, IOException {
     open = keepTmpDir;
   }
 
