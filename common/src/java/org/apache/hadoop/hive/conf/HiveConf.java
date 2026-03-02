@@ -5759,7 +5759,10 @@ public class HiveConf extends Configuration {
 
     HIVE_OTEL_RETRY_BACKOFF_MULTIPLIER("hive.otel.retry.backoff.multiplier", 5f,
         "The multiplier applied to the backoff interval for retries in the OTEL exporter."
-            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy.");
+            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy."),
+
+    HIVE_OTEL_EXPOSE_TEZ_COUNTERS("hive.otel.expose.tez.counters", false,
+        "Enables the inclusion of Tez counters in OTEL output for a particular query. Default is false.");
 
     public final String varname;
     public final String altName;

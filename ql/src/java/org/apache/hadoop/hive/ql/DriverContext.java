@@ -143,7 +143,7 @@ public class DriverContext {
           .map(TezTask::getRuntimeContext)
           .orElse(null);
       this.queryProperties = plan.getQueryProperties();
-      if (conf.getTimeVar(HiveConf.ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, TimeUnit.MILLISECONDS) > 0) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OTEL_EXPOSE_TEZ_COUNTERS)) {
         this.queryDisplay.setTezRuntimeContext(this.runtimeContext);
       }
     }
