@@ -218,24 +218,36 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return false;
     }
 
-    SqlTypeName targetType = cast.getType().getSqlTypeName();
     SqlTypeName sourceType = op0.getType().getSqlTypeName();
+    SqlTypeName targetType = cast.getType().getSqlTypeName();
 
-    switch (sourceType) {
-    case TINYINT, SMALLINT, INTEGER, BIGINT:
-      // additional checks are needed
-      break;
-    case FLOAT, DOUBLE, DECIMAL, TIMESTAMP, DATE:
-      return true;
-    default:
+    return switch (sourceType) {
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> switch (targetType) {
+        case TINYINT, SMALLINT, INTEGER, BIGINT ->
+          // additional checks are needed
+            isRemovableIntegerCast(cast, op0, colStats);
+        case FLOAT, DOUBLE, DECIMAL -> true;
+        default -> false;
+      };
+      case FLOAT, DOUBLE, DECIMAL -> switch (targetType) {
+        // these CASTs do not show a modulo behavior, so it's ok to remove such a cast
+        case TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, DECIMAL -> true;
+        default -> false;
+      };
+      case TIMESTAMP, DATE -> switch (targetType) {
+        case TIMESTAMP, DATE -> true;
+        default -> false;
+      };
       // unknown type, do not remove the cast
-      return false;
-    }
+      default -> false;
+    };
+  }
 
+  private static boolean isRemovableIntegerCast(RexCall cast, RexNode op0, List<ColStatistics> colStats) {
     // If the source type is completely within the target type, the cast is lossless
     Range<Float> targetRange = getRangeOfType(cast.getType(), BoundType.CLOSED, BoundType.CLOSED);
     Range<Float> sourceRange = getRangeOfType(op0.getType(), BoundType.CLOSED, BoundType.CLOSED);
-    if (sourceRange.equals(targetRange.intersection(sourceRange))) {
+    if (targetRange.encloses(sourceRange)) {
       return true;
     }
 
@@ -247,8 +259,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return false;
     }
 
-
     // are all values of the input column accepted by the cast?
+    SqlTypeName targetType = cast.getType().getSqlTypeName();
     double min = ((Number) targetType.getLimit(false, SqlTypeName.Limit.OVERFLOW, false, -1, -1)).doubleValue();
     double max = ((Number) targetType.getLimit(true, SqlTypeName.Limit.OVERFLOW, false, -1, -1)).doubleValue();
     return min < colRange.minValue.doubleValue() && colRange.maxValue.doubleValue() < max;
@@ -303,14 +315,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   /**
    * Adjust the type boundaries if necessary.
    *
-   * <p>
-   * Special care is taken to support the cast to DECIMAL(precision, scale):
-   * The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
-   * The boundaries are adjusted accordingly.
-   * </p>
-   *
    * @param predicateRange boundaries of the range predicate
-   * @param type the DECIMAL type
+   * @param type the type
    * @param typeRange the boundaries of the type range
    * @return the adjusted boundary
    */
@@ -335,37 +341,47 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
       // normalize the range to make the formulas easier
       Range<Float> range = convertRangeToClosedOpen(predicateRange);
-      Range<Float> typeClosedOpen = convertRangeToClosedOpen(typeRange);
-      float rangeLower = (range.lowerEndpoint() >= 0 ? (float) Math.ceil(range.lowerEndpoint())
+      typeRange = convertRangeToClosedOpen(typeRange);
+      float adjustedLower = (range.lowerEndpoint() >= 0 ? (float) Math.ceil(range.lowerEndpoint())
           : Math.nextUp(-(float) Math.ceil(Math.nextUp(-range.lowerEndpoint()))));
-      float rangeUpper = range.upperEndpoint() >= 0 ? Math.nextDown((float) Math.ceil(range.upperEndpoint()))
+      float adjustedUpper = range.upperEndpoint() >= 0 ? Math.nextDown((float) Math.ceil(range.upperEndpoint()))
           : Math.nextUp((float) -Math.ceil(-range.upperEndpoint()));
-      float lower = Math.max(typeClosedOpen.lowerEndpoint(), rangeLower);
-      float upper = Math.min(typeClosedOpen.upperEndpoint(), rangeUpper);
+      float lower = Math.max(adjustedLower, typeRange.lowerEndpoint());
+      float upper = Math.min(adjustedUpper, typeRange.upperEndpoint());
       return makeRange(lower, BoundType.CLOSED, upper, BoundType.OPEN);
     }
     case DECIMAL: {
+      // The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
+      // The boundaries are adjusted accordingly.
       float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
       // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
-      float adjusted1 = lowerInclusive ? predicateRange.lowerEndpoint() - adjust
-          : Math.nextDown(predicateRange.lowerEndpoint() + adjust);
-      float adjusted2 = upperInclusive ? Math.nextDown(predicateRange.upperEndpoint() + adjust)
+      float adjustedLower =
+          lowerInclusive ? predicateRange.lowerEndpoint() - adjust : addAndDown(predicateRange.lowerEndpoint(), adjust);
+      float adjustedUpper = upperInclusive ? addAndDown(predicateRange.upperEndpoint(), adjust)
           : predicateRange.upperEndpoint() - adjust;
-      float lower = Math.max(adjusted1, typeRange.lowerEndpoint());
-      float upper = Math.min(adjusted2, typeRange.upperEndpoint());
-      // the boundaries might result in an invalid range (e.g., left > right)
-      // in that case the predicate does not select anything, and we return an empty range
+      float lower = Math.max(adjustedLower, typeRange.lowerEndpoint());
+      float upper = Math.min(adjustedUpper, typeRange.upperEndpoint());
       return makeRange(lower, predicateRange.lowerBoundType(), upper, predicateRange.upperBoundType());
     }
     case TIMESTAMP, DATE:
       return predicateRange;
     default:
-      return typeRange.intersection(predicateRange);
+      return typeRange.isConnected(predicateRange) ? typeRange.intersection(predicateRange) : Range.closedOpen(0f, 0f);
+    }
+  }
+
+  private static float addAndDown(float v, float positiveSummand) {
+    float r = v + positiveSummand;
+    if (r == v) {
+      // the result is below the resolution of float; do not return a value smaller than v
+      return r;
+    } else {
+      return Math.nextDown(r);
     }
   }
 
   /**
-   * If the arguments lead to a valid range, it is returned, otherwise an empty array is returned.
+   * If the arguments lead to a valid range, it is returned, otherwise an empty range is returned.
    */
   private static Range<Float> makeRange(float lower, BoundType lowerType, float upper, BoundType upperType) {
     if (lower > upper) {
@@ -419,9 +435,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     int inputRefOpIndex = 1 - literalOpIdx;
     RexNode node = operands.get(inputRefOpIndex);
     if (isRemovableCast(node, scan)) {
-      Range<Float> rangeOfDecimalType =
+      Range<Float> typeRange =
           getRangeOfType(node.getType(), boundaries.lowerBoundType(), boundaries.upperBoundType());
-      boundaries = adjustRangeToType(boundaries, node.getType(), rangeOfDecimalType);
+      boundaries = adjustRangeToType(boundaries, node.getType(), typeRange);
       node = RexUtil.removeCast(node);
     }
 
