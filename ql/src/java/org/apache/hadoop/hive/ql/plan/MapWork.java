@@ -655,22 +655,27 @@ public class MapWork extends BaseWork {
         samplingType == 2 ? "SAMPLING_ON_START" : null;
   }
 
+  public Collection<TableDesc> getDistinctTableDescs() {
+    if (aliasToPartnInfo == null) {
+      return Collections.emptyList();
+    }
+    Map<String, TableDesc> tables = new LinkedHashMap<>();
+    for (PartitionDesc partition : aliasToPartnInfo.values()) {
+      TableDesc tableDesc = partition.getTableDesc();
+      if (tableDesc != null) {
+        tables.putIfAbsent(tableDesc.getTableName(), tableDesc);
+      }
+    }
+    return Collections.unmodifiableCollection(tables.values());
+  }
+
   @Override
   public void configureJobConf(JobConf job) {
     super.configureJobConf(job);
     // Configure each table only once, even if we read thousands of its partitions.
     // This avoids repeating expensive work (like loading storage drivers) for every single partition.
-    Set<String> processedTables = new HashSet<>();
-
-    for (PartitionDesc partition : aliasToPartnInfo.values()) {
-      TableDesc tableDesc = partition.getTableDesc();
-
-      // If we haven't seen this table before, configure it and remember it.
-      // If we have seen it, skip it.
-      if (tableDesc != null && !processedTables.contains(tableDesc.getTableName())) {
-        processedTables.add(tableDesc.getTableName());
-        PlanUtils.configureJobConf(tableDesc, job);
-      }
+    for (TableDesc tableDesc : getDistinctTableDescs()) {
+      PlanUtils.configureJobConf(tableDesc, job);
     }
     Collection<Operator<?>> mappers = aliasToWork.values();
     for (IConfigureJobConf icjc : OperatorUtils.findOperators(mappers, IConfigureJobConf.class)) {
