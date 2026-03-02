@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -143,9 +142,6 @@ public class DriverContext {
           .map(TezTask::getRuntimeContext)
           .orElse(null);
       this.queryProperties = plan.getQueryProperties();
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OTEL_EXPOSE_TEZ_COUNTERS)) {
-        this.queryDisplay.setTezRuntimeContext(this.runtimeContext);
-      }
     }
   }
 
