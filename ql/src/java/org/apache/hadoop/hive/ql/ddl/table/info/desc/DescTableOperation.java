@@ -261,8 +261,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       throws HiveException {
     cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colName));
     List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
-    List<String> colNamesLowerCase = new ArrayList<>();
-    AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, Lists.newArrayList(colName.toLowerCase()), parts, false);
+    AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, Lists.newArrayList(colName.toLowerCase()),
+        parts, false);
     colStats.addAll(aggrStats.getColStats());
     
     if (parts.size() == aggrStats.getPartsFound()) {
