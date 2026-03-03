@@ -345,9 +345,30 @@ public class Statistics implements Serializable {
     if (downScaleOnly && newRowCount >= numRows) {
       return ret;
     }
-    // FIXME: using real scaling by new/old ration might yield better results?
     ret.numRows = newRowCount;
     ret.dataSize = StatsUtils.safeMult(getAvgRowSize(), newRowCount);
+
+    // Adjust column stats to prevent invalid values after scaling: count-based
+    // stats are set to unknown (-1), zero values preserved. Distribution data cleared.
+    if (ret.columnStats != null) {
+      for (ColStatistics cs : ret.columnStats.values()) {
+        if (cs.getCountDistint() > newRowCount) {
+          cs.setCountDistint(newRowCount);
+        }
+        if (cs.getNumNulls() > 0) {
+          cs.setNumNulls(-1);
+        }
+        if (cs.getNumTrues() > 0) {
+          cs.setNumTrues(-1);
+        }
+        if (cs.getNumFalses() > 0) {
+          cs.setNumFalses(-1);
+        }
+        cs.setBitVectors(null);
+        cs.setHistogram(null);
+      }
+    }
+
     return ret;
   }
 

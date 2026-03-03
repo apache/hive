@@ -23,7 +23,7 @@
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
-    <iceberg.version>1.10.0</iceberg.version>
+    <iceberg.version>1.10.1</iceberg.version>
   </properties>
   <dependencies>
     <dependency>

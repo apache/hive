@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
@@ -94,8 +94,8 @@ public class TestCleaner extends CompactorTest {
   public void testRetryAfterFailedCleanup(boolean delayEnabled) throws Exception {
     HiveConf.setBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
     HiveConf.setTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
-    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 3);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 100, TimeUnit.MILLISECONDS);
+    MetastoreConf.setLongVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 3);
+    MetastoreConf.setTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 100, TimeUnit.MILLISECONDS);
     String errorMessage = "No cleanup here!";
 
     //Prevent cleaner from marking the compaction as cleaned
@@ -287,19 +287,19 @@ public class TestCleaner extends CompactorTest {
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
-    addBaseFile(t, null, 25L, 25, 26);
 
     burnThroughTransactions("default", "camtc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
     long compactTxn = compactInTxn(rqst, CommitAction.MARK_COMPACTED);
+    addBaseFile(t, null, 25L, 25, 26);
+
     // Open a query during compaction
     long longQuery = openTxn();
     TxnStoreHelper.wrap(txnHandler)
         .registerMinOpenWriteId("default", "camtc", longQuery);
 
     txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
-
     startCleaner();
 
     // The long-running query should prevent the cleanup
@@ -313,7 +313,8 @@ public class TestCleaner extends CompactorTest {
 
     // After the commit cleaning can proceed
     txnHandler.commitTxn(new CommitTxnRequest(longQuery));
-    Thread.sleep(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+    Thread.sleep(MetastoreConf.getTimeVar(conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+
     startCleaner();
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -725,20 +726,22 @@ public class TestCleaner extends CompactorTest {
     Table t = newTable(dbName, tblName, true);
     Partition p = newPartition(t, "today");
 
-    // block cleaner with an open txn
-    long blockingTxn = openTxn();
-
     // minor compaction
     addBaseFile(t, p, 20L, 20);
     addDeltaFile(t, p, 21L, 21L, 1);
     addDeltaFile(t, p, 22L, 22L, 1);
     burnThroughTransactions(dbName, tblName, 22);
+
+    // block cleaner with an open txn
+    long blockingTxn = openTxn();
+    TxnStoreHelper.wrap(txnHandler)
+        .registerMinOpenWriteId(dbName, tblName, blockingTxn);
+
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
     long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 21, 22, 2);
 
-    txnHandler.addWriteIdsToMinHistory(1, Collections.singletonMap("default.trfcp", 23L));
     startCleaner();
 
     // make sure cleaner didn't remove anything, and cleaning is still queued
@@ -1081,14 +1084,15 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions(dbName, tblName, 22);
 
     // block cleaner with an open txn
-    long txnId = openTxn();
+    long blockingTxn = openTxn();
     TxnStoreHelper.wrap(txnHandler)
-        .registerMinOpenWriteId(dbName, tblName, txnId);
+        .registerMinOpenWriteId(dbName, tblName, blockingTxn);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
-    long ctxnid = compactInTxn(rqst);
-    addDeltaFile(t, p, 20, 22, 2, ctxnid);
+    long compactTxn = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 22, 2, compactTxn);
+
     startCleaner();
 
     // make sure cleaner didn't remove anything, and cleaning is still queued
@@ -1118,11 +1122,8 @@ public class TestCleaner extends CompactorTest {
 
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
-    long ctxnid = compactInTxn(rqst);
-    addDeltaFile(t, p, 20, 22, 3, ctxnid);
-
-    // block cleaner with an open txn
-    long openTxnId = openTxn();
+    long compactTxn = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 22, 3, compactTxn);
 
     //2nd minor
     addDeltaFile(t, p, 23L, 23L, 1);
@@ -1131,11 +1132,10 @@ public class TestCleaner extends CompactorTest {
 
     rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
-    ctxnid = compactInTxn(rqst);
-    addDeltaFile(t, p, 20, 24, 5, ctxnid);
+    compactTxn = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 24, 5, compactTxn);
 
     startCleaner();
-    txnHandler.abortTxn(new AbortTxnRequest(openTxnId));
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(2, rsp.getCompactsSize());
@@ -1149,7 +1149,7 @@ public class TestCleaner extends CompactorTest {
     List<String> expectedDirs = Arrays.asList(
       "base_19",
       addVisibilitySuffix(makeDeltaDirName(20, 22), 23),
-      addVisibilitySuffix(makeDeltaDirName(20, 24), 27),
+      addVisibilitySuffix(makeDeltaDirName(20, 24), 26),
       makeDeltaDirName(23, 23),
       makeDeltaDirName(24, 24)
     );
