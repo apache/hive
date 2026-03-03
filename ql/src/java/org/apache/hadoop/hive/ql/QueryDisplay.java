@@ -317,7 +317,7 @@ public class QueryDisplay {
     return this.tezCounters;
   }
 
-  public synchronized JSONObject getCounters() {
+  public synchronized String getCountersAsString() {
     JSONObject countersJson = new JSONObject();
     if (tezCounters != null){
       for (CounterGroup group : tezCounters) {
@@ -326,7 +326,7 @@ public class QueryDisplay {
         }
       }
     }
-    return countersJson;
+    return countersJson.toString();
   }
 
   /**
