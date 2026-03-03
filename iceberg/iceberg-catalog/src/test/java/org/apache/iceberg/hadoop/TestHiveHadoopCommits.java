@@ -21,6 +21,9 @@ package org.apache.iceberg.hadoop;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -204,14 +207,6 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
 
   @Test
   void testTwoClientCommitSameVersion() throws InterruptedException {
-    // In the linux environment, the JDK FileSystem interface implementation class is
-    // java.io.UnixFileSystem.
-    // Its behavior follows the posix protocol, which causes rename operations to overwrite the
-    // target file (because linux is compatible with some of the unix interfaces).
-    // However, linux also supports renaming without overwriting the target file. In addition, some
-    // other file systems such as Windows, HDFS, etc. also support renaming without overwriting the
-    // target file.
-    // We use the `mv -n` command to simulate the behavior of such filesystems.
     table.newFastAppend().appendFile(FILE_A).commit();
     ExecutorService executorService = Executors.newFixedThreadPool(8);
     AtomicReference<Throwable> unexpectedException = new AtomicReference<>(null);
@@ -234,11 +229,10 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
           Path dstPath = x.getArgument(2);
           File src = new File(srcPath.toUri());
           File dst = new File(dstPath.toUri());
-          String srcPathStr = src.getAbsolutePath();
-          String dstPathStr = dst.getAbsolutePath();
-          String cmd = String.format("mv -n %s  %s", srcPathStr, dstPathStr);
-          Process process = Runtime.getRuntime().exec(cmd);
-          assertThat(process.waitFor()).isZero();
+          Files.move(
+                  Paths.get(srcPath.toUri()), Paths.get(dstPath.toUri()),
+                  StandardCopyOption.ATOMIC_MOVE
+          );
           return dst.exists() && !src.exists();
         }).when(spyOps).renameMetaDataFile(any(), any(), any());
         TableMetadata metadataV1 = spyOps.current();
@@ -267,11 +261,10 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
           Path dstPath = x.getArgument(2);
           File src = new File(srcPath.toUri());
           File dst = new File(dstPath.toUri());
-          String srcPathStr = src.getAbsolutePath();
-          String dstPathStr = dst.getAbsolutePath();
-          String cmd = String.format("mv -n %s  %s", srcPathStr, dstPathStr);
-          Process process = Runtime.getRuntime().exec(cmd);
-          assertThat(process.waitFor()).isZero();
+          Files.move(
+                  Paths.get(srcPath.toUri()), Paths.get(dstPath.toUri()),
+                  StandardCopyOption.ATOMIC_MOVE
+          );
           return dst.exists() && !src.exists();
         }).when(spyOps).renameMetaDataFile(any(), any(), any());
         TableMetadata metadataV1 = spyOps.current();
