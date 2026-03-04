@@ -26,7 +26,8 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.cache.CuratorCache;
+import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -49,7 +50,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
   private final Object lock = new Object();
   private final int maxAttempts;
 
-  private PathChildrenCache cache;
+  private CuratorCache cache;
   private boolean isInitialized;
 
 
@@ -64,12 +65,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
 
   public void close() {
     if (cache != null) {
-      try {
-        cache.close();
-      } catch (IOException e) {
-        LOG.error("Failed to close the cache: {}", e.getMessage());
-        LOG.debug("Failed to close the cache", e);
-      }
+      cache.close();
     }
   }
 
@@ -79,13 +75,17 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
     String effectivePath = zkNamespace + ZK_PATH;
     CuratorFramework client = CuratorFrameworkFactory.newClient(zkServer, new ExponentialBackoffRetry(1000, 3));
     synchronized (lock) {
-      this.cache = new PathChildrenCache(client, effectivePath, true);
       client.start();
-      cache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
-      for (ChildData childData : cache.getCurrentData()) {
-        available.add(getApplicationId(childData));
-      }
-      cache.getListenable().addListener(new ExternalSessionsPathListener());
+      this.cache = CuratorCache.build(client, effectivePath);
+      CuratorCacheListener listener = CuratorCacheListener.builder()
+          .forPathChildrenCache(effectivePath, client, new ExternalSessionsPathListener())
+          .build();
+      cache.listenable().addListener(listener);
+      cache.start();
+      cache.stream()
+          .filter(childData -> childData.getPath() != null
+              && childData.getPath().startsWith(effectivePath + "/"))
+          .forEach(childData -> available.add(getApplicationId(childData)));
       LOG.info("Initial external sessions: {}", available);
       isInitialized = true;
     }
