@@ -231,10 +231,10 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
           Path dstPath = x.getArgument(2);
           var src = Paths.get(srcPath.toUri());
           var dst = Paths.get(dstPath.toUri());
-          synchronized (lock){
-            if(Files.exists(dst)){
+          synchronized (lock) {
+            if (Files.exists(dst)) {
               return false;
-            }else{
+            } else {
               Files.move(src, dst, StandardCopyOption.ATOMIC_MOVE);
               return true;
             }
