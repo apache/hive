@@ -186,7 +186,8 @@ class DirectSqlUpdatePart {
           pst.setString(colIdx++, mPartitionColumnStatistics.getEngine());
           partIds.add(partColNameInfo.partitionId);
           pst.addBatch();
-          if (partIds.size() == maxBatchSize) {
+          int batchSize = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : entries.size(), colIdx);
+          if (partIds.size() == batchSize) {
             LOG.debug("Execute updates on part: {}", partIds);
             verifyUpdates(pst.executeBatch(), partIds);
             partIds = new ArrayList<>();
@@ -218,6 +219,7 @@ class DirectSqlUpdatePart {
             + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try (PreparedStatement preparedStatement = dbConn.prepareStatement(insert)) {
+      int batchSize = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : insertMap.size(), 20);
       for (Map.Entry entry : insertMap.entrySet()) {
         PartColNameInfo partColNameInfo = (PartColNameInfo) entry.getKey();
         Long partId = partColNameInfo.partitionId;
@@ -246,7 +248,7 @@ class DirectSqlUpdatePart {
 
         numRows++;
         preparedStatement.addBatch();
-        if (numRows == maxBatchSize) {
+        if (numRows == batchSize) {
           preparedStatement.executeBatch();
           numRows = 0;
         }
@@ -576,7 +578,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"CREATE_TIME\"", "\"LAST_ACCESS_TIME\"", "\"WRITE_ID\"");
     List<String> conditionKeys = Arrays.asList("\"PART_ID\"");
     String stmt = TxnUtils.createUpdatePreparedStmt("\"PARTITIONS\"", columns, conditionKeys);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 4);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : newParts.size(), 4);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, newParts, new Batchable<Partition, Void>() {
       @Override
       public List<Void> run(List<Partition> input) throws SQLException {
@@ -654,7 +656,8 @@ class DirectSqlUpdatePart {
   private Map<Long, Map<String, String>> getParams(String paramTable, String idName,
                                                    List<Long> ids) throws MetaException {
     Map<Long, Map<String, String>> idToParams = new HashMap<>();
-    Batchable.runBatched(maxBatchSize, ids, new Batchable<Long, Object>() {
+    int batchSize = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : ids.size(), 1);
+    Batchable.runBatched(batchSize, ids, new Batchable<Long, Object>() {
       @Override
       public List<Object> run(List<Long> input) throws MetaException {
         String idLists = MetaStoreDirectSql.getIdListForIn(input);
@@ -678,7 +681,7 @@ class DirectSqlUpdatePart {
   private void deleteParams(String paramTable, String idColumn,
                             List<Pair<Long, String>> deleteIdKeys) throws MetaException {
     String deleteStmt = "delete from " + paramTable + " where " + idColumn +  "=? and \"PARAM_KEY\"=?";
-    int maxRows = dbType.getMaxRows(maxBatchSize, 2);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : deleteIdKeys.size(), 2);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, deleteIdKeys,
         new Batchable<Pair<Long, String>, Void>() {
           @Override
@@ -700,7 +703,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"PARAM_VALUE\"");
     List<String> conditionKeys = Arrays.asList(idColumn, "\"PARAM_KEY\"");
     String stmt = TxnUtils.createUpdatePreparedStmt(paramTable, columns, conditionKeys);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : updateIdAndParams.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, updateIdAndParams,
         new Batchable<Pair<Long, Pair<String, String>>, Object>() {
           @Override
@@ -722,7 +725,7 @@ class DirectSqlUpdatePart {
                             List<Pair<Long, Pair<String, String>>> addIdAndParams) throws MetaException {
     List<String> columns = Arrays.asList(idColumn, "\"PARAM_KEY\"", "\"PARAM_VALUE\"");
     String query = TxnUtils.createInsertPreparedStmt(paramTable, columns);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : addIdAndParams.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, addIdAndParams,
         new Batchable<Pair<Long, Pair<String, String>>, Void>() {
           @Override
@@ -746,7 +749,8 @@ class DirectSqlUpdatePart {
     Map<Long, Long> sdIdToSerdeId = new HashMap<>();
     Set<Long> cdIds = new HashSet<>();
     List<Long> validSdIds = filterIdsByNonNullValue(new ArrayList<>(idToSd.keySet()), idToSd);
-    Batchable.runBatched(maxBatchSize, validSdIds, new Batchable<Long, Void>() {
+    int batchSize = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : validSdIds.size(), 1);
+    Batchable.runBatched(batchSize, validSdIds, new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         String idLists = MetaStoreDirectSql.getIdListForIn(input);
@@ -806,8 +810,8 @@ class DirectSqlUpdatePart {
     sdIdToCdId.replaceAll((sdId, cdId) ->
         sdIdToNewCdId.containsKey(sdId) ? sdIdToNewCdId.get(sdId) : cdId);
     updateSDInBatch(validSdIds, idToSd, sdIdToCdId);
-
-    Set<Long> usedIds = new HashSet<>(Batchable.runBatched(maxBatchSize, cdIdsMayDelete,
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : cdIdsMayDelete.size(), 1);
+    Set<Long> usedIds = new HashSet<>(Batchable.runBatched(maxRows, cdIdsMayDelete,
         new Batchable<Long, Long>() {
           @Override
           public List<Long> run(List<Long> input) throws Exception {
@@ -836,7 +840,7 @@ class DirectSqlUpdatePart {
         "\"IS_STOREDASSUBDIRECTORIES\"", "\"LOCATION\"", "\"NUM_BUCKETS\"", "\"OUTPUT_FORMAT\"");
     List<String> conditionKeys = Arrays.asList("\"SD_ID\"");
     String stmt = TxnUtils.createUpdatePreparedStmt("\"SDS\"", columns, conditionKeys);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 8);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : ids.size(), 8);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, ids,
         new Batchable<Long, Void>() {
           @Override
@@ -862,7 +866,8 @@ class DirectSqlUpdatePart {
 
   private void updateBucketColsInBatch(Map<Long, List<String>> sdIdToBucketCols,
                                        List<Long> sdIds) throws MetaException {
-    Batchable.runBatched(maxBatchSize, sdIds, new Batchable<Long, Void>() {
+    int batch = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : sdIds.size(), 1);
+    Batchable.runBatched(batch, sdIds, new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws MetaException {
         String idLists = MetaStoreDirectSql.getIdListForIn(input);
@@ -874,7 +879,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"INTEGER_IDX\"", "\"BUCKET_COL_NAME\"");
     String stmt = TxnUtils.createInsertPreparedStmt("\"BUCKETING_COLS\"", columns);
     List<Long> idWithBucketCols = filterIdsByNonNullValue(sdIds, sdIdToBucketCols);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : idWithBucketCols.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithBucketCols, new Batchable<Long, Object>() {
       @Override
       public List<Object> run(List<Long> input) throws SQLException {
@@ -895,7 +900,8 @@ class DirectSqlUpdatePart {
 
   private void updateSortColsInBatch(Map<Long, List<Order>> sdIdToSortCols,
                                      List<Long> sdIds) throws MetaException {
-    Batchable.runBatched(maxBatchSize, sdIds, new Batchable<Long, Void>() {
+    int batch = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : sdIds.size(), 1);
+    Batchable.runBatched(batch, sdIds, new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws MetaException {
         String idLists = MetaStoreDirectSql.getIdListForIn(input);
@@ -908,7 +914,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"INTEGER_IDX\"", "\"COLUMN_NAME\"", "\"ORDER\"");
     String stmt = TxnUtils.createInsertPreparedStmt("\"SORT_COLS\"", columns);
     List<Long> idWithSortCols = filterIdsByNonNullValue(sdIds, sdIdToSortCols);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 4);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : idWithSortCols.size(), 4);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSortCols, new Batchable<Long, Object>() {
       @Override
       public List<Object> run(List<Long> input) throws SQLException {
@@ -1010,7 +1016,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"INTEGER_IDX\"", "\"SKEWED_COL_NAME\"");
     String stmt = TxnUtils.createInsertPreparedStmt("\"SKEWED_COL_NAMES\"", columns);
     List<Long> idWithSkewedCols = filterIdsByNonNullValue(sdIds, sdIdToSkewedColNames);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : idWithSkewedCols.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSkewedCols, new Batchable<Long, Object>() {
       @Override
       public List<Object> run(List<Long> input) throws SQLException {
@@ -1032,7 +1038,7 @@ class DirectSqlUpdatePart {
   private void insertStringListInBatch(List<Long> stringListIds) throws MetaException {
     List<String> columns = Arrays.asList("\"STRING_LIST_ID\"");
     String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_STRING_LIST\"", columns);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 1);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : stringListIds.size(), 1);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, stringListIds,
         new Batchable<Long, Void>() {
           @Override
@@ -1053,7 +1059,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"STRING_LIST_ID\"", "\"INTEGER_IDX\"", "\"STRING_LIST_VALUE\"");
     String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_STRING_LIST_VALUES\"", columns);
     List<Long> idWithStringList = filterIdsByNonNullValue(stringListIds, stringListIdToValues);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : idWithStringList.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithStringList,
         new Batchable<Long, Void>() {
           @Override
@@ -1079,7 +1085,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"SD_ID_OID\"", "\"INTEGER_IDX\"", "\"STRING_LIST_ID_EID\"");
     String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_VALUES\"", columns);
     List<Long> idWithSkewedValues = filterIdsByNonNullValue(sdIds, sdIdToStringListId);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : idWithSkewedValues.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSkewedValues,
         new Batchable<Long, Void>() {
           @Override
@@ -1105,7 +1111,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"SD_ID\"", "\"STRING_LIST_ID_KID\"", "\"LOCATION\"");
     String insertQuery = TxnUtils.createInsertPreparedStmt("\"SKEWED_COL_VALUE_LOC_MAP\"", columns);
     List<Long> idWithColValueLoc = filterIdsByNonNullValue(sdIds, sdIdToColValueLoc);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : idWithColValueLoc.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithColValueLoc,
         new Batchable<Long, Void>() {
           @Override
@@ -1129,7 +1135,8 @@ class DirectSqlUpdatePart {
   private Map<Long, Long> updateCDInBatch(List<Long> cdIds, List<Long> sdIds, Map<Long, Long> sdIdToCdId,
                                           Map<Long, List<FieldSchema>> sdIdToNewColumns) throws MetaException {
     Map<Long, List<Pair<Integer, FieldSchema>>> cdIdToColIdxPair = new HashMap<>();
-    Batchable.runBatched(maxBatchSize, cdIds, new Batchable<Long, Void>() {
+    int batchSize = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : cdIds.size(), 1);
+    Batchable.runBatched(batchSize, cdIds, new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         String idLists = MetaStoreDirectSql.getIdListForIn(input);
@@ -1197,7 +1204,7 @@ class DirectSqlUpdatePart {
   private void insertCDInBatch(List<Long> ids, Map<Long, List<FieldSchema>> idToCols)
       throws MetaException {
     String insertCds = TxnUtils.createInsertPreparedStmt("\"CDS\"", Arrays.asList("\"CD_ID\""));
-    int maxRows = dbType.getMaxRows(maxBatchSize, 1);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : ids.size(), 1);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, ids,
         new Batchable<Long, Void>() {
           @Override
@@ -1214,7 +1221,7 @@ class DirectSqlUpdatePart {
     List<String> columns = Arrays.asList("\"CD_ID\"",
         "\"COMMENT\"", "\"COLUMN_NAME\"", "\"TYPE_NAME\"", "\"INTEGER_IDX\"");
     String insertColumns = TxnUtils.createInsertPreparedStmt("\"COLUMNS_V2\"", columns);
-    int maxRowsForCDs = dbType.getMaxRows(maxBatchSize, 5);
+    int maxRowsForCDs = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : ids.size(), 5);
     updateWithStatement(statement -> Batchable.runBatched(maxRowsForCDs, ids,
         new Batchable<Long, Void>() {
           @Override
@@ -1247,7 +1254,7 @@ class DirectSqlUpdatePart {
     String updateParent = TxnUtils.createUpdatePreparedStmt(tableName, parentColumns, parentColumns);
     String updateChild = TxnUtils.createUpdatePreparedStmt(tableName, childColumns, childColumns);
     for (String updateStmt : new String[]{updateParent, updateChild}) {
-      int maxRows = dbType.getMaxRows(maxBatchSize, 4);
+      int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : oldCdIds.size(), 4);
       updateWithStatement(statement -> Batchable.runBatched(maxRows, oldCdIds,
           new Batchable<Long, Void>() {
             @Override
@@ -1274,7 +1281,8 @@ class DirectSqlUpdatePart {
   }
 
   private void deleteCDInBatch(List<Long> cdIds) throws MetaException {
-    Batchable.runBatched(maxBatchSize, cdIds, new Batchable<Long, Void>() {
+    int batchSize = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : cdIds.size(), 1);
+    Batchable.runBatched(batchSize, cdIds, new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         String idLists = MetaStoreDirectSql.getIdListForIn(input);
@@ -1302,7 +1310,7 @@ class DirectSqlUpdatePart {
     List<String> condKeys = Arrays.asList("\"SERDE_ID\"");
     String updateStmt = TxnUtils.createUpdatePreparedStmt("\"SERDES\"", columns, condKeys);
     List<Long> idWithSerde = filterIdsByNonNullValue(ids, idToSerde);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
+    int maxRows = dbType.getMaxRows(maxBatchSize > 0 ? maxBatchSize : idWithSerde.size(), 3);
     updateWithStatement(statement -> Batchable.runBatched(maxRows, idWithSerde,
         new Batchable<Long, Void>() {
           @Override

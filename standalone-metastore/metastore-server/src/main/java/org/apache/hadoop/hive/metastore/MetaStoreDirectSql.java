@@ -199,11 +199,11 @@ class MetaStoreDirectSql {
     this.schema = schema;
     this.dbType = PersistenceManagerProvider.getDatabaseProduct();
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);
-    this.directSqlInsertPart = new DirectSqlInsertPart(pm, dbType, batchSize);
     if (batchSize == DETECT_BATCHING) {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
+    this.directSqlInsertPart = new DirectSqlInsertPart(pm, dbType, batchSize);
     this.isTxnStatsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
     this.directSqlUpdatePart = new DirectSqlUpdatePart(pm, conf, dbType, batchSize);
     this.directSqlAggrStats = new DirectSqlAggrStats(pm, conf, schema);
@@ -527,7 +527,8 @@ class MetaStoreDirectSql {
    */
   public List<Partition> alterPartitions(MTable table, List<String> partNames,
                                          List<Partition> newParts, String queryWriteIdList) throws MetaException {
-    List<Object[]> rows = Batchable.runBatched(batchSize, partNames, new Batchable<String, Object[]>() {
+    int batch = dbType.getMaxBatch(batchSize, partNames.size() + 3);
+    List<Object[]> rows = Batchable.runBatched(batch, partNames, new Batchable<String, Object[]>() {
       @Override
       public List<Object[]> run(List<String> input) throws Exception {
         String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
@@ -717,7 +718,8 @@ class MetaStoreDirectSql {
     if (partNames.isEmpty()) {
       return Collections.emptyList();
     }
-    return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
+    int batch = dbType.getMaxBatch(batchSize, partNames.size() + 3);
+    return Batchable.runBatched(batch, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
         return getPartitionsByNames(catName, dbName, tblName, partNames, false, args);
@@ -756,12 +758,7 @@ class MetaStoreDirectSql {
       return Collections.emptyList(); // no partitions, bail early.
     }
     boolean isAcidTable = TxnUtils.isAcidTable(table);
-    return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
-      @Override
-      public List<Partition> run(List<Long> input) throws MetaException {
-        return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
-      }
-    });
+    return getPartitionsByPartitionIdsInBatch(catName, dbName, tblName, partitionIds, isAcidTable, args);
   }
 
   /**
@@ -811,11 +808,16 @@ class MetaStoreDirectSql {
                 filter.joins, null);
         break;
       case BY_NAMES:
-        String partNamesFilter =
-            "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(filterSpec.getFilters().size())
-                + ")";
-        partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, partNamesFilter,
-            filterSpec.getFilters(), Collections.EMPTY_LIST, null);
+        int batch = dbType.getMaxBatch(batchSize, filterSpec.getFiltersSize() + 3);
+        partitionIds = Batchable.runBatched(batch, filterSpec.getFilters(), new Batchable<String, Long>() {
+          @Override
+          public List<Long> run(List<String> input) throws Exception {
+            String partNamesFilter =
+                "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
+            return getPartitionIdsViaSqlFilter(catName, dbName, tblName, partNamesFilter,
+                input, Collections.EMPTY_LIST, null);
+          }
+        });
         break;
       case BY_VALUES:
         // we are going to use the SQL regex pattern in the LIKE clause below. So the default string
@@ -848,8 +850,9 @@ class MetaStoreDirectSql {
     PartitionProjectionEvaluator projectionEvaluator =
         new PartitionProjectionEvaluator(pm, fieldnameToTableName, partitionFields,
             convertMapNullsToEmptyStrings, isView, includeParamKeyPattern, excludeParamKeyPattern);
+    int batch = dbType.getMaxBatch(batchSize, partitionIds.size());
     // Get full objects. For Oracle/etc. do it in batches.
-    return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
+    return Batchable.runBatched(batch, partitionIds, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return projectionEvaluator.getPartitionsUsingProjectionList(input);
@@ -1039,7 +1042,8 @@ class MetaStoreDirectSql {
     if (partIdList.isEmpty()) {
       return Collections.emptyList(); // no partitions, bail early.
     }
-    return Batchable.runBatched(batchSize, partIdList, new Batchable<Long, Partition>() {
+    int batch = dbType.getMaxBatch(batchSize, partIdList.size());
+    return Batchable.runBatched(batch, partIdList, new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
@@ -1773,7 +1777,8 @@ class MetaStoreDirectSql {
     List<Long> allCounts = Batchable.runBatched(batchSize, colNames, new Batchable<String, Long>() {
       @Override
       public List<Long> run(final List<String> inputColName) throws MetaException {
-        return Batchable.runBatched(batchSize, partNames, new Batchable<String, Long>() {
+        int batch = dbType.getMaxBatch(batchSize, inputColName.size() + partNames.size() + 4);
+        return Batchable.runBatched(batch, partNames, new Batchable<String, Long>() {
           @Override
           public List<Long> run(List<String> inputPartNames) throws MetaException {
             long partsFound = 0;
@@ -2246,8 +2251,8 @@ class MetaStoreDirectSql {
     if (partNames.isEmpty()) {
       return;
     }
-
-    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+    int batch = dbType.getMaxBatch(batchSize, partNames.size() + 3);
+    Batchable.runBatched(batch, partNames, new Batchable<String, Void>() {
       @Override
       public List<Void> run(List<String> input) throws MetaException {
         String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
@@ -2294,10 +2299,10 @@ class MetaStoreDirectSql {
       }
     }
 
-    int batch = batchSize == NO_BATCHING ? 1 : (partIds.size() + batchSize) / batchSize;
+    int batch = dbType.getMaxBatch(batchSize, partIds.size());
     AtomicLong batchIdx = new AtomicLong(1);
     AtomicLong timeSpent = new AtomicLong(0);
-    Batchable.runBatched(batchSize, partIds, new Batchable<Long, Void>() {
+    Batchable.runBatched(batch, partIds, new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         StringBuilder progress = new StringBuilder("Dropping partitions, batch: ");
@@ -2730,7 +2735,8 @@ class MetaStoreDirectSql {
 
   public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
       List<String> partNames, List<String> colNames, String engine) throws MetaException {
-    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+    int batch = dbType.getMaxBatch(batchSize, partNames.size() + 3);
+    Batchable.runBatched(batch, partNames, new Batchable<String, Void>() {
       @Override
       public List<Void> run(List<String> input) throws Exception {
         String sqlFilter = PARTITIONS + ".\"PART_NAME\" in  (" + makeParams(input.size()) + ")";
