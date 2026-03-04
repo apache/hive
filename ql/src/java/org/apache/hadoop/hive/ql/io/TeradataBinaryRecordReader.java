@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.codec.binary.Hex;
@@ -83,8 +84,10 @@ public class TeradataBinaryRecordReader implements RecordReader<NullWritable, By
     String rowLength = job.get(TD_ROW_LENGTH);
     if (rowLength == null) {
       LOG.debug("No table property in JobConf. Try to recover the table directly");
-      for (org.apache.hadoop.hive.ql.plan.PartitionDesc partitionDesc :
-          Utilities.getMapRedWork(job).getMapWork().getPartitionDescs()) {
+      Iterator<org.apache.hadoop.hive.ql.plan.PartitionDesc> partitionIterator =
+          Utilities.getMapRedWork(job).getMapWork().getPartitionDescs();
+      while (partitionIterator.hasNext()) {
+        org.apache.hadoop.hive.ql.plan.PartitionDesc partitionDesc = partitionIterator.next();
         LOG.debug("Checking partition metadata for row length");
         rowLength = partitionDesc.getTableDesc().getProperties().getProperty(TD_ROW_LENGTH);
         if (rowLength != null) {

@@ -436,7 +436,7 @@ public final class GenMapRedUtils {
   /**
    * set the current task in the mapredWork.
    *
-   * @param alias_id
+   * @param aliasId
    *          current alias
    * @param topOp
    *          the top operator of the stack
@@ -447,16 +447,16 @@ public final class GenMapRedUtils {
    * @param opProcCtx
    *          processing context
    */
-  public static void setTaskPlan(String alias_id,
+  public static void setTaskPlan(String aliasId,
       TableScanOperator topOp, Task<?> task, boolean local,
       GenMRProcContext opProcCtx) throws SemanticException {
-    setTaskPlan(alias_id, topOp, task, local, opProcCtx, null);
+    setTaskPlan(aliasId, topOp, task, local, opProcCtx, null);
   }
 
   /**
    * set the current task in the mapredWork.
    *
-   * @param alias_id
+   * @param aliasId
    *          current alias
    * @param topOp
    *          the top operator of the stack
@@ -469,18 +469,18 @@ public final class GenMapRedUtils {
    * @param pList
    *          pruned partition list. If it is null it will be computed on-the-fly.
    */
-  public static void setTaskPlan(String alias_id,
+  public static void setTaskPlan(String aliasId,
       TableScanOperator topOp, Task<?> task, boolean local,
       GenMRProcContext opProcCtx, PrunedPartitionList pList) throws SemanticException {
     setMapWork(((MapredWork) task.getWork()).getMapWork(), opProcCtx.getParseCtx(),
-        opProcCtx.getInputs(), pList, topOp, alias_id, opProcCtx.getConf(), local);
+        opProcCtx.getInputs(), pList, topOp, aliasId, opProcCtx.getConf(), local);
     opProcCtx.addSeenOp(task, topOp);
   }
 
   /**
    * initialize MapWork
    *
-   * @param alias_id
+   * @param aliasId
    *          current alias
    * @param plan
    *          map work to initialize
@@ -494,7 +494,7 @@ public final class GenMapRedUtils {
    *          current instance of hive conf
    */
   public static void setMapWork(MapWork plan, ParseContext parseCtx, Set<ReadEntity> inputs,
-      PrunedPartitionList partsList, TableScanOperator tsOp, String alias_id,
+      PrunedPartitionList partsList, TableScanOperator tsOp, String aliasId,
       HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
@@ -513,12 +513,12 @@ public final class GenMapRedUtils {
         partsList = new PrunedPartitionList(tab, null, Sets.newHashSet(new DummyPartition(tab)),
             Collections.emptyList(), false);
       } else {
-        partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
+        partsList = PartitionPruner.prune(tsOp, parseCtx, aliasId);
         isFullAcidTable = tsOp.getConf().isFullAcidTable();
       }
     }
 
-    // Generate the map work for this alias_id
+    // Generate the map work for this aliasId
     // pass both confirmed and unknown partitions through the map-reduce
     // framework
     Set<Partition> parts = partsList.getPartitions();
@@ -544,7 +544,7 @@ public final class GenMapRedUtils {
       target.putAll(props);
     }
 
-    plan.putPartitionDesc(alias_id, aliasPartnDesc);
+    plan.putPartitionDesc(aliasId, aliasPartnDesc);
 
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
@@ -585,7 +585,7 @@ public final class GenMapRedUtils {
     // where V is a view of the form: select * from T
     // The dependencies should include V at depth 0, and T at depth 1 (inferred).
     Map<String, ReadEntity> viewToInput = parseCtx.getViewAliasToInput();
-    ReadEntity parentViewInfo = PlanUtils.getParentViewInfo(alias_id, viewToInput);
+    ReadEntity parentViewInfo = PlanUtils.getParentViewInfo(aliasId, viewToInput);
 
     // The table should also be considered a part of inputs, even if the table is a
     // partitioned table and whether any partition is selected or not
@@ -686,7 +686,7 @@ public final class GenMapRedUtils {
         if (p == null) {
           continue;
         }
-        LOG.debug("Adding {} of table {}", p, alias_id);
+        LOG.debug("Adding {} of table {}", p, aliasId);
 
         partDir.add(p);
         try {
@@ -720,15 +720,15 @@ public final class GenMapRedUtils {
         PartitionDesc prtDesc = iterPartnDesc.next();
 
         // Add the path to alias mapping
-        plan.addPathToAlias(path,alias_id);
+        plan.addPathToAlias(path,aliasId);
         plan.addPathToPartitionInfo(path, prtDesc);
         if (LOG.isDebugEnabled()) {
           LOG.debug("Information added for path " + path);
         }
       }
 
-      assert plan.getAliasToWork().get(alias_id) == null;
-      plan.getAliasToWork().put(alias_id, tsOp);
+      assert plan.getAliasToWork().get(aliasId) == null;
+      plan.getAliasToWork().put(aliasId, tsOp);
     } else {
       // populate local work if needed
       MapredLocalWork localPlan = plan.getMapRedLocalWork();
@@ -738,16 +738,16 @@ public final class GenMapRedUtils {
             new LinkedHashMap<String, FetchWork>());
       }
 
-      assert localPlan.getAliasToWork().get(alias_id) == null;
-      assert localPlan.getAliasToFetchWork().get(alias_id) == null;
-      localPlan.getAliasToWork().put(alias_id, tsOp);
+      assert localPlan.getAliasToWork().get(aliasId) == null;
+      assert localPlan.getAliasToFetchWork().get(aliasId) == null;
+      localPlan.getAliasToWork().put(aliasId, tsOp);
       if (tblDir == null) {
         tblDesc = Utilities.getTableDesc(partsList.getSourceTable());
         localPlan.getAliasToFetchWork().put(
-            alias_id,
+            aliasId,
             new FetchWork(partDir, partDesc, tblDesc));
       } else {
-        localPlan.getAliasToFetchWork().put(alias_id,
+        localPlan.getAliasToFetchWork().put(aliasId,
             new FetchWork(tblDir, tblDesc));
       }
       plan.setMapRedLocalWork(localPlan);

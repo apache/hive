@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -141,7 +142,9 @@ public class MapRecordProcessor extends RecordProcessor {
     // TODO HIVE-14042. Cleanup may be required if exiting early.
     Utilities.setMapWork(jconf, mapWork);
 
-    for (PartitionDesc part : mapWork.getPartitionDescs()) {
+    Iterator<PartitionDesc> partitionIterator = mapWork.getPartitionDescs();
+    while (partitionIterator.hasNext()) {
+      PartitionDesc part = partitionIterator.next();
       TableDesc tableDesc = part.getTableDesc();
       Utilities.copyJobSecretToTableProperties(tableDesc);
     }

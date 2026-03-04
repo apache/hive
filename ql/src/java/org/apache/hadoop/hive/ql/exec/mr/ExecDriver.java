@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
@@ -535,7 +536,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     Operator<?> topOp = mWork.getAliasToWork().get(alias);
     PartitionDesc partDesc = mWork.getPartitionDesc(alias);
 
-    List<PartitionDesc> parts = new ArrayList<>(mWork.getPartitionDescs());
+    List<PartitionDesc> parts = new ArrayList<>();
+    Iterator<PartitionDesc> partitionIterator = mWork.getPartitionDescs();
+    while (partitionIterator.hasNext()) {
+      parts.add(partitionIterator.next());
+    }
 
     List<Path> inputPaths = mWork.getPaths();
 

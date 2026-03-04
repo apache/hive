@@ -54,19 +54,18 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
     if(!(work instanceof MapWork)){
       return null;
     }
-    TableDesc mapWorkTableDesc = ((MapWork) work).getDistinctTableDescs().stream().findFirst().orElse(null);
-    if (mapWorkTableDesc != null) {
-      TableDesc tableDesc = mapWorkTableDesc;
+    TableDesc tableDesc = ((MapWork) work).getDistinctTableDescs().stream().findFirst().orElse(null);
+    if (tableDesc != null) {
       if (isTokenRequired(tableDesc)) {
         // don't collect delegation token again, if it was already successful
         return getKafkaDelegationTokenForBrokers(conf, tableDesc);
       }
     }
 
-    for (TableDesc tableDesc : fileSinkTableDescs) {
-      if (isTokenRequired(tableDesc)) {
+    for (TableDesc fileSinkTableDesc : fileSinkTableDescs) {
+      if (isTokenRequired(fileSinkTableDesc)) {
         // don't collect delegation token again, if it was already successful
-        return getKafkaDelegationTokenForBrokers(conf, tableDesc);
+        return getKafkaDelegationTokenForBrokers(conf, fileSinkTableDesc);
       }
     }
     return null;

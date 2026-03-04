@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +84,9 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       // create map and fetch operators
       MapWork mrwork = Utilities.getMapWork(job);
-      for (PartitionDesc part : mrwork.getPartitionDescs()) {
+      Iterator<PartitionDesc> partitionIterator = mrwork.getPartitionDescs();
+      while (partitionIterator.hasNext()) {
+        PartitionDesc part = partitionIterator.next();
         TableDesc tableDesc = part.getTableDesc();
         Utilities.copyJobSecretToTableProperties(tableDesc);
       }

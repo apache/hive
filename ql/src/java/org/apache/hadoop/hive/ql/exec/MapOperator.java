@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -388,7 +389,9 @@ public class MapOperator extends AbstractMapOperator {
       }
     }
 
-    for (PartitionDesc pd: conf.getPartitionDescs()) {
+    Iterator<PartitionDesc> partitionIterator = conf.getPartitionDescs();
+    while (partitionIterator.hasNext()) {
+      PartitionDesc pd = partitionIterator.next();
       if (!tableNameToConf.containsKey(pd.getTableName())) {
         tableNameToConf.put(pd.getTableName(), hconf);
       }

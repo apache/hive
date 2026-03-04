@@ -47,6 +47,7 @@ import org.apache.hadoop.mapred.JobConf;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Interner;
+import com.google.common.collect.Iterators;
 
 /**
  * MapWork represents all the information used to run a map task on the cluster.
@@ -92,7 +93,7 @@ public class MapWork extends BaseWork {
   private Map<String, Operator<? extends OperatorDesc>> aliasToWork =
       new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
 
-  private Map<String, PartitionDesc> aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
+  private Map<String, PartitionDesc> aliasToPartnInfo = new LinkedHashMap<>();
 
   private Map<String, SplitSample> nameToSplitSample = new LinkedHashMap<String, SplitSample>();
 
@@ -364,46 +365,28 @@ public class MapWork extends BaseWork {
     }
   }
 
-  public Collection<PartitionDesc> getPartitionDescs() {
-    if (aliasToPartnInfo == null) {
-      return Collections.emptyList();
-    }
-    return Collections.unmodifiableCollection(aliasToPartnInfo.values());
+  public Iterator<PartitionDesc> getPartitionDescs() {
+    return Iterators.unmodifiableIterator(aliasToPartnInfo.values().iterator());
   }
 
   public PartitionDesc getPartitionDesc(String alias) {
-    return aliasToPartnInfo == null ? null : aliasToPartnInfo.get(alias);
+    return aliasToPartnInfo.get(alias);
   }
 
   public int getPartitionCount() {
-    return aliasToPartnInfo == null ? 0 : aliasToPartnInfo.size();
+    return aliasToPartnInfo.size();
   }
 
   public boolean hasPartitionDesc(String alias) {
-    return aliasToPartnInfo != null && aliasToPartnInfo.containsKey(alias);
+    return aliasToPartnInfo.containsKey(alias);
   }
 
   public void putPartitionDesc(String alias, PartitionDesc partitionDesc) {
-    if (aliasToPartnInfo == null) {
-      aliasToPartnInfo = new LinkedHashMap<>();
-    }
     aliasToPartnInfo.put(alias, partitionDesc);
   }
 
-  public void putAllPartitionDescs(Map<String, PartitionDesc> partitionDescs) {
-    if (partitionDescs == null || partitionDescs.isEmpty()) {
-      return;
-    }
-    if (aliasToPartnInfo == null) {
-      aliasToPartnInfo = new LinkedHashMap<>();
-    }
-    aliasToPartnInfo.putAll(partitionDescs);
-  }
-
   public void removeAlias(String alias) {
-    if (aliasToPartnInfo != null) {
-      aliasToPartnInfo.remove(alias);
-    }
+    aliasToPartnInfo.remove(alias);
   }
 
   public Map<String, Operator<? extends OperatorDesc>> getAliasToWork() {
@@ -678,9 +661,6 @@ public class MapWork extends BaseWork {
   }
 
   public Collection<TableDesc> getDistinctTableDescs() {
-    if (aliasToPartnInfo == null) {
-      return Collections.emptyList();
-    }
     Map<String, TableDesc> tables = new LinkedHashMap<>();
     for (PartitionDesc partition : aliasToPartnInfo.values()) {
       TableDesc tableDesc = partition.getTableDesc();
