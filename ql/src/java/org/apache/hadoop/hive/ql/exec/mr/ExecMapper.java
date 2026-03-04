@@ -83,7 +83,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       // create map and fetch operators
       MapWork mrwork = Utilities.getMapWork(job);
-      for (PartitionDesc part : mrwork.getAliasToPartnInfo().values()) {
+      for (PartitionDesc part : mrwork.getPartitionDescs()) {
         TableDesc tableDesc = part.getTableDesc();
         Utilities.copyJobSecretToTableProperties(tableDesc);
       }

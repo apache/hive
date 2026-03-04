@@ -141,7 +141,7 @@ public class MapRecordProcessor extends RecordProcessor {
     // TODO HIVE-14042. Cleanup may be required if exiting early.
     Utilities.setMapWork(jconf, mapWork);
 
-    for (PartitionDesc part : mapWork.getAliasToPartnInfo().values()) {
+    for (PartitionDesc part : mapWork.getPartitionDescs()) {
       TableDesc tableDesc = part.getTableDesc();
       Utilities.copyJobSecretToTableProperties(tableDesc);
     }

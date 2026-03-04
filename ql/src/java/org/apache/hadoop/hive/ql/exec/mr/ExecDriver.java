@@ -533,9 +533,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     String alias = mWork.getAliases().get(0);
     Operator<?> topOp = mWork.getAliasToWork().get(alias);
-    PartitionDesc partDesc = mWork.getAliasToPartnInfo().get(alias);
+    PartitionDesc partDesc = mWork.getPartitionDesc(alias);
 
-    ArrayList<PartitionDesc> parts = mWork.getPartitionDescs();
+    List<PartitionDesc> parts = new ArrayList<>(mWork.getPartitionDescs());
 
     List<Path> inputPaths = mWork.getPaths();
 

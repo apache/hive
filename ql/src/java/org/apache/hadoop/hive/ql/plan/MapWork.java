@@ -364,20 +364,46 @@ public class MapWork extends BaseWork {
     }
   }
 
-  /**
-   * @return the aliasToPartnInfo
-   */
-  public Map<String, PartitionDesc> getAliasToPartnInfo() {
-    return aliasToPartnInfo;
+  public Collection<PartitionDesc> getPartitionDescs() {
+    if (aliasToPartnInfo == null) {
+      return Collections.emptyList();
+    }
+    return Collections.unmodifiableCollection(aliasToPartnInfo.values());
   }
 
-  /**
-   * @param aliasToPartnInfo
-   *          the aliasToPartnInfo to set
-   */
-  public void setAliasToPartnInfo(
-      LinkedHashMap<String, PartitionDesc> aliasToPartnInfo) {
-    this.aliasToPartnInfo = aliasToPartnInfo;
+  public PartitionDesc getPartitionDesc(String alias) {
+    return aliasToPartnInfo == null ? null : aliasToPartnInfo.get(alias);
+  }
+
+  public int getPartitionCount() {
+    return aliasToPartnInfo == null ? 0 : aliasToPartnInfo.size();
+  }
+
+  public boolean hasPartitionDesc(String alias) {
+    return aliasToPartnInfo != null && aliasToPartnInfo.containsKey(alias);
+  }
+
+  public void putPartitionDesc(String alias, PartitionDesc partitionDesc) {
+    if (aliasToPartnInfo == null) {
+      aliasToPartnInfo = new LinkedHashMap<>();
+    }
+    aliasToPartnInfo.put(alias, partitionDesc);
+  }
+
+  public void putAllPartitionDescs(Map<String, PartitionDesc> partitionDescs) {
+    if (partitionDescs == null || partitionDescs.isEmpty()) {
+      return;
+    }
+    if (aliasToPartnInfo == null) {
+      aliasToPartnInfo = new LinkedHashMap<>();
+    }
+    aliasToPartnInfo.putAll(partitionDescs);
+  }
+
+  public void removeAlias(String alias) {
+    if (aliasToPartnInfo != null) {
+      aliasToPartnInfo.remove(alias);
+    }
   }
 
   public Map<String, Operator<? extends OperatorDesc>> getAliasToWork() {
@@ -604,10 +630,6 @@ public class MapWork extends BaseWork {
 
   public ArrayList<Path> getPaths() {
     return new ArrayList<Path>(pathToAliases.keySet());
-  }
-
-  public ArrayList<PartitionDesc> getPartitionDescs() {
-    return new ArrayList<PartitionDesc>(aliasToPartnInfo.values());
   }
 
   public Path getTmpHDFSPath() {

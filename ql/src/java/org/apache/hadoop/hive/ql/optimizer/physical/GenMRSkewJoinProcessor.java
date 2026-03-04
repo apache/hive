@@ -271,7 +271,7 @@ public final class GenMRSkewJoinProcessor {
       PartitionDesc part = new PartitionDesc(tableDescList.get(src), null);
 
       newPlan.addPathToPartitionInfo(bigKeyDirPath, part);
-      newPlan.getAliasToPartnInfo().put(alias, part);
+      newPlan.putPartitionDesc(alias, part);
 
       Operator<? extends OperatorDesc> reducer = clonePlan.getReduceWork().getReducer();
       assert reducer instanceof JoinOperator;

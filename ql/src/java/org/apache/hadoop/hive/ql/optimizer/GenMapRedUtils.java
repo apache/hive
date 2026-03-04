@@ -544,7 +544,7 @@ public final class GenMapRedUtils {
       target.putAll(props);
     }
 
-    plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
+    plan.putPartitionDesc(alias_id, aliasPartnDesc);
 
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
@@ -1151,12 +1151,9 @@ public final class GenMapRedUtils {
     Map<Path, List<String>> sourcePathToAliases = source.getPathToAliases();
     Map<Path, PartitionDesc> sourcePathToPartitionInfo = source.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> sourceAliasToWork = source.getAliasToWork();
-    Map<String, PartitionDesc> sourceAliasToPartnInfo = source.getAliasToPartnInfo();
-
     Map<Path, List<String>> targetPathToAliases = target.getPathToAliases();
     Map<Path, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> targetAliasToWork = target.getAliasToWork();
-    Map<String, PartitionDesc> targetAliasToPartnInfo = target.getAliasToPartnInfo();
 
     if (!sourceAliasToWork.containsKey(sourceAlias) ||
         !targetAliasToWork.containsKey(targetAlias)) {
@@ -1174,7 +1171,7 @@ public final class GenMapRedUtils {
 
     // Remove unnecessary information from target
     targetAliasToWork.remove(targetAlias);
-    targetAliasToPartnInfo.remove(targetAlias);
+    target.removeAlias(targetAlias);
     List<Path> pathsToRemove = new ArrayList<>();
     for (Entry<Path, List<String>> entry: targetPathToAliases.entrySet()) {
       List<String> aliases = entry.getValue();
@@ -1190,7 +1187,7 @@ public final class GenMapRedUtils {
 
     // Add new information from source to target
     targetAliasToWork.put(sourceAlias, sourceAliasToWork.get(sourceAlias));
-    targetAliasToPartnInfo.putAll(sourceAliasToPartnInfo);
+    target.putPartitionDesc(sourceAlias, source.getPartitionDesc(sourceAlias));
     targetPathToPartitionInfo.putAll(sourcePathToPartitionInfo);
     List<Path> pathsToAdd = new ArrayList<>();
     for (Entry<Path, List<String>> entry: sourcePathToAliases.entrySet()) {

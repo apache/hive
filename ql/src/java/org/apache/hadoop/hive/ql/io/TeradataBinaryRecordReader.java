@@ -22,7 +22,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.EndianUtils;
@@ -31,7 +30,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -85,10 +83,10 @@ public class TeradataBinaryRecordReader implements RecordReader<NullWritable, By
     String rowLength = job.get(TD_ROW_LENGTH);
     if (rowLength == null) {
       LOG.debug("No table property in JobConf. Try to recover the table directly");
-      Map<String, PartitionDesc> partitionDescMap = Utilities.getMapRedWork(job).getMapWork().getAliasToPartnInfo();
-      for (String alias : Utilities.getMapRedWork(job).getMapWork().getAliasToPartnInfo().keySet()) {
-        LOG.debug(format("the current alias: %s", alias));
-        rowLength = partitionDescMap.get(alias).getTableDesc().getProperties().getProperty(TD_ROW_LENGTH);
+      for (org.apache.hadoop.hive.ql.plan.PartitionDesc partitionDesc :
+          Utilities.getMapRedWork(job).getMapWork().getPartitionDescs()) {
+        LOG.debug("Checking partition metadata for row length");
+        rowLength = partitionDesc.getTableDesc().getProperties().getProperty(TD_ROW_LENGTH);
         if (rowLength != null) {
           break;
         }
