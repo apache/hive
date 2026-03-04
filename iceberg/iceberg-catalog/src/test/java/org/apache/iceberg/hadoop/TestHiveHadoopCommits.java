@@ -215,6 +215,7 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
     CountDownLatch countDownLatch = new CountDownLatch(2);
     BaseTable baseTable = (BaseTable) table;
     assertThat(((HadoopTableOperations) baseTable.operations()).findVersion()).isEqualTo(2);
+    final Object lock = new Object();
     Runnable commitTask = () -> {
       try {
         HadoopTableOperations tableOperations = (HadoopTableOperations) baseTable.operations();
@@ -228,14 +229,17 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
         doAnswer(x -> {
           Path srcPath = x.getArgument(1);
           Path dstPath = x.getArgument(2);
-
           var src = Paths.get(srcPath.toUri());
           var dst = Paths.get(dstPath.toUri());
-          Files.move(src, dst, StandardCopyOption.ATOMIC_MOVE);
-
-          return Files.exists(dst) && Files.notExists(src);
+          synchronized (lock){
+            if(Files.exists(dst)){
+              return false;
+            }else{
+              Files.move(src, dst, StandardCopyOption.ATOMIC_MOVE);
+              return true;
+            }
+          }
         }).when(spyOps).renameMetaDataFile(any(), any(), any());
-
         TableMetadata metadataV1 = spyOps.current();
         SortOrder dataSort = SortOrder.builderFor(baseTable.schema()).asc("data").build();
         TableMetadata metadataV2 = metadataV1.replaceSortOrder(dataSort);
