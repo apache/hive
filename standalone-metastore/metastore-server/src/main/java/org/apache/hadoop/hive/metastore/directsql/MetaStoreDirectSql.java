@@ -2590,7 +2590,7 @@ public class MetaStoreDirectSql {
   }
 
   public final static Object[] STATS_TABLE_TYPES = new Object[] {
-    TableType.MANAGED_TABLE.toString(), TableType.MATERIALIZED_VIEW.toString()
+    TableType.MANAGED_TABLE.toString(), TableType.MATERIALIZED_VIEW.toString(), TableType.EXTERNAL_MATERIALIZED_VIEW.toString()
   };
 
   public List<org.apache.hadoop.hive.common.TableName> getTableNamesWithStats() throws MetaException {

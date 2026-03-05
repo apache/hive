@@ -323,6 +323,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
  * There are other specific semantic analyzers for some hive operations such as
@@ -14075,12 +14077,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
         location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
         storageFormat.getSerdeProps());
-    addDbAndTabToOutputs(new String[] {qualTabName.getDb(), qualTabName.getTable()}, TableType.MATERIALIZED_VIEW,
+    addDbAndTabToOutputs(new String[] {qualTabName.getDb(), qualTabName.getTable()}, getViewType(storageFormat.getStorageHandler()),
         false, tblProps, storageFormat);
     queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     qb.setViewDesc(createVwDesc);
 
     return selectStmt;
+  }
+
+  private static @NotNull TableType getViewType(String storageHandler) {
+    if ("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler".equals(storageHandler)) {
+      return TableType.EXTERNAL_MATERIALIZED_VIEW;
+    }
+
+    return TableType.MATERIALIZED_VIEW;
   }
 
   protected boolean makeAcid() {

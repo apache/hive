@@ -55,7 +55,7 @@ public class StorageFormat {
     ICEBERG("'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'",
         "org.apache.iceberg.mr.hive.HiveIcebergInputFormat", "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
 
-    private static final List<StorageHandlerTypes> NON_DEFAULT_TYPES = Arrays
+    public static final List<StorageHandlerTypes> NON_DEFAULT_TYPES = Arrays
         .stream(values())
         .filter(type -> type != StorageHandlerTypes.DEFAULT)
         .collect(Collectors.toList());

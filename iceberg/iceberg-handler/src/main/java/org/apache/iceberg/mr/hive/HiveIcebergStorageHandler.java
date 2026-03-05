@@ -870,7 +870,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     boolean sharedWrite = !HiveConf.getBoolVar(conf, ConfVars.TXN_WRITE_X_LOCK);
     // Materialized views stored by Iceberg and the MV metadata is stored in HMS doesn't need write locking because
     // the locking is done by DbTxnManager.acquireMaterializationRebuildLock()
-    if (TableType.MATERIALIZED_VIEW == writeEntity.getTable().getTableType()) {
+    if (TableType.ALL_MATERIALIZED_VIEWS.contains(writeEntity.getTable().getTableType())) {
       return LockType.SHARED_READ;
     }
     if (HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf)) {
@@ -1704,7 +1704,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
       objectType = map.get(hive_metastoreConstants.META_OBJECT_TYPE);
 
-      if (TableType.MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE))) {
+      if (TableType.MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE)) ||
+          TableType.EXTERNAL_MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE))) {
         objectType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
       }
 

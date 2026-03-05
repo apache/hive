@@ -367,7 +367,12 @@ public final class PlanUtils {
           hive_metastoreConstants.META_TABLE_NAME, crtViewDesc.getViewName());
     }
 
-    properties.setProperty(hive_metastoreConstants.META_OBJECT_TYPE, TableType.MATERIALIZED_VIEW.name());
+    if ("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler".equals(crtViewDesc.getStorageHandler())){
+      properties.setProperty(hive_metastoreConstants.META_OBJECT_TYPE, TableType.EXTERNAL_MATERIALIZED_VIEW.name());
+    } else {
+      properties.setProperty(hive_metastoreConstants.META_OBJECT_TYPE, TableType.MATERIALIZED_VIEW.name());
+    }
+
     return ret;
   }
 

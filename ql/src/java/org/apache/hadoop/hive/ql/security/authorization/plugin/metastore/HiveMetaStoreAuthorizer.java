@@ -704,15 +704,9 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   }
 
   private  boolean isViewType(Table table) {
-    boolean ret = false;
-
     String tableType = table.getTableType();
 
-    if (TableType.MATERIALIZED_VIEW.name().equals(tableType) || TableType.VIRTUAL_VIEW.name().equals(tableType)) {
-      ret = true;
-    }
-
-    return ret;
+    return TableType.ALL_VIEWS.contains(tableType);
   }
 
   private String getErrorMessage(PreEventContext preEventContext, String user) {

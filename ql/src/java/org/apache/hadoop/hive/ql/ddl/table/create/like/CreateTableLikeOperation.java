@@ -55,7 +55,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     // Get the existing table
     Table oldTable = context.getDb().getTable(desc.getLikeTableName());
     Table tbl;
-    if (oldTable.getTableType() == TableType.VIRTUAL_VIEW || oldTable.getTableType() == TableType.MATERIALIZED_VIEW) {
+    if (TableType.ALL_VIEWS.contains(oldTable.getTableType())) {
       tbl = createViewLikeTable(oldTable);
     } else {
       Map<String, String> originalProperties = new HashMap<>();

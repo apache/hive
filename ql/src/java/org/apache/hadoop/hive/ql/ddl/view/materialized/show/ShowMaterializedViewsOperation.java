@@ -51,7 +51,7 @@ public class ShowMaterializedViewsOperation extends DDLOperation<ShowMaterialize
 
     // the returned list is not sortable as it is immutable, thus it must be put into a new ArrayList
     List<Table> viewObjects = new ArrayList<>(
-        context.getDb().getMaterializedViewObjectsByPattern(desc.getDbName(), null));
+        context.getDb().getAllMaterializedViews(desc.getDbName()));
     if (desc.getPattern() != null) {
       Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
       viewObjects = viewObjects.stream()

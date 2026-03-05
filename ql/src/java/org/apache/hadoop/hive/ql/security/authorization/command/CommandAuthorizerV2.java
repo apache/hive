@@ -164,10 +164,8 @@ final class CommandAuthorizerV2 {
   private static boolean isDeferredAuthView(Table t){
     String tableType = t.getTTable().getTableType();
     String authorizedKeyword = "Authorized";
-    boolean isView = false;
-    if (TableType.MATERIALIZED_VIEW.name().equals(tableType) || TableType.VIRTUAL_VIEW.name().equals(tableType)) {
-      isView = true;
-    }
+    boolean isView = TableType.ALL_VIEWS.contains(tableType);
+
     if (isView) {
       Map<String, String> params = t.getParameters();
       if (params != null && params.containsKey(authorizedKeyword)) {

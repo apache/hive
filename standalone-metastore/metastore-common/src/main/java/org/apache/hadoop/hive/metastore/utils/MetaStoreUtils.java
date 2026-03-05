@@ -997,7 +997,16 @@ public class MetaStoreUtils {
     if (table == null) {
       return false;
     }
-    return TableType.MATERIALIZED_VIEW.toString().equals(table.getTableType());
+    return TableType.MATERIALIZED_VIEW.toString().equals(table.getTableType()) ||
+        TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(table.getTableType());
+  }
+
+  public static boolean isExternalMaterializedViewTable(Table table) {
+    if (table == null) {
+      return false;
+    }
+
+    return TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(table.getTableType());
   }
 
   public static List<String> getColumnNames(List<FieldSchema> schema) {
