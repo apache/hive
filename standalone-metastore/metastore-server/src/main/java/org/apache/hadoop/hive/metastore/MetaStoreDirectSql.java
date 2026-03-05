@@ -199,11 +199,11 @@ class MetaStoreDirectSql {
     this.schema = schema;
     this.dbType = PersistenceManagerProvider.getDatabaseProduct();
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);
+    this.directSqlInsertPart = new DirectSqlInsertPart(pm, dbType, batchSize);
     if (batchSize == DETECT_BATCHING) {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
-    this.directSqlInsertPart = new DirectSqlInsertPart(pm, dbType, batchSize);
     this.isTxnStatsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
     this.directSqlUpdatePart = new DirectSqlUpdatePart(pm, conf, dbType, batchSize);
     this.directSqlAggrStats = new DirectSqlAggrStats(pm, conf, schema);
