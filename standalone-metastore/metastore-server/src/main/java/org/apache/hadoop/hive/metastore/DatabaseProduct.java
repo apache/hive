@@ -862,9 +862,9 @@ public class DatabaseProduct implements Configurable {
   public int getMaxBatch(int batch, int totalQueryParams) {
     int minBatch = batch;
     if (isSQLSERVER()) {
-       minBatch =  Math.ceilDiv(totalQueryParams, 2100);
+       minBatch = (totalQueryParams + 2100) / 2100;
     } else if (isPOSTGRES()) {
-       minBatch = Math.ceilDiv(totalQueryParams, 32767);
+       minBatch = (totalQueryParams + 32767) / 32767;
     }
     return batch <= 0 ? minBatch : Math.max(batch, minBatch);
   }

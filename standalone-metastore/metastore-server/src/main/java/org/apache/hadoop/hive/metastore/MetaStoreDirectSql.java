@@ -722,7 +722,7 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batch, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
-        return getPartitionsByNames(catName, dbName, tblName, partNames, false, args);
+        return getPartitionsByNames(catName, dbName, tblName, input, false, args);
       }
     });
   }
