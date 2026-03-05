@@ -33,7 +33,7 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
   private static final Logger LOG = LoggerFactory.getLogger(OnRenameFunction.class);
   
   //language=SQL
-  private static final String[] UPDATE_COMMANNDS = new String[]{
+  private static final String[] UPDATE_COMMANDS = new String[]{
       "UPDATE \"TXN_COMPONENTS\" SET " +
           "\"TC_PARTITION\" = COALESCE(:newPartName, \"TC_PARTITION\"), " +
           "\"TC_TABLE\" = COALESCE(:newTableName, \"TC_TABLE\"), " +
@@ -141,7 +141,7 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
         .addValue("oldPartName", oldPartName, Types.VARCHAR)
         .addValue("newPartName", newPartName, Types.VARCHAR);
     try {
-      for (String command : UPDATE_COMMANNDS) {
+      for (String command : UPDATE_COMMANDS) {
         jdbcResource.getJdbcTemplate().update(command, paramSource);
       }
     } catch (DataAccessException e) {
