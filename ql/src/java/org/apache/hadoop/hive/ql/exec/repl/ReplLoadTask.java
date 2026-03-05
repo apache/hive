@@ -963,8 +963,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
     LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET)) {
-
+    // Clear dangling transactions only once all incremental work for this dump is exhausted.
+    // Running this in intermediate rounds can remove source->target txn mappings that later
+    // rounds still depend on for write-id replay.
+    boolean hasPendingIncrementalWork = builder.hasMoreWork() || work.hasBootstrapLoadTasks();
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET) && !hasPendingIncrementalWork) {
       ClearDanglingTxnWork clearDanglingTxnWork = new ClearDanglingTxnWork(work.getDumpDirectory(), targetDb.getName());
       Task<ClearDanglingTxnWork> clearDanglingTxnTaskTask = TaskFactory.get(clearDanglingTxnWork, conf);
       if (childTasks.isEmpty()) {
@@ -972,6 +975,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       } else {
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(Collections.singletonList(clearDanglingTxnTaskTask)));
       }
+    } else if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET)) {
+      LOG.info("Skipping dangling transaction cleanup in this iteration as incremental load has pending work.");
     }
 
     return 0;
