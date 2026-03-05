@@ -191,10 +191,10 @@ class DirectSqlAggrStats {
       public List<ColumnStatisticsObj> run(final List<String> inputColNames) throws MetaException {
         if (enableBitVector || enableKll) {
           return aggrStatsUseJava(catName, dbName, tableName, partNames,
-              colNames, engine, areAllPartsFound, useDensityFunctionForNDVEstimation,
+              inputColNames, engine, areAllPartsFound, useDensityFunctionForNDVEstimation,
               ndvTuner, enableBitVector, enableKll);
         } else {
-          return aggrStatsUseDB(catName, dbName, tableName, partNames, colNames, engine,
+          return aggrStatsUseDB(catName, dbName, tableName, partNames, inputColNames, engine,
               useDensityFunctionForNDVEstimation, ndvTuner);
         }
       }});

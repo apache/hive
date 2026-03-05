@@ -1027,7 +1027,7 @@ class MetaStoreDirectSql {
         + " where \"PART_NAME\" in (" + makeParams(partNameList.size()) + ") "
         + " and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS
         + ".\"CTLG_NAME\" = ? order by \"PART_NAME\" asc";
-    List params = new ArrayList<>(partNameList);
+    List<Object> params = new ArrayList<>(partNameList);
     params.addAll(List.of(tblName, dbName, catName));
     return getPartitionsByQuery(catName, dbName, tblName, queryText, params.toArray(), isAcidTable, args);
   }
