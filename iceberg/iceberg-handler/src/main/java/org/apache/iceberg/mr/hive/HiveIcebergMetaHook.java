@@ -191,7 +191,8 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       Table table;
       if (metadataLocation != null) {
         table = Catalogs.registerTable(conf, tableProperties, metadataLocation);
-      } else if ("MATERIALIZED_VIEW".equals(hmsTable.getTableType())) {
+      } else if ("MATERIALIZED_VIEW".equals(hmsTable.getTableType()) ||
+          "EXTERNAL_MATERIALIZED_VIEW".equals(hmsTable.getTableType())) {
         Catalogs.MaterializedView mv =
                 Catalogs.createMaterializedView(
                         conf,

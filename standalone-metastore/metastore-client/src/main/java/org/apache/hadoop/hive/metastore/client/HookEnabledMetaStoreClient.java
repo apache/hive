@@ -207,6 +207,7 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
       // TODO: Fix this
       List<String> materializedViews =
           getTables(req.getCatalogName(), req.getName(), ".*", TableType.MATERIALIZED_VIEW);
+      materializedViews.addAll(getTables(req.getCatalogName(), req.getName(), ".*", TableType.EXTERNAL_MATERIALIZED_VIEW));
       for (String table : materializedViews) {
         // First we delete the materialized views
         Table materializedView = getTable(req.getCatalogName(), req.getName(), table);
@@ -360,9 +361,7 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
   private void removeStorageTableForExternalMaterializedView(Table table) throws TException {
     TableType tableType = Enum.valueOf(TableType.class, table.getTableType());
 
-    if (tableType.equals(TableType.MATERIALIZED_VIEW) &&
-      ICEBERG_STORAGE_HANDLER.equals(table.getParameters().get(STORAGE_HANDLER_KEY))
-    ) {
+    if (tableType.equals(TableType.EXTERNAL_MATERIALIZED_VIEW)) {
       delegate.dropTable(
               table.getCatName(),
               table.getDbName(),

@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
@@ -135,7 +136,8 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
-    TableType tableType = Enum.valueOf(TableType.class, hmsTable.getTableType());
+    setTableType(hmsTable);
+    TableType tableType = TableType.valueOf(hmsTable.getTableType());
 
     // Set the table type even for non HiveCatalog based tables
     // Set the table type even for non HiveCatalog based tables
@@ -147,6 +149,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         break;
       case VIRTUAL_VIEW:
       case MATERIALIZED_VIEW:
+      case EXTERNAL_MATERIALIZED_VIEW:
         hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
                 HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
         break;
@@ -228,8 +231,17 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     setSortOrder(hmsTable, schema, tableProperties);
   }
 
+  private void setTableType(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    TableType tableType = Enum.valueOf(TableType.class, hmsTable.getTableType());
+    if (tableType.equals(TableType.MATERIALIZED_VIEW) &&
+        "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION))) {
+
+      hmsTable.setTableType(TableType.EXTERNAL_MATERIALIZED_VIEW.toString());
+    }
+  }
+
   private void storeViewTextInfoForMaterializedView(CreateTableRequest request, TableType tableType) {
-    if (TableType.MATERIALIZED_VIEW.equals(tableType)) {
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.equals(tableType)) {
 
       org.apache.hadoop.hive.metastore.api.Table tbl = request.getTable();
       viewOriginalText = tbl.getViewOriginalText();
@@ -545,11 +557,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
           case MANAGED_TABLE:
           case EXTERNAL_TABLE:
+          case MATERIALIZED_VIEW:
             tbl = IcebergTableUtil.getTable(conf, hmsTable);
             formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
             break;
 
-          case MATERIALIZED_VIEW:
+          case EXTERNAL_MATERIALIZED_VIEW:
             Catalogs.MaterializedView mv = IcebergTableUtil.getMaterializedView(conf, hmsTable, false);
             formatVersion = String.valueOf(((BaseTable) mv.getStorageTable()).operations().current().formatVersion());
 
