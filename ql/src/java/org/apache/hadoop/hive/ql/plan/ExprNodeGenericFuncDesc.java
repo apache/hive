@@ -94,7 +94,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
         ObjectInspectorUtils.getWritableObjectInspector(oi);
     assert (genericUDF != null);
     this.genericUDF = genericUDF;
-    this.children = children;
+    this.children = children == null ? new ArrayList<>() : new ArrayList<>(children);
     this.funcText = funcText;
   }
 
@@ -126,7 +126,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   }
 
   public void setChildren(List<ExprNodeDesc> children) {
-    this.children = children;
+    this.children = children == null ? new ArrayList<>() : new ArrayList<>(children);
   }
 
   @Override
