@@ -65,21 +65,9 @@ public class TezExternalSessionState extends TezSessionState {
   private boolean isDestroying = false;
   private final ExternalSessionsRegistry registry;
 
-  public TezExternalSessionState(
-      DagUtils utils, HiveConf conf, ExternalSessionsRegistry registry) {
-    super(utils, conf);
-    this.registry = registry;
-    synchronized (DEFAULT_CONF_CREATE_LOCK) {
-      if (defaultTezConfiguration == null) {
-        defaultTezConfiguration = createDefaultTezConfig();
-      }
-    }
-  }
-
-  public TezExternalSessionState(String sessionId, HiveConf conf,
-    ExternalSessionsRegistry registry) {
+  public TezExternalSessionState(String sessionId, HiveConf conf) {
     super(sessionId, conf);
-    this.registry = registry;
+    this.registry = ExternalSessionsRegistry.getClient(conf);
     synchronized (DEFAULT_CONF_CREATE_LOCK) {
       if (defaultTezConfiguration == null) {
         defaultTezConfiguration = createDefaultTezConfig();
