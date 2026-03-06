@@ -3958,4 +3958,58 @@ public abstract class TestHiveMetaStore {
     // No such data connector, ignore NoSuchObjectException
     client.dropDataConnector("no_such_data_connector", true, false);
   }
+
+  /**
+   * Test for storage-based SerDes (AvroSerDe, HBaseSerDe).If the SerDe is not listed in
+   * SERDES_USING_METASTORE_FOR_SCHEMA, HMS falls through to DefaultStorageSchemaReader and throws
+   * "Storage schema reading not supported".
+   */
+  @Test
+  public void testGetFieldsForStorageSerDes() throws Exception {
+    String dbName = "test_storage_serde_db";
+    String avroTbl = "avro_tbl";
+    String hbaseTbl = "hbase_tbl";
+
+    client.dropTable(dbName, avroTbl, true, true);
+    client.dropTable(dbName, hbaseTbl, true, true);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(avroTbl)
+        .setSerdeLib("org.apache.hadoop.hive.serde2.avro.AvroSerDe")
+        .setInputFormat("org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat")
+        .setOutputFormat("org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat")
+        .addCol("foo", "int", "")
+        .addCol("bar", "string", "")
+        .addCol("baz", "bigint", "")
+        .create(client, conf);
+
+    List<FieldSchema> avroFields = client.getFields(dbName, avroTbl);
+    assertEquals("AvroSerDe table should return 3 fields from metastore", 3, avroFields.size());
+    assertEquals("foo", avroFields.get(0).getName());
+    assertEquals("bar", avroFields.get(1).getName());
+    assertEquals("baz", avroFields.get(2).getName());
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(hbaseTbl)
+        .setSerdeLib("org.apache.hadoop.hive.hbase.HBaseSerDe")
+        .addCol("key", "string", "")
+        .addCol("value", "string", "")
+        .create(client, conf);
+
+    List<FieldSchema> hbaseFields = client.getFields(dbName, hbaseTbl);
+    assertEquals("HBaseSerDe table should return 2 fields from metastore", 2, hbaseFields.size());
+    assertEquals("key", hbaseFields.get(0).getName());
+    assertEquals("value", hbaseFields.get(1).getName());
+
+    client.dropTable(dbName, avroTbl, true, true);
+    client.dropTable(dbName, hbaseTbl, true, true);
+    client.dropDatabase(dbName);
+  }
 }
