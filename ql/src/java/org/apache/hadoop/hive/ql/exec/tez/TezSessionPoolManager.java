@@ -92,7 +92,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
   private YarnQueueHelper yarnQueueChecker;
 
   private TezSessionPoolManagerMetrics metrics = null;
-  private ExternalSessionsRegistry externalSessions = null;
+  private boolean useExternalSessions;
 
   /** Note: this is not thread-safe. */
   public static TezSessionPoolManager getInstance() {
@@ -201,9 +201,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
       this.yarnQueueChecker = new YarnQueueHelper(conf);
     }
 
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      externalSessions = ExternalSessionsRegistry.getClient(conf);
-    }
+    useExternalSessions = HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS);
 
     restrictedConfig = new RestrictedConfigChecker(conf);
   }
@@ -422,9 +420,9 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
   }
 
   protected TezSessionPoolSession createSession(String sessionId, HiveConf conf) {
-    TezSessionState base = null;
-    if (externalSessions != null) {
-      base = new TezExternalSessionState(sessionId, conf, externalSessions);
+    TezSessionState base;
+    if (useExternalSessions) {
+      base = new TezExternalSessionState(sessionId, conf);
     } else {
       base = new TezSessionState(sessionId, conf);
     }
