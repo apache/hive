@@ -326,8 +326,6 @@ public class SessionState implements ISessionAuthState {
    */
   private final Map<String, FunctionInfo> currentFunctionsInUse = new HashMap<>();
 
-  private static ExternalSessionsRegistry externalSessions = null;
-
   /**
    * CURRENT_TIMESTAMP value for query
    */
@@ -766,17 +764,13 @@ public class SessionState implements ISessionAuthState {
       return;
     }
 
-    if (HiveConf.getBoolVar(startSs.getConf(), ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
-      externalSessions = ExternalSessionsRegistry.getClient(startSs.getConf());
-    } else {
-      externalSessions = null;
-    }
+    boolean useExternalSessions = HiveConf.getBoolVar(startSs.getConf(),
+        ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS);
 
     try {
       if (startSs.tezSessionState == null) {
-        if (externalSessions != null) {
-          startSs.setTezSession(
-              new TezExternalSessionState(startSs.getSessionId(), startSs.sessionConf, externalSessions));
+        if (useExternalSessions) {
+          startSs.setTezSession(new TezExternalSessionState(startSs.getSessionId(), startSs.sessionConf));
         } else {
           startSs.setTezSession(new TezSessionState(startSs.getSessionId(), startSs.sessionConf));
         }
