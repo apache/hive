@@ -1441,7 +1441,9 @@ public class MetastoreConf {
             "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
             "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
             "org.apache.hadoop.hive.serde2.OpenCSVSerde," +
-            "org.apache.iceberg.mr.hive.HiveIcebergSerDe",
+            "org.apache.iceberg.mr.hive.HiveIcebergSerDe," +
+            "org.apache.hadoop.hive.serde2.avro.AvroSerDe," +
+            "org.apache.hadoop.hive.hbase.HBaseSerDe",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
     SERDES_WITHOUT_FROM_DESERIALIZER("metastore.serdes.without.from.deserializer",
         "hive.metastore.serdes.without.from.deserializer",
