@@ -1147,7 +1147,7 @@ public abstract class TestHiveMetaStore {
     }
   }
 
-  @Test(expected = InvalidObjectException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testDropTableFetchPartitions() throws Throwable {
     String dbName = "fetchPartitionsDb";
     String tblName = "fetchPartitionsTbl";
@@ -2570,8 +2570,7 @@ public abstract class TestHiveMetaStore {
       me = e;
     }
     assertNotNull(me);
-    assertTrue("NoSuchObject exception", me.getMessage().contains(
-          "Specified catalog.database.table does not exist : hive.invdbname.invtablename"));
+    assertTrue("NoSuchObject exception", me.getMessage().contains("hive.invdbname.invtablename table not found"));
 
     client.dropTable(dbName, tblName);
     client.dropDatabase(dbName);

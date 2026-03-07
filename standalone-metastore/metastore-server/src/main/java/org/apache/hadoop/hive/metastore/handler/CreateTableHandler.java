@@ -386,7 +386,7 @@ public class CreateTableHandler
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "CreateTableHandler [" + id + "] -  create table for " +
         TableName.getQualified(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()) + ":";
   }

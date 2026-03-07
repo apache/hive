@@ -110,4 +110,6 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
   AbortCompactResponse abort_Compactions(AbortCompactionRequest rqst) throws TException;
 
   IMetaStoreMetadataTransformer getMetadataTransformer();
+
+  MetaStoreFilterHook getMetaFilterHook();
 }
