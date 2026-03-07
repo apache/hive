@@ -17,8 +17,6 @@ package org.apache.hadoop.hive.ql.wm;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
-
 /**
  * Interface for handling rule violations by queries and for performing actions defined in the rules.
  */

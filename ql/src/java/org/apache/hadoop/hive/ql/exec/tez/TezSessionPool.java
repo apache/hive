@@ -103,7 +103,13 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
 
     this.deltaRemaining = new AtomicInteger(initialSize);
 
-    final int threadCount = HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS);
+    int threadCount = 1;
+    if (!HiveConf.getBoolVar(initConf, ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
+      // Don't use multiple threads for external sessions.
+      threadCount = Math.min(initialSize,
+        HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
+    }
+
     this.executorService = MoreExecutors
         .listeningDecorator(new ThreadPoolExecutor(0, threadCount, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("tez-session-init-%d").build()));
@@ -488,7 +494,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
   /**
    * Should be called when the session is no longer needed, to remove it from bySessionId.
    */
-  public void notifyClosed(TezSessionState session) {
+  public void notifyClosed(SessionType session) {
     bySessionId.remove(session.getSessionId());
   }
 }

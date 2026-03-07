@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.process.kill;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,7 +38,12 @@ public class KillQueriesOperation extends DDLOperation<KillQueriesDesc> {
   public int execute() throws HiveException {
     SessionState sessionState = SessionState.get();
     for (String queryId : desc.getQueryIds()) {
-      sessionState.getKillQuery().killQuery(queryId, KILL_QUERY_MESSAGE, context.getDb().getConf());
+      // For now, get the config setting here; we can only have one type of the session present.
+      // Ideally we should check each session separately.
+      boolean isExternal = HiveConf.getBoolVar(context.getDb().getConf(),
+              HiveConf.ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS);
+      sessionState.getKillQuery().killQuery(queryId, KILL_QUERY_MESSAGE, context.getDb().getConf(),
+              !isExternal);
     }
     LOG.info("kill query called ({})", desc.getQueryIds());
     return 0;
