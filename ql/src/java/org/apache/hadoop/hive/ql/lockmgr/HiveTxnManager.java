@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.TxnCoordinator;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * An interface that allows Hive to manage transactions.  All classes
@@ -101,6 +104,21 @@ public interface HiveTxnManager {
   */
   void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
           throws LockException;
+
+  /**
+   * Returns the transaction coordinator managed by this transaction manager.
+   * <p>
+   * This method must be used instead of directly instantiating a transaction
+   * coordinator, as the transaction manager is responsible for selecting and
+   * managing the coordinator’s lifecycle.
+   * @param clazz the transaction coordinator class to get or set
+   * @param creator a function that creates a new coordinator instance if one is not already set
+   * @return the instance of the transaction coordinator
+   */
+  default <T extends TxnCoordinator> T getOrSetTxnCoordinator(
+     Class<T> clazz, Function<IMetaStoreClient, T> creator) {
+   return null;
+  }
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an

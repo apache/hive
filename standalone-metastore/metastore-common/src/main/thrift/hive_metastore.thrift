@@ -2310,6 +2310,15 @@ struct AlterTableRequest {
 struct AlterTableResponse {
 }
 
+struct TableParamsUpdate {
+    1: optional string cat_name
+    2: required string db_name
+    3: required string table_name
+    4: required map<string, string> params
+    5: optional string expected_param_key
+    6: optional string expected_param_value
+}
+
 enum PartitionFilterMode {
    BY_NAMES,                 // filter by names
    BY_VALUES,                // filter by values
@@ -2778,6 +2787,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
   AlterTableResponse alter_table_req(1:AlterTableRequest req)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  // multi-table table-parameter update
+  void update_table_params(1:list<TableParamsUpdate> updates) throws (1:MetaException o1)
 
 
 
