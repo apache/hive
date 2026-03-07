@@ -59,13 +59,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.StatusLine;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.util.B64Code;
-import org.eclipse.jetty.util.StringUtil;
+import java.util.Base64;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -812,9 +812,9 @@ public class TestActivePassiveHA {
   }
 
   private void setupAuthHeaders(final HttpRequestBase method) {
-    String authB64Code =
-        B64Code.encode(ADMIN_USER + ":" + ADMIN_PASSWORD, StringUtil.__ISO_8859_1);
-    method.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authB64Code);
+    String credentials = ADMIN_USER + ":" + ADMIN_PASSWORD;
+    String authBase64Code = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+    method.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authBase64Code);
   }
 
   private Map<String, String> getConfOverlay(final String instanceId) {

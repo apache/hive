@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ExitUtil;
-import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.saml.HiveSamlHttpServlet;
@@ -56,10 +55,8 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
 import org.eclipse.jetty.io.Connection;
-import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -126,22 +123,18 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       conf.setResponseHeaderSize(responseHeaderSize);
       conf.setSendServerVersion(false);
       conf.setSendXPoweredBy(false);
-      final HttpConnectionFactory http = new HttpConnectionFactory(conf) {
-        public Connection newConnection(Connector connector, EndPoint endPoint) {
-          Connection connection = super.newConnection(connector, endPoint);
-          connection.addListener(new Connection.Listener() {
-            public void onOpened(Connection connection) {
-              openConnection();
-            }
-
-            public void onClosed(Connection connection) {
-              closeConnection();
-            }
-          });
-          return connection;
+      final HttpConnectionFactory http = new HttpConnectionFactory(conf);
+      http.addBean(new Connection.Listener() {
+        @Override
+        public void onOpened(Connection connection) {
+          openConnection();
         }
-      };
 
+        @Override
+        public void onClosed(Connection connection) {
+          closeConnection();
+        }
+      });
       boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       String schemeName = useSsl ? "https" : "http";
 
@@ -163,7 +156,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         if (keyStoreAlgorithm.isEmpty()) {
           keyStoreAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
         }
-        SslContextFactory sslContextFactory = new SslContextFactory.Server();
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
         LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
         sslContextFactory.addExcludeProtocols(excludedProtocols);
