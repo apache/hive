@@ -3793,13 +3793,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
-    return client.get_lock_materialization_rebuild(dbName, tableName, txnId);
+  public LockResponse lockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws TException {
+    return client.get_lock_materialization_rebuild_req(rqst);
   }
 
   @Override
-  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
-    return client.heartbeat_lock_materialization_rebuild(dbName, tableName, txnId);
+  public boolean heartbeatLockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws TException {
+    return client.heartbeat_lock_materialization_rebuild_req(rqst);
   }
 
   @Override

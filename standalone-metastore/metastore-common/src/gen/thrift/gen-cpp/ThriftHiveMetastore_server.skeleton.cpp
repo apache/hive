@@ -1340,6 +1340,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("heartbeat_lock_materialization_rebuild\n");
   }
 
+  void get_lock_materialization_rebuild_req(LockResponse& _return, const LockMaterializationRebuildRequest& req) {
+    // Your implementation goes here
+    printf("get_lock_materialization_rebuild_req\n");
+  }
+
+  bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req) {
+    // Your implementation goes here
+    printf("heartbeat_lock_materialization_rebuild_req\n");
+  }
+
   void add_runtime_stats(const RuntimeStat& stat) {
     // Your implementation goes here
     printf("add_runtime_stats\n");

@@ -1352,15 +1352,15 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
-  public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
+  public LockResponse lockMaterializationRebuild(LockMaterializationRebuildRequest rqst)
       throws TException {
-    return delegate.lockMaterializationRebuild(dbName, tableName, txnId);
+    return delegate.lockMaterializationRebuild(rqst);
   }
 
   @Override
-  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId)
+  public boolean heartbeatLockMaterializationRebuild(LockMaterializationRebuildRequest rqst)
       throws TException {
-    return delegate.heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
+    return delegate.heartbeatLockMaterializationRebuild(rqst);
   }
 
   @Override

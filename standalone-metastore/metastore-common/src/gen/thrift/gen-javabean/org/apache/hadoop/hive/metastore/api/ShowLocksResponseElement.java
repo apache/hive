@@ -27,6 +27,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField BLOCKED_BY_EXT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("blockedByExtId", org.apache.thrift.protocol.TType.I64, (short)14);
   private static final org.apache.thrift.protocol.TField BLOCKED_BY_INT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("blockedByIntId", org.apache.thrift.protocol.TType.I64, (short)15);
   private static final org.apache.thrift.protocol.TField LOCK_ID_INTERNAL_FIELD_DESC = new org.apache.thrift.protocol.TField("lockIdInternal", org.apache.thrift.protocol.TType.I64, (short)16);
+  private static final org.apache.thrift.protocol.TField CATNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catname", org.apache.thrift.protocol.TType.STRING, (short)17);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ShowLocksResponseElementStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ShowLocksResponseElementTupleSchemeFactory();
@@ -47,6 +48,7 @@ package org.apache.hadoop.hive.metastore.api;
   private long blockedByExtId; // optional
   private long blockedByIntId; // optional
   private long lockIdInternal; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catname; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -73,7 +75,8 @@ package org.apache.hadoop.hive.metastore.api;
     AGENT_INFO((short)13, "agentInfo"),
     BLOCKED_BY_EXT_ID((short)14, "blockedByExtId"),
     BLOCKED_BY_INT_ID((short)15, "blockedByIntId"),
-    LOCK_ID_INTERNAL((short)16, "lockIdInternal");
+    LOCK_ID_INTERNAL((short)16, "lockIdInternal"),
+    CATNAME((short)17, "catname");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -121,6 +124,8 @@ package org.apache.hadoop.hive.metastore.api;
           return BLOCKED_BY_INT_ID;
         case 16: // LOCK_ID_INTERNAL
           return LOCK_ID_INTERNAL;
+        case 17: // CATNAME
+          return CATNAME;
         default:
           return null;
       }
@@ -207,6 +212,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.LOCK_ID_INTERNAL, new org.apache.thrift.meta_data.FieldMetaData("lockIdInternal", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.CATNAME, new org.apache.thrift.meta_data.FieldMetaData("catname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowLocksResponseElement.class, metaDataMap);
   }
@@ -223,7 +230,8 @@ package org.apache.hadoop.hive.metastore.api;
     LockType type,
     long lastheartbeat,
     java.lang.String user,
-    java.lang.String hostname)
+    java.lang.String hostname,
+    java.lang.String catname)
   {
     this();
     this.lockid = lockid;
@@ -235,6 +243,7 @@ package org.apache.hadoop.hive.metastore.api;
     setLastheartbeatIsSet(true);
     this.user = user;
     this.hostname = hostname;
+    this.catname = catname;
   }
 
   /**
@@ -274,6 +283,9 @@ package org.apache.hadoop.hive.metastore.api;
     this.blockedByExtId = other.blockedByExtId;
     this.blockedByIntId = other.blockedByIntId;
     this.lockIdInternal = other.lockIdInternal;
+    if (other.isSetCatname()) {
+      this.catname = other.catname;
+    }
   }
 
   public ShowLocksResponseElement deepCopy() {
@@ -306,6 +318,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.blockedByIntId = 0;
     setLockIdInternalIsSet(false);
     this.lockIdInternal = 0;
+    this.catname = null;
   }
 
   public long getLockid() {
@@ -692,6 +705,30 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LOCKIDINTERNAL_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatname() {
+    return this.catname;
+  }
+
+  public void setCatname(@org.apache.thrift.annotation.Nullable java.lang.String catname) {
+    this.catname = catname;
+  }
+
+  public void unsetCatname() {
+    this.catname = null;
+  }
+
+  /** Returns true if field catname is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatname() {
+    return this.catname != null;
+  }
+
+  public void setCatnameIsSet(boolean value) {
+    if (!value) {
+      this.catname = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case LOCKID:
@@ -822,6 +859,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case CATNAME:
+      if (value == null) {
+        unsetCatname();
+      } else {
+        setCatname((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -876,6 +921,9 @@ package org.apache.hadoop.hive.metastore.api;
     case LOCK_ID_INTERNAL:
       return getLockIdInternal();
 
+    case CATNAME:
+      return getCatname();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -919,6 +967,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetBlockedByIntId();
     case LOCK_ID_INTERNAL:
       return isSetLockIdInternal();
+    case CATNAME:
+      return isSetCatname();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1080,6 +1130,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_catname = true && this.isSetCatname();
+    boolean that_present_catname = true && that.isSetCatname();
+    if (this_present_catname || that_present_catname) {
+      if (!(this_present_catname && that_present_catname))
+        return false;
+      if (!this.catname.equals(that.catname))
+        return false;
+    }
+
     return true;
   }
 
@@ -1146,6 +1205,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetLockIdInternal()) ? 131071 : 524287);
     if (isSetLockIdInternal())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(lockIdInternal);
+
+    hashCode = hashCode * 8191 + ((isSetCatname()) ? 131071 : 524287);
+    if (isSetCatname())
+      hashCode = hashCode * 8191 + catname.hashCode();
 
     return hashCode;
   }
@@ -1318,6 +1381,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatname(), other.isSetCatname());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatname()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catname, other.catname);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1452,6 +1525,14 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.lockIdInternal);
       first = false;
     }
+    if (!first) sb.append(", ");
+    sb.append("catname:");
+    if (this.catname == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.catname);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -1484,6 +1565,10 @@ package org.apache.hadoop.hive.metastore.api;
 
     if (!isSetHostname()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'hostname' is unset! Struct:" + toString());
+    }
+
+    if (!isSetCatname()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'catname' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -1653,6 +1738,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 17: // CATNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catname = iprot.readString();
+              struct.setCatnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1748,6 +1841,11 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.lockIdInternal);
         oprot.writeFieldEnd();
       }
+      if (struct.catname != null) {
+        oprot.writeFieldBegin(CATNAME_FIELD_DESC);
+        oprot.writeString(struct.catname);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1772,6 +1870,7 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeI64(struct.lastheartbeat);
       oprot.writeString(struct.user);
       oprot.writeString(struct.hostname);
+      oprot.writeString(struct.catname);
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetTablename()) {
         optionals.set(0);
@@ -1847,6 +1946,8 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setUserIsSet(true);
       struct.hostname = iprot.readString();
       struct.setHostnameIsSet(true);
+      struct.catname = iprot.readString();
+      struct.setCatnameIsSet(true);
       java.util.BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.tablename = iprot.readString();

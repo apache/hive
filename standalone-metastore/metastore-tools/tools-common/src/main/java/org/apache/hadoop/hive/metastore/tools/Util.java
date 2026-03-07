@@ -440,6 +440,11 @@ public final class Util {
       return this;
     }
 
+    public LockComponentBuilder setCatName(String catName) {
+      component.setCatName(catName);
+      return this;
+    }
+
     public LockComponentBuilder setIsTransactional(boolean t) {
       component.setIsTransactional(t);
       return this;

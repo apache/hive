@@ -4397,6 +4397,36 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
     end
 
+    def get_lock_materialization_rebuild_req(req)
+      send_get_lock_materialization_rebuild_req(req)
+      return recv_get_lock_materialization_rebuild_req()
+    end
+
+    def send_get_lock_materialization_rebuild_req(req)
+      send_message('get_lock_materialization_rebuild_req', Get_lock_materialization_rebuild_req_args, :req => req)
+    end
+
+    def recv_get_lock_materialization_rebuild_req()
+      result = receive_message(Get_lock_materialization_rebuild_req_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_lock_materialization_rebuild_req failed: unknown result')
+    end
+
+    def heartbeat_lock_materialization_rebuild_req(req)
+      send_heartbeat_lock_materialization_rebuild_req(req)
+      return recv_heartbeat_lock_materialization_rebuild_req()
+    end
+
+    def send_heartbeat_lock_materialization_rebuild_req(req)
+      send_message('heartbeat_lock_materialization_rebuild_req', Heartbeat_lock_materialization_rebuild_req_args, :req => req)
+    end
+
+    def recv_heartbeat_lock_materialization_rebuild_req()
+      result = receive_message(Heartbeat_lock_materialization_rebuild_req_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild_req failed: unknown result')
+    end
+
     def add_runtime_stats(stat)
       send_add_runtime_stats(stat)
       recv_add_runtime_stats()
@@ -8015,6 +8045,20 @@ module ThriftHiveMetastore
       result = Heartbeat_lock_materialization_rebuild_result.new()
       result.success = @handler.heartbeat_lock_materialization_rebuild(args.dbName, args.tableName, args.txnId)
       write_result(result, oprot, 'heartbeat_lock_materialization_rebuild', seqid)
+    end
+
+    def process_get_lock_materialization_rebuild_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_lock_materialization_rebuild_req_args)
+      result = Get_lock_materialization_rebuild_req_result.new()
+      result.success = @handler.get_lock_materialization_rebuild_req(args.req)
+      write_result(result, oprot, 'get_lock_materialization_rebuild_req', seqid)
+    end
+
+    def process_heartbeat_lock_materialization_rebuild_req(seqid, iprot, oprot)
+      args = read_args(iprot, Heartbeat_lock_materialization_rebuild_req_args)
+      result = Heartbeat_lock_materialization_rebuild_req_result.new()
+      result.success = @handler.heartbeat_lock_materialization_rebuild_req(args.req)
+      write_result(result, oprot, 'heartbeat_lock_materialization_rebuild_req', seqid)
     end
 
     def process_add_runtime_stats(seqid, iprot, oprot)
@@ -17909,6 +17953,70 @@ module ThriftHiveMetastore
   end
 
   class Heartbeat_lock_materialization_rebuild_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::LockMaterializationRebuildRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::LockResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::LockMaterializationRebuildRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
 

@@ -36,9 +36,9 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
   private static final String OLD_FORMAT_SCHEMA = "name,mode#string:string";
   private static final String OLD_TBL_FORMAT_SCHEMA = "tab_name,mode#string:string";
   private static final String OLD_DB_FORMAT_SCHEMA = "db_name,mode#string:string";
-  private static final String NEW_FORMAT_SCHEMA = "lockid,database,table,partition,lock_state," +
+  private static final String NEW_FORMAT_SCHEMA = "lockid,catalog,database,table,partition,lock_state," +
       "blocked_by,lock_type,transaction_id,last_heartbeat,acquired_at,user,hostname,agent_info#" +
-      "string:string:string:string:string:string:string:string:string:string:string:string:string";
+      "string:string:string:string:string:string:string:string:string:string:string:string:string:string";
 
   private final String resFile;
   private final String catName;
@@ -58,11 +58,11 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
     this.isNewFormat = isNewFormat;
   }
 
-  public ShowLocksDesc(Path resFile, String tableName, Map<String, String> partSpec, boolean isExt,
-      boolean isNewFormat) {
+  public ShowLocksDesc(Path resFile, String catName, String dbName, String tableName,
+                       Map<String, String> partSpec, boolean isExt, boolean isNewFormat) {
     this.resFile = resFile.toString();
-    this.catName = null;
-    this.dbName = null;
+    this.catName = catName;
+    this.dbName = dbName;
     this.tableName = tableName;
     this.partSpec = partSpec;
     this.isExt = isExt;

@@ -2941,6 +2941,7 @@ message GetLockMaterializationRebuildRequest {
   string db_name = 1;
   string table_name = 2;
   int64 txn_id = 3;
+  string cat_name = 4;
 }
 
 message GetLockMaterializationRebuildResponse {
@@ -2953,6 +2954,7 @@ message HeartbeatLockMaterializationRebuildRequest {
   string db_name = 1;
   string table_name = 2;
   int64 txn_id = 3;
+  string cat_name = 4;
 }
 
 message HeartbeatLockMaterializationRebuildResponse {

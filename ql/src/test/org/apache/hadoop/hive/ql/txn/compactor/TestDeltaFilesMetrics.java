@@ -106,6 +106,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
   @Test
   public void testDeltaFileMetricPartitionedTable() throws Exception {
+    String catName = "hive";
     String dbName = "default";
     String tblName = "dp";
     String partName = "ds=part1";
@@ -118,7 +119,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 20);
 
-    components.add(createLockComponent(dbName, tblName, partName));
+    components.add(createLockComponent(catName, dbName, tblName, partName));
 
     burnThroughTransactions(dbName, tblName, 23);
     long txnId = openTxn();
@@ -247,6 +248,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
   @Test
   public void testDeltaFileMetricMultiPartitionedTable() throws Exception {
+    String catName = "hive";
     String dbName = "default";
     String tblName = "dp";
     String part1Name = "ds=part1";
@@ -272,9 +274,9 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     addDeltaFile(t, p3, 16L, 17L, 50);
     addDeltaFile(t, p3, 18L, 19L, 2);
 
-    components.add(createLockComponent(dbName, tblName, part1Name));
-    components.add(createLockComponent(dbName, tblName, part2Name));
-    components.add(createLockComponent(dbName, tblName, part3Name));
+    components.add(createLockComponent(catName, dbName, tblName, part1Name));
+    components.add(createLockComponent(catName, dbName, tblName, part2Name));
+    components.add(createLockComponent(catName, dbName, tblName, part3Name));
 
     burnThroughTransactions(dbName, tblName, 19);
     long txnId = openTxn();
@@ -349,6 +351,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
   @Test
   public void testDeltaFileMetricUnpartitionedTable() throws Exception {
+    String catName = "hive";
     String dbName = "default";
     String tblName = "dp";
     Table t = newTable(dbName, tblName, false);
@@ -358,7 +361,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 20);
 
-    components.add(createLockComponent(dbName, tblName, null));
+    components.add(createLockComponent(catName, dbName, tblName, null));
     burnThroughTransactions(dbName, tblName, 24);
     long txnId = openTxn();
 
@@ -421,8 +424,9 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     ms.dropTable(dbName, tblName);
   }
 
-  private LockComponent createLockComponent(String dbName, String tblName, String partName) {
+  private LockComponent createLockComponent(String catName, String dbName, String tblName, String partName) {
     LockComponent component = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, dbName);
+    component.setCatName(catName);
     component.setTablename(tblName);
     if (partName != null) {
       component.setPartitionname(partName);
