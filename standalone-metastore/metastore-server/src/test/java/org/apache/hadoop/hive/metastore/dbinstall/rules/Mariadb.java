@@ -21,13 +21,11 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
-
 public class Mariadb extends DatabaseRule {
   private final MariaDBContainer<?> container = new MariaDBContainer<>(DockerImageName.parse("mariadb:11.4"));
 
   @Override
-  public void before() throws IOException, InterruptedException {
+  public void before() {
     container.start();
   }
 
