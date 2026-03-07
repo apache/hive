@@ -515,7 +515,7 @@ public class TestSSL {
   @Ignore("HIVE-22621: test case is unstable")
   public void testMetastoreConnectionWrongCertCN() throws Exception {
     SSLTestUtils.setMetastoreSslConf(conf);
-    conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH,
         dataFileDir + File.separator +  EXAMPLEDOTCOM_KEY_STORE_NAME);
     miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).cleanupLocalDirOnStartup(false).build();
     try {

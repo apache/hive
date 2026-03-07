@@ -369,9 +369,9 @@ public class MiniHS2 extends AbstractHiveService {
     }
 
     if (isMetastoreSecure) {
-      hiveConf.setVar(ConfVars.METASTORE_KERBEROS_PRINCIPAL, metastoreServerPrincipal);
-      hiveConf.setVar(ConfVars.METASTORE_KERBEROS_KEYTAB_FILE, metastoreKeyTab);
-      hiveConf.setBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL, true);
+      MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL, metastoreServerPrincipal);
+      MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.KERBEROS_KEYTAB_FILE, metastoreKeyTab);
+      MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.USE_THRIFT_SASL, true);
     }
 
     fs.mkdirs(baseFsDir);

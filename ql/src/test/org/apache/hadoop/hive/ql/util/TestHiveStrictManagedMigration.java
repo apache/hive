@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -84,7 +85,7 @@ public class TestHiveStrictManagedMigration extends TxnCommandsBaseForTests {
       "--oldWarehouseRoot", oldWarehouse};
     HiveConf newConf = new HiveConf(hiveConf);
     File newWarehouseDir = new File(getTestDataDir(), "newWarehouse");
-    newConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, newWarehouseDir.getAbsolutePath());
+    newConf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), newWarehouseDir.getAbsolutePath());
     newConf.set("strict.managed.tables.migration.owner", System.getProperty("user.name"));
     runMigrationTool(newConf, args);
 

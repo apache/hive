@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -139,7 +140,7 @@ public class SecureProxySupport {
   public void addArgs(List<String> args) {
     if (isEnabled) {
       args.add("-D");
-      args.add(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE + "=" + getHcatServiceStr());
+      args.add(MetastoreConf.ConfVars.TOKEN_SIGNATURE + "=" + getHcatServiceStr());
       args.add("-D");
       args.add("proxy.user.name=" + user);
     }

@@ -17,6 +17,7 @@
  */
 package org.apache.hive.minikdc;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -79,7 +80,10 @@ public class TestHiveAuthFactory {
     Assert.assertNotNull(keyTabFile);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, keyTabFile);
 
-    hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.metastore.security.DBTokenStore");
+    MetastoreConf.setVar(
+        hiveConf,
+        MetastoreConf.ConfVars.DELEGATION_TOKEN_STORE_CLS,
+        "org.apache.hadoop.hive.metastore.security.DBTokenStore");
 
     HiveAuthFactory authFactory = new HiveAuthFactory(hiveConf, false);
     Assert.assertNotNull(authFactory);

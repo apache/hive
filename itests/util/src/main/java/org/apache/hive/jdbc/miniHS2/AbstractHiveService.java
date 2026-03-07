@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 /***
  * Base class for Hive service
@@ -92,13 +92,13 @@ public abstract class AbstractHiveService {
    * @return
    */
   public Path getWareHouseDir() {
-    return new Path(hiveConf.getVar(ConfVars.METASTORE_WAREHOUSE));
+    return new Path(MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE));
   }
 
   public void setWareHouseDir(String wareHouseURI) {
     verifyNotStarted();
-    System.setProperty(ConfVars.METASTORE_WAREHOUSE.varname, wareHouseURI);
-    hiveConf.setVar(ConfVars.METASTORE_WAREHOUSE, wareHouseURI);
+    System.setProperty(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), wareHouseURI);
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE, wareHouseURI);
   }
 
   /**

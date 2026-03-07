@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
@@ -63,7 +64,7 @@ public class StorageBasedMetastoreTestBase {
   @Before
   public void setUp() throws Exception {
     // Turn on metastore-side authorization
-    System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
+    System.setProperty(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getHiveName(),
         AuthorizationPreEventListener.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
         getAuthorizationProvider());
@@ -76,7 +77,7 @@ public class StorageBasedMetastoreTestBase {
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
 
-    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setLongVar(clientHiveConf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     clientHiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");

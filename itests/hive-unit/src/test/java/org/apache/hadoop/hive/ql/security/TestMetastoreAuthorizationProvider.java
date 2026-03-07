@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -93,7 +94,7 @@ public class TestMetastoreAuthorizationProvider {
   @Before
   public void setUp() throws Exception {
     // Turn on metastore-side authorization
-    System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
+    System.setProperty(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getHiveName(),
         AuthorizationPreEventListener.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
         getAuthorizationProvider());
@@ -111,8 +112,8 @@ public class TestMetastoreAuthorizationProvider {
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
 
-    clientHiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:" + port);
-    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setVar(clientHiveConf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetastoreConf.setLongVar(clientHiveConf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     clientHiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
@@ -173,7 +174,7 @@ public class TestMetastoreAuthorizationProvider {
     String tblName = getTestTableName();
     String userName = setupUser();
     String loc = clientHiveConf.get(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname) + "/" + dbName;
-    String mLoc = clientHiveConf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname) + "/" + dbName;
+    String mLoc = clientHiveConf.get(MetastoreConf.ConfVars.WAREHOUSE.getHiveName()) + "/" + dbName;
     allowCreateDatabase(userName);
     driver.run("create database " + dbName + " location '" + loc + "' managedlocation '" + mLoc + "'");
     Database db = msc.getDatabase(dbName);

@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.common;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 
@@ -81,7 +82,7 @@ public final class HCatConstants {
 
   public static final String HCAT_TABLE_SCHEMA = "hcat.table.schema";
 
-  public static final String HCAT_METASTORE_URI = HiveConf.ConfVars.METASTORE_URIS.varname;
+  public static final String HCAT_METASTORE_URI = MetastoreConf.ConfVars.THRIFT_URIS.getHiveName();
 
   public static final String HCAT_PERMS = "hcat.perms";
 
@@ -91,8 +92,7 @@ public final class HCatConstants {
 
   public static final String HCAT_CREATE_DB_NAME = "hcat.create.db.name";
 
-  public static final String HCAT_METASTORE_PRINCIPAL
-    = HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL.varname;
+  public static final String HCAT_METASTORE_PRINCIPAL = MetastoreConf.ConfVars.KERBEROS_PRINCIPAL.getHiveName();
 
   /**
    * The desired number of input splits produced for each partition. When the

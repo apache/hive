@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +48,7 @@ public class TestTxnHandlerNoConnectionPool {
 
   @Before
   public void setUp() throws Exception {
-    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, "None");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE, "None");
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);

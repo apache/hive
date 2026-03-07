@@ -86,7 +86,7 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, TABLE_NAME + ":1:");
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.TestTxnManager");
     // Pick a small number for the batch size to easily test code with multiple batches.
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX, 2);
     SessionState.start(conf);
     SessionState.get().initTxnMgr(conf);
     Context ctx = new Context(conf);

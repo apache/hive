@@ -74,7 +74,7 @@ public class TestStatsUpdaterThread {
     hiveConf = new HiveConfForTest(getClass());
     hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getTestDataDir());
+    hiveConf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), getTestDataDir());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

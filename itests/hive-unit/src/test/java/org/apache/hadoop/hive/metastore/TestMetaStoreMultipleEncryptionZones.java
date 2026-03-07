@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.EncryptionZoneUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hdfs.DFSTestUtil;
@@ -86,9 +87,11 @@ public class TestMetaStoreMultipleEncryptionZones {
     hiveConf = new HiveConf(TestReplChangeManager.class);
     hiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    hiveConf.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + miniDFSCluster.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
 
     cmroot = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
     cmrootFallBack = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootFallback";
@@ -1255,9 +1258,11 @@ public class TestMetaStoreMultipleEncryptionZones {
     HiveConf hiveConfCmClearer = new HiveConf(TestReplChangeManager.class);
     hiveConfCmClearer.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     hiveConfCmClearer.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    hiveConfCmClearer.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    hiveConfCmClearer.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + miniDFSCluster.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
 
     String cmrootCmClearer = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootClearer";
     hiveConfCmClearer.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmrootCmClearer);
@@ -1361,9 +1366,11 @@ public class TestMetaStoreMultipleEncryptionZones {
     HiveConf hiveConfAclPermissions = new HiveConf(TestReplChangeManager.class);
     hiveConfAclPermissions.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     hiveConfAclPermissions.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    hiveConfAclPermissions.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    hiveConfAclPermissions.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + miniDFSCluster.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
 
     String cmRootAclPermissions = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmRootAclPermissions";
     hiveConfAclPermissions.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmRootAclPermissions);
@@ -1373,7 +1380,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
     FileSystem fsWarehouse = warehouseCmPermissions.getWhRoot().getFileSystem(hiveConfAclPermissions);
     //change the group of warehouse for testing
-    Path warehouse = new Path(hiveConfAclPermissions.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname));
+    Path warehouse = new Path(hiveConfAclPermissions.get(MetastoreConf.ConfVars.WAREHOUSE.getHiveName()));
     fsWarehouse.setOwner(warehouse, null, "testgroup");
 
     long now = System.currentTimeMillis();
@@ -1503,9 +1510,11 @@ public class TestMetaStoreMultipleEncryptionZones {
     HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
     encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    encryptedHiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    encryptedHiveConf.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + miniDFSCluster.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
 
     String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootDirEncrypted";
     encryptedHiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmrootdirEncrypted);
@@ -1564,9 +1573,11 @@ public class TestMetaStoreMultipleEncryptionZones {
     HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
     encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    encryptedHiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    encryptedHiveConf.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + miniDFSCluster.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
     String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
     String cmRootFallbackEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
             + "/cmrootFallbackEncrypted";
@@ -1602,9 +1613,11 @@ public class TestMetaStoreMultipleEncryptionZones {
     HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
     encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    encryptedHiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-            "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    encryptedHiveConf.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + miniDFSCluster.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
     String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
     String cmRootFallbackEncrypted = "cmrootFallbackEncrypted";
     FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
