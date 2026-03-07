@@ -2152,7 +2152,7 @@ public final class GenMapRedUtils {
     if (properties.containsKey(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS)) {
       usePartitionColumns(properties, partColNames);
     } else {
-      List<FieldSchema> partCols = table.getPartCols();
+      List<FieldSchema> partCols = table.getPartCols(true);
       String partNames = partCols.stream().map(FieldSchema::getName).collect(Collectors.joining("/"));
       String partTypes = partCols.stream().map(FieldSchema::getType).collect(Collectors.joining(":"));
       properties.setProperty(

@@ -71,7 +71,7 @@ final class AlterTableArchiveUtils {
   static boolean partitionInCustomLocation(Table table, Partition partition) throws HiveException {
     String subdir = null;
     try {
-      subdir = Warehouse.makePartName(table.getPartCols(), partition.getValues());
+      subdir = Warehouse.makePartName(table.getPartCols(true), partition.getValues());
     } catch (MetaException e) {
       throw new HiveException("Unable to get partition's directory", e);
     }

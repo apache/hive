@@ -131,7 +131,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     cols.addAll(partition == null || table.getTableType() == TableType.VIRTUAL_VIEW ?
         table.getCols() : partition.getCols());
     if (!desc.isFormatted()) {
-      cols.addAll(table.getPartCols());
+      cols.addAll(table.getPartCols(false));
     }
 
     // Fetch partition statistics only for describe extended or formatted.

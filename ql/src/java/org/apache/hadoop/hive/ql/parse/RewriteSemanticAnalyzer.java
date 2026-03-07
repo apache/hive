@@ -119,7 +119,7 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
     String columnName = normalizeColName(colName.getText());
 
     // Make sure this isn't one of the partitioning columns, that's not supported.
-    for (FieldSchema fschema : targetTable.getPartCols()) {
+    for (FieldSchema fschema : targetTable.getPartCols(true)) {
       if (fschema.getName().equalsIgnoreCase(columnName)) {
         throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_PART_VALUE.getMsg());
       }
