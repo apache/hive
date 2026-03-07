@@ -3307,7 +3307,7 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_COMPACT_MM("hive.compactor.compact.insert.only", true,
         "Whether the compactor should compact insert-only tables. A safety switch."),
-    COMPACTOR_CRUD_QUERY_BASED("hive.compactor.crud.query.based", false,
+    COMPACTOR_CRUD_QUERY_BASED("hive.compactor.crud.query.based", true,
         "Means compaction on full CRUD tables is done via queries. "
         + "Compactions on insert-only tables will always run via queries regardless of the value of this configuration."),
     SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"),
