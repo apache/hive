@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -46,14 +47,16 @@ public class DropTableHandler extends AbstractMessageHandler {
       actualTblName = msg.getTable();
     }
 
-    DropTableDesc dropTableDesc = new DropTableDesc(actualDbName + "." + actualTblName, true, true,
+    // TODO catalog. Consider supporting the retrieval of catalog name from cat.db.tbl format..
+    TableName tableName = TableName.fromString(actualTblName, null, actualTblName);
+    DropTableDesc dropTableDesc = new DropTableDesc(tableName, true, true,
         context.eventOnlyReplicationSpec(), false);
     Task<DDLWork> dropTableTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, dropTableDesc, true,
                 context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf
     );
     context.log.debug(
-        "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()
+        "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName().toString()
     );
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
     return Collections.singletonList(dropTableTask);
