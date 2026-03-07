@@ -27,7 +27,7 @@
     <hive.path.to.root>..</hive.path.to.root>
     <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
     <iceberg.version>1.10.1</iceberg.version>
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
   </properties>
   <modules>
     <module>custom-serde</module>
