@@ -44,13 +44,22 @@ public class PessimisticStatCombiner {
       if (stat.getCountDistint() > result.getCountDistint()) {
         result.setCountDistint(stat.getCountDistint());
       }
-      if (stat.getNumNulls() > result.getNumNulls()) {
+      // numNulls < 0 means "unknown" - propagate unknown if either is unknown
+      if (stat.getNumNulls() < 0 || result.getNumNulls() < 0) {
+        result.setNumNulls(-1);
+      } else if (stat.getNumNulls() > result.getNumNulls()) {
         result.setNumNulls(stat.getNumNulls());
       }
-      if (stat.getNumTrues() > result.getNumTrues()) {
+      // numTrues < 0 means "unknown" - propagate unknown if either is unknown
+      if (stat.getNumTrues() < 0 || result.getNumTrues() < 0) {
+        result.setNumTrues(-1);
+      } else if (stat.getNumTrues() > result.getNumTrues()) {
         result.setNumTrues(stat.getNumTrues());
       }
-      if (stat.getNumFalses() > result.getNumFalses()) {
+      // numFalses < 0 means "unknown" - propagate unknown if either is unknown
+      if (stat.getNumFalses() < 0 || result.getNumFalses() < 0) {
+        result.setNumFalses(-1);
+      } else if (stat.getNumFalses() > result.getNumFalses()) {
         result.setNumFalses(stat.getNumFalses());
       }
       if (stat.isFilteredColumn()) {
