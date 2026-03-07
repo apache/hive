@@ -168,6 +168,22 @@ POSTHOOK: Output: default@mat1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: Lineage: mat1.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
 POSTHOOK: Lineage: mat1.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: create materialized view mat2 stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c <= 52
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: create materialized view mat2 stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c <= 52
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: mat2.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat2.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
 PREHOOK: query: select * from mat1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
@@ -178,6 +194,17 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 five	54
 four	53
+PREHOOK: query: select * from mat2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mat2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+one	50
+three	52
+two	51
 PREHOOK: query: alter materialized view mat1 disable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 PREHOOK: Input: default@mat1
@@ -256,6 +283,14 @@ POSTHOOK: query: alter materialized view mat1 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@mat1
+PREHOOK: query: alter materialized view mat2 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@mat2
+POSTHOOK: query: alter materialized view mat2 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@mat2
 PREHOOK: query: select * from mat1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
@@ -267,3 +302,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 five	54
 four	53
 ten	60
+PREHOOK: query: select * from mat2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mat2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+one	50
+three	52
+two	51
