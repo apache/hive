@@ -1,0 +1,66 @@
+PREHOOK: query: create external table ice_msck_repair_test (id int, name string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_msck_repair_test
+POSTHOOK: query: create external table ice_msck_repair_test (id int, name string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_msck_repair_test
+PREHOOK: query: insert into ice_msck_repair_test values (1, 'one'), (2, 'two')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_msck_repair_test
+POSTHOOK: query: insert into ice_msck_repair_test values (1, 'one'), (2, 'two')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_msck_repair_test
+Found 1 items
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+PREHOOK: query: insert into ice_msck_repair_test values (3, 'three'), (4, 'four')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_msck_repair_test
+POSTHOOK: query: insert into ice_msck_repair_test values (3, 'three'), (4, 'four')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_msck_repair_test
+PREHOOK: query: insert into ice_msck_repair_test values (5, 'five'), (6, 'six')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_msck_repair_test
+POSTHOOK: query: insert into ice_msck_repair_test values (5, 'five'), (6, 'six')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_msck_repair_test
+Found 2 items
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: MSCK REPAIR TABLE ice_msck_repair_test
+PREHOOK: type: MSCK
+PREHOOK: Output: default@ice_msck_repair_test
+POSTHOOK: query: MSCK REPAIR TABLE ice_msck_repair_test
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@ice_msck_repair_test
+PREHOOK: query: select * from ice_msck_repair_test order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_msck_repair_test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_msck_repair_test order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_msck_repair_test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	three
+4	four
+5	five
+6	six
+PREHOOK: query: drop table ice_msck_repair_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_msck_repair_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_msck_repair_test
+POSTHOOK: query: drop table ice_msck_repair_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_msck_repair_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_msck_repair_test

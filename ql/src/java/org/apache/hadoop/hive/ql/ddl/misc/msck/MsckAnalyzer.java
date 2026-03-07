@@ -60,7 +60,7 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
 
     boolean repair = root.getChild(0).getType() == HiveParser.KW_REPAIR;
     int offset = repair ? 1 : 0;
-    String tableName = getUnescapedName((ASTNode) root.getChild(0 + offset));
+    String tableName = getUnescapedName((ASTNode) root.getChild(offset));
 
     boolean addPartitions = true;
     boolean dropPartitions = false;
@@ -73,7 +73,7 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
     Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(root, table, conf,
         false);
     byte[] filterExp = null;
-    if (partitionSpecs != null & !partitionSpecs.isEmpty()) {
+    if (!partitionSpecs.isEmpty()) {
       // expression proxy class needs to be PartitionExpressionForMetastore since we intend to use the
       // filterPartitionsByExpr of PartitionExpressionForMetastore for partition pruning down the line.
       // Bail out early if expressionProxyClass is not configured properly.
