@@ -1,0 +1,316 @@
+# col_name            	data_type           	comment             
+c_customer_sk       	bigint              	                    
+c_customer_id       	char(16)            	                    
+c_current_cdemo_sk  	bigint              	                    
+c_current_hdemo_sk  	bigint              	                    
+c_current_addr_sk   	bigint              	                    
+c_first_shipto_date_sk	bigint              	                    
+c_first_sales_date_sk	bigint              	                    
+c_salutation        	char(10)            	                    
+c_first_name        	char(20)            	                    
+c_last_name         	char(30)            	                    
+c_preferred_cust_flag	char(1)             	                    
+c_birth_day         	int                 	                    
+c_birth_month       	int                 	                    
+c_birth_year        	int                 	                    
+c_birth_country     	varchar(20)         	                    
+c_login             	char(13)            	                    
+c_email_address     	char(50)            	                    
+c_last_review_date_sk	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	31                  
+	numRows             	80000000            
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	31                  	 
+Bucket Columns:     	[c_customer_sk]     	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.customer    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_c	 
+Column Name:        	c_customer_sk       	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.customer    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_c_a	 
+Parent Column Name:default.customer_address.ca_address_sk	Column Name:c_current_addr_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_c_cd	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:c_current_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_c_fsd	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:c_first_sales_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_c_fsd2	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:c_first_shipto_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_c_hd	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:c_current_hdemo_sk	Key Sequence:1      
+	 	 
+	 	 
+# Unique Constraints	 	 
+Table:              	default.customer    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cid_uq	 
+Column Name:c_customer_id	Key Sequence:1      	 
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.customer    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cid_nn	 
+Column Name:        	c_customer_id       	 
+	 	 
+col_name            	c_customer_sk       
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	0                   
+distinct_count      	78525965            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_customer_id       
+data_type           	char(16)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	80610928            
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_current_cdemo_sk  
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	2798616             
+distinct_count      	1993369             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_current_hdemo_sk  
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	2799006             
+distinct_count      	7225                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_current_addr_sk   
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	0                   
+distinct_count      	33825344            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_first_shipto_date_sk
+data_type           	bigint              
+min                 	2449028             
+max                 	2452678             
+num_nulls           	2800717             
+distinct_count      	3646                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_first_sales_date_sk
+data_type           	bigint              
+min                 	2448998             
+max                 	2452648             
+num_nulls           	2799514             
+distinct_count      	3643                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_salutation        
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	3.1285808875        
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_first_name        
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	5158                
+avg_col_len         	5.6321494125        
+max_col_len         	11                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_last_name         
+data_type           	char(30)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	5123                
+avg_col_len         	5.9160140875        
+max_col_len         	13                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_preferred_cust_flag
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	0.96499295          
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_birth_day         
+data_type           	int                 
+min                 	1                   
+max                 	31                  
+num_nulls           	2799325             
+distinct_count      	31                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_birth_month       
+data_type           	int                 
+min                 	1                   
+max                 	12                  
+num_nulls           	2800192             
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_birth_year        
+data_type           	int                 
+min                 	1924                
+max                 	1992                
+num_nulls           	2798667             
+distinct_count      	67                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_birth_country     
+data_type           	varchar(20)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	216                 
+avg_col_len         	8.4062461875        
+max_col_len         	20                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_login             
+data_type           	char(13)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	0.0                 
+max_col_len         	0                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_email_address     
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	75301330            
+avg_col_len         	26.5065306          
+max_col_len         	48                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}
+col_name            	c_last_review_date_sk
+data_type           	bigint              
+min                 	2452283             
+max                 	2452648             
+num_nulls           	2800497             
+distinct_count      	364                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_birth_country\":\"true\",\"c_birth_day\":\"true\",\"c_birth_month\":\"true\",\"c_birth_year\":\"true\",\"c_current_addr_sk\":\"true\",\"c_current_cdemo_sk\":\"true\",\"c_current_hdemo_sk\":\"true\",\"c_customer_id\":\"true\",\"c_customer_sk\":\"true\",\"c_email_address\":\"true\",\"c_first_name\":\"true\",\"c_first_sales_date_sk\":\"true\",\"c_first_shipto_date_sk\":\"true\",\"c_last_name\":\"true\",\"c_last_review_date_sk\":\"true\",\"c_login\":\"true\",\"c_preferred_cust_flag\":\"true\",\"c_salutation\":\"true\"}}

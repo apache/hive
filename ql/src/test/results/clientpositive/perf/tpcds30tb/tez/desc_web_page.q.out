@@ -1,0 +1,246 @@
+# col_name            	data_type           	comment             
+wp_web_page_sk      	bigint              	                    
+wp_web_page_id      	string              	                    
+wp_rec_start_date   	date                	                    
+wp_rec_end_date     	date                	                    
+wp_creation_date_sk 	bigint              	                    
+wp_access_date_sk   	bigint              	                    
+wp_autogen_flag     	char(1)             	                    
+wp_customer_sk      	bigint              	                    
+wp_url              	varchar(100)        	                    
+wp_type             	char(50)            	                    
+wp_char_count       	int                 	                    
+wp_link_count       	int                 	                    
+wp_image_count      	int                 	                    
+wp_max_ad_count     	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	4602                
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.web_page    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_wp	 
+Column Name:        	wp_web_page_sk      	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.web_page    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wp_ad	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:wp_access_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wp_cd	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:wp_creation_date_sk	Key Sequence:1      
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.web_page    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wpid_nn	 
+Column Name:        	wp_web_page_id      	 
+	 	 
+col_name            	wp_web_page_sk      
+data_type           	bigint              
+min                 	1                   
+max                 	4602                
+num_nulls           	0                   
+distinct_count      	4556                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_web_page_id      
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2344                
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_rec_start_date   
+data_type           	date                
+min                 	1997-09-03          
+max                 	2001-09-03          
+num_nulls           	52                  
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_rec_end_date     
+data_type           	date                
+min                 	1999-09-03          
+max                 	2001-09-02          
+num_nulls           	2301                
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_creation_date_sk 
+data_type           	bigint              
+min                 	2450492             
+max                 	2450815             
+num_nulls           	64                  
+distinct_count      	291                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_access_date_sk   
+data_type           	bigint              
+min                 	2452548             
+max                 	2452648             
+num_nulls           	58                  
+distinct_count      	103                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_autogen_flag     
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	0.9847892220773576  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_customer_sk      
+data_type           	bigint              
+min                 	33025               
+max                 	79895491            
+num_nulls           	3263                
+distinct_count      	1114                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_url              
+data_type           	varchar(100)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	17.80052151238592   
+max_col_len         	18                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_type             
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	8                   
+avg_col_len         	6.307040417209909   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_char_count       
+data_type           	int                 
+min                 	303                 
+max                 	8523                
+num_nulls           	65                  
+distinct_count      	2621                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_link_count       
+data_type           	int                 
+min                 	2                   
+max                 	25                  
+num_nulls           	50                  
+distinct_count      	24                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_image_count      
+data_type           	int                 
+min                 	1                   
+max                 	7                   
+num_nulls           	48                  
+distinct_count      	7                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}
+col_name            	wp_max_ad_count     
+data_type           	int                 
+min                 	0                   
+max                 	4                   
+num_nulls           	52                  
+distinct_count      	5                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"wp_access_date_sk\":\"true\",\"wp_autogen_flag\":\"true\",\"wp_char_count\":\"true\",\"wp_creation_date_sk\":\"true\",\"wp_customer_sk\":\"true\",\"wp_image_count\":\"true\",\"wp_link_count\":\"true\",\"wp_max_ad_count\":\"true\",\"wp_rec_end_date\":\"true\",\"wp_rec_start_date\":\"true\",\"wp_type\":\"true\",\"wp_url\":\"true\",\"wp_web_page_id\":\"true\",\"wp_web_page_sk\":\"true\"}}

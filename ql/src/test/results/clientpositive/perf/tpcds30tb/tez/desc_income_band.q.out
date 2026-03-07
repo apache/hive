@@ -1,0 +1,76 @@
+# col_name            	data_type           	comment             
+ib_income_band_sk   	bigint              	                    
+ib_lower_bound      	int                 	                    
+ib_upper_bound      	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ib_income_band_sk\":\"true\",\"ib_lower_bound\":\"true\",\"ib_upper_bound\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	20                  
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.income_band 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_ib	 
+Column Name:        	ib_income_band_sk   	 
+col_name            	ib_income_band_sk   
+data_type           	bigint              
+min                 	1                   
+max                 	20                  
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ib_income_band_sk\":\"true\",\"ib_lower_bound\":\"true\",\"ib_upper_bound\":\"true\"}}
+col_name            	ib_lower_bound      
+data_type           	int                 
+min                 	0                   
+max                 	190001              
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ib_income_band_sk\":\"true\",\"ib_lower_bound\":\"true\",\"ib_upper_bound\":\"true\"}}
+col_name            	ib_upper_bound      
+data_type           	int                 
+min                 	10000               
+max                 	200000              
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ib_income_band_sk\":\"true\",\"ib_lower_bound\":\"true\",\"ib_upper_bound\":\"true\"}}

@@ -1,0 +1,216 @@
+# col_name            	data_type           	comment             
+ca_address_sk       	bigint              	                    
+ca_address_id       	char(16)            	                    
+ca_street_number    	char(10)            	                    
+ca_street_name      	varchar(60)         	                    
+ca_street_type      	char(15)            	                    
+ca_suite_number     	char(10)            	                    
+ca_city             	varchar(60)         	                    
+ca_county           	varchar(30)         	                    
+ca_state            	char(2)             	                    
+ca_zip              	char(10)            	                    
+ca_country          	varchar(20)         	                    
+ca_gmt_offset       	decimal(5,2)        	                    
+ca_location_type    	char(20)            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	31                  
+	numRows             	40000000            
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	31                  	 
+Bucket Columns:     	[ca_address_sk]     	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.customer_address	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_ca	 
+Column Name:        	ca_address_sk       	 
+col_name            	ca_address_sk       
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	0                   
+distinct_count      	40618307            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_address_id       
+data_type           	char(16)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	39667899            
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_street_number    
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1014                
+avg_col_len         	2.806232675         
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_street_name      
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	8358                
+avg_col_len         	8.44949205          
+max_col_len         	21                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_street_type      
+data_type           	char(15)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	21                  
+avg_col_len         	4.073537425         
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_suite_number     
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	76                  
+avg_col_len         	7.653062625         
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_city             
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	985                 
+avg_col_len         	8.684372925         
+max_col_len         	20                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_county           
+data_type           	varchar(30)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1930                
+avg_col_len         	13.543959525        
+max_col_len         	28                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_state            
+data_type           	char(2)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	53                  
+avg_col_len         	1.9400121           
+max_col_len         	2                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_zip              
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	9538                
+avg_col_len         	4.849962            
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_country          
+data_type           	varchar(20)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	12.610234325        
+max_col_len         	13                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_gmt_offset       
+data_type           	decimal(5,2)        
+min                 	-10                 
+max                 	-5                  
+num_nulls           	1201179             
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}
+col_name            	ca_location_type    
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	8.729921525         
+max_col_len         	13                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ca_address_id\":\"true\",\"ca_address_sk\":\"true\",\"ca_city\":\"true\",\"ca_country\":\"true\",\"ca_county\":\"true\",\"ca_gmt_offset\":\"true\",\"ca_location_type\":\"true\",\"ca_state\":\"true\",\"ca_street_name\":\"true\",\"ca_street_number\":\"true\",\"ca_street_type\":\"true\",\"ca_suite_number\":\"true\",\"ca_zip\":\"true\"}}

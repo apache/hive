@@ -1,0 +1,176 @@
+# col_name            	data_type           	comment             
+cp_catalog_page_sk  	bigint              	                    
+cp_catalog_page_id  	string              	                    
+cp_start_date_sk    	bigint              	                    
+cp_end_date_sk      	bigint              	                    
+cp_department       	varchar(50)         	                    
+cp_catalog_number   	int                 	                    
+cp_catalog_page_number	int                 	                    
+cp_description      	varchar(100)        	                    
+cp_type             	varchar(100)        	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	46000               
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.catalog_page	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_cp	 
+Column Name:        	cp_catalog_page_sk  	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.catalog_page	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cp_d1	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:cp_end_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cp_d2	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:cp_start_date_sk	Key Sequence:1      
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.catalog_page	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cpid_nn	 
+Column Name:        	cp_catalog_page_id  	 
+	 	 
+col_name            	cp_catalog_page_sk  
+data_type           	bigint              
+min                 	1                   
+max                 	46000               
+num_nulls           	0                   
+distinct_count      	47200               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_catalog_page_id  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	45891               
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_start_date_sk    
+data_type           	bigint              
+min                 	2450815             
+max                 	2453005             
+num_nulls           	444                 
+distinct_count      	91                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_end_date_sk      
+data_type           	bigint              
+min                 	2450844             
+max                 	2453186             
+num_nulls           	446                 
+distinct_count      	96                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_department       
+data_type           	varchar(50)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	9.908260869565217   
+max_col_len         	10                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_catalog_number   
+data_type           	int                 
+min                 	1                   
+max                 	109                 
+num_nulls           	465                 
+distinct_count      	112                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_catalog_page_number
+data_type           	int                 
+min                 	1                   
+max                 	425                 
+num_nulls           	443                 
+distinct_count      	427                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_description      
+data_type           	varchar(100)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	44192               
+avg_col_len         	73.86019565217391   
+max_col_len         	99                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}
+col_name            	cp_type             
+data_type           	varchar(100)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	7.596826086956522   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cp_catalog_number\":\"true\",\"cp_catalog_page_id\":\"true\",\"cp_catalog_page_number\":\"true\",\"cp_catalog_page_sk\":\"true\",\"cp_department\":\"true\",\"cp_description\":\"true\",\"cp_end_date_sk\":\"true\",\"cp_start_date_sk\":\"true\",\"cp_type\":\"true\"}}

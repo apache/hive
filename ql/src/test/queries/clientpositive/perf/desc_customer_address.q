@@ -1,0 +1,14 @@
+DESCRIBE FORMATTED customer_address;
+DESCRIBE FORMATTED customer_address ca_address_sk;
+DESCRIBE FORMATTED customer_address ca_address_id;
+DESCRIBE FORMATTED customer_address ca_street_number;
+DESCRIBE FORMATTED customer_address ca_street_name;
+DESCRIBE FORMATTED customer_address ca_street_type;
+DESCRIBE FORMATTED customer_address ca_suite_number;
+DESCRIBE FORMATTED customer_address ca_city;
+DESCRIBE FORMATTED customer_address ca_county;
+DESCRIBE FORMATTED customer_address ca_state;
+DESCRIBE FORMATTED customer_address ca_zip;
+DESCRIBE FORMATTED customer_address ca_country;
+DESCRIBE FORMATTED customer_address ca_gmt_offset;
+DESCRIBE FORMATTED customer_address ca_location_type;

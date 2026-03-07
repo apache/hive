@@ -1,0 +1,83 @@
+# col_name            	data_type           	comment             
+r_reason_sk         	bigint              	                    
+r_reason_id         	string              	                    
+r_reason_desc       	char(100)           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"r_reason_desc\":\"true\",\"r_reason_id\":\"true\",\"r_reason_sk\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	72                  
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.reason      	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_r	 
+Column Name:        	r_reason_sk         	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.reason      	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_rid_nn	 
+Column Name:        	r_reason_id         	 
+	 	 
+col_name            	r_reason_sk         
+data_type           	bigint              
+min                 	1                   
+max                 	72                  
+num_nulls           	0                   
+distinct_count      	72                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"r_reason_desc\":\"true\",\"r_reason_id\":\"true\",\"r_reason_sk\":\"true\"}}
+col_name            	r_reason_id         
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	72                  
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"r_reason_desc\":\"true\",\"r_reason_id\":\"true\",\"r_reason_sk\":\"true\"}}
+col_name            	r_reason_desc       
+data_type           	char(100)           
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	71                  
+avg_col_len         	12.652777777777779  
+max_col_len         	43                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"r_reason_desc\":\"true\",\"r_reason_id\":\"true\",\"r_reason_sk\":\"true\"}}
