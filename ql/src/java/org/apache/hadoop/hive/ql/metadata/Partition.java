@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.regex.Matcher;
 
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -50,6 +51,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
+
+import static org.apache.hadoop.hive.metastore.utils.DynamicPartitioningCustomPattern.customPathPattern;
 
 /**
  * A Hive Table Partition: is a fundamental storage unit within a Table.
@@ -119,11 +122,16 @@ public class Partition implements Serializable {
    *           Thrown if we could not create the partition.
    */
   public Partition(Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
-    initialize(tbl, createMetaPartitionObject(tbl, partSpec, location));
+    initialize(tbl, createMetaPartitionObject(tbl, partSpec, location, null));
   }
 
   public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
-      Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
+          Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
+    return createMetaPartitionObject(tbl, partSpec, location, null);
+  }
+
+  public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
+      Table tbl, Map<String, String> partSpec, Path location, String customPattern) throws HiveException {
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
@@ -142,6 +150,15 @@ public class Partition implements Serializable {
 
     if (!tbl.isView()) {
       tpart.setSd(tbl.getSd().deepCopy());
+      if (location == null && customPattern != null) { //should only happen for msck repair table with custom pattern
+        Matcher m = customPathPattern.matcher(customPattern);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+          m.appendReplacement(sb, partSpec.get(m.group(2)));
+        }
+        m.appendTail(sb);
+        location = new Path(tbl.getDataLocation(), sb.toString());
+      }
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
     return tpart;
