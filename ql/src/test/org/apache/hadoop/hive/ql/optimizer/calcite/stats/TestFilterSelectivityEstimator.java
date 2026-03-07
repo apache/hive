@@ -67,6 +67,7 @@ public class TestFilterSelectivityEstimator {
   private static final float[] VALUES = { 1, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 7 };
   private static final KllFloatsSketch KLL = StatisticsTestUtils.createKll(VALUES);
   private static final float DELTA = Float.MIN_VALUE;
+  private static final double MIN_KLL_SELECTIVITY = 0.013294757464848584;
   private static final RexBuilder REX_BUILDER = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
   private static final RelDataTypeFactory TYPE_FACTORY = REX_BUILDER.getTypeFactory();
   private static RelOptCluster relOptCluster;
@@ -240,12 +241,12 @@ public class TestFilterSelectivityEstimator {
 
   @Test
   public void testBetweenSelectivityRightLowerThanMin() {
-    Assert.assertEquals(0, betweenSelectivity(KLL, -1, 0), DELTA);
+    Assert.assertEquals(MIN_KLL_SELECTIVITY, betweenSelectivity(KLL, -1, 0), DELTA);
   }
 
   @Test
   public void testBetweenSelectivityLeftHigherThanMax() {
-    Assert.assertEquals(0, betweenSelectivity(KLL, 10, 11), DELTA);
+    Assert.assertEquals(MIN_KLL_SELECTIVITY, betweenSelectivity(KLL, 10, 11), DELTA);
   }
 
   @Test
@@ -399,7 +400,7 @@ public class TestFilterSelectivityEstimator {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, intMinus1, int0);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(MIN_KLL_SELECTIVITY, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
@@ -407,7 +408,7 @@ public class TestFilterSelectivityEstimator {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int10, int11);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(MIN_KLL_SELECTIVITY, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
