@@ -52,6 +52,8 @@ public class TestTypeInfoUtils {
         "decimal(10, 2)",
         "decimal(10, 2 )",
         "decimal( 10, 2 )",
+        "struct<user-id:int>",
+        "struct<user-id:int,user-name:string>",
         "struct<user id:int,user group: int>"
     };
 
