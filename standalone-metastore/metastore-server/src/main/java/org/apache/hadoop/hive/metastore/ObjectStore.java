@@ -11618,6 +11618,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (foreignDbName != null) {
         params.add(foreignDbName);
       }
+      query.setOrdering("constraintName ascending, position ascending");
       constraints = (Collection<?>) query.executeWithArray(params.toArray(new String[0]));
 
       pm.retrieveAll(constraints);
