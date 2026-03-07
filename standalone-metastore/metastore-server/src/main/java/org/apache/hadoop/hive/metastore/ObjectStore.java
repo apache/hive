@@ -2995,11 +2995,11 @@ public class ObjectStore implements RawStore, Configurable {
     }
     openTransaction();
     
-    int batch = batchSize == NO_BATCHING ? 1 : (partNames.size() + batchSize) / batchSize;
+    int batch = dbType.getMaxBatch(batchSize, partNames.size() + 3);
     AtomicLong batchIdx = new AtomicLong(1);
     AtomicLong timeSpent = new AtomicLong(0);
     try {
-      Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+      Batchable.runBatched(batch, partNames, new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws MetaException {
           StringBuilder progress = new StringBuilder("Dropping partitions, batch: ");
@@ -4065,7 +4065,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (partNames.isEmpty()) {
       return Collections.emptyList();
     }
-    return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
+    int batch = dbType.getMaxBatch(batchSize, partNames.size() + 3);
+    return Batchable.runBatched(batch, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
         Pair<Query, Map<String, String>> queryWithParams =
@@ -9421,8 +9422,9 @@ public class ObjectStore implements RawStore, Configurable {
 
       List<MTableColumnStatistics> result = Collections.emptyList();
       try (Query query = pm.newQuery(MTableColumnStatistics.class)) {
-      result =
-          Batchable.runBatched(batchSize, colNames, new Batchable<String, MTableColumnStatistics>() {
+        int batch = dbType.getMaxBatch(batchSize, colNames.size() + 4);
+        result =
+          Batchable.runBatched(batch, colNames, new Batchable<String, MTableColumnStatistics>() {
             @Override
             public List<MTableColumnStatistics> run(List<String> input)
                 throws MetaException {
@@ -10058,7 +10060,9 @@ public class ObjectStore implements RawStore, Configurable {
         }
       };
       try {
-        Batchable.runBatched(batchSize, partNames, b);
+        int batch = dbType.getMaxBatch(batchSize,
+            partNames.size() + (colNames != null ? colNames.size() : 0) + (engine != null ? 4 : 3));
+        Batchable.runBatched(batch, partNames, b);
       } finally {
         b.closeAllQueries();
       }

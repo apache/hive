@@ -852,8 +852,21 @@ public class DatabaseProduct implements Configurable {
       // SQL Server supports a maximum of 2100 parameters in a request. Adjust the maxRowsInBatch accordingly
       int maxAllowedRows = (2100 - paramSize) / paramSize;
       return Math.min(batch, maxAllowedRows);
+    } else if (isPOSTGRES()) {
+      int maxAllowedRows = (32767 - paramSize) / paramSize;
+      return Math.min(batch, maxAllowedRows);
     }
     return batch;
+  }
+
+  public int getMaxBatch(int batch, int totalQueryParams) {
+    int minBatch = batch;
+    if (isSQLSERVER()) {
+       minBatch = (totalQueryParams + 2100) / 2100;
+    } else if (isPOSTGRES()) {
+       minBatch = (totalQueryParams + 32767) / 32767;
+    }
+    return batch <= 0 ? minBatch : Math.max(batch, minBatch);
   }
 
   // This class implements the Configurable interface for the benefit

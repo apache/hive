@@ -70,6 +70,7 @@ class DirectSqlAggrStats {
   private static final Logger LOG = LoggerFactory.getLogger(DirectSqlAggrStats.class);
   private final PersistenceManager pm;
   private final int batchSize;
+  private final DatabaseProduct dbType;
 
   @java.lang.annotation.Target(java.lang.annotation.ElementType.FIELD)
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
@@ -81,7 +82,7 @@ class DirectSqlAggrStats {
 
   public DirectSqlAggrStats(PersistenceManager pm, Configuration conf, String schema) {
     this.pm = pm;
-    DatabaseProduct dbType = PersistenceManagerProvider.getDatabaseProduct();
+    this.dbType = PersistenceManagerProvider.getDatabaseProduct();
     int configBatchSize =
         MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);
     if (configBatchSize == DETECT_BATCHING) {
@@ -184,34 +185,19 @@ class DirectSqlAggrStats {
       final double ndvTuner, final boolean enableBitVector,
       boolean enableKll) throws MetaException {
     final boolean areAllPartsFound = (partsFound == partNames.size());
-    return Batchable.runBatched(batchSize, colNames, new Batchable<String, ColumnStatisticsObj>() {
+    int batch = dbType.getMaxBatch(batchSize, colNames.size() + partNames.size() + 4);
+    return Batchable.runBatched(batch, colNames, new Batchable<String, ColumnStatisticsObj>() {
       @Override
       public List<ColumnStatisticsObj> run(final List<String> inputColNames) throws MetaException {
-        return columnStatisticsObjForPartitionsBatch(catName, dbName, tableName,
-            partNames, inputColNames, engine, areAllPartsFound,
-            useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
-      }
-    });
-  }
-
-  /**
-   * Should be called with the list short enough to not trip up Oracle/etc.
-   */
-  private List<ColumnStatisticsObj> columnStatisticsObjForPartitionsBatch(
-      String catName,
-      String dbName, String tableName,
-      List<String> partNames, List<String> colNames, String engine,
-      boolean areAllPartsFound, boolean useDensityFunctionForNDVEstimation,
-      double ndvTuner, boolean enableBitVector,
-      boolean enableKll) throws MetaException {
-    if (enableBitVector || enableKll) {
-      return aggrStatsUseJava(catName, dbName, tableName, partNames,
-          colNames, engine, areAllPartsFound, useDensityFunctionForNDVEstimation,
-          ndvTuner, enableBitVector, enableKll);
-    } else {
-      return aggrStatsUseDB(catName, dbName, tableName, partNames, colNames, engine,
-          useDensityFunctionForNDVEstimation, ndvTuner);
-    }
+        if (enableBitVector || enableKll) {
+          return aggrStatsUseJava(catName, dbName, tableName, partNames,
+              inputColNames, engine, areAllPartsFound, useDensityFunctionForNDVEstimation,
+              ndvTuner, enableBitVector, enableKll);
+        } else {
+          return aggrStatsUseDB(catName, dbName, tableName, partNames, inputColNames, engine,
+              useDensityFunctionForNDVEstimation, ndvTuner);
+        }
+      }});
   }
 
   private List<ColumnStatisticsObj> aggrStatsUseJava(
