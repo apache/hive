@@ -95,7 +95,7 @@
     <junit.platform.version>1.13.3</junit.platform.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
-    <log4j2.version>2.24.3</log4j2.version>
+    <log4j2.version>2.25.3</log4j2.version>
     <mockito-core.version>5.17.0</mockito-core.version>
     <orc.version>2.1.2</orc.version>
     <protobuf.version>3.25.5</protobuf.version>
