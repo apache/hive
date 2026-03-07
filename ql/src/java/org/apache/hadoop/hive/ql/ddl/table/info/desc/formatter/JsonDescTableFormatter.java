@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.formatting.MapBuilder;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
@@ -112,7 +113,12 @@ public class JsonDescTableFormatter extends DescTableFormatter {
       } else if (statistics.isSetDoubleStats()) {
         addDoubleStats(statistics, result);
       } else if (statistics.isSetLongStats()) {
-        addLongStats(statistics, result);
+        if (serdeConstants.TIMESTAMP_TYPE_NAME.equals(column.getType())) {
+          // if the long stat represents a timestamp, format it as a timestamp
+          addLongTimeStampStats(statistics, result);
+        } else {
+          addLongStats(statistics, result);
+        }
       } else if (statistics.isSetDateStats()) {
         addDateStats(statistics, result);
       } else if (statistics.isSetTimestampStats()) {
@@ -234,6 +240,21 @@ public class JsonDescTableFormatter extends DescTableFormatter {
     }
     if (statistics.getTimestampStats().isSetNumDVs()) {
       result.put(COLUMN_DISTINCT_COUNT, statistics.getTimestampStats().getNumDVs());
+    }
+  }
+
+  private static void addLongTimeStampStats(ColumnStatisticsData statistics, Map<String, Object> result) {
+    if (statistics.getDateStats().isSetLowValue()) {
+      result.put(COLUMN_MIN, ShowUtils.convertTimestampToString(statistics.getLongStats().getLowValue()));
+    }
+    if (statistics.getDateStats().isSetHighValue()) {
+      result.put(COLUMN_MAX, ShowUtils.convertTimestampToString(statistics.getLongStats().getHighValue()));
+    }
+    if (statistics.getDateStats().isSetNumNulls()) {
+      result.put(COLUMN_NUM_NULLS, statistics.getLongStats().getNumNulls());
+    }
+    if (statistics.getDateStats().isSetNumDVs()) {
+      result.put(COLUMN_DISTINCT_COUNT, statistics.getLongStats().getNumDVs());
     }
   }
 
