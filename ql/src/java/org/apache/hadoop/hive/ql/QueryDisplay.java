@@ -21,6 +21,9 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.tez.common.counters.CounterGroup;
+import org.apache.tez.common.counters.TezCounter;
+import org.apache.tez.common.counters.TezCounters;
 
 import java.io.IOException;
 import java.util.*;
@@ -58,6 +61,7 @@ public class QueryDisplay {
   private String explainPlan;
   private String errorMessage;
   private String queryId;
+  private TezCounters tezCounters;
   private long queryStartTime = System.currentTimeMillis();
 
   private final Map<Phase, Map<String, Long>> hmsTimingMap = new HashMap<Phase, Map<String, Long>>();
@@ -303,6 +307,26 @@ public class QueryDisplay {
 
   public synchronized void setExplainPlan(String explainPlan) {
     this.explainPlan = explainPlan;
+  }
+
+  public synchronized void setTezCounters(TezCounters tc) {
+    this.tezCounters = tc;
+  }
+
+  public synchronized TezCounters getTezCounters() {
+    return this.tezCounters;
+  }
+
+  public synchronized String getCountersAsString() {
+    JSONObject countersJson = new JSONObject();
+    if (tezCounters != null){
+      for (CounterGroup group : tezCounters) {
+        for (TezCounter counter : group) {
+          countersJson.put(group.getName() + " - " + counter.getDisplayName(), counter.getValue());
+        }
+      }
+    }
+    return countersJson.toString();
   }
 
   /**
