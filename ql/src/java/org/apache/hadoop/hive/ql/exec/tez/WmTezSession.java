@@ -68,15 +68,15 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   private final ActualWmState actualState = new ActualWmState();
 
   public WmTezSession(
-      WorkloadManager manager, SessionExpirationTracker expiration, TezSessionState superr) {
-    super(manager, expiration, superr);
+      WorkloadManager manager, SessionExpirationTracker expiration, TezSessionState baseSession) {
+    super(manager, expiration, baseSession);
     wmManager = manager;
     isDelayedMove = false;
   }
 
   @VisibleForTesting
-  WmTezSession(Manager testParent, SessionExpirationTracker expiration, TezSessionState superr) {
-    super(testParent, expiration, superr);
+  WmTezSession(Manager testParent, SessionExpirationTracker expiration, TezSessionState baseSession) {
+    super(testParent, expiration, baseSession);
     wmManager = null;
     isDelayedMove = false;
   }

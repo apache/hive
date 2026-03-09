@@ -28,6 +28,7 @@ public class TestTezExternalSessionsRegistryClient {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS,
         DummyExternalSessionsRegistry.class.getName());
+    // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_NAMESPACE after Tez 1.0.0 is released.
     conf.set("tez.am.registry.namespace", "dummy");
     ExternalSessionsRegistry externalSessionsRegistry = ExternalSessionsRegistry.getClient(conf);
     assertTrue(externalSessionsRegistry instanceof DummyExternalSessionsRegistry);
@@ -36,7 +37,9 @@ public class TestTezExternalSessionsRegistryClient {
   @Test
   public void testTezExternalSessionsRegistry() {
     HiveConf conf = new HiveConf();
+    // TODO: change this to TezConfiguration.TEZ_AM_ZOOKEEPER_QUORUM after Tez 1.0.0 is released.
     conf.set("tez.am.zookeeper.quorum", "test-quorum");
+    // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_NAMESPACE after Tez 1.0.0 is released.
     conf.set("tez.am.registry.namespace", "tez");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS,
         ZookeeperExternalSessionsRegistryClient.class.getName());
