@@ -35,6 +35,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.RecordReader;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Properties;
 
 /**
@@ -123,13 +124,11 @@ public class DruidVectorizedWrapper<T extends Comparable<T>> implements RecordRe
   private static DruidSerDe createAndInitializeSerde(Configuration jobConf) {
     DruidSerDe serDe = new DruidSerDe();
     MapWork mapWork = Preconditions.checkNotNull(Utilities.getMapWork(jobConf), "Map work is null");
-    Properties
-        properties =
-        mapWork.getPartitionDescs()
-            .stream()
-            .map(partitionDesc -> partitionDesc.getTableDesc().getProperties())
-            .findAny()
-            .orElseThrow(() -> new RuntimeException("Can not find table property at the map work"));
+    Iterator<org.apache.hadoop.hive.ql.plan.PartitionDesc> partitionIterator = mapWork.getPartitionDescs();
+    if (!partitionIterator.hasNext()) {
+      throw new RuntimeException("Can not find table property at the map work");
+    }
+    Properties properties = partitionIterator.next().getTableDesc().getProperties();
     try {
       serDe.initialize(jobConf, properties, null);
     } catch (SerDeException e) {
