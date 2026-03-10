@@ -132,6 +132,7 @@ import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.BaseTransaction.TransactionTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataOperations;
@@ -161,6 +162,7 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.TableUtil;
@@ -1669,6 +1671,19 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
               TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE));
       schema = table.schema();
       spec = table.spec();
+
+      // For intra-txn read-after-write: if the table has in-memory metadata with no metadata file
+      // (i.e. uncommitted changes from a prior statement in the same txn), write the metadata to
+      // a file so the Tez side can reconstruct the table with the updated state.
+      if (table instanceof TransactionTable txnTable) {
+        TableMetadata metadata = txnTable.operations().current();
+
+        if (metadata != null && metadata.metadataFileLocation() == null) {
+          String metadataPath = metadata.location() + "/metadata/" + UUID.randomUUID() + ".metadata.json";
+          TableMetadataParser.overwrite(metadata, table.io().newOutputFile(metadataPath));
+          map.put(InputFormatConfig.TABLE_METADATA_LOCATION, metadataPath);
+        }
+      }
 
     } catch (NoSuchTableException ex) {
       if (!HiveTableUtil.isCtas(props)) {

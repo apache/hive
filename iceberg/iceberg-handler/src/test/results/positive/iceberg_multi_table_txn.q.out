@@ -119,6 +119,96 @@ POSTHOOK: Input: default@iceberg_txn_t2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 13
+PREHOOK: query: start transaction
+PREHOOK: type: START TRANSACTION
+POSTHOOK: query: start transaction
+POSTHOOK: type: START TRANSACTION
+PREHOOK: query: insert into iceberg_txn_t1 values (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: query: insert into iceberg_txn_t1 values (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_txn_t1
+PREHOOK: query: update iceberg_txn_t1 set a = a + 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: default@iceberg_txn_t1
+PREHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: query: update iceberg_txn_t1 set a = a + 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: Output: default@iceberg_txn_t1
+PREHOOK: query: commit
+PREHOOK: type: COMMIT
+POSTHOOK: query: commit
+POSTHOOK: type: COMMIT
+PREHOOK: query: select * from iceberg_txn_t1 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_txn_t1 order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+3
+4
+5
+PREHOOK: query: start transaction
+PREHOOK: type: START TRANSACTION
+POSTHOOK: query: start transaction
+POSTHOOK: type: START TRANSACTION
+PREHOOK: query: update iceberg_txn_t1 set a = a + 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: default@iceberg_txn_t1
+PREHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: query: update iceberg_txn_t1 set a = a + 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: Output: default@iceberg_txn_t1
+PREHOOK: query: insert into iceberg_txn_t2 select * from iceberg_txn_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: default@iceberg_txn_t2
+POSTHOOK: query: insert into iceberg_txn_t2 select * from iceberg_txn_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: default@iceberg_txn_t2
+PREHOOK: query: commit
+PREHOOK: type: COMMIT
+POSTHOOK: query: commit
+POSTHOOK: type: COMMIT
+PREHOOK: query: select * from iceberg_txn_t1 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_txn_t1 order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+4
+5
+6
+PREHOOK: query: select * from iceberg_txn_t2 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_txn_t2 order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
+13
+3
+4
+5
+6
 PREHOOK: query: drop table if exists iceberg_txn_t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@iceberg_txn_t1

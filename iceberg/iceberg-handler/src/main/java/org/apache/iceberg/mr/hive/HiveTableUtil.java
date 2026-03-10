@@ -50,11 +50,13 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.iceberg.AppendFiles;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.StaticTableOperations;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.Transaction;
@@ -242,6 +244,15 @@ public class HiveTableUtil {
       table = readTableObjectFromFile(location, config);
     }
     checkAndSetIoConfig(config, table);
+
+    // For intra-txn read-after-write: if a metadata file was written for uncommitted in-txn state,
+    // reconstruct a BaseTable from it so the Tez side sees changes from prior statements.
+    String metadataLocation = config.get(InputFormatConfig.TABLE_METADATA_LOCATION);
+    if (metadataLocation != null && table != null) {
+      StaticTableOperations ops = new StaticTableOperations(metadataLocation, table.io(), table.locationProvider());
+      table = new BaseTable(ops, table.name());
+    }
+
     return table;
   }
 
