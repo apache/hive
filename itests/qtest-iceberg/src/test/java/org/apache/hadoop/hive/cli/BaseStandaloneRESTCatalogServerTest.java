@@ -21,12 +21,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -35,16 +40,27 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import javax.servlet.http.HttpServlet;
+
 import org.apache.iceberg.rest.standalone.IcebergCatalogConfiguration;
-import org.apache.iceberg.rest.standalone.StandaloneRESTCatalogServer;
+import org.apache.iceberg.rest.standalone.RestCatalogServerRuntime;
+import org.junit.Test;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -59,12 +75,17 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class BaseStandaloneRESTCatalogServerTest {
   protected static final Logger LOG = LoggerFactory.getLogger(BaseStandaloneRESTCatalogServerTest.class);
-  private static final String REST_CATALOG_URL_TEMPLATE = "http://localhost:%d%s";
 
   protected static Configuration hmsConf;
   protected static int hmsPort;
   protected static File warehouseDir;
   protected static File hmsTempDir;
+
+  @LocalServerPort
+  private int port;
+
+  @Autowired
+  private RestCatalogServerRuntime server;
 
   /**
    * Starts HMS before the Spring ApplicationContext loads.
@@ -102,17 +123,93 @@ public abstract class BaseStandaloneRESTCatalogServerTest {
   }
 
   @SpringBootApplication
-  @Import(IcebergCatalogConfiguration.class)
+  @Import(TestCatalogConfig.class)
+  @ComponentScan(
+      basePackages = "org.apache.iceberg.rest.standalone",
+      excludeFilters = {
+          @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = IcebergCatalogConfiguration.class),
+          @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = RestCatalogServerRuntime.class)
+      })
   public static class TestRestCatalogApplication {}
 
+  /**
+   * Test-specific config providing the REST catalog servlet.
+   * Uses Configuration from test's TestConfig (with hmsPort, warehouseDir).
+   * Does NOT import IcebergCatalogConfiguration to avoid production hadoopConfiguration.
+   */
+  @org.springframework.context.annotation.Configuration
+  static class TestCatalogConfig {
+
+    @Bean
+    public Configuration hadoopConfiguration() {
+      Configuration conf = createBaseTestConfiguration();
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, "none");
+      return conf;
+    }
+
+    @Bean
+    public RestCatalogServerRuntime restCatalogServerRuntime(ServerProperties serverProperties) {
+      Configuration conf = createBaseTestConfiguration();
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, "none");
+      return new RestCatalogServerRuntime(conf, serverProperties);
+    }
+
+    @Bean
+    public ServletRegistrationBean<HttpServlet> restCatalogServlet(Configuration conf) {
+      return IcebergCatalogConfiguration.createRestCatalogServlet(conf);
+    }
+  }
+
   protected String url(String path) {
-    return String.format(REST_CATALOG_URL_TEMPLATE, getPort(), path);
+    return UriComponentsBuilder.newInstance()
+        .scheme("https")
+        .host("localhost")
+        .port(getPort())
+        .path(path.startsWith("/") ? path : "/" + path)
+        .toUriString();
   }
 
   /**
-   * Returns the server port. Subclasses must provide this (e.g. from @LocalServerPort).
+   * Creates an HttpClient that trusts the test server's self-signed certificate.
    */
-  protected abstract int getPort();
+  protected CloseableHttpClient createHttpClient() throws Exception {
+    TrustStrategy trustAll = (chain, authType) -> true;
+    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, trustAll).build();
+    return HttpClients.custom()
+        .setSSLContext(sslContext)
+        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+        .build();
+  }
+
+  protected int getPort() {
+    return port;
+  }
+
+  protected RestCatalogServerRuntime getServer() {
+    return server;
+  }
+
+  /**
+   * Creates base test Configuration with HMS URI and warehouse dirs.
+   * Subclasses add auth-specific settings.
+   */
+  protected static Configuration createBaseTestConfiguration() {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + hmsPort);
+    MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, warehouseDir.getAbsolutePath());
+    MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_EXTERNAL, warehouseDir.getAbsolutePath());
+    MetastoreConf.setVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_PATH, "iceberg");
+    MetastoreConf.setLongVar(conf, ConfVars.CATALOG_SERVLET_PORT, 0);
+    return conf;
+  }
+
+  /**
+   * Returns the Bearer token for catalog API tests, or null if no auth.
+   * Subclasses with auth (e.g. JWT) override to return a valid token.
+   */
+  protected String getBearerTokenForCatalogTests() {
+    return null;
+  }
 
   /**
    * Creates a GET request with optional Bearer token.
@@ -171,8 +268,9 @@ public abstract class BaseStandaloneRESTCatalogServerTest {
     }
   }
 
-  protected void testLivenessProbe() throws Exception {
-    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+  @Test(timeout = 60000)
+  public void testLivenessProbe() throws Exception {
+    try (CloseableHttpClient httpClient = createHttpClient();
         CloseableHttpResponse response = httpClient.execute(get("/actuator/health/liveness"))) {
       assertEquals("Liveness probe should return 200", 200, response.getStatusLine().getStatusCode());
       String body = EntityUtils.toString(response.getEntity());
@@ -181,8 +279,9 @@ public abstract class BaseStandaloneRESTCatalogServerTest {
     }
   }
 
-  protected void testReadinessProbe() throws Exception {
-    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+  @Test(timeout = 60000)
+  public void testReadinessProbe() throws Exception {
+    try (CloseableHttpClient httpClient = createHttpClient();
         CloseableHttpResponse response = httpClient.execute(get("/actuator/health/readiness"))) {
       assertEquals("Readiness probe should return 200", 200, response.getStatusLine().getStatusCode());
       String body = EntityUtils.toString(response.getEntity());
@@ -191,8 +290,9 @@ public abstract class BaseStandaloneRESTCatalogServerTest {
     }
   }
 
-  protected void testPrometheusMetrics() throws Exception {
-    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+  @Test(timeout = 60000)
+  public void testPrometheusMetrics() throws Exception {
+    try (CloseableHttpClient httpClient = createHttpClient();
         CloseableHttpResponse response = httpClient.execute(get("/actuator/prometheus"))) {
       assertEquals("Metrics endpoint should return 200", 200, response.getStatusLine().getStatusCode());
       String body = EntityUtils.toString(response.getEntity());
@@ -201,9 +301,58 @@ public abstract class BaseStandaloneRESTCatalogServerTest {
     }
   }
 
-  protected void testServerPort(StandaloneRESTCatalogServer server) {
+  @Test(timeout = 60000)
+  public void testServerPort() {
+    RestCatalogServerRuntime s = getServer();
     assertTrue("Server port should be > 0", getPort() > 0);
-    assertNotNull("REST endpoint should not be null", server.getRestEndpoint());
-    LOG.info("Server port: {}, Endpoint: {}", getPort(), server.getRestEndpoint());
+    assertNotNull("REST endpoint should not be null", s.getRestEndpoint());
+    LOG.info("Server port: {}, Endpoint: {}", getPort(), s.getRestEndpoint());
+  }
+
+  @Test(timeout = 120000)
+  public void testRESTCatalogConfig() throws Exception {
+    String token = getBearerTokenForCatalogTests();
+    try (CloseableHttpClient httpClient = createHttpClient();
+        CloseableHttpResponse response = httpClient.execute(get(String.format("/%s/%s",
+            IcebergCatalogConfiguration.DEFAULT_SERVLET_PATH, "v1/config"), token))) {
+      assertEquals("Config endpoint should return 200", 200, response.getStatusLine().getStatusCode());
+      String responseBody = EntityUtils.toString(response.getEntity());
+      assertTrue("Response should contain endpoints", responseBody.contains("endpoints"));
+      assertTrue("Response should be valid JSON", responseBody.startsWith("{") && responseBody.endsWith("}"));
+    }
+  }
+
+  @Test(timeout = 120000)
+  public void testRESTCatalogNamespaceOperations() throws Exception {
+    String token = getBearerTokenForCatalogTests();
+    String namespacePath = String.format("/%s/%s", IcebergCatalogConfiguration.DEFAULT_SERVLET_PATH, "v1/namespaces");
+    String namespaceName = "testdb";
+
+    try (CloseableHttpClient httpClient = createHttpClient()) {
+      try (CloseableHttpResponse response = httpClient.execute(get(namespacePath, token))) {
+        assertEquals("List namespaces should return 200", 200, response.getStatusLine().getStatusCode());
+      }
+
+      try (CloseableHttpResponse response = httpClient.execute(
+          post(namespacePath, "{\"namespace\":[\"" + namespaceName + "\"]}", token))) {
+        assertEquals("Create namespace should return 200", 200, response.getStatusLine().getStatusCode());
+      }
+
+      try (CloseableHttpResponse response = httpClient.execute(get(namespacePath, token))) {
+        assertEquals("List namespaces after creation should return 200",
+            200, response.getStatusLine().getStatusCode());
+        String responseBody = EntityUtils.toString(response.getEntity());
+        assertTrue("Response should contain created namespace", responseBody.contains(namespaceName));
+      }
+
+      try (CloseableHttpResponse response = httpClient.execute(
+          get(String.format("/%s/%s/%s", IcebergCatalogConfiguration.DEFAULT_SERVLET_PATH,
+              "v1/namespaces", namespaceName), token))) {
+        assertEquals("Get namespace should return 200",
+            200, response.getStatusLine().getStatusCode());
+        String responseBody = EntityUtils.toString(response.getEntity());
+        assertTrue("Response should contain namespace", responseBody.contains(namespaceName));
+      }
+    }
   }
 }

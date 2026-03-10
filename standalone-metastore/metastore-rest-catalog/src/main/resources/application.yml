@@ -17,10 +17,18 @@
 # Spring Boot Configuration for Standalone HMS REST Catalog Server
 
 # Server configuration
-# Port is set via MetastoreConf.CATALOG_SERVLET_PORT
+# Port is set via MetastoreConf.CATALOG_SERVLET_PORT or -Dmetastore.catalog.servlet.port
+# SSL is enabled by default with a bundled self-signed cert (dev). Override for production:
+#   -Dserver.ssl.key-store=/path/to/keystore.p12 -Dserver.ssl.key-store-password=secret
 server:
   port: ${metastore.catalog.servlet.port:8080}
   shutdown: graceful
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: changeit
+    key-store-type: PKCS12
+    key-alias: iceberg
 spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
