@@ -47,3 +47,10 @@ alter materialized view mat2 rebuild;
 
 select * from mat1;
 select * from mat2;
+
+-- test subsequent MV rebuilds
+insert into tbl_ice values (20, 'twenty', 80);
+
+alter materialized view mat1 rebuild;
+
+select * from mat1;
