@@ -33,6 +33,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.datasketches.kll.KllFloatsSketch;
@@ -59,13 +60,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.apache.calcite.sql.type.SqlTypeName.BIGINT;
 import static org.apache.calcite.sql.type.SqlTypeName.INTEGER;
 import static org.apache.calcite.sql.type.SqlTypeName.SMALLINT;
-import static org.apache.calcite.sql.type.SqlTypeName.TIMESTAMP;
 import static org.apache.calcite.sql.type.SqlTypeName.TINYINT;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.betweenSelectivity;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.greaterThanOrEqualSelectivity;
@@ -611,32 +612,34 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testRangePredicateCastIntegerValuesInsideTypeRange() {
-    // use VALUES2, even if the tested types cannot represent its values
-    // we're only interested in whether the cast to a smaller integer type results in the default selectivity
-    useFieldWithValues("f_tinyint", VALUES, KLL);
-    checkSelectivity(3 / 13.f, ge(cast("f_tinyint", TINYINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_tinyint", SMALLINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_tinyint", INTEGER), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_tinyint", BIGINT), int5));
+  public void testCastMatrix() {
+    // checks many possible combinations of types
+    List<RelDataTypeField> fields = new ArrayList<>(tableType.getFieldList());
+    fields.removeIf(f -> SqlTypeUtil.isDatetime(f.getType()));
+    for (var srcField : fields) {
+      useFieldWithValues(srcField.getName(), VALUES, KLL);
 
-    useFieldWithValues("f_smallint", VALUES, KLL);
-    checkSelectivity(3 / 13.f, ge(cast("f_smallint", TINYINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_smallint", SMALLINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_smallint", INTEGER), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_smallint", BIGINT), int5));
+      for (var tgt : fields) {
+        try {
+          RexNode expr = cast(srcField.getName(), tgt.getType());
+          checkSelectivity(3 / 13.f, ge(cast(srcField.getName(), tgt.getType()), int5));
+          checkSelectivity(10 / 13.f, lt(cast(srcField.getName(), tgt.getType()), int5));
+          checkSelectivity(2 / 13.f, gt(cast(srcField.getName(), tgt.getType()), int5));
+          checkSelectivity(11 / 13.f, le(cast(srcField.getName(), tgt.getType()), int5));
 
-    useFieldWithValues("f_integer", VALUES, KLL);
-    checkSelectivity(3 / 13.f, ge(cast("f_integer", TINYINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_integer", SMALLINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_integer", INTEGER), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_integer", BIGINT), int5));
+          checkSelectivity(12 / 13f, ge(cast(srcField.getName(), tgt.getType()), int2));
+          checkSelectivity(1 / 13f, lt(cast(srcField.getName(), tgt.getType()), int2));
+          checkSelectivity(5 / 13f, gt(cast(srcField.getName(), tgt.getType()), int2));
+          checkSelectivity(8 / 13f, le(cast(srcField.getName(), tgt.getType()), int2));
 
-    useFieldWithValues("f_bigint", VALUES, KLL);
-    checkSelectivity(3 / 13.f, ge(cast("f_bigint", TINYINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_bigint", SMALLINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_bigint", INTEGER), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_bigint", BIGINT), int5));
+          checkBetweenSelectivity(13, VALUES.length, VALUES.length, expr, 0, 10);
+          checkBetweenSelectivity(3, VALUES.length, VALUES.length, expr, 5, 7);
+          checkBetweenSelectivity(8, VALUES.length, VALUES.length, expr, 1, 2);
+        } catch (Throwable e) {
+          throw new AssertionError("Error when casting from " + srcField.getType() + " to " + tgt.getType(), e);
+        }
+      }
+    }
   }
 
   @Test
@@ -669,58 +672,7 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testRangePredicateTypeMatrix() {
-    // checks many possible combinations of types
-    List<RelDataTypeField> fields = tableType.getFieldList();
-    for (var srcField : fields) {
-      if (isTemporal(srcField.getType())) {
-        continue;
-      }
-
-      useFieldWithValues(srcField.getName(), VALUES, KLL);
-
-      for (var tgt : fields) {
-        try {
-          if (isTemporal(tgt.getType())) {
-            continue;
-          }
-
-          RexNode expr = cast(srcField.getName(), tgt.getType());
-          checkBetweenSelectivity(3, VALUES.length, VALUES.length, expr, 5, 7);
-        } catch (AssertionError e) {
-          throw new AssertionError("Error when casting from " + srcField.getType() + " to " + tgt.getType(), e);
-        }
-      }
-    }
-  }
-
-  private boolean isTemporal(RelDataType type) {
-    return type.getSqlTypeName() == TIMESTAMP || type.getSqlTypeName() == SqlTypeName.DATE;
-  }
-
-  @Test
   public void testRangePredicateWithCast() {
-    useFieldWithValues("f_numeric", VALUES, KLL);
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", TINYINT), int5));
-    checkSelectivity(10 / 13.f, lt(cast("f_numeric", TINYINT), int5));
-    checkSelectivity(2 / 13.f, gt(cast("f_numeric", TINYINT), int5));
-    checkSelectivity(11 / 13.f, le(cast("f_numeric", TINYINT), int5));
-
-    checkSelectivity(12 / 13f, ge(cast("f_numeric", TINYINT), int2));
-    checkSelectivity(1 / 13f, lt(cast("f_numeric", TINYINT), int2));
-    checkSelectivity(5 / 13f, gt(cast("f_numeric", TINYINT), int2));
-    checkSelectivity(8 / 13f, le(cast("f_numeric", TINYINT), int2));
-
-    // check some types
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", INTEGER), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", SMALLINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", BIGINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", SqlTypeName.FLOAT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", SqlTypeName.DOUBLE), int5));
-  }
-
-  @Test
-  public void testRangePredicateWithCast2() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     RelDataType decimal3s1 = decimalType(3, 1);
     checkSelectivity(4 / 28.f, ge(cast("f_numeric", decimal3s1), literalFloat(1)));
@@ -780,6 +732,9 @@ public class TestFilterSelectivityEstimator {
     checkSelectivity(0 / 7.f, lt(field, literalTimestamp("2020-11-01")));
     checkSelectivity(2 / 7.f, lt(field, literalTimestamp("2020-11-03")));
     checkSelectivity(6 / 7.f, lt(field, literalTimestamp("2020-11-07")));
+
+    checkBetweenSelectivity(2, 7, 7, field, literalTimestamp("2020-11-01"), literalTimestamp("2020-11-02"));
+    checkBetweenSelectivity(4, 7, 7, field, literalTimestamp("2020-11-03"), literalTimestamp("2020-11-06"));
   }
 
   private void checkTimeFieldOnIntraDayTimestamps(RexNode field) {
@@ -787,6 +742,10 @@ public class TestFilterSelectivityEstimator {
     checkSelectivity(2 / 7.f, gt(field, literalTimestamp("2020-11-05T11:23:45Z")));
     checkSelectivity(5 / 7.f, le(field, literalTimestamp("2020-11-05T11:23:45Z")));
     checkSelectivity(4 / 7.f, lt(field, literalTimestamp("2020-11-05T11:23:45Z")));
+
+    checkBetweenSelectivity(3, 7, 7, field, literalTimestamp("2020-11-03"), literalTimestamp("2020-11-05T11:23:45Z"));
+    // note: the same timestamp with seconds ":44" maps to the same float, so use ":43" to get a smaller boundary
+    checkBetweenSelectivity(2, 7, 7, field, literalTimestamp("2020-11-03"), literalTimestamp("2020-11-05T11:23:43Z"));
   }
 
   @Test
@@ -828,11 +787,15 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testBetweenWithCastToTinyIntCheckRounding() {
+  public void testBetweenWithCastToTinyInt() {
     useFieldWithValues("f_numeric", VALUES3, KLL3);
     float total = VALUES3.length;
     float universe = 10; // the number of values that "survive" the cast
     RexNode cast = cast("f_numeric", TINYINT);
+    checkBetweenSelectivity(5, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(5, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+
     // check rounding of positive numbers
     checkBetweenSelectivity(3, universe, total, cast, 0, 10);
     checkBetweenSelectivity(4, universe, total, cast, 0, 11);
@@ -844,17 +807,6 @@ public class TestFilterSelectivityEstimator {
     checkBetweenSelectivity(1, universe, total, cast, -20, -11);
     checkBetweenSelectivity(3, universe, total, cast, -10, 0);
     checkBetweenSelectivity(4, universe, total, cast, -11, 0);
-  }
-
-  @Test
-  public void testBetweenWithCastToTinyInt() {
-    useFieldWithValues("f_numeric", VALUES3, KLL3);
-    float total = VALUES3.length;
-    float universe = 10; // the number of values that "survive" the cast
-    RexNode cast = cast("f_numeric", TINYINT);
-    checkBetweenSelectivity(5, universe, total, cast, 0, 1e20f);
-    checkBetweenSelectivity(5, universe, total, cast, -1e20f, 0);
-    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
   }
 
   @Test
@@ -960,8 +912,12 @@ public class TestFilterSelectivityEstimator {
 
   private void checkBetweenSelectivity(float expectedEntries, float universe, float total, RexNode value, float lower,
       float upper) {
-    RexNode betweenFilter =
-        REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, value, literalFloat(lower), literalFloat(upper));
+    checkBetweenSelectivity(expectedEntries, universe, total, value, literalFloat(lower), literalFloat(upper));
+  }
+
+  private void checkBetweenSelectivity(float expectedEntries, float universe, float total, RexNode value, RexNode lower,
+      RexNode upper) {
+    RexNode betweenFilter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, value, lower, upper);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     String between = "BETWEEN " + lower + " AND " + upper;
     float expectedSelectivity = expectedEntries / total;
@@ -969,12 +925,12 @@ public class TestFilterSelectivityEstimator {
     Assert.assertEquals(message, expectedSelectivity, estimator.estimateSelectivity(betweenFilter), DELTA);
 
     // invert the filter to a NOT BETWEEN
-    RexNode invBetween =
-        REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, value, literalFloat(lower), literalFloat(upper));
+    RexNode invBetween = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, value, lower, upper);
     String invMessage = "NOT " + between + ": calcite filter " + invBetween.toString();
     float invExpectedSelectivity = (universe - expectedEntries) / total;
     Assert.assertEquals(invMessage, invExpectedSelectivity, estimator.estimateSelectivity(invBetween), DELTA);
   }
+
 
   private RexNode cast(String fieldname, SqlTypeName typeName) {
     return cast(fieldname, type(typeName));

@@ -193,9 +193,29 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * Return whether the expression is a removable cast based on stats and type bounds.
    *
    * <p>
-   * In Hive, if a value cannot be represented by the cast, the result of the cast is NULL,
-   * and therefore cannot fulfill the predicate. So the possible range of the values
-   * is limited by the range of possible values of the type.
+   * There are two main categories of CAST behavior:
+   * <ul>
+   *   <li>If a value cannot be represented by the cast, the result of the cast is NULL,
+   *     and therefore cannot fulfill the predicate. There might be some minor changes to the value
+   *     due to rounding, which can be counterbalanced by adjusting the range predicate slightly.
+   *     The selectivity can be estimated by calculating it with respect to the range of possible
+   *     values of the target type.
+   *     <br>
+   *     This category applies in most cases, e.g., when casting
+   *     <ul>
+   *       <li>DECIMAL to an integer type</li>
+   *       <li>an integer type to DECIMAL</li>
+   *       <li>DECIMAL to DECIMAL</li>
+   *       <li>an integer type to a larger integer type, e.g., TINYINT to SMALLINT</li>
+   *     </ul>
+   *   </li>
+   *   <li>If a value cannot be represented by the cast, the value is MODIFIED SUBSTANTIALLY.
+   *     For example, CAST(128 as TINYINT) = -128.
+   *     In principle, it is possible to estimate a selectivity using histograms.
+   *     However, the implementation would likely be quite complex, the estimate of low quality,
+   *     and the gain quite limited, so currently we consider these CASTs as non-removable.
+   *   </li>
+   * </ul>
    * </p>
    *
    * @param exp       the expression to check
@@ -211,11 +231,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     if (!(op0 instanceof RexInputRef)) {
       return false;
     }
-    int index = ((RexInputRef) op0).getIndex();
-    final List<ColStatistics> colStats = tableScan.getColStat(Collections.singletonList(index));
-    if (colStats.isEmpty()) {
-      return false;
-    }
 
     SqlTypeName sourceType = op0.getType().getSqlTypeName();
     SqlTypeName targetType = cast.getType().getSqlTypeName();
@@ -224,7 +239,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case TINYINT, SMALLINT, INTEGER, BIGINT:
       switch (targetType) {// additional checks are needed
       case TINYINT, SMALLINT, INTEGER, BIGINT:
-        return isRemovableIntegerCast(cast, op0, colStats);
+        return isRemovableIntegerCast(cast, op0, tableScan);
       case FLOAT, DOUBLE, DECIMAL:
         return true;
       default:
@@ -251,10 +266,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
   }
 
-  private static boolean isRemovableIntegerCast(RexCall cast, RexNode op0, List<ColStatistics> colStats) {
+  private static boolean isRemovableIntegerCast(RexCall cast, RexNode op0, HiveTableScan tableScan) {
+    int inputIndex = ((RexInputRef) op0).getIndex();
+    final List<ColStatistics> colStats = tableScan.getColStat(Collections.singletonList(inputIndex));
+    if (colStats.isEmpty()) {
+      return false;
+    }
+
     // If the source type is completely within the target type, the cast is lossless
-    Range<Float> targetRange = getRangeOfType(cast.getType(), BoundType.CLOSED, BoundType.CLOSED);
-    Range<Float> sourceRange = getRangeOfType(op0.getType(), BoundType.CLOSED, BoundType.CLOSED);
+    Range<Float> targetRange = getRangeOfType(cast.getType());
+    Range<Float> sourceRange = getRangeOfType(op0.getType());
     if (targetRange.encloses(sourceRange)) {
       return true;
     }
@@ -278,11 +299,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * Get the range of values that are rounded to valid values of a type.
    *
    * @param type the type
-   * @param lowerBound the lower bound type of the result
-   * @param upperBound the upper bound type of the result
    * @return the range of the type
    */
-  private static Range<Float> getRangeOfType(RelDataType type, BoundType lowerBound, BoundType upperBound) {
+  private static Range<Float> getRangeOfType(RelDataType type) {
     switch (type.getSqlTypeName()) {
     // in case of integer types,
     case TINYINT:
@@ -294,7 +313,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case BIGINT, DATE, TIMESTAMP:
       return Range.closed(-9.223372E18f, 9.223372E18f);
     case DECIMAL:
-      return getRangeOfDecimalType(type, lowerBound, upperBound);
+      return getRangeOfDecimalType(type);
     case FLOAT, DOUBLE:
       return Range.closed(-Float.MAX_VALUE, Float.MAX_VALUE);
     default:
@@ -302,7 +321,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
   }
 
-  private static Range<Float> getRangeOfDecimalType(RelDataType type, BoundType lowerBound, BoundType upperBound) {
+  private static Range<Float> getRangeOfDecimalType(RelDataType type) {
     // values outside the representable range are cast to NULL, so adapt the boundaries
     int digits = type.getPrecision() - type.getScale();
     // the cast does some rounding, i.e., CAST(99.9499 AS DECIMAL(3,1)) = 99.9
@@ -311,13 +330,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     // the range of values supported by the type is interval [-typeRangeExtent, typeRangeExtent] (both inclusive)
     // e.g., the typeRangeExt is 99.94999 for DECIMAL(3,1)
     float typeRangeExtent = Math.nextDown((float) (Math.pow(10, digits) - adjust));
-
-    // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
-    boolean lowerInclusive = BoundType.CLOSED.equals(lowerBound);
-    boolean upperInclusive = BoundType.CLOSED.equals(upperBound);
-    float lowerUniverse = lowerInclusive ? -typeRangeExtent : Math.nextDown(-typeRangeExtent);
-    float upperUniverse = upperInclusive ? typeRangeExtent : Math.nextUp(typeRangeExtent);
-    return makeRange(lowerUniverse, lowerBound, upperUniverse, upperBound);
+    return makeRange(-typeRangeExtent, BoundType.CLOSED, typeRangeExtent, BoundType.CLOSED);
   }
 
   /**
@@ -328,10 +341,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @param typeRange the boundaries of the type range
    * @return the adjusted boundary
    */
-  private static Range<Float> adjustRangeToType(Range<Float> predicateRange, RelDataType type,
-      Range<Float> typeRange) {
-    boolean lowerInclusive = BoundType.CLOSED.equals(predicateRange.lowerBoundType());
-    boolean upperInclusive = BoundType.CLOSED.equals(predicateRange.upperBoundType());
+  private static Range<Float> adjustRangeToType(Range<Float> predicateRange, RelDataType type, Range<Float> typeRange) {
+
     switch (type.getSqlTypeName()) {
     case TINYINT, SMALLINT, INTEGER, BIGINT: {
       // when casting a floating point, its values are rounded towards 0
@@ -359,17 +370,23 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return makeRange(lower, BoundType.CLOSED, upper, BoundType.OPEN);
     }
     case DECIMAL: {
+      // the original boundaries affect the rounding, so save them
+      boolean lowerInclusive = BoundType.CLOSED.equals(predicateRange.lowerBoundType());
+      boolean upperInclusive = BoundType.CLOSED.equals(predicateRange.upperBoundType());
+      Range<Float> normPredicateRange = convertRangeToClosedOpen(predicateRange);
+      Range<Float> normTypeRange = convertRangeToClosedOpen(typeRange);
+
       // The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
       // The boundaries are adjusted accordingly.
       float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
       // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
-      float adjustedLower =
-          lowerInclusive ? predicateRange.lowerEndpoint() - adjust : addAndDown(predicateRange.lowerEndpoint(), adjust);
-      float adjustedUpper = upperInclusive ? addAndDown(predicateRange.upperEndpoint(), adjust)
-          : predicateRange.upperEndpoint() - adjust;
-      float lower = Math.max(adjustedLower, typeRange.lowerEndpoint());
-      float upper = Math.min(adjustedUpper, typeRange.upperEndpoint());
-      return makeRange(lower, predicateRange.lowerBoundType(), upper, predicateRange.upperBoundType());
+      float adjustedLower = lowerInclusive ? normPredicateRange.lowerEndpoint() - adjust
+          : addAndDown(normPredicateRange.lowerEndpoint(), adjust);
+      float adjustedUpper = upperInclusive ? addAndDown(normPredicateRange.upperEndpoint(), adjust)
+          : normPredicateRange.upperEndpoint() - adjust;
+      float lower = Math.max(adjustedLower, normTypeRange.lowerEndpoint());
+      float upper = Math.min(adjustedUpper, normTypeRange.upperEndpoint());
+      return makeRange(lower, BoundType.CLOSED, upper, BoundType.OPEN);
     }
     case TIMESTAMP, DATE:
       return predicateRange;
@@ -443,9 +460,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     int inputRefOpIndex = 1 - literalOpIdx;
     RexNode node = operands.get(inputRefOpIndex);
     if (isRemovableCast(node, scan)) {
-      Range<Float> typeRange =
-          getRangeOfType(node.getType(), boundaries.lowerBoundType(), boundaries.upperBoundType());
+      Range<Float> typeRange = getRangeOfType(node.getType());
       boundaries = adjustRangeToType(boundaries, node.getType(), typeRange);
+
       node = RexUtil.removeCast(node);
     }
 
@@ -523,8 +540,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
       RexNode expr = operands.get(1); // expr to be checked by the BETWEEN
       if (isRemovableCast(expr, scan)) {
-        typeBoundaries =
-            getRangeOfType(expr.getType(), rangeBoundaries.lowerBoundType(), rangeBoundaries.upperBoundType());
+        typeBoundaries = getRangeOfType(expr.getType());
         rangeBoundaries = adjustRangeToType(rangeBoundaries, expr.getType(), typeBoundaries);
         expr = RexUtil.removeCast(expr);
       }
