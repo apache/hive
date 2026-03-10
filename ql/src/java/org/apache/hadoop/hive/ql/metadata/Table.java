@@ -270,7 +270,7 @@ public class Table implements Serializable {
     if (getCols().isEmpty()) {
       throw new HiveException("at least one column must be specified for the table");
     }
-    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
+    validateColumns(getCols(), getNativePartCols(), DDLUtils.isIcebergTable(this));
 
     if (!isView()) {
       if (null == getDeserializer(false)) {
@@ -594,25 +594,30 @@ public class Table implements Serializable {
         && Objects.equals(snapshotRef, other.snapshotRef);
   }
 
-  public List<FieldSchema> getPartCols() {
+  public List<FieldSchema> getSupportedPartCols() {
+    return hasNonNativePartitionSupport() ? getStorageHandler().getPartitionKeys(this) : getNativePartCols();
+  }
+
+  public List<FieldSchema> getNativePartCols() {
+
     List<FieldSchema> partKeys = tTable.getPartitionKeys();
+
     if (partKeys == null) {
       partKeys = new ArrayList<>();
       tTable.setPartitionKeys(partKeys);
     }
+
     return partKeys;
   }
 
   public FieldSchema getPartColByName(String colName) {
-    return getPartCols().stream()
+    return getNativePartCols().stream()
       .filter(key -> key.getName().toLowerCase().equals(colName))
       .findFirst().orElse(null);
   }
 
   public List<String> getPartColNames() {
-    List<FieldSchema> partCols = hasNonNativePartitionSupport() ?
-        getStorageHandler().getPartitionKeys(this) : getPartCols();
-    return partCols.stream().map(FieldSchema::getName)
+    return getSupportedPartCols().stream().map(FieldSchema::getName)
       .collect(Collectors.toList());
   }
 
@@ -761,10 +766,16 @@ public class Table implements Serializable {
    * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
-    ArrayList<FieldSchema> f_list = new ArrayList<FieldSchema>();
-    f_list.addAll(getCols());
-    f_list.addAll(getPartCols());
-    return f_list;
+    ArrayList<FieldSchema> allCols = new ArrayList<>(getCols());
+    Set<String> colNames = allCols.stream()
+        .map(FieldSchema::getName)
+        .collect(Collectors.toSet());
+    for (FieldSchema col : getSupportedPartCols()) {
+      if (!colNames.contains(col.getName())) {
+        allCols.add(col);
+      }
+    }
+    return allCols;
   }
 
   public void setPartCols(List<FieldSchema> partCols) {
@@ -812,8 +823,8 @@ public class Table implements Serializable {
   }
   
   public boolean isPartitioned() {
-    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) : 
-        CollectionUtils.isNotEmpty(getPartCols());
+    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) :
+        CollectionUtils.isNotEmpty(getNativePartCols());
   }
 
   public void setFields(List<FieldSchema> fields) {
@@ -1011,7 +1022,7 @@ public class Table implements Serializable {
   public LinkedHashMap<String, String> createSpec(
       org.apache.hadoop.hive.metastore.api.Partition tp) {
 
-    List<FieldSchema> fsl = getPartCols();
+    List<FieldSchema> fsl = getNativePartCols();
     List<String> tpl = tp.getValues();
     LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>(fsl.size());
     for (int i = 0; i < fsl.size(); i++) {
