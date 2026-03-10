@@ -74,7 +74,7 @@ jobs:
           echo "HIVE_VERSION=${{ github.event.inputs.hiveVersion }}"  >> $GITHUB_ENV
           echo "HADOOP_VERSION=${{ github.event.inputs.hadoopVersion }}" >> $GITHUB_ENV
           echo "TEZ_VERSION=${{ github.event.inputs.tezVersion }}" >> $GITHUB_ENV
-          echo "BUILD_ENV=archive" >> $GITHUB_ENV
+          echo "BUILD_ENV=release" >> $GITHUB_ENV
 
       - name: Prepare environment variables for Release
         if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
@@ -82,7 +82,7 @@ jobs:
           echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
           echo "HADOOP_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=hadoop.version -DforceStdout)" >> $GITHUB_ENV
           echo "TEZ_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=tez.version -DforceStdout)" >> $GITHUB_ENV
-          echo "BUILD_ENV=buildarchive" >> $GITHUB_ENV
+          echo "BUILD_ENV=hybrid" >> $GITHUB_ENV
 
       - name: Prepare common environment variables
         run: |
