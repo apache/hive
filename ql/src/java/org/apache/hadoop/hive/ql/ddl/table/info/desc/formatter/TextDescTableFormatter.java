@@ -174,9 +174,7 @@ class TextDescTableFormatter extends DescTableFormatter {
       List<FieldSchema> partitionColumns = null;
       // TODO (HIVE-29413): Refactor to a generic getPartCols() implementation
       if (table.isPartitioned()) {
-        partitionColumns = table.hasNonNativePartitionSupport() ?
-            table.getStorageHandler().getPartitionKeys(table) :
-            table.getPartCols();
+        partitionColumns = table.getSupportedPartCols();
       }
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {

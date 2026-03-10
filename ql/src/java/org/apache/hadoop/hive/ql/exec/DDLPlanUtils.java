@@ -294,7 +294,7 @@ public class DDLPlanUtils {
    */
   private Map<String, PrimitiveObjectInspector.PrimitiveCategory> getPartitionColumnToPrimitiveCategory(Partition pt) {
     Map<String, PrimitiveObjectInspector.PrimitiveCategory> resultMap = new HashMap<>();
-    for (FieldSchema schema: pt.getTable().getPartCols()) {
+    for (FieldSchema schema: pt.getTable().getSupportedPartCols()) {
       resultMap.put(
           schema.getName(),
           ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(schema.getType())).getPrimitiveCategory()
@@ -976,7 +976,7 @@ public class DDLPlanUtils {
   }
 
   private String getPartitionsForView(Table table) {
-    List<FieldSchema> partitionKeys = table.getPartCols();
+    List<FieldSchema> partitionKeys = table.getSupportedPartCols();
     if (partitionKeys.isEmpty()) {
       return "";
     }
