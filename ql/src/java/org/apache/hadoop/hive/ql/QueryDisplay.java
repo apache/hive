@@ -40,6 +40,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Some limited query information to save for WebUI.
@@ -317,16 +318,22 @@ public class QueryDisplay {
     return this.tezCounters;
   }
 
-  public synchronized String getCountersAsString() {
-    JSONObject countersJson = new JSONObject();
-    if (tezCounters != null){
+  public synchronized Map<String, String> getCountersAsString() {
+    Map<String, String> allCounterGroups = new HashMap<>();
+    if (tezCounters != null) {
       for (CounterGroup group : tezCounters) {
+        ObjectNode groupNode = OBJECT_MAPPER.createObjectNode();
         for (TezCounter counter : group) {
-          countersJson.put(group.getName() + " - " + counter.getDisplayName(), counter.getValue());
+          groupNode.put(counter.getDisplayName(), counter.getValue());
         }
+        String counterGroupName = group.getName();
+        String[] counterGroupSplits = counterGroupName.split("\\.");
+        counterGroupName = counterGroupName.contains(".") ? counterGroupSplits[counterGroupSplits.length - 1] :
+            counterGroupName + " Counter";
+        allCounterGroups.put(counterGroupName, groupNode.toString());
       }
     }
-    return countersJson.toString();
+    return allCounterGroups;
   }
 
   /**
