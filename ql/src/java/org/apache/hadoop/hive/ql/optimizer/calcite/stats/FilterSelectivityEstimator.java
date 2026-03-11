@@ -330,7 +330,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     // the range of values supported by the type is interval [-typeRangeExtent, typeRangeExtent] (both inclusive)
     // e.g., the typeRangeExt is 99.94999 for DECIMAL(3,1)
     float typeRangeExtent = Math.nextDown((float) (Math.pow(10, digits) - adjust));
-    return makeRange(-typeRangeExtent, BoundType.CLOSED, typeRangeExtent, BoundType.CLOSED);
+    return makeRange(-typeRangeExtent, typeRangeExtent, BoundType.CLOSED);
   }
 
   /**
@@ -367,7 +367,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           : Math.nextUp((float) -Math.ceil(-range.upperEndpoint()));
       float lower = Math.max(adjustedLower, typeRange.lowerEndpoint());
       float upper = Math.min(adjustedUpper, typeRange.upperEndpoint());
-      return makeRange(lower, BoundType.CLOSED, upper, BoundType.OPEN);
+      return makeRange(lower, upper, BoundType.OPEN);
     }
     case DECIMAL: {
       // the original boundaries affect the rounding, so save them
@@ -386,7 +386,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           : normPredicateRange.upperEndpoint() - adjust;
       float lower = Math.max(adjustedLower, normTypeRange.lowerEndpoint());
       float upper = Math.min(adjustedUpper, normTypeRange.upperEndpoint());
-      return makeRange(lower, BoundType.CLOSED, upper, BoundType.OPEN);
+      return makeRange(lower, upper, BoundType.OPEN);
     }
     case TIMESTAMP, DATE:
       return predicateRange;
@@ -408,15 +408,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   /**
    * If the arguments lead to a valid range, it is returned, otherwise an empty range is returned.
    */
-  private static Range<Float> makeRange(float lower, BoundType lowerType, float upper, BoundType upperType) {
+  private static Range<Float> makeRange(float lower, float upper, BoundType upperType) {
     if (lower > upper) {
       return Range.closedOpen(0f, 0f);
     }
-    if (lower == upper && lowerType == BoundType.OPEN && upperType == BoundType.OPEN) {
-      return Range.closedOpen(0f, 0f);
-    }
-
-    return Range.range(lower, lowerType, upper, upperType);
+    return Range.range(lower, BoundType.CLOSED, upper, upperType);
   }
 
   private double computeRangePredicateSelectivity(RexCall call, SqlKind op) {
@@ -535,7 +531,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         return inverseBool ? computeNotEqualitySelectivity(call) : computeFunctionSelectivity(call);
       }
 
-      Range<Float> rangeBoundaries = makeRange(leftValue, BoundType.CLOSED, rightValue, BoundType.CLOSED);
+      Range<Float> rangeBoundaries = makeRange(leftValue, rightValue, BoundType.CLOSED);
       Range<Float> typeBoundaries = inverseBool ? Range.closed(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY) : null;
 
       RexNode expr = operands.get(1); // expr to be checked by the BETWEEN
