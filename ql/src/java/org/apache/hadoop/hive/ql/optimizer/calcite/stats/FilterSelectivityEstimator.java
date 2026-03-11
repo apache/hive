@@ -45,6 +45,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
@@ -346,49 +347,41 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     if (predicateRange.isEmpty()) {
       return predicateRange;
     }
-    switch (type.getSqlTypeName()) {
-    case TINYINT, SMALLINT, INTEGER, BIGINT: {
-      // when casting a floating point, its values are rounded towards 0
-      // i.e, 10.99 is rounded to 10, and -10.99 is rounded to -10
-      // to take this into account, the predicate range is transformed in the following ways
-      // [10.0, 15.0] -> [10, 15.99999]
-      // (10.0, 15.0) -> [11, 14.99999]
-      // [10.2, 15.2] -> [11, 15.99999]
-      // (10.2, 15.2) -> [11, 15.99999]
-
-      // [-15.0, -10.0] -> [-15.9999, -10]
-      // (-15.0, -10.0) -> [-14.9999, -11]
-      // [-15.2, -10.2] -> [-15.9999, -11]
-      // (-15.2, -10.2) -> [-15.9999, -11]
-
-      // normalize the range to make the formulas easier
-      Range<Float> range = convertRangeToClosedOpen(predicateRange);
-      typeRange = convertRangeToClosedOpen(typeRange);
-      float adjustedLower = (range.lowerEndpoint() >= 0 ? (float) Math.ceil(range.lowerEndpoint())
-          : Math.nextUp(-(float) Math.ceil(Math.nextUp(-range.lowerEndpoint()))));
-      float adjustedUpper = range.upperEndpoint() >= 0 ? Math.nextDown((float) Math.ceil(range.upperEndpoint()))
-          : Math.nextUp((float) -Math.ceil(-range.upperEndpoint()));
-      predicateRange = Range.closedOpen(adjustedLower, adjustedUpper);
-      break;
-    }
-    case DECIMAL: {
+    if (SqlTypeUtil.isExactNumeric(type)) {
       // the original boundaries affect the rounding, so save them
       boolean lowerInclusive = BoundType.CLOSED.equals(predicateRange.lowerBoundType());
       boolean upperInclusive = BoundType.CLOSED.equals(predicateRange.upperBoundType());
-      Range<Float> normPredicateRange = convertRangeToClosedOpen(predicateRange);
+      // normalize the range to make the formulas easier
+      Range<Float> range = convertRangeToClosedOpen(predicateRange);
       typeRange = convertRangeToClosedOpen(typeRange);
+      final float adjustedLower;
+      final float adjustedUpper;
+      if (type.getSqlTypeName() == SqlTypeName.DECIMAL) {
+        // The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
+        // The boundaries are adjusted accordingly.
+        float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
+        // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
+        adjustedLower = lowerInclusive ? range.lowerEndpoint() - adjust : addAndDown(range.lowerEndpoint(), adjust);
+        adjustedUpper = upperInclusive ? addAndDown(range.upperEndpoint(), adjust) : range.upperEndpoint() - adjust;
+      } else {
+        // when casting a floating point, its values are rounded towards 0
+        // i.e, 10.99 is rounded to 10, and -10.99 is rounded to -10
+        // to take this into account, the predicate range is transformed in the following ways
+        // [10.0, 15.0] -> [10, 15.99999]
+        // (10.0, 15.0) -> [11, 14.99999]
+        // [10.2, 15.2] -> [11, 15.99999]
+        // (10.2, 15.2) -> [11, 15.99999]
 
-      // The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
-      // The boundaries are adjusted accordingly.
-      float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
-      // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
-      float adjustedLower = lowerInclusive ? normPredicateRange.lowerEndpoint() - adjust
-          : addAndDown(normPredicateRange.lowerEndpoint(), adjust);
-      float adjustedUpper = upperInclusive ? addAndDown(normPredicateRange.upperEndpoint(), adjust)
-          : normPredicateRange.upperEndpoint() - adjust;
+        // [-15.0, -10.0] -> [-15.9999, -10]
+        // (-15.0, -10.0) -> [-14.9999, -11]
+        // [-15.2, -10.2] -> [-15.9999, -11]
+        // (-15.2, -10.2) -> [-15.9999, -11]
+        adjustedLower = (range.lowerEndpoint() >= 0 ? (float) Math.ceil(range.lowerEndpoint())
+            : Math.nextUp(-(float) Math.ceil(Math.nextUp(-range.lowerEndpoint()))));
+        adjustedUpper = range.upperEndpoint() >= 0 ? Math.nextDown((float) Math.ceil(range.upperEndpoint()))
+            : Math.nextUp((float) -Math.ceil(-range.upperEndpoint()));
+      }
       predicateRange = Range.closedOpen(adjustedLower, adjustedUpper);
-      break;
-    }
     }
     return typeRange.isConnected(predicateRange) ? typeRange.intersection(predicateRange) : Range.closedOpen(0f, 0f);
   }
