@@ -29,10 +29,6 @@
         <value>true</value>
     </property>
     <property>
-        <name>hive.exec.scratchdir</name>
-        <value>/opt/hive/scratch_dir</value>
-    </property>
-    <property>
         <name>hive.user.install.directory</name>
         <value>/opt/hive/install_dir</value>
     </property>
@@ -63,5 +59,17 @@
     <property>
         <name>hive.metastore.event.db.notification.api.auth</name>
         <value>false</value>
+    </property>
+    <property>
+        <name>hive.exec.scratchdir</name>
+        <value>${HIVE_SCRATCH_DIR}</value>
+    </property>
+    <property>
+        <name>hive.exec.local.scratchdir</name>
+        <value>${HIVE_SCRATCH_DIR}</value>
+    </property>
+    <property>
+        <name>hive.query.results.cache.directory</name>
+        <value>${HIVE_QUERY_RESULTS_CACHE_DIRECTORY}</value>
     </property>
 </configuration>

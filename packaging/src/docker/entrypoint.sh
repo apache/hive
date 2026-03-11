@@ -38,7 +38,11 @@ fi
 # REPLACE ${VARS} in the template
 # =========================================================================
 : "${HIVE_WAREHOUSE_PATH:=/opt/hive/data/warehouse}"
+: "${HIVE_SCRATCH_DIR:=/opt/hive/scratch}"
+: "${HIVE_QUERY_RESULTS_CACHE_DIRECTORY:=/opt/hive/scratch/_resultscache_}"
 export HIVE_WAREHOUSE_PATH
+export HIVE_SCRATCH_DIR
+export HIVE_QUERY_RESULTS_CACHE_DIRECTORY
 
 envsubst < $HIVE_HOME/conf/core-site.xml.template > $HIVE_HOME/conf/core-site.xml
 envsubst < $HIVE_HOME/conf/hive-site.xml.template > $HIVE_HOME/conf/hive-site.xml
