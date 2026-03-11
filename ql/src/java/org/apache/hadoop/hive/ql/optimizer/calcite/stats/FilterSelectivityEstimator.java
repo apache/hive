@@ -376,8 +376,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         // (-15.0, -10.0) -> [-14.9999, -11]
         // [-15.2, -10.2] -> [-15.9999, -11]
         // (-15.2, -10.2) -> [-15.9999, -11]
-        adjustedLower = (range.lowerEndpoint() >= 0 ? (float) Math.ceil(range.lowerEndpoint())
-            : Math.nextUp(-(float) Math.ceil(Math.nextUp(-range.lowerEndpoint()))));
+        adjustedLower = range.lowerEndpoint() >= 0 ? (float) Math.ceil(range.lowerEndpoint())
+            : Math.nextUp(-(float) Math.ceil(Math.nextUp(-range.lowerEndpoint())));
         adjustedUpper = range.upperEndpoint() >= 0 ? Math.nextDown((float) Math.ceil(range.upperEndpoint()))
             : Math.nextUp((float) -Math.ceil(-range.upperEndpoint()));
       }
