@@ -113,9 +113,9 @@ public class TestStorageSchemaReader {
   @Test public void testAvroTableWithDefaultSSR() throws Exception {
     hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
     String tblName = "avroTable";
-    createTable(tblName, AvroSerDe.class.getName(), AvroContainerInputFormat.class.getName(),
+    Table tbl = createTable(tblName, AvroSerDe.class.getName(), AvroContainerInputFormat.class.getName(),
         AvroContainerOutputFormat.class.getName(), avroTableParams, new HashMap<>());
-    assertThrows("Storage schema reading not supported", MetaException.class, () -> client.getSchema(dbName, tblName));
+    checkSchema(tblName, tbl);
   }
 
   @Test public void testAvroTableWithSerdeSSR() throws Exception {
@@ -128,15 +128,15 @@ public class TestStorageSchemaReader {
 
   @Test public void testHbaseTableWithDefaultSSR() throws Exception {
     hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
-    String tblName = "jdbcTable";
+    String tblName = "hbaseTable";
 
-    createTable(tblName, HBaseSerDe.class.getName(), null, null, hbaseTableParams, hbaseSerdeParams);
-    assertThrows("Storage schema reading not supported", MetaException.class, () -> client.getSchema(dbName, tblName));
+    Table table = createTable(tblName, HBaseSerDe.class.getName(), null, null, hbaseTableParams, hbaseSerdeParams);
+    checkSchema(tblName, table);
   }
 
   @Test public void testHbaseTableWithSerdeSSR() throws Exception {
     hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
-    String tblName = "jdbcTable";
+    String tblName = "hbaseTableSerde";
 
     Table table =
         createTable(tblName, "org.apache.hadoop.hive.hbase.HBaseSerDe", null, null, hbaseTableParams, hbaseSerdeParams);

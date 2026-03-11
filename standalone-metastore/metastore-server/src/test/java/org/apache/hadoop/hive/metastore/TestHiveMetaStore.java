@@ -3958,20 +3958,13 @@ public abstract class TestHiveMetaStore {
     // No such data connector, ignore NoSuchObjectException
     client.dropDataConnector("no_such_data_connector", true, false);
   }
-
-  /**
-   * Test for storage-based SerDes (AvroSerDe, HBaseSerDe).If the SerDe is not listed in
-   * SERDES_USING_METASTORE_FOR_SCHEMA, HMS falls through to DefaultStorageSchemaReader and throws
-   * "Storage schema reading not supported".
-   */
+  
   @Test
-  public void testGetFieldsForStorageSerDes() throws Exception {
-    String dbName = "test_storage_serde_db";
+  public void testGetFieldsForAvroSerDe() throws Exception {
+    String dbName = "test_avro_serde_db";
     String avroTbl = "avro_tbl";
-    String hbaseTbl = "hbase_tbl";
 
     client.dropTable(dbName, avroTbl, true, true);
-    client.dropTable(dbName, hbaseTbl, true, true);
     silentDropDatabase(dbName);
 
     new DatabaseBuilder()
@@ -3989,11 +3982,30 @@ public abstract class TestHiveMetaStore {
         .addCol("baz", "bigint", "")
         .create(client, conf);
 
-    List<FieldSchema> avroFields = client.getFields(dbName, avroTbl);
-    assertEquals("AvroSerDe table should return 3 fields from metastore", 3, avroFields.size());
-    assertEquals("foo", avroFields.get(0).getName());
-    assertEquals("bar", avroFields.get(1).getName());
-    assertEquals("baz", avroFields.get(2).getName());
+    List<FieldSchema> fields = client.getFields(dbName, avroTbl);
+    assertEquals("AvroSerDe table should return 3 fields from metastore", 3, fields.size());
+    assertEquals("foo", fields.get(0).getName());
+    assertEquals("bar", fields.get(1).getName());
+    assertEquals("baz", fields.get(2).getName());
+
+    List<FieldSchema> schema = client.getSchema(dbName, avroTbl);
+    assertEquals("AvroSerDe getSchema should return 3 columns", 3, schema.size());
+
+    client.dropTable(dbName, avroTbl, true, true);
+    client.dropDatabase(dbName);
+  }
+  
+  @Test
+  public void testGetFieldsForHBaseSerDe() throws Exception {
+    String dbName = "test_hbase_serde_db";
+    String hbaseTbl = "hbase_tbl";
+
+    client.dropTable(dbName, hbaseTbl, true, true);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
 
     new TableBuilder()
         .setDbName(dbName)
@@ -4003,12 +4015,14 @@ public abstract class TestHiveMetaStore {
         .addCol("value", "string", "")
         .create(client, conf);
 
-    List<FieldSchema> hbaseFields = client.getFields(dbName, hbaseTbl);
-    assertEquals("HBaseSerDe table should return 2 fields from metastore", 2, hbaseFields.size());
-    assertEquals("key", hbaseFields.get(0).getName());
-    assertEquals("value", hbaseFields.get(1).getName());
+    List<FieldSchema> fields = client.getFields(dbName, hbaseTbl);
+    assertEquals("HBaseSerDe table should return 2 fields from metastore", 2, fields.size());
+    assertEquals("key", fields.get(0).getName());
+    assertEquals("value", fields.get(1).getName());
 
-    client.dropTable(dbName, avroTbl, true, true);
+    List<FieldSchema> schema = client.getSchema(dbName, hbaseTbl);
+    assertEquals("HBaseSerDe getSchema should return 2 columns", 2, schema.size());
+
     client.dropTable(dbName, hbaseTbl, true, true);
     client.dropDatabase(dbName);
   }
