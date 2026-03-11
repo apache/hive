@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.HiveTransaction;
 import org.apache.iceberg.TableMetadata;
@@ -233,7 +234,7 @@ public class HiveTxnCoordinator implements TxnCoordinator {
     newParams.setTable_name(ops.table());
     newParams.setParams(tbl.getParameters());
 
-    newParams.setExpected_param_key(HiveTableOperations.METADATA_LOCATION_PROP);
+    newParams.setExpected_param_key(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
     if (base.metadataFileLocation() != null) {
       newParams.setExpected_param_value(base.metadataFileLocation());
     }
@@ -275,7 +276,7 @@ public class HiveTxnCoordinator implements TxnCoordinator {
   private static boolean isCasFailure(TException ex) {
     return ex.getMessage() != null &&
         ex.getMessage().contains("The table has been modified. The parameter value for key '" +
-            HiveTableOperations.METADATA_LOCATION_PROP +
+            BaseMetastoreTableOperations.METADATA_LOCATION_PROP +
             "' is");
   }
 

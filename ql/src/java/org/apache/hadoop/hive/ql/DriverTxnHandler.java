@@ -198,13 +198,13 @@ class DriverTxnHandler {
 
   private boolean isExplicitLockOperation() {
     HiveOperation currentOpt = driverContext.getPlan().getOperation();
-    if (currentOpt != null) {
-      return switch (currentOpt) {
-        case LOCKDB, UNLOCKDB, LOCKTABLE, UNLOCKTABLE -> true;
-        default -> false;
-      };
+    if (currentOpt == null) {
+      return false;
     }
-    return false;
+    return switch (currentOpt) {
+      case LOCKDB, UNLOCKDB, LOCKTABLE, UNLOCKTABLE -> true;
+      default -> false;
+    };
   }
 
   /**

@@ -43,7 +43,6 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -162,7 +161,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
       if (tbl != null) {
         // If we try to create the table but the metadata location is already set, then we had a concurrent commit
-        if (newTable && tbl.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP) != null) {
+        if (newTable && tbl.getParameters().get(METADATA_LOCATION_PROP) != null) {
           if (TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(tbl.getTableType())) {
             throw new AlreadyExistsException(
                 "View with same name already exists: %s.%s", database, tableName);
@@ -251,10 +250,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
               e);
         }
 
-        commitStatus = BaseMetastoreOperations.CommitStatus.UNKNOWN;
+        commitStatus = CommitStatus.UNKNOWN;
         if (e.getMessage() != null && e.getMessage().contains(
             "The table has been modified. The parameter value for key '" +
-                HiveTableOperations.METADATA_LOCATION_PROP +
+                METADATA_LOCATION_PROP +
                 "' is")) {
           // It's possible the HMS client incorrectly retries a successful operation, due to network
           // issue for example, and triggers this exception. So we need double-check to make sure
@@ -385,7 +384,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         ConfigProperties.LOCK_HIVE_ENABLED, TableProperties.HIVE_LOCK_ENABLED_DEFAULT);
   }
 
-  @VisibleForTesting
   HiveLock lockObject(TableMetadata metadata) {
     if (hiveLockEnabled(metadata, conf)) {
       return new MetastoreLock(conf, metaClients, catalogName, database, tableName);

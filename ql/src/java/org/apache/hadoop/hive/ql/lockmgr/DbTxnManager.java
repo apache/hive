@@ -380,13 +380,13 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         return switch (writeEntity.getWriteType()) {
           case INSERT ->
             //allow operation in a txn
-              true;
+            true;
           case INSERT_OVERWRITE ->
             //see HIVE-18154
-              false;
+            false;
           default ->
             //not relevant for LOAD
-              false;
+            false;
         };
       }
     }
@@ -532,6 +532,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     replPolicy = null;
   }
 
+  @Override
   public synchronized <T extends TxnCoordinator> T getOrSetTxnCoordinator(
       Class<T> clazz, Function<IMetaStoreClient, T> creator) {
     if (txnCoordinator == null && creator != null) {

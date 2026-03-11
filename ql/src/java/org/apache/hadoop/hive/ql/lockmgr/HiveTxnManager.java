@@ -116,8 +116,8 @@ public interface HiveTxnManager {
    * @return the instance of the transaction coordinator
    */
   default <T extends TxnCoordinator> T getOrSetTxnCoordinator(
-     Class<T> clazz, Function<IMetaStoreClient, T> creator) {
-   return null;
+      Class<T> clazz, Function<IMetaStoreClient, T> creator) {
+    return null;
   }
 
   /**
