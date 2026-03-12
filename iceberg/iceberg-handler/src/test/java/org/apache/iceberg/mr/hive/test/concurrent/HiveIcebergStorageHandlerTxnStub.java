@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.test.concurrent;
 
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.hive.HiveTxnCoordinator;
 import org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter;
 
@@ -30,11 +31,15 @@ public class HiveIcebergStorageHandlerTxnStub extends HiveIcebergStorageHandlerS
   public HiveIcebergOutputCommitter getOutputCommitter() {
     HiveTxnManager txnManager = SessionState.get().getTxnMgr();
 
+    boolean isExplicitTxnOpen = txnManager.isTxnOpen() && !txnManager.isImplicitTransactionOpen(null);
+    int outputCount = SessionStateUtil.getOutputTableCount(conf)
+        .orElse(1);
+
+    if (!isExplicitTxnOpen && outputCount < 2) {
+      return super.getOutputCommitter();
+    }
     txnManager.getOrSetTxnCoordinator(
-        HiveTxnCoordinator.class,
-        msClient -> new HiveTxnCoordinatorStub(conf, msClient));
-
-    return super.getOutputCommitter();
+        HiveTxnCoordinator.class, msClient -> new HiveTxnCoordinatorStub(conf, msClient));
+    return new HiveIcebergOutputCommitter();
   }
-
 }

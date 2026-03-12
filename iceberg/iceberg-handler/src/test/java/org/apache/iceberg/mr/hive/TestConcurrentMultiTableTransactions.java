@@ -40,7 +40,7 @@ import org.junit.runners.Parameterized.Parameters;
 @WithMockedStorageHandler
 public class TestConcurrentMultiTableTransactions extends HiveIcebergStorageHandlerWithEngineBase {
 
-  public static final String XA_STORAGE_HANDLER_STUB =
+  public static final String STORAGE_HANDLER_TXN_STUB =
       "'org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerTxnStub'";
 
   @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
@@ -59,14 +59,14 @@ public class TestConcurrentMultiTableTransactions extends HiveIcebergStorageHand
 
     testTables.createTable(shell, "t1", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
-        formatVersion, Collections.emptyMap(), XA_STORAGE_HANDLER_STUB);
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_TXN_STUB);
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "t1"), false));
 
     testTables.createTable(shell, "t2", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
-        formatVersion, Collections.emptyMap(), XA_STORAGE_HANDLER_STUB);
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_TXN_STUB);
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "t2"), false));

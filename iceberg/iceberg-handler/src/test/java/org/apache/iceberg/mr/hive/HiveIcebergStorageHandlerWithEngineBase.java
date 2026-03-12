@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -300,10 +299,9 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
    * <ul>
    *   <li><b>Ext-locking mode</b> ({@code useExtLocking=true}): Groups execute in strict sequential
    *       order to verify that external table locking prevents concurrent execution.</li>
-   *   <li><b>Barrier synchronization mode</b> ({@code useExtLocking=false}): All statements except
-   *       the last in each group execute concurrently without phaser synchronization. Then all threads
-   *       sync at a barrier, initialize the phaser, and execute their last statement with ordered
-   *       commits via {@link PhaserCommitDecorator}.</li>
+   *   <li><b>Barrier synchronization mode</b> ({@code useExtLocking=false}): All threads execute
+   *       their statements concurrently. Commit ordering is controlled by the phaser in the
+   *       storage handler stub or transaction coordinator stub.</li>
    * </ul>
    *
    * @param useExtLocking if true, enables external locking mode with sequential execution;
@@ -320,8 +318,13 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
         new String[][] { sql[0], sql[0] } : sql;
     int nThreads = stmts.length;
 
-    TestUtilPhaser testUtilPhaser = useExtLocking ? TestUtilPhaser.getInstance() : null;
-    Phaser barrier = useExtLocking ? null : new Phaser(nThreads);
+    TestUtilPhaser testUtilPhaser = TestUtilPhaser.getInstance();
+    if (!useExtLocking) {
+      // Barrier mode: pre-register all parties before launching threads
+      for (int t = 0; t < nThreads; t++) {
+        testUtilPhaser.register();
+      }
+    }
 
     try (ExecutorService executor =
              Executors.newVirtualThreadPerTaskExecutor()) {
@@ -329,9 +332,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
           .executeWith(executor)
           .run(i -> {
             LOG.debug("Thread {} started for query index {}", Thread.currentThread().getName(), i);
-
             TestUtilPhaser.ThreadContext.setQueryIndex(i);
-
             HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
 
             HiveConf.setBoolVar(shell.getHiveConf(), ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
@@ -341,38 +342,20 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
             HiveConf.setVar(shell.getHiveConf(), ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, retryStrategies);
 
             if (useExtLocking) {
+              TestUtilPhaser.ThreadContext.setUseExtLocking(true);
               HiveConf.setBoolVar(shell.getHiveConf(), ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
               shell.getHiveConf().setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
 
+              // Wait for turn: sql[1] waits for phase 0 -> 1, sql[2] for 1 -> 2, etc.
+              // Phase advances when a previous query validates the snapshot.
               LOG.debug("Thread {} (queryIndex={}) waiting for turn",
                   Thread.currentThread().getName(), i);
-              TestUtilPhaser.ThreadContext.setUseExtLocking(true);
               testUtilPhaser.awaitTurn();
             }
 
             try {
-              if (useExtLocking) {
-                for (String stmt : stmts[i]) {
-                  shell.executeStatement(stmt);
-                }
-
-              } else {
-                // Execute all statements except the last (phaser not instantiated → PhaserCommitDecorator no-ops)
-                for (int j = 0; j < stmts[i].length - 1; j++) {
-                  shell.executeStatement(stmts[i][j]);
-                }
-
-                // Wait for all threads to finish preceding statements
-                barrier.arriveAndAwaitAdvance();
-
-                // Instantiate phaser and register
-                TestUtilPhaser.getInstance().register();
-
-                // Wait for all threads to register
-                barrier.arriveAndAwaitAdvance();
-
-                // Execute last statement — PhaserCommitDecorator handles commit ordering
-                shell.executeStatement(stmts[i][stmts[i].length - 1]);
+              for (String stmt : stmts[i]) {
+                shell.executeStatement(stmt);
               }
 
               LOG.debug("Thread {} (queryIndex={}) completed statement execution",
