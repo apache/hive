@@ -19,13 +19,13 @@
 package org.apache.hadoop.hive.ql.ddl.database.create;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -51,10 +52,9 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
     Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
-    String catalogName = catDbNamePair.getLeft();
-    if (catalogName != null && getCatalog(catalogName) == null) {
-      throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);
-    }
+    String catalogName = Optional.ofNullable(catDbNamePair.getLeft())
+            .orElse(HiveUtils.getCurrentCatalogOrDefault(conf));
+
     String databaseName = catDbNamePair.getRight();
 
     boolean ifNotExists = false;

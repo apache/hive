@@ -825,7 +825,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           LOG.debug("Processor has atleast one of ACID write capabilities, setting current locationUri " + db.getLocationUri() + " as managedLocationUri");
           db.setManagedLocationUri(new Path(db.getLocationUri()).toString());
         }
-        Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db.getName());
+        Path extWhLocation = hmsHandler.getWh().getDefaultExternalDatabasePath(db);
         LOG.info("Database's location is a managed location, setting to a new default path based on external warehouse path:" + extWhLocation.toString());
         db.setLocationUri(extWhLocation.toString());
       }

@@ -631,6 +631,8 @@ public class ReplChangeManager {
     FileSystem cmFs = cmroot.getFileSystem(conf);
     cmFs.setPermission(cmroot, new FsPermission("770"));
     try {
+      // TODO catalog. The Repl function is currently only available for the default catalog path ConfVars.WAREHOUSE.
+      //  We may consider adding new created native catalog path (ConfVars.WAREHOUSE_CATALOG) later.
       FileStatus warehouseStatus = cmFs.getFileStatus(new Path(MetastoreConf.get(conf, ConfVars.WAREHOUSE.getVarname())));
       String warehouseOwner = warehouseStatus.getOwner();
       String warehouseGroup = warehouseStatus.getGroup();
