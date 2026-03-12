@@ -88,7 +88,7 @@ TBLPROPERTIES (
   'iceberg.materialized.view'='true', 
   'iceberg.materialized.view.original.text'='select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52', 
   'iceberg.materialized.view.storage.table'='default.mat1_storage_table', 
-  'iceberg.orc.files.only'='true', 
+  'iceberg.orc.files.only'='false', 
   'max-staleness-ms'='1000', 
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
@@ -111,17 +111,21 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_MATERIALIZED_VIEW	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"c\",\"required\":false,\"type\":\"int\"}]}
 	format-version      	1                   
 	iceberg.materialized.view	true                
 	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 	iceberg.materialized.view.storage.table	default.mat1_storage_table
-	iceberg.orc.files.only	true                
+	iceberg.orc.files.only	false               
 	max-staleness-ms    	1000                
 #### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	2                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	 	 
@@ -207,7 +211,7 @@ TBLPROPERTIES (
   'iceberg.materialized.view'='true', 
   'iceberg.materialized.view.original.text'='select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52', 
   'iceberg.materialized.view.storage.table'='default.mat1_orc_storage_table', 
-  'iceberg.orc.files.only'='true', 
+  'iceberg.orc.files.only'='false', 
   'max-staleness-ms'='1000', 
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
@@ -284,17 +288,21 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_MATERIALIZED_VIEW	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"c\",\"required\":false,\"type\":\"int\"}]}
 	format-version      	1                   
 	iceberg.materialized.view	true                
 	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 	iceberg.materialized.view.storage.table	default.mat1_orc_storage_table
-	iceberg.orc.files.only	true                
+	iceberg.orc.files.only	false               
 	max-staleness-ms    	1000                
 #### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	2                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	 	 
@@ -442,7 +450,7 @@ Table Parameters:
 	iceberg.materialized.view	true                
 	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 	iceberg.materialized.view.storage.table	default.mat1_orc_partitioned_storage_table
-	iceberg.orc.files.only	true                
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	numFiles            	3                   
 	numPartitions       	3                   
@@ -519,6 +527,28 @@ POSTHOOK: query: delete from tbl_ice_v2 where d = 4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@tbl_ice_v2
+PREHOOK: query: explain cbo
+
+
+
+
+select * from mat1_multiple_tables
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1_multiple_tables
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+
+
+
+
+select * from mat1_multiple_tables
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1_multiple_tables
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mat1_multiple_tables.b=[$0], mat1_multiple_tables.c=[$1], mat1_multiple_tables._c2=[$2])
+  HiveTableScan(table=[[default, mat1_multiple_tables]], table:alias=[mat1_multiple_tables])
+
 PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
