@@ -105,8 +105,8 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
   }
 
   private static void collectNonNullConstant(ObjectInspector oi, Set<Object> distinctConstants) {
-    if (oi instanceof ConstantObjectInspector) {
-      Object value = ((ConstantObjectInspector) oi).getWritableConstantValue();
+    if (oi instanceof ConstantObjectInspector coi) {
+      Object value = coi.getWritableConstantValue();
       if (value != null) {
         distinctConstants.add(value);
       }
