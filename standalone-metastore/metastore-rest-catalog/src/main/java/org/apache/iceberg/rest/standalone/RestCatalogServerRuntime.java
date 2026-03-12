@@ -73,9 +73,8 @@ public class RestCatalogServerRuntime {
         servletPath = IcebergCatalogConfiguration.DEFAULT_SERVLET_PATH;
       }
 
-      String scheme = isSslEnabled() ? "https" : "http";
       restEndpoint = UriComponentsBuilder.newInstance()
-          .scheme(scheme)
+          .scheme(isSslEnabled() ? "https" : "http")
           .host("localhost")
           .port(actualPort)
           .pathSegment(servletPath)

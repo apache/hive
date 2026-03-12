@@ -30,8 +30,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLContexts;
-import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -173,8 +172,9 @@ public abstract class BaseStandaloneRESTCatalogServerTest {
    * Creates an HttpClient that trusts the test server's self-signed certificate.
    */
   protected CloseableHttpClient createHttpClient() throws Exception {
-    TrustStrategy trustAll = (chain, authType) -> true;
-    SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, trustAll).build();
+    SSLContext sslContext = SSLContextBuilder.create()
+        .loadTrustMaterial((chain, authType) -> true)
+        .build();
     return HttpClients.custom()
         .setSSLContext(sslContext)
         .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)

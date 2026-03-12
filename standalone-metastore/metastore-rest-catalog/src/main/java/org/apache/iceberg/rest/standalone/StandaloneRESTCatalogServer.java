@@ -39,6 +39,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  * <p>Multiple instances can run behind a Kubernetes Service for load balancing.
  */
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
+@SuppressWarnings("java:S1118") // Not a utility class; Spring Boot requires instantiation
 public class StandaloneRESTCatalogServer {
   private static final Logger LOG = LoggerFactory.getLogger(StandaloneRESTCatalogServer.class);
 
