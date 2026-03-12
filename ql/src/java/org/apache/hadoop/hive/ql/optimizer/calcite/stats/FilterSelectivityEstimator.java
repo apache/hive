@@ -196,18 +196,20 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * <p>
    * There are two main categories of CAST behavior:
    * <ul>
-   *   <li>If a value cannot be represented by the cast, the result of the cast is NULL,
-   *     and therefore cannot fulfill the predicate. There might be some minor changes to the value
-   *     due to rounding, which can be counterbalanced by adjusting the range predicate slightly.
-   *     The selectivity can be estimated by calculating it with respect to the range of possible
-   *     values of the target type.
+   *   <li>Non-representable values will be cast to NULL (c1). As NULL does not fulfill the predicate,
+   *     these non-representable values will need to be excluded when estimating the selectivity.
+   *     Therefore, the selectivity can be estimated by restricting the predicate range to the range of possible
+   *     values of the target type. There might be some minor changes to the value due to rounding, which can be
+   *     counterbalanced by adjusting the range predicate slightly.
    *     <br>
    *     This category applies in most cases, e.g., when casting
    *     <ul>
    *       <li>DECIMAL to an integer type</li>
    *       <li>an integer type to DECIMAL</li>
    *       <li>DECIMAL to DECIMAL</li>
-   *       <li>an integer type to a larger integer type, e.g., TINYINT to SMALLINT</li>
+   *       <li>an integer type to a larger integer type, e.g., TINYINT to SMALLINT.
+   *         All values are representable, so the condition (c1) is trivially fulfilled.
+   *       </li>
    *     </ul>
    *   </li>
    *   <li>If a value cannot be represented by the cast, the value is MODIFIED SUBSTANTIALLY.
@@ -381,7 +383,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         adjustedUpper = range.upperEndpoint() >= 0 ? Math.nextDown((float) Math.ceil(range.upperEndpoint()))
             : Math.nextUp((float) -Math.ceil(-range.upperEndpoint()));
       }
-      predicateRange = Range.closedOpen(adjustedLower, adjustedUpper);
+      predicateRange = makeRange(adjustedLower, adjustedUpper, BoundType.OPEN);
     }
     return typeRange.isConnected(predicateRange) ? typeRange.intersection(predicateRange) : Range.closedOpen(0f, 0f);
   }
@@ -394,6 +396,13 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     } else {
       return Math.nextDown(r);
     }
+  }
+
+  /**
+   * If the arguments lead to a valid range, it is returned, otherwise an empty range is returned.
+   */
+  private static Range<Float> makeRange(float lower, float upper, BoundType upperType) {
+    return lower > upper ? Range.closedOpen(0f, 0f) : Range.range(lower, BoundType.CLOSED, upper, upperType);
   }
 
   private double computeRangePredicateSelectivity(RexCall call, SqlKind op) {
@@ -512,8 +521,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         return inverseBool ? computeNotEqualitySelectivity(call) : computeFunctionSelectivity(call);
       }
 
-      Range<Float> rangeBoundaries =
-          leftValue > rightValue ? Range.closedOpen(0f, 0f) : Range.closed(leftValue, rightValue);
+      Range<Float> rangeBoundaries = makeRange(leftValue, rightValue, BoundType.CLOSED);
       Range<Float> typeBoundaries = inverseBool ? Range.closed(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY) : null;
 
       RexNode expr = operands.get(1); // expr to be checked by the BETWEEN
