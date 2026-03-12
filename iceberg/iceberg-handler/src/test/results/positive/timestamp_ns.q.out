@@ -1,8 +1,10 @@
 PREHOOK: query: CREATE TABLE t (
-  ts_us     timestamp,
+  ts_ms     timestamp,
   ts_ns     timestamp(9),
-  ts_tz_us  timestamp with local time zone,
-  ts_tz_ns  timestamp with local time zone(9)
+  ts_tz_ms  timestamp with local time zone,
+  ts_tz_ns  timestamp with local time zone(9),
+  ts_local_tz_ms TIMESTAMPLOCALTZ,
+  ts_local_tz_ns TIMESTAMPLOCALTZ(9)
 )
 STORED BY ICEBERG
 TBLPROPERTIES ('format-version'='3')
@@ -10,10 +12,12 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t
 POSTHOOK: query: CREATE TABLE t (
-  ts_us     timestamp,
+  ts_ms     timestamp,
   ts_ns     timestamp(9),
-  ts_tz_us  timestamp with local time zone,
-  ts_tz_ns  timestamp with local time zone(9)
+  ts_tz_ms  timestamp with local time zone,
+  ts_tz_ns  timestamp with local time zone(9),
+  ts_local_tz_ms TIMESTAMPLOCALTZ,
+  ts_local_tz_ns TIMESTAMPLOCALTZ(9)
 )
 STORED BY ICEBERG
 TBLPROPERTIES ('format-version'='3')
@@ -24,12 +28,16 @@ PREHOOK: query: INSERT INTO t VALUES (
   '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789'
 )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: INSERT INTO t VALUES (
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',
@@ -82,7 +90,7 @@ POSTHOOK: query: SELECT * FROM t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific
+2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific
 PREHOOK: query: CREATE TABLE tgt STORED BY ICEBERG TBLPROPERTIES ('format-version'='3') AS SELECT * FROM t
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t
@@ -95,10 +103,12 @@ POSTHOOK: Input: default@t
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tgt
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: tgt.ts_local_tz_ms SIMPLE [(t)t.FieldSchema(name:ts_local_tz_ms, type:timestamp with local time zone, comment:null), ]
+POSTHOOK: Lineage: tgt.ts_local_tz_ns SIMPLE [(t)t.FieldSchema(name:ts_local_tz_ns, type:timestamp with local time zone(9), comment:null), ]
+POSTHOOK: Lineage: tgt.ts_ms SIMPLE [(t)t.FieldSchema(name:ts_ms, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: tgt.ts_ns SIMPLE [(t)t.FieldSchema(name:ts_ns, type:timestamp(9), comment:null), ]
+POSTHOOK: Lineage: tgt.ts_tz_ms SIMPLE [(t)t.FieldSchema(name:ts_tz_ms, type:timestamp with local time zone, comment:null), ]
 POSTHOOK: Lineage: tgt.ts_tz_ns SIMPLE [(t)t.FieldSchema(name:ts_tz_ns, type:timestamp with local time zone(9), comment:null), ]
-POSTHOOK: Lineage: tgt.ts_tz_us SIMPLE [(t)t.FieldSchema(name:ts_tz_us, type:timestamp with local time zone, comment:null), ]
-POSTHOOK: Lineage: tgt.ts_us SIMPLE [(t)t.FieldSchema(name:ts_us, type:timestamp, comment:null), ]
 PREHOOK: query: SELECT * FROM tgt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tgt
@@ -107,4 +117,4 @@ POSTHOOK: query: SELECT * FROM tgt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tgt
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific
+2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific

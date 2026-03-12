@@ -555,6 +555,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected BitSet filesCreatedPerBucket = new BitSet();
 
   protected boolean isCompactionTable = false;
+  protected boolean isMmTable = false;
 
   private void initializeSpecPath() {
     // For a query of the type:
@@ -625,6 +626,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       multiFileSpray = conf.isMultiFileSpray();
       this.isBucketed = hconf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
       this.isCompactionTable = conf.isCompactionTable();
+      this.isMmTable = conf.isMmTable();
       totalFiles = conf.getTotalFiles();
       numFiles = conf.getNumFiles();
       dpCtx = conf.getDynPartCtx();
@@ -638,7 +640,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       jc = new JobConf(hconf);
       setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
       setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
-              dpCtx != null && dpCtx.hasCustomSortExpression());
+              dpCtx != null && dpCtx.hasCustomPartitionOrSortExpression());
       setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),
           Boolean.parseBoolean((String) getConf().getTableInfo().getProperties().get(
               MERGE_TASK_ENABLED + getConf().getTableInfo().getTableName())));
@@ -1189,7 +1191,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // for a given operator branch prediction should work quite nicely on it.
       // RecordUpdater expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable() || isCompactionTable) {
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || isMmTable || isCompactionTable) {
         writerOffset = bucketId;
         if (!isCompactionTable) {
           writerOffset = findWriterOffset(row);
@@ -1274,7 +1276,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected boolean areAllTrue(boolean[] statsFromRW) {
     // If we are doing an acid operation they will always all be true as RecordUpdaters always
     // collect stats
-    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID && !conf.isMmTable() && !isCompactionTable) {
+    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID && !isMmTable && !isCompactionTable) {
       return true;
     }
     for(boolean b : statsFromRW) {

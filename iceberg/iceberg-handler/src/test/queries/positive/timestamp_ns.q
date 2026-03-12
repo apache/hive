@@ -13,15 +13,19 @@
 --! qt:replace:/(\S\"total-files-size":")(\d+)(")/$1#Masked#$3/
 
 CREATE TABLE t (
-  ts_us     timestamp,
+  ts_ms     timestamp,
   ts_ns     timestamp(9),
-  ts_tz_us  timestamp with local time zone,
-  ts_tz_ns  timestamp with local time zone(9)
+  ts_tz_ms  timestamp with local time zone,
+  ts_tz_ns  timestamp with local time zone(9),
+  ts_local_tz_ms TIMESTAMPLOCALTZ,
+  ts_local_tz_ns TIMESTAMPLOCALTZ(9)
 )
 STORED BY ICEBERG
 TBLPROPERTIES ('format-version'='3');
 
 INSERT INTO t VALUES (
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',
   '2025-12-18 10:15:30.123456789',

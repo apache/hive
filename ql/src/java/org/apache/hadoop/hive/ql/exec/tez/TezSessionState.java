@@ -303,6 +303,20 @@ public class TezSessionState {
   }
 
   /**
+   * Builds the map of common local resources (app jar + localized resources) for the Tez session.
+   * Extracted for testability to ensure resources are properly registered.
+   */
+  @VisibleForTesting
+  Map<String, LocalResource> buildCommonLocalResources() {
+    final Map<String, LocalResource> commonLocalResources = new HashMap<>();
+    commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
+    for (LocalResource lr : this.resources.localizedResources) {
+      commonLocalResources.put(DagUtils.getBaseName(lr), lr);
+    }
+    return commonLocalResources;
+  }
+
+  /**
    * Opens a Tez session without performing a complete rollback/cleanup on failure.
    *
    * <p><strong>Callers MUST guard this method with try/catch and perform cleanup</strong>
@@ -318,13 +332,8 @@ public class TezSessionState {
    */
   @VisibleForTesting
   void openInternalUnsafe(boolean isAsync, LogHelper console) throws TezException, IOException {
-    final Map<String, LocalResource> commonLocalResources = new HashMap<>();
+    final Map<String, LocalResource> commonLocalResources = buildCommonLocalResources();
     final boolean llapMode = "llap".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
-
-    commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
-    for (LocalResource lr : this.resources.localizedResources) {
-      commonLocalResources.put(DagUtils.getBaseName(lr), lr);
-    }
 
     if (llapMode) {
       // localize llap client jars

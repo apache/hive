@@ -14,37 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ARG BUILD_ENV
+ARG BUILD_ENV=local
 
-FROM ubuntu as unarchive
+FROM ubuntu AS local
 ONBUILD COPY hadoop-*.tar.gz /opt
 ONBUILD COPY apache-hive-*-bin.tar.gz /opt
 ONBUILD COPY apache-tez-*-bin.tar.gz /opt
 
-FROM ubuntu as archive
+FROM ubuntu AS release
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
-ONBUILD RUN wget --no-verbose https://downloads.apache.org/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
+ONBUILD RUN wget --no-verbose https://archive.apache.org/dist/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
  wget --no-verbose https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
- wget --no-verbose https://downloads.apache.org/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz
+ wget --no-verbose https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz
 ONBUILD RUN mv /apache-tez-$TEZ_VERSION-bin.tar.gz /opt && \
  mv hadoop-$HADOOP_VERSION.tar.gz /opt && \
  mv apache-hive-$HIVE_VERSION-bin.tar.gz /opt
 
-FROM ubuntu as buildarchive
+FROM ubuntu AS hybrid
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
-ONBUILD RUN wget --no-verbose https://downloads.apache.org/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
+ONBUILD RUN wget --no-verbose https://archive.apache.org/dist/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
  wget --no-verbose https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
 ONBUILD COPY ./apache-hive-$HIVE_VERSION-bin.tar.gz /opt
 ONBUILD RUN mv /apache-tez-$TEZ_VERSION-bin.tar.gz /opt && \
  mv hadoop-$HADOOP_VERSION.tar.gz /opt
 
-FROM ${BUILD_ENV} as env
+FROM ${BUILD_ENV} AS env
 RUN echo ${BUILD_ENV}
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
