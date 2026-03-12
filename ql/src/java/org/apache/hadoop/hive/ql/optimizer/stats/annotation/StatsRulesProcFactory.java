@@ -2027,7 +2027,12 @@ public class StatsRulesProcFactory {
               String col = joinKeys.get(i).get(idx);
               ColStatistics cs = joinStats.get(i).getColumnStatisticsFromColName(col);
               if (cs != null) {
-                perAttrDVs.add(cs.getCountDistint());
+                long estimatedNdv = cs.getCountDistint();
+                if (estimatedNdv == 0) {
+                  // TOOD: explain here why
+                  estimatedNdv = joinStats.get(i).getNumRows() / 2;
+                }
+                perAttrDVs.add(estimatedNdv);
               }
             }
             distinctVals.add(getDenominator(perAttrDVs));
