@@ -652,14 +652,8 @@ public class TestStatsRulesProcFactory {
   @Test
   public void testComputeAggregateColumnMinMaxWithUnknownNumNulls() throws Exception {
     // Get the private static method via reflection
-    Class<?> groupByStatsRuleClass = null;
-    for (Class<?> innerClass : StatsRulesProcFactory.class.getDeclaredClasses()) {
-      if (innerClass.getSimpleName().equals("GroupByStatsRule")) {
-        groupByStatsRuleClass = innerClass;
-        break;
-      }
-    }
-    assertNotNull("GroupByStatsRule class not found", groupByStatsRuleClass);
+    Class<?> groupByStatsRuleClass = Class.forName(
+        StatsRulesProcFactory.class.getName() + "$GroupByStatsRule");
 
     Method method = groupByStatsRuleClass.getDeclaredMethod(
         "computeAggregateColumnMinMax",
@@ -708,13 +702,9 @@ public class TestStatsRulesProcFactory {
   @Test
   public void testComputeAggregateColumnMinMaxWithKnownNumNulls() throws Exception {
     // Get the private static method via reflection
-    Class<?> groupByStatsRuleClass = null;
-    for (Class<?> innerClass : StatsRulesProcFactory.class.getDeclaredClasses()) {
-      if (innerClass.getSimpleName().equals("GroupByStatsRule")) {
-        groupByStatsRuleClass = innerClass;
-        break;
-      }
-    }
+    Class<?> groupByStatsRuleClass = Class.forName(
+        StatsRulesProcFactory.class.getName() + "$GroupByStatsRule");
+
     Method method = groupByStatsRuleClass.getDeclaredMethod(
         "computeAggregateColumnMinMax",
         ColStatistics.class, HiveConf.class, AggregationDesc.class, String.class, Statistics.class);
@@ -757,14 +747,8 @@ public class TestStatsRulesProcFactory {
   @Test
   public void testUpdateNumNullsPreservesUnknownNumNulls() throws Exception {
     // Get the private JoinStatsRule inner class
-    Class<?> joinStatsRuleClass = null;
-    for (Class<?> innerClass : StatsRulesProcFactory.class.getDeclaredClasses()) {
-      if (innerClass.getSimpleName().equals("JoinStatsRule")) {
-        joinStatsRuleClass = innerClass;
-        break;
-      }
-    }
-    assertNotNull("JoinStatsRule class not found", joinStatsRuleClass);
+    Class<?> joinStatsRuleClass = Class.forName(
+        StatsRulesProcFactory.class.getName() + "$JoinStatsRule");
 
     // Create an instance of JoinStatsRule
     Constructor<?> ctor = joinStatsRuleClass.getDeclaredConstructor();

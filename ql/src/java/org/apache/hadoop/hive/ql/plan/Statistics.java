@@ -240,34 +240,30 @@ public class Statistics implements Serializable {
   }
 
   public void addToColumnStats(List<ColStatistics> colStats) {
-
+    if (colStats == null) {
+      return;
+    }
     if (columnStats == null) {
       columnStats = Maps.newHashMap();
     }
 
-    if (colStats != null) {
-      for (ColStatistics cs : colStats) {
-        ColStatistics updatedCS = null;
-        if (cs != null) {
-
-          String key = cs.getColumnName();
-          // if column statistics for a column is already found then merge the statistics
-          if (columnStats.containsKey(key) && columnStats.get(key) != null) {
-            updatedCS = columnStats.get(key);
-            updatedCS.setAvgColLen(Math.max(updatedCS.getAvgColLen(), cs.getAvgColLen()));
-            // numNulls < 0 means "unknown" - propagate unknown if either is unknown
-            if (cs.getNumNulls() < 0 || updatedCS.getNumNulls() < 0) {
-              updatedCS.setNumNulls(-1);
-            } else {
-              updatedCS.setNumNulls(StatsUtils.safeAdd(updatedCS.getNumNulls(), cs.getNumNulls()));
-            }
-            updatedCS.setCountDistint(Math.max(updatedCS.getCountDistint(), cs.getCountDistint()));
-            columnStats.put(key, updatedCS);
-          } else {
-            columnStats.put(key, cs);
-          }
-        }
+    for (ColStatistics cs : colStats) {
+      if (cs == null) {
+        continue;
       }
+      String key = cs.getColumnName();
+      ColStatistics existing = columnStats.get(key);
+      if (existing == null) {
+        columnStats.put(key, cs);
+        continue;
+      }
+      existing.setAvgColLen(Math.max(existing.getAvgColLen(), cs.getAvgColLen()));
+      if (cs.getNumNulls() < 0 || existing.getNumNulls() < 0) {
+        existing.setNumNulls(-1);
+      } else {
+        existing.setNumNulls(StatsUtils.safeAdd(existing.getNumNulls(), cs.getNumNulls()));
+      }
+      existing.setCountDistint(Math.max(existing.getCountDistint(), cs.getCountDistint()));
     }
   }
 
