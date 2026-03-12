@@ -98,6 +98,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
   protected final Configuration conf;
   protected Table icebergTable = null;
+  protected Catalogs.MaterializedView icebergMaterializedView = null;
   protected Properties tableProperties;
   protected boolean createHMSTableInHook = false;
 
