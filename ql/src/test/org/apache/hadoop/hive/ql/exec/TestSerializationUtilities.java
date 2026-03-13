@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.google.common.collect.ArrayListMultimap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,8 +49,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
-import org.testcontainers.shaded.com.google.common.collect.ArrayListMultimap;
-import org.testcontainers.shaded.org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TestSerializationUtilities {
 
@@ -162,7 +161,7 @@ public class TestSerializationUtilities {
   public void testSerializeChildrenFromGuavaCollection() throws Exception {
     ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "foo", null, false);
     ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "bar");
-    ArrayListMultimap<@Nullable Object, @Nullable ExprNodeDesc> l = ArrayListMultimap.create();
+    ArrayListMultimap<Object, ExprNodeDesc> l = ArrayListMultimap.create();
     l.put("coltype", column);
     l.put("coltype", constant);
 
