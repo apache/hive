@@ -3189,6 +3189,9 @@ public class StatsRulesProcFactory {
   }
 
   static boolean satisfyPrecondition(Statistics stats, List<String> joinKeys) {
+    if (stats.getNumRows() <= 1) {
+      return true;
+    }
     for (String col : joinKeys) {
       ColStatistics cs = stats.getColumnStatisticsFromColName(col);
       if (cs != null && cs.getCountDistint() == 0L) {
