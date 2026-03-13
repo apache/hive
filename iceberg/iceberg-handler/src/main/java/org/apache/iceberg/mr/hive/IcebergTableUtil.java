@@ -32,7 +32,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -103,6 +103,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.transforms.Transform;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Types;
@@ -749,13 +750,12 @@ public class IcebergTableUtil {
     return colStats;
   }
 
-  public static ExecutorService newDeleteThreadPool(String completeName, int numThreads) {
-    AtomicInteger deleteThreadsIndex = new AtomicInteger(0);
-    return Executors.newFixedThreadPool(numThreads, runnable -> {
-      Thread thread = new Thread(runnable);
-      thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
-      return thread;
-    });
+  public static ExecutorService newFixedThreadPool(String threadName, int numThreads) {
+    ThreadFactory threadFactory =
+        new ThreadFactoryBuilder()
+            .setNameFormat(threadName + "-%d")
+            .build();
+    return Executors.newFixedThreadPool(numThreads, threadFactory);
   }
 
   public static boolean hasUndergonePartitionEvolution(Table table) {
