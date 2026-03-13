@@ -73,7 +73,7 @@ public class TestZooKeeperWithMiniKdc {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_BIND_HOST, "localhost");
 
     DriverManager.setLoginTimeout(0);
-    HiveConf.setVar(conf, HiveConf.ConfVars.METASTORE_URIS, "localhost:" + zookeeper.getMappedPort(2181));
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "localhost:" + zookeeper.getMappedPort(2181));
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

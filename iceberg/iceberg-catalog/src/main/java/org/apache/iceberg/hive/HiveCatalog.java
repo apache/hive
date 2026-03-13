@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -107,11 +108,11 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
     }
 
     if (properties.containsKey(CatalogProperties.URI)) {
-      this.conf.set(HiveConf.ConfVars.METASTORE_URIS.varname, properties.get(CatalogProperties.URI));
+      this.conf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), properties.get(CatalogProperties.URI));
     }
 
     if (properties.containsKey(CatalogProperties.WAREHOUSE_LOCATION)) {
-      this.conf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
+      this.conf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
           LocationUtil.stripTrailingSlash(properties.get(CatalogProperties.WAREHOUSE_LOCATION)));
     }
 
@@ -705,7 +706,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   }
 
   private String databaseLocation(String databaseName) {
-    String warehouseLocation = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
+    String warehouseLocation = conf.get(MetastoreConf.ConfVars.WAREHOUSE.getHiveName());
     Preconditions.checkNotNull(
             warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.dir=null");
     warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
@@ -779,7 +780,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add("name", name)
-        .add("uri", this.conf == null ? "" : this.conf.get(HiveConf.ConfVars.METASTORE_URIS.varname))
+        .add("uri", this.conf == null ? "" : this.conf.get(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName()))
         .toString();
   }
 

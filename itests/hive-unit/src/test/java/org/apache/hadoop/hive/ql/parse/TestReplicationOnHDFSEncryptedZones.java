@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSTestUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.AfterClass;
@@ -40,7 +41,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 public class TestReplicationOnHDFSEncryptedZones {
@@ -70,7 +70,7 @@ public class TestReplicationOnHDFSEncryptedZones {
 
     conf.setLong(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, 1);
     conf.setLong(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname, 0);
-    conf.setBoolean(METASTORE_AGGREGATE_STATS_CACHE_ENABLED.varname, false);
+    conf.setBoolean(MetastoreConf.ConfVars.AGGREGATE_STATS_CACHE_ENABLED.getHiveName(), false);
 
     miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
@@ -110,7 +110,7 @@ public class TestReplicationOnHDFSEncryptedZones {
 
     MiniDFSCluster miniReplicaDFSCluster =
         new MiniDFSCluster.Builder(replicaConf).numDataNodes(2).format(true).build();
-    replicaConf.setBoolean(METASTORE_AGGREGATE_STATS_CACHE_ENABLED.varname, false);
+    replicaConf.setBoolean(MetastoreConf.ConfVars.AGGREGATE_STATS_CACHE_ENABLED.getHiveName(), false);
 
     DFSTestUtil.createKey("test_key123", miniReplicaDFSCluster, replicaConf);
 
@@ -155,7 +155,7 @@ public class TestReplicationOnHDFSEncryptedZones {
 
     MiniDFSCluster miniReplicaDFSCluster =
         new MiniDFSCluster.Builder(replicaConf).numDataNodes(2).format(true).build();
-    replicaConf.setBoolean(METASTORE_AGGREGATE_STATS_CACHE_ENABLED.varname, false);
+    replicaConf.setBoolean(MetastoreConf.ConfVars.AGGREGATE_STATS_CACHE_ENABLED.getHiveName(), false);
 
     WarehouseInstance replica = new WarehouseInstance(LOG, miniReplicaDFSCluster,
         new HashMap<String, String>() {{

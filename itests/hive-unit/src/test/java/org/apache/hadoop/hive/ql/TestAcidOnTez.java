@@ -119,7 +119,7 @@ public class TestAcidOnTez {
 
     hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+    hiveConf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), TEST_WAREHOUSE_DIR);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_MAPRED_MODE, "nonstrict");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());

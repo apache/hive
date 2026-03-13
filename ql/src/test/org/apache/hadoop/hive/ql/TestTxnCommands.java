@@ -990,7 +990,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("start transaction");
     runStatementOnDriver("delete from " + Table.ACIDTBL + " where a = 5");
     //make sure currently running txn is considered aborted by housekeeper
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 2, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_TIMEOUT, 2, TimeUnit.MILLISECONDS);
     MetastoreTaskThread houseKeeperService = new AcidHouseKeeperService();
     houseKeeperService.setConf(hiveConf);
     //this will abort the txn
@@ -1002,7 +1002,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     //now test that we don't timeout locks we should not
     //heartbeater should be running in the background every 1/2 second
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_TIMEOUT, 1, TimeUnit.SECONDS);
     // Have to reset the conf when we change it so that the change takes affect
     houseKeeperService.setConf(hiveConf);
     runStatementOnDriver("start transaction");

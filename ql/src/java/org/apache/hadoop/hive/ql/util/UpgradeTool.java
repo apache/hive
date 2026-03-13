@@ -175,7 +175,7 @@ public class UpgradeTool {
       return RetryingMetaStoreClient.getProxy(conf, true);
     } catch (MetaException e) {
       throw new RuntimeException("Error connecting to Hive Metastore URI: "
-          + conf.getVar(HiveConf.ConfVars.METASTORE_URIS) + ". " + e.getMessage(), e);
+          + MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_URIS) + ". " + e.getMessage(), e);
     }
   }
   /**

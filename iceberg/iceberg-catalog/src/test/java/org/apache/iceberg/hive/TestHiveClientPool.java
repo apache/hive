@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.jupiter.api.AfterEach;
@@ -70,19 +71,19 @@ public class TestHiveClientPool {
   @Test
   public void testConf() {
     HiveConf conf = createHiveConf();
-    conf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, "file:/mywarehouse/");
+    conf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), "file:/mywarehouse/");
 
     HiveClientPool clientPool = new HiveClientPool(10, conf);
     HiveConf clientConf = clientPool.hiveConf();
 
-    assertThat(clientConf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname))
-        .isEqualTo(conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname));
+    assertThat(clientConf.get(MetastoreConf.ConfVars.WAREHOUSE.getHiveName()))
+        .isEqualTo(conf.get(MetastoreConf.ConfVars.WAREHOUSE.getHiveName()));
     assertThat(clientPool.poolSize()).isEqualTo(10);
 
     // 'hive.metastore.sasl.enabled' should be 'true' as defined in xml
-    assertThat(clientConf.get(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname))
-        .isEqualTo(conf.get(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname));
-    assertThat(clientConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL)).isTrue();
+    assertThat(clientConf.get(MetastoreConf.ConfVars.USE_THRIFT_SASL.getHiveName()))
+        .isEqualTo(conf.get(MetastoreConf.ConfVars.USE_THRIFT_SASL.getHiveName()));
+    assertThat(MetastoreConf.getBoolVar(clientConf, MetastoreConf.ConfVars.USE_THRIFT_SASL)).isTrue();
   }
 
   private HiveConf createHiveConf() {

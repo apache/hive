@@ -49,6 +49,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -2056,7 +2057,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
    */
   @Test
   public void testFetchFirstDfsCmds() throws Exception {
-    String wareHouseDir = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
+    String wareHouseDir = conf.get(MetastoreConf.ConfVars.WAREHOUSE.getHiveName());
     execFetchFirst("dfs -ls " + wareHouseDir, DfsProcessor.DFS_RESULT_HEADER, false);
   }
 

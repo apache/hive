@@ -65,7 +65,7 @@ public class TestHiveClientCache {
     assertNotNull(client);
 
     // Set different uri as it is one of the criteria deciding whether to return the same client or not
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, " "); // URIs are checked for string equivalence, even spaces make them different
+    hiveConf.set("hive.metastore.uris", " "); // URIs are checked for string equivalence, even spaces make them different
     IMetaStoreClient client2 = cache.get(hiveConf);
     assertNotNull(client2);
     assertNotSame(client, client2);

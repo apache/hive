@@ -1572,8 +1572,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
   @Test
   public void testOpenTxnsCounter() throws Exception {
-    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_MAX_OPEN_TXNS, 3);
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COUNT_OPEN_TXNS_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    MetastoreConf.setLongVar(hiveConf, MetastoreConf.ConfVars.MAX_OPEN_TXNS, 3);
+    MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.COUNT_OPEN_TXNS_INTERVAL, 10, TimeUnit.MILLISECONDS);
     OpenTxnsResponse openTxnsResponse = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
 
     AcidOpenTxnsCounterService openTxnsCounterService = new AcidOpenTxnsCounterService();
