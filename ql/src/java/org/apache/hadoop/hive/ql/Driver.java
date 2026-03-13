@@ -203,7 +203,9 @@ public class Driver implements IDriver {
 
       driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
       driverContext.getQueryDisplay().setPerfLogEnds(QueryDisplay.Phase.EXECUTION, perfLogger.getEndTimes());
-
+      if (DriverUtils.isOtelExportTezCountersEnabled(driverContext)) {
+        driverContext.getQueryDisplay().setTezCounters(driverContext.getRuntimeContext().getCounters());
+      }
       runPostDriverHooks(hookContext);
       isFinishedWithError = false;
     } finally {
