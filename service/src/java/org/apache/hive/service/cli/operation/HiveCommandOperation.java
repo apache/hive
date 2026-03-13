@@ -59,8 +59,8 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
   private BufferedReader resultReader;
 
   protected HiveCommandOperation(HiveSession parentSession, String statement,
-      CommandProcessor commandProcessor, Map<String, String> confOverlay) {
-    super(parentSession, statement, confOverlay);
+      CommandProcessor commandProcessor, Map<String, String> confOverlay, boolean embedded) {
+    super(parentSession, statement, confOverlay, embedded);
     this.commandProcessor = commandProcessor;
     setupSessionIO(parentSession.getSessionState());
   }

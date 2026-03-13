@@ -45,13 +45,7 @@ import org.apache.hive.service.cli.session.HiveSession;
 public abstract class ExecuteStatementOperation extends Operation {
   protected String statement = null;
 
-  public ExecuteStatementOperation(HiveSession parentSession, String statement,
-      Map<String, String> confOverlay) {
-    super(parentSession, confOverlay, OperationType.EXECUTE_STATEMENT);
-    this.statement = statement;
-  }
-
-  public ExecuteStatementOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean runInBackground, boolean generateNewQueryId) {
+  public ExecuteStatementOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean generateNewQueryId) {
     super(parentSession, confOverlay, OperationType.EXECUTE_STATEMENT, generateNewQueryId);
     this.statement = statement;
   }
@@ -94,9 +88,9 @@ public abstract class ExecuteStatementOperation extends Operation {
       // Pass the original statement to SQLOperation as sql parser can remove comments by itself
       return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout, hplSqlMode());
     } else if (processor instanceof ShowProcessListProcessor) {
-      return new ShowProcessListOperation(parentSession, cleanStatement, processor, confOverlay);
+      return new ShowProcessListOperation(parentSession, cleanStatement, processor, confOverlay, hplSqlMode());
     }
-    return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay);
+    return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay, hplSqlMode());
   }
 
   private static void setHiveVariables(HiveSession parentSession, Exec interpreter) {
