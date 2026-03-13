@@ -462,16 +462,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
   }
 
   /**
-   * Rewrites a {@link Values}.
-   *
-   * @param rel Values to be rewritten
-   */
-  public Frame decorrelateRel(Values rel) {
-    // There are no inputs, so rel does not need to be changed.
-    return null;
-  }
-
-  /**
    * Rewrites a {@link Aggregate}.
    *
    * @param rel Aggregate to rewrite
