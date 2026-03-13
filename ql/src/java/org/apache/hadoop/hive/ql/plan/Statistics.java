@@ -252,18 +252,16 @@ public class Statistics implements Serializable {
         continue;
       }
       String key = cs.getColumnName();
-      ColStatistics existing = columnStats.get(key);
-      if (existing == null) {
-        columnStats.put(key, cs);
-        continue;
+      ColStatistics existing = columnStats.computeIfAbsent(key, k -> cs);
+      if (existing != cs) {
+        existing.setAvgColLen(Math.max(existing.getAvgColLen(), cs.getAvgColLen()));
+        if (cs.getNumNulls() < 0 || existing.getNumNulls() < 0) {
+          existing.setNumNulls(-1);
+        } else {
+          existing.setNumNulls(StatsUtils.safeAdd(existing.getNumNulls(), cs.getNumNulls()));
+        }
+        existing.setCountDistint(Math.max(existing.getCountDistint(), cs.getCountDistint()));
       }
-      existing.setAvgColLen(Math.max(existing.getAvgColLen(), cs.getAvgColLen()));
-      if (cs.getNumNulls() < 0 || existing.getNumNulls() < 0) {
-        existing.setNumNulls(-1);
-      } else {
-        existing.setNumNulls(StatsUtils.safeAdd(existing.getNumNulls(), cs.getNumNulls()));
-      }
-      existing.setCountDistint(Math.max(existing.getCountDistint(), cs.getCountDistint()));
     }
   }
 

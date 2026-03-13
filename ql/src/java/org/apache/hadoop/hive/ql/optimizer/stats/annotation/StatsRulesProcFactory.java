@@ -1776,7 +1776,8 @@ public class StatsRulesProcFactory {
      * If possible, sets the min / max value for the column based on the aggregate function
      * being calculated and its input.
      */
-    private static void computeAggregateColumnMinMax(ColStatistics cs, HiveConf conf, AggregationDesc agg, String aggType,
+    @VisibleForTesting
+    static void computeAggregateColumnMinMax(ColStatistics cs, HiveConf conf, AggregationDesc agg, String aggType,
         Statistics parentStats) throws SemanticException {
       if (agg.getParameters() != null && agg.getParameters().size() == 1) {
         ColStatistics parentCS = StatsUtils.getColStatisticsFromExpression(
@@ -2619,7 +2620,8 @@ public class StatsRulesProcFactory {
       return false;
     }
 
-    private void updateNumNulls(ColStatistics colStats, long leftUnmatchedRows, long rightUnmatchedRows,
+    @VisibleForTesting
+    void updateNumNulls(ColStatistics colStats, long leftUnmatchedRows, long rightUnmatchedRows,
         long newNumRows, long pos, CommonJoinOperator<? extends JoinDesc> jop) {
 
       if (!(jop.getConf().getConds().length == 1)) {

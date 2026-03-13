@@ -41,8 +41,6 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.junit.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -650,20 +648,8 @@ public class TestStatsRulesProcFactory {
    * Without the fix, valuesCount = numRows - (-1) = numRows + 1 (wrong).
    */
   @Test
-  public void testComputeAggregateColumnMinMaxWithUnknownNumNulls() throws Exception {
-    // Get the private static method via reflection
-    Class<?> groupByStatsRuleClass = Class.forName(
-        StatsRulesProcFactory.class.getName() + "$GroupByStatsRule");
-
-    Method method = groupByStatsRuleClass.getDeclaredMethod(
-        "computeAggregateColumnMinMax",
-        ColStatistics.class, HiveConf.class, AggregationDesc.class, String.class, Statistics.class);
-    method.setAccessible(true);
-
-    // Create output ColStatistics for the COUNT result
+  public void testComputeAggregateColumnMinMaxWithUnknownNumNulls() throws SemanticException {
     ColStatistics cs = new ColStatistics("_col0", "bigint");
-
-    // Create HiveConf
     HiveConf conf = new HiveConf();
 
     // Create parent column stats with numNulls=-1 (unknown) and Range(1, 100)
@@ -672,23 +658,20 @@ public class TestStatsRulesProcFactory {
     parentColStats.setCountDistint(100);
     parentColStats.setRange(1, 100);
 
-    // Create parent Statistics with 100 rows
     Statistics parentStats = new Statistics(100, 400, 400, 400);
     parentStats.addToColumnStats(Collections.singletonList(parentColStats));
 
-    // Create ExprNodeColumnDesc for the "val" column
     ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(
         TypeInfoFactory.intTypeInfo, "val", "t", false);
 
-    // Create AggregationDesc for COUNT(val) using no-arg constructor to avoid NPE
     AggregationDesc agg = new AggregationDesc();
     agg.setGenericUDAFName("count");
     agg.setParameters(Collections.singletonList(colExpr));
     agg.setDistinct(false);
     agg.setMode(GenericUDAFEvaluator.Mode.COMPLETE);
 
-    // Call the method
-    method.invoke(null, cs, conf, agg, "bigint", parentStats);
+    StatsRulesProcFactory.GroupByStatsRule.computeAggregateColumnMinMax(
+        cs, conf, agg, "bigint", parentStats);
 
     // Verify: With the fix, COUNT Range should be (0, 100)
     // numNulls=-1 is treated as 0, so valuesCount = 100 - 0 = 100
@@ -700,16 +683,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComputeAggregateColumnMinMaxWithKnownNumNulls() throws Exception {
-    // Get the private static method via reflection
-    Class<?> groupByStatsRuleClass = Class.forName(
-        StatsRulesProcFactory.class.getName() + "$GroupByStatsRule");
-
-    Method method = groupByStatsRuleClass.getDeclaredMethod(
-        "computeAggregateColumnMinMax",
-        ColStatistics.class, HiveConf.class, AggregationDesc.class, String.class, Statistics.class);
-    method.setAccessible(true);
-
+  public void testComputeAggregateColumnMinMaxWithKnownNumNulls() throws SemanticException {
     ColStatistics cs = new ColStatistics("_col0", "bigint");
     HiveConf conf = new HiveConf();
 
@@ -730,7 +704,8 @@ public class TestStatsRulesProcFactory {
     agg.setDistinct(false);
     agg.setMode(GenericUDAFEvaluator.Mode.COMPLETE);
 
-    method.invoke(null, cs, conf, agg, "bigint", parentStats);
+    StatsRulesProcFactory.GroupByStatsRule.computeAggregateColumnMinMax(
+        cs, conf, agg, "bigint", parentStats);
 
     // With known numNulls=20, valuesCount = 100 - 20 = 80
     assertNotNull("Range should be set", cs.getRange());
@@ -745,24 +720,10 @@ public class TestStatsRulesProcFactory {
    * Without the fix, LEFT_OUTER_JOIN would calculate: newNumNulls = oldNumNulls + leftUnmatchedRows = -1 + 100 = 99
    */
   @Test
-  public void testUpdateNumNullsPreservesUnknownNumNulls() throws Exception {
-    // Get the private JoinStatsRule inner class
-    Class<?> joinStatsRuleClass = Class.forName(
-        StatsRulesProcFactory.class.getName() + "$JoinStatsRule");
-
-    // Create an instance of JoinStatsRule
-    Constructor<?> ctor = joinStatsRuleClass.getDeclaredConstructor();
-    ctor.setAccessible(true);
-    Object joinStatsRule = ctor.newInstance();
-
-    // Get the updateNumNulls method
-    Method updateNumNulls = joinStatsRuleClass.getDeclaredMethod("updateNumNulls",
-        ColStatistics.class, long.class, long.class, long.class, long.class,
-        CommonJoinOperator.class);
-    updateNumNulls.setAccessible(true);
+  public void testUpdateNumNullsPreservesUnknownNumNulls() {
+    StatsRulesProcFactory.JoinStatsRule joinStatsRule = new StatsRulesProcFactory.JoinStatsRule();
 
     // Create ColStatistics with numNulls = -1 (unknown)
-    // Use a column name that won't be a join key
     ColStatistics colStats = new ColStatistics("non_join_col", "int");
     colStats.setNumNulls(-1);
     colStats.setCountDistint(100);
@@ -774,7 +735,6 @@ public class TestStatsRulesProcFactory {
 
     JoinDesc joinDesc = mock(JoinDesc.class);
     when(joinDesc.getConds()).thenReturn(new JoinCondDesc[] {joinCond});
-    // Return empty join keys so our column won't be a join key
     when(joinDesc.getJoinKeys()).thenReturn(new ExprNodeDesc[][] {});
 
     @SuppressWarnings("unchecked")
@@ -786,7 +746,7 @@ public class TestStatsRulesProcFactory {
     // - pos=0 (matches joinCond.getRight())
     // With the fix: should return early because numNulls is -1
     // Without fix: numNulls would become Math.min(1000, -1 + 100) = 99
-    updateNumNulls.invoke(joinStatsRule, colStats, 100L, 100L, 1000L, 0L, mockJop);
+    joinStatsRule.updateNumNulls(colStats, 100L, 100L, 1000L, 0L, mockJop);
 
     // Assert that numNulls is still -1 (unchanged)
     assertEquals("Unknown numNulls (-1) should be preserved after updateNumNulls",
