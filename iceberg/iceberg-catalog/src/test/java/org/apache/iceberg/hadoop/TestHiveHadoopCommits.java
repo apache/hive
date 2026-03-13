@@ -250,11 +250,7 @@ class TestHiveHadoopCommits extends HiveHadoopTableTestBase {
         unexpectedException.set(e);
       }
     };
-
-    Tasks.range(2)
-            .executeWith(executorService)
-            .run(i -> commitTask.run());
-
+    Tasks.range(2).executeWith(executorService).run(i -> commitTask.run());
     executorService.shutdown();
     if (!executorService.awaitTermination(610, TimeUnit.SECONDS)) {
       executorService.shutdownNow();
