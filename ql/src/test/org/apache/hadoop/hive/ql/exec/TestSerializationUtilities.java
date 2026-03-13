@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -45,6 +48,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
+import org.testcontainers.shaded.com.google.common.collect.ArrayListMultimap;
+import org.testcontainers.shaded.org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TestSerializationUtilities {
 
@@ -151,6 +156,25 @@ public class TestSerializationUtilities {
     buf = SerializationUtilities.serializeObjectWithTypeInformation(validExpr);
     ExprNodeDesc desc = SerializationUtilities.deserializeObjectWithTypeInformation(buf, true);
     Assert.assertTrue(ExprNodeDescUtils.isSame(validExpr, desc));
+  }
+
+  @Test
+  public void testSerializeChildrenFromGuavaCollection() throws Exception {
+    ExprNodeDesc column = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "foo", null, false);
+    ExprNodeDesc constant = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "bar");
+    ArrayListMultimap<@Nullable Object, @Nullable ExprNodeDesc> l = ArrayListMultimap.create();
+    l.put("coltype", column);
+    l.put("coltype", constant);
+
+    FunctionInfo inFunctionInfo = FunctionRegistry.getFunctionInfo("in");
+    Optional<Collection<ExprNodeDesc>> v = l.asMap().values().stream().findFirst();
+    Assert.assertTrue(v.isPresent());
+    List<ExprNodeDesc> children = (List<ExprNodeDesc>) v.get();
+    ExprNodeGenericFuncDesc node = ExprNodeGenericFuncDesc.newInstance(inFunctionInfo.getGenericUDF(), "in", children);
+
+    byte[] buf = SerializationUtilities.serializeObjectWithTypeInformation(node);
+    ExprNodeDesc desc = SerializationUtilities.deserializeObjectWithTypeInformation(buf, true);
+    Assert.assertTrue(ExprNodeDescUtils.isSame(node, desc));
   }
 
   private MapWork doSerDeser(Configuration configuration) throws Exception, IOException {
