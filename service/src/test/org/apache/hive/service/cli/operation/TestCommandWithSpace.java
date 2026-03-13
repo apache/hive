@@ -32,22 +32,23 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TestCommandWithSpace {
-    
+
     @Test
-    public void testCommandWithPrefixSpace() throws IllegalAccessException, ClassNotFoundException, InstantiationException, HiveSQLException {
+    public void testCommandWithPrefixSpace()
+        throws IllegalAccessException, ClassNotFoundException, InstantiationException, HiveSQLException {
         String query = " dfs -ls /";
         HiveConf conf = new HiveConfForTest(getClass());
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
         conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-                "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+            "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
         SessionState.start(conf);
         HiveSession mockHiveSession = mock(HiveSession.class);
         when(mockHiveSession.getHiveConf()).thenReturn(conf);
         when(mockHiveSession.getSessionState()).thenReturn(SessionState.get());
         DfsProcessor dfsProcessor = new DfsProcessor(new Configuration());
-        HiveCommandOperation sqlOperation = new HiveCommandOperation(mockHiveSession, query, dfsProcessor, ImmutableMap.of());
+        HiveCommandOperation sqlOperation =
+            new HiveCommandOperation(mockHiveSession, query, dfsProcessor, ImmutableMap.of(), false);
         sqlOperation.run();
     }
-
 }

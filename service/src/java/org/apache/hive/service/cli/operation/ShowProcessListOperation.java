@@ -39,8 +39,8 @@ public class ShowProcessListOperation extends HiveCommandOperation {
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
   protected ShowProcessListOperation(HiveSession parentSession, String statement,
-      CommandProcessor commandProcessor, Map<String, String> confOverlay) {
-    super(parentSession, statement, commandProcessor, confOverlay);
+      CommandProcessor commandProcessor, Map<String, String> confOverlay, boolean embedded) {
+    super(parentSession, statement, commandProcessor, confOverlay, embedded);
   }
 
   @Override

@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.hadoop.hive.common.LogUtils;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.thrift.Type;
@@ -58,7 +57,7 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
   private TableSchema schema;
 
   public HplSqlOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean runInBackground, Exec exec) {
-    super(parentSession, statement, confOverlay, runInBackground, false);
+    super(parentSession, statement, confOverlay, false);
     this.exec = exec;
     this.runInBackground = runInBackground;
     this.exec.setResultListener(this);
