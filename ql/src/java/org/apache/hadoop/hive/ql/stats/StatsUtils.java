@@ -1574,6 +1574,7 @@ public class StatsUtils {
             Optional<ColStatistics> res = se.estimate(csList);
             if (res.isPresent()) {
               ColStatistics newStats = res.get();
+              newStats.setCountDistint(Math.min(newStats.getCountDistint(), numRows));
               colType = colType.toLowerCase();
               newStats.setColumnType(colType);
               newStats.setColumnName(colName);
