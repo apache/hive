@@ -39,8 +39,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.Utils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -78,7 +78,7 @@ public class TezJobMonitor {
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
 
-  private final TezSessionState session;
+  private final TezSession session;
   private final PerfLogger perfLogger;
   private static final List<DAGClient> shutdownList;
   private final List<BaseWork> topSortedWorks;
@@ -120,7 +120,7 @@ public class TezJobMonitor {
   // compile time tez counters
   private final TezCounters counters;
 
-  public TezJobMonitor(TezSessionState session, List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf,
+  public TezJobMonitor(TezSession session, List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf,
       DAG dag, Context ctx, final TezCounters counters, PerfLogger perfLogger) {
     this.session = session;
     this.topSortedWorks = topSortedWorks;

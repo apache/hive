@@ -130,7 +130,7 @@ public class TezSessionPoolManagerMetrics {
   }
 
   void collectMetrics() {
-    List<TezSessionState> sessions = poolManager.getSessions();
+    List<TezSession> sessions = poolManager.getSessions();
     LOG.debug("Updating metrics, session count: {}", sessions.size());
 
     if (sessions.isEmpty()) {
@@ -148,7 +148,7 @@ public class TezSessionPoolManagerMetrics {
         new ThreadFactoryBuilder().setNameFormat("TezSessionPoolManagerMetrics collector thread - #%d").build());
     long start = Time.monotonicNow();
 
-    for (TezSessionState session : sessions) {
+    for (TezSession session : sessions) {
       collectTasks.add(CompletableFuture.runAsync(() -> {
         Map<String, Double> metrics = session.getMetrics();
         LOG.debug("Achieved metrics from Tez session ({}): {}", session.getSessionId(), metrics);

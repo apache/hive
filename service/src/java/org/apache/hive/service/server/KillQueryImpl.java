@@ -165,16 +165,16 @@ public class KillQueryImpl implements KillQuery {
   }
 
   @Override
-  public void killQuery(String queryIdOrTag, String errMsg, HiveConf conf) throws HiveException {
-    killQuery(queryIdOrTag, errMsg, conf, false, SessionState.get().getUserName(), isAdmin());
+  public void killQuery(String queryIdOrTag, String errMsg, HiveConf conf, boolean isYarn) throws HiveException {
+    killQuery(queryIdOrTag, errMsg, conf, false, SessionState.get().getUserName(), isAdmin(), isYarn);
   }
 
   public void killLocalQuery(String queryIdOrTag, HiveConf conf, String doAs, boolean doAsAdmin) throws HiveException {
-    killQuery(queryIdOrTag, null, conf, true, doAs, doAsAdmin);
+    killQuery(queryIdOrTag, null, conf, true, doAs, doAsAdmin, true);
   }
 
   private void killQuery(String queryIdOrTag, String errMsg, HiveConf conf, boolean onlyLocal, String doAs,
-      boolean doAsAdmin) throws HiveException {
+      boolean doAsAdmin, boolean isYarn) throws HiveException {
     errMsg = StringUtils.defaultString(errMsg, KillQueriesOperation.KILL_QUERY_MESSAGE);
     TagOrId tagOrId = TagOrId.UNKNOWN;
     Set<Operation> operationsToKill = new HashSet<>();
@@ -190,7 +190,7 @@ public class KillQueryImpl implements KillQuery {
       }
     }
     if (!operationsToKill.isEmpty()) {
-      killOperations(queryIdOrTag, errMsg, conf, tagOrId, operationsToKill, doAs, doAsAdmin);
+      killOperations(queryIdOrTag, errMsg, conf, tagOrId, operationsToKill, doAs, doAsAdmin, isYarn);
     } else {
       LOG.debug("Query not found with tag/id: {}", queryIdOrTag);
       if (!onlyLocal && killQueryZookeeperManager != null &&
@@ -210,7 +210,7 @@ public class KillQueryImpl implements KillQuery {
   }
 
   private void killOperations(String queryIdOrTag, String errMsg, HiveConf conf, TagOrId tagOrId,
-      Set<Operation> operationsToKill, String doAs, boolean doAsAdmin) throws HiveException {
+      Set<Operation> operationsToKill, String doAs, boolean doAsAdmin, boolean isYarn) throws HiveException {
     try {
       switch (tagOrId) {
       case ID:
@@ -221,7 +221,9 @@ public class KillQueryImpl implements KillQuery {
           if (queryTag == null) {
             queryTag = queryIdOrTag;
           }
-          killChildYarnJobs(conf, queryTag, doAs, doAsAdmin);
+          if (isYarn) {
+            killChildYarnJobs(conf, queryTag, doAs, doAsAdmin);
+          }
         } else {
           // no privilege to cancel
           throw new HiveSQLException("No privilege to kill query id");
@@ -237,7 +239,9 @@ public class KillQueryImpl implements KillQuery {
         if (numCanceled == 0) {
           throw new HiveSQLException("No privilege to kill query tag");
         } else {
-          killChildYarnJobs(conf, queryIdOrTag, doAs, doAsAdmin);
+          if (isYarn) {
+            killChildYarnJobs(conf, queryIdOrTag, doAs, doAsAdmin);
+          }
         }
         break;
       case UNKNOWN:

@@ -86,7 +86,9 @@ import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezExternalSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
+import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.history.HiveHistoryImpl;
@@ -255,7 +257,7 @@ public class SessionState implements ISessionAuthState {
 
   private Map<String, List<String>> localMapRedErrors;
 
-  private TezSessionState tezSessionState;
+  private TezSession tezSessionState;
 
   private String currentDatabase;
 
@@ -761,9 +763,16 @@ public class SessionState implements ISessionAuthState {
       return;
     }
 
+    boolean useExternalSessions = HiveConf.getBoolVar(startSs.getConf(),
+        ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS);
+
     try {
       if (startSs.tezSessionState == null) {
-        startSs.setTezSession(new TezSessionState(startSs.getSessionId(), startSs.sessionConf));
+        if (useExternalSessions) {
+          startSs.setTezSession(new TezExternalSessionState(startSs.getSessionId(), startSs.sessionConf));
+        } else {
+          startSs.setTezSession(new TezSessionState(startSs.getSessionId(), startSs.sessionConf));
+        }
       } else {
         // Only TezTask sets this, and then removes when done, so we don't expect to see it.
         LOG.warn("Tez session was already present in SessionState before start: "
@@ -2083,23 +2092,23 @@ public class SessionState implements ISessionAuthState {
     }
   }
 
-  public TezSessionState getTezSession() {
+  public TezSession getTezSession() {
     return tezSessionState;
   }
 
   /** Called from TezTask to attach a TezSession to use to the threadlocal. Ugly pattern... */
-  public void setTezSession(TezSessionState session) {
+  public void setTezSession(TezSession session) {
     if (tezSessionState == session) {
       return; // The same object.
     }
     if (tezSessionState != null) {
-      tezSessionState.markFree();
+      tezSessionState.unsetOwnerThread();
       tezSessionState.setKillQuery(null);
       tezSessionState = null;
     }
     tezSessionState = session;
     if (session != null) {
-      session.markInUse();
+      session.setOwnerThread();
       tezSessionState.setKillQuery(getKillQuery());
     }
   }

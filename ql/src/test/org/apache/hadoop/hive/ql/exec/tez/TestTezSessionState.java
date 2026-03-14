@@ -75,7 +75,8 @@ public class TestTezSessionState {
 
     TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf) {
       @Override
-      void openInternalUnsafe(boolean isAsync, SessionState.LogHelper console) throws TezException, IOException {
+      void openInternalUnsafe(boolean isAsync, SessionState.LogHelper console)
+          throws TezException, IOException {
         super.openInternalUnsafe(isAsync, console);
         // save scratch dir here as it's nullified while calling the cleanup
         scratchDirPath.set(tezScratchDir.toUri().getPath());
