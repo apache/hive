@@ -98,6 +98,7 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertSame;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
@@ -943,6 +944,39 @@ public class TestTxnHandler {
   }
 
   @Test
+  public void testLockSameDatabaseNameWithDifferentCatalogs() throws Exception {
+    // Test that two databases with same name in different catalogs don't collide on their locks
+    LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setCatName("catalog1");
+    comp.setOperationType(DataOperationType.NO_TXN);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    LockResponse res = txnHandler.lock(req);
+    assertSame(LockState.ACQUIRED, res.getState());
+
+    comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
+    comp.setCatName("catalog2");
+    comp.setOperationType(DataOperationType.NO_TXN);
+    components.clear();
+    components.add(comp);
+    req = new LockRequest(components, "me", "localhost");
+    res = txnHandler.lock(req);
+    assertSame(LockState.ACQUIRED, res.getState());
+
+    ShowLocksRequest showLockreq = new ShowLocksRequest();
+    showLockreq.setCatname("catalog1");
+    ShowLocksResponse rsp = txnHandler.showLocks(showLockreq);
+    List<ShowLocksResponseElement> locks = rsp.getLocks();
+    assertEquals(1, locks.size());
+
+    showLockreq.setCatname("catalog2");
+    rsp = txnHandler.showLocks(showLockreq);
+    locks = rsp.getLocks();
+    assertEquals(1, locks.size());
+  }
+
+  @Test
   public void testCheckLockAcquireAfterWaiting() throws Exception {
     LockComponent comp = new LockComponent(LockType.EXCL_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
@@ -1362,6 +1396,16 @@ public class TestTxnHandler {
     req = new LockRequest(components, "you", "remotehost");
     res = txnHandler.lock(req);
 
+    components = new ArrayList<LockComponent>(1);
+    comp = new LockComponent(LockType.SHARED_READ, LockLevel.PARTITION, "yourdb");
+    comp.setCatName("testcatalog");
+    comp.setTablename("yourtable");
+    comp.setPartitionname("yourpartition=yourvalue");
+    comp.setOperationType(DataOperationType.INSERT);
+    components.add(comp);
+    req = new LockRequest(components, "you", "remotehost");
+    res = txnHandler.lock(req);
+
     ShowLocksResponse rsp = txnHandler.showLocks(new ShowLocksRequest());
     List<ShowLocksResponseElement> locks = rsp.getLocks();
     assertEquals(3, locks.size());
@@ -1370,6 +1414,7 @@ public class TestTxnHandler {
     for (ShowLocksResponseElement lock : locks) {
       if (lock.getLockid() == 1) {
         assertEquals(0, lock.getTxnid());
+        assertEquals("hive", lock.getCatname());
         assertEquals("mydb", lock.getDbname());
         assertNull(lock.getTablename());
         assertNull(lock.getPartname());
@@ -1384,6 +1429,7 @@ public class TestTxnHandler {
         saw[0] = true;
       } else if (lock.getLockid() == 2) {
         assertEquals(1, lock.getTxnid());
+        assertEquals("hive", lock.getCatname());
         assertEquals("mydb", lock.getDbname());
         assertEquals("mytable", lock.getTablename());
         assertNull(lock.getPartname());
@@ -1397,6 +1443,7 @@ public class TestTxnHandler {
         saw[1] = true;
       } else if (lock.getLockid() == 3) {
         assertEquals(0, lock.getTxnid());
+        assertEquals("hive", lock.getCatname());
         assertEquals("yourdb", lock.getDbname());
         assertEquals("yourtable", lock.getTablename());
         assertEquals("yourpartition=yourvalue", lock.getPartname());
@@ -1414,6 +1461,26 @@ public class TestTxnHandler {
       }
     }
     for (int i = 0; i < saw.length; i++) assertTrue("Didn't see lock id " + i, saw[i]);
+
+    ShowLocksRequest rqst = new ShowLocksRequest();
+    rqst.setCatname("testcatalog");
+    rsp = txnHandler.showLocks(rqst);
+    locks = rsp.getLocks();
+
+    assertEquals(1, locks.size());
+    assertEquals(0, locks.get(0).getTxnid());
+    assertEquals("testcatalog", locks.get(0).getCatname());
+    assertEquals("yourdb", locks.get(0).getDbname());
+    assertEquals("yourtable", locks.get(0).getTablename());
+    assertEquals("yourpartition=yourvalue", locks.get(0).getPartname());
+    assertEquals(LockState.ACQUIRED, locks.get(0).getState());
+    assertEquals(LockType.SHARED_READ, locks.get(0).getType());
+    assertTrue(locks.get(0).toString(), begining <= locks.get(0).getLastheartbeat() &&
+        System.currentTimeMillis() >= locks.get(0).getLastheartbeat());
+    assertTrue(begining <= locks.get(0).getAcquiredat() &&
+        System.currentTimeMillis() >= locks.get(0).getAcquiredat());
+    assertEquals("you", locks.get(0).getUser());
+    assertEquals("remotehost", locks.get(0).getHostname());
   }
 
   /**

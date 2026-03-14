@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
@@ -423,6 +424,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
   private LockComponent createLockComponent(String dbName, String tblName, String partName) {
     LockComponent component = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, dbName);
+    component.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     component.setTablename(tblName);
     if (partName != null) {
       component.setPartitionname(partName);

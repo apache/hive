@@ -39,6 +39,7 @@ public class LockInfo {
   //0 means there is no transaction, i.e. it a select statement which is not part of
   //explicit transaction or a IUD statement that is not writing to ACID table
   private final long txnId;
+  private final String catName;
   private final String db;
   private final String table;
   private final String partition;
@@ -49,6 +50,7 @@ public class LockInfo {
   public LockInfo(ResultSet rs) throws SQLException, MetaException {
     extLockId = rs.getLong("HL_LOCK_EXT_ID"); // can't be null
     intLockId = rs.getLong("HL_LOCK_INT_ID"); // can't be null
+    catName = rs.getString("HL_CATALOG"); // can't be null
     db = rs.getString("HL_DB"); // can't be null
     String t = rs.getString("HL_TABLE");
     table = (rs.wasNull() ? null : t);
@@ -70,6 +72,7 @@ public class LockInfo {
     extLockId = e.getLockid();
     intLockId = e.getLockIdInternal();
     txnId = e.getTxnid();
+    catName = e.getCatname();
     db = e.getDbname();
     table = e.getTablename();
     partition = e.getPartname();
@@ -87,6 +90,10 @@ public class LockInfo {
 
   public long getTxnId() {
     return txnId;
+  }
+
+  public String getCat() {
+    return catName;
   }
 
   public String getDb() {
@@ -122,6 +129,7 @@ public class LockInfo {
         .append(intLockId)
         .append(extLockId)
         .append(txnId)
+        .append(catName)
         .append(db)
         .build();
   }
@@ -130,7 +138,7 @@ public class LockInfo {
   public String toString() {
     return JavaUtils.lockIdToString(extLockId) + " intLockId:" +
         intLockId + " " + JavaUtils.txnIdToString(txnId)
-        + " db:" + db + " table:" + table + " partition:" +
+        + " catName:" + catName + " db:" + db + " table:" + table + " partition:" +
         partition + " state:" + (state == null ? "null" : state.toString())
         + " type:" + (type == null ? "null" : type.toString());
   }

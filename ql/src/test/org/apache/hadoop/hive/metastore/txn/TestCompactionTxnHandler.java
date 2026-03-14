@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
@@ -1084,6 +1085,7 @@ public class TestCompactionTxnHandler {
 
   private LockComponent createLockComponent(LockType lockType, LockLevel lockLevel, String dbName, String tableName, String partitionName, DataOperationType dataOperationType){
     LockComponent lockComponent = new LockComponent(lockType, lockLevel, dbName);
+    lockComponent.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     lockComponent.setTablename(tableName);
     lockComponent.setPartitionname(partitionName);
     lockComponent.setOperationType(dataOperationType);

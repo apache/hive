@@ -157,6 +157,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     List<LockComponent> components = new ArrayList<>();
     components.add(
         new LockComponentBuilder()
+            .setCatName(table.getCat())
             .setDbName(table.getDb())
             .setTableName(table.getTable())
             .setLock(LockType.EXCL_WRITE)

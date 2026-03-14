@@ -52,9 +52,10 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[
       //language=SQL
       return String.format( 
           "INSERT INTO \"HIVE_LOCKS\" ( " +
-          "\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", " +
-          "\"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", \"HL_AGENT_INFO\") " +
-          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s, ?, ?, ?)", lockRequest.getTxnid() != 0 ? "0" : getEpochFn(databaseProduct));
+          "\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_CATALOG\", \"HL_DB\", \"HL_TABLE\", " +
+          "\"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", " +
+          "\"HL_AGENT_INFO\") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, %s, ?, ?, ?)",
+          lockRequest.getTxnid() != 0 ? "0" : getEpochFn(databaseProduct));
     } catch (MetaException e) {
       throw new MetaWrapperException(e);
     }
@@ -66,9 +67,11 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[
     long intLockId = 0;
     for (LockComponent lc : lockRequest.getComponent()) {
       String lockType = LockTypeUtil.getEncodingAsStr(lc.getType());
-      params.add(new Object[] {tempExtLockId, ++intLockId, lockRequest.getTxnid(), StringUtils.lowerCase(lc.getDbname()),
-          StringUtils.lowerCase(lc.getTablename()), TxnUtils.normalizePartitionCase(lc.getPartitionname()),
-          Character.toString(LOCK_WAITING), lockType, lockRequest.getUser(), lockRequest.getHostname(), lockRequest.getAgentInfo()});
+      params.add(new Object[] {tempExtLockId, ++intLockId, lockRequest.getTxnid(),
+          StringUtils.lowerCase(lc.getCatName()), StringUtils.lowerCase(lc.getDbname()),
+          StringUtils.lowerCase(lc.getTablename()),
+          TxnUtils.normalizePartitionCase(lc.getPartitionname()), Character.toString(LOCK_WAITING),
+          lockType, lockRequest.getUser(), lockRequest.getHostname(), lockRequest.getAgentInfo()});
     }
     return params;
   }
@@ -87,6 +90,7 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[
       ps.setString(9, (String)argument[8]);
       ps.setString(10, (String)argument[9]);
       ps.setString(11, (String)argument[10]);
+      ps.setString(12, (String)argument[11]);
     };
   }
 
