@@ -450,7 +450,7 @@ public class Entity implements Serializable {
     case DATABASE:
       return "database:" + database.getName();
     case TABLE:
-      return t.getDbName() + "@" + t.getTableName();
+      return t.getDbName() + "@" + t.getTableName() + (t.getSnapshotRef() != null ? "@" + t.getSnapshotRef() : "");
     case PARTITION:
       return t.getDbName() + "@" + t.getTableName() + "@" + p.getName();
     case DUMMYPARTITION:

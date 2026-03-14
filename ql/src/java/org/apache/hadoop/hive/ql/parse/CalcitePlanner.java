@@ -3220,6 +3220,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
           fullyQualifiedTabName.add(tabMetaData.getTableName());
+          if (tabMetaData.getSnapshotRef() != null) {
+            fullyQualifiedTabName.add(tabMetaData.getSnapshotRef());
+          }
           optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
               tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats);
