@@ -63,6 +63,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 
+import static org.apache.iceberg.BaseMetastoreTableOperations.METADATA_LOCATION_PROP;
 import static org.apache.iceberg.PartitionSpec.builderFor;
 import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -629,7 +630,7 @@ public class TestHiveCommitLocks {
     // Make sure that the expected parameter context values are set
     Map<String, String> context = contextCaptor.getValue().getProperties();
     assertThat(context).hasSize(3);
-    assertThat(HiveTableOperations.METADATA_LOCATION_PROP).isEqualTo(context.get("expected_parameter_key"));
+    assertThat(METADATA_LOCATION_PROP).isEqualTo(context.get("expected_parameter_key"));
     assertThat(metadataV2.metadataFileLocation()).isEqualTo(context.get("expected_parameter_value"));
   }
 }

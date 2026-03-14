@@ -298,8 +298,10 @@ public class TestHiveIcebergOutputCommitter {
     return expected;
   }
 
-  private List<Record> writeRecords(String name, int taskNum, int attemptNum, boolean commitTasks, boolean abortTasks,
-                                    JobConf conf) throws IOException {
-    return writeRecords(name, taskNum, attemptNum, commitTasks, abortTasks, conf, new HiveIcebergOutputCommitter());
+  private List<Record> writeRecords(
+      String name, int taskNum, int attemptNum, boolean commitTasks, boolean abortTasks, JobConf conf)
+      throws IOException {
+    return writeRecords(name, taskNum, attemptNum, commitTasks, abortTasks, conf,
+        new HiveIcebergOutputCommitter());
   }
 }

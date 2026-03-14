@@ -824,6 +824,8 @@ class AlterTableRequest; end
 
 class AlterTableResponse; end
 
+class TableParamsUpdate; end
+
 class GetPartitionsFilterSpec; end
 
 class GetPartitionsResponse; end
@@ -7713,6 +7715,35 @@ class AlterTableResponse
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TableParamsUpdate
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CAT_NAME = 1
+  DB_NAME = 2
+  TABLE_NAME = 3
+  PARAMS = 4
+  EXPECTED_PARAM_KEY = 5
+  EXPECTED_PARAM_VALUE = 6
+
+  FIELDS = {
+    CAT_NAME => {:type => ::Thrift::Types::STRING, :name => 'cat_name', :optional => true},
+    DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+    TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
+    PARAMS => {:type => ::Thrift::Types::MAP, :name => 'params', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+    EXPECTED_PARAM_KEY => {:type => ::Thrift::Types::STRING, :name => 'expected_param_key', :optional => true},
+    EXPECTED_PARAM_VALUE => {:type => ::Thrift::Types::STRING, :name => 'expected_param_value', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table_name is unset!') unless @table_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field params is unset!') unless @params
   end
 
   ::Thrift::Struct.generate_accessors self

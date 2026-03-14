@@ -77,11 +77,13 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   public void testSingleFilterUpdate() throws Exception {
     Assume.assumeTrue(formatVersion >= 2);
 
-    String[] sql = new String[] {
-        "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor'",
-        "UPDATE customers SET first_name='Changed' WHERE last_name='Donnel'"
-    };
-    executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
+    String[][] sql = new String[][]{
+        {
+            "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor'"
+        }, {
+            "UPDATE customers SET first_name='Changed' WHERE last_name='Donnel'"
+        }};
+    executeConcurrentlyNoRetry(sql);
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
@@ -107,11 +109,13 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   public void testMultiFiltersUpdate() throws Exception {
     Assume.assumeTrue(formatVersion >= 2);
 
-    String[] sql = new String[] {
-        "UPDATE customers SET first_name='Changed' WHERE last_name='Henderson' OR last_name='Johnson'",
-        "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor' AND customer_id=1"
-    };
-    executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
+    String[][] sql = new String[][]{
+        {
+            "UPDATE customers SET first_name='Changed' WHERE last_name='Henderson' OR last_name='Johnson'"
+        }, {
+            "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor' AND customer_id=1"
+        }};
+    executeConcurrentlyNoRetry(sql);
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
@@ -136,12 +140,15 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
 
   @Test
   public void testDeleteFilters() throws Exception {
-    String[] sql = new String[] {
-        "DELETE FROM customers WHERE  last_name='Taylor'",
-        "DELETE FROM customers WHERE last_name='Donnel'",
-        "DELETE FROM customers WHERE last_name='Henderson' OR last_name='Johnson'"
-    };
-    executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
+    String[][] sql = new String[][] {
+        {
+            "DELETE FROM customers WHERE  last_name='Taylor'"
+        }, {
+            "DELETE FROM customers WHERE last_name='Donnel'"
+        }, {
+            "DELETE FROM customers WHERE last_name='Henderson' OR last_name='Johnson'"
+        }};
+    executeConcurrentlyNoRetry(sql);
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
@@ -162,13 +169,15 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
 
   @Test
   public void testConflictingDeletes() throws Exception {
-    String[] sql = new String[]{
-        "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'",
-        "DELETE FROM customers WHERE last_name='Johnson'"
-    };
+    String[][] sql = new String[][]{
+        {
+            "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'"
+        }, {
+            "DELETE FROM customers WHERE last_name='Johnson'"
+        }};
 
     try {
-      executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
+      executeConcurrentlyNoRetry(sql);
     } catch (ValidationException ex) {
       if (formatVersion == 2) {
         Assert.fail("Unexpected ValidationException for format version 2");
@@ -194,11 +203,11 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
 
   @Test
   public void testConflictingUpdates() {
-    String sql = "UPDATE customers SET first_name='Changed' " +
-        "WHERE last_name='Taylor'";
+    String[][] sql = new String[][] {{
+            "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor'"
+        }};
 
-    Throwable ex = Assert.assertThrows(ValidationException.class,
-        () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
+    Throwable ex = Assert.assertThrows(ValidationException.class, () -> executeConcurrentlyNoRetry(sql));
     Assert.assertTrue(ex.getMessage().startsWith("Found conflicting files"));
 
     List<Object[]> objects =
@@ -226,13 +235,14 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   public void testConflictingUpdateAndDelete() {
     Assume.assumeTrue(formatVersion >= 2);
 
-    String[] sql = new String[]{
-        "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'",
-        "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'"
-    };
+    String[][] sql = new String[][]{
+        {
+            "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'"
+        }, {
+            "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'"
+        }};
 
-    Throwable ex = Assert.assertThrows(ValidationException.class,
-        () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
+    Throwable ex = Assert.assertThrows(ValidationException.class, () -> executeConcurrentlyNoRetry(sql));
     Assert.assertTrue(ex.getMessage().startsWith("Found new conflicting delete files"));
 
     List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers " +
@@ -249,12 +259,13 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
         formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String sql = "MERGE INTO target t USING source src ON t.customer_id = src.customer_id " +
-        "WHEN NOT MATCHED THEN " +
-        "INSERT values (src.customer_id, src.first_name, src.last_name)";
+    String[][] sql = {{
+            "MERGE INTO target t USING source src ON t.customer_id = src.customer_id " +
+                "WHEN NOT MATCHED THEN " +
+                "INSERT values (src.customer_id, src.first_name, src.last_name)"
+        }};
 
-    Throwable ex = Assert.assertThrows(ValidationException.class,
-        () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
+    Throwable ex = Assert.assertThrows(ValidationException.class, () -> executeConcurrentlyNoRetry(sql));
     Assert.assertTrue(ex.getMessage().startsWith("Found conflicting files"));
 
     List<Object[]> res = shell.executeStatement("SELECT count(*) FROM target");
@@ -283,11 +294,13 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
           .build(),
         formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String[] sql = new String[] {
-        "INSERT INTO ice_t SELECT i*100, p*100 FROM ice_t",
-        "INSERT OVERWRITE TABLE ice_t SELECT i+1, p+1 FROM ice_t"
-    };
-    executeConcurrently(true, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
+    String[][] sql = new String[][] {
+        {
+            "INSERT INTO ice_t SELECT i*100, p*100 FROM ice_t"
+        }, {
+            "INSERT OVERWRITE TABLE ice_t SELECT i+1, p+1 FROM ice_t"
+        }};
+    executeConcurrentlyWithExtLocking(sql);
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM ice_t");
