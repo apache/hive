@@ -34,11 +34,11 @@ POSTHOOK: type: ALTERTABLE_CREATEBRANCH
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.branch_source
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_source
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_source
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_source
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
@@ -54,11 +54,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
 PREHOOK: query: select * from default.ice01.branch_source
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_source
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_source
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_source
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
@@ -97,11 +97,11 @@ main	BRANCH
 target	BRANCH
 PREHOOK: query: select * from default.ice01.branch_target
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_target
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_target
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_target
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2

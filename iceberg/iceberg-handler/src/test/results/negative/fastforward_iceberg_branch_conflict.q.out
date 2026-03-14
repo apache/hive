@@ -33,11 +33,11 @@ POSTHOOK: type: ALTERTABLE_CREATEBRANCH
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one	50
 111	one	55
@@ -67,11 +67,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: insert into default.ice01.branch_test1 values(15, 'five', 89)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: insert into default.ice01.branch_test1 values(15, 'five', 89)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_test1
 PREHOOK: query: select * from ice01
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice01

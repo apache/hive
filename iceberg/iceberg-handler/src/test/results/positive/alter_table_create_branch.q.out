@@ -256,11 +256,11 @@ POSTHOOK: type: ALTERTABLE_CREATEBRANCH
 POSTHOOK: Input: default@icetbl
 PREHOOK: query: select * from default.iceTbl.branch_test_branch_1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@icetbl
+PREHOOK: Input: default@icetbl@branch_test_branch_1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.iceTbl.branch_test_branch_1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@icetbl
+POSTHOOK: Input: default@icetbl@branch_test_branch_1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	jack
 2	bob
