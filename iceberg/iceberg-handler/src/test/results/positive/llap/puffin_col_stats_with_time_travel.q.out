@@ -94,7 +94,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tbl_ice_puffin_time_travel
+                  alias: tbl_ice_puffin_time_travel.tag_checkpoint
                   Snapshot ref: tag_checkpoint
                   Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -211,7 +211,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tbl_ice_puffin_time_travel
+                  alias: tbl_ice_puffin_time_travel.tag_checkpoint
                   Snapshot ref: tag_checkpoint
                   Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator

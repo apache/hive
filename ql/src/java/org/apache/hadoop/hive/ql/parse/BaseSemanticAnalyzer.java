@@ -548,13 +548,14 @@ public abstract class BaseSemanticAnalyzer {
     assert node.getChildCount() <= 3;
     assert node.getType() == HiveParser.TOK_TABNAME;
 
-    if (node.getChildCount() == 2 || node.getChildCount() == 3) {
+    if (node.getChildCount() == 2) {
       node = (ASTNode) node.getChild(1);
+      return getUnescapedName(node);
     }
 
     String tableName = getUnescapedName(node);
     if (node.getChildCount() == 3) {
-      tableName = tableName + "." + node.getChild(2);
+      tableName = getUnescapedName((ASTNode) node.getChild(1)) + "." + node.getChild(2);
     }
     return tableName;
   }
