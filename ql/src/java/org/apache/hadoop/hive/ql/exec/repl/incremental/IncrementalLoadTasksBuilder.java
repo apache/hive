@@ -99,6 +99,7 @@ public class IncrementalLoadTasksBuilder {
     this.metricCollector = metricCollector;
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getTotalEventsCount());
+    metricMap.put(ReplUtils.MetricName.TABLES.name(), 0L);
     this.shouldFailover = shouldFailover;
     if (shouldFailover) {
       Database db = null;
