@@ -46,7 +46,8 @@ public class TestCommandWithSpace {
         when(mockHiveSession.getHiveConf()).thenReturn(conf);
         when(mockHiveSession.getSessionState()).thenReturn(SessionState.get());
         DfsProcessor dfsProcessor = new DfsProcessor(new Configuration());
-        HiveCommandOperation sqlOperation = new HiveCommandOperation(mockHiveSession, query, dfsProcessor, ImmutableMap.of());
+        HiveCommandOperation sqlOperation = new HiveCommandOperation(mockHiveSession, query, dfsProcessor, ImmutableMap.of(),
+            false);
         sqlOperation.run();
     }
 
