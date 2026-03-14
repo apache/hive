@@ -366,11 +366,11 @@ POSTHOOK: Input: default@ice_orc
 {"company_id":null,"dept_id":null,"team_id":null}	2	0	1
 PREHOOK: query: explain select * from default.ice_orc.tag_v1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -409,11 +409,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.ice_orc.tag_v2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -452,11 +452,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.ice_orc.tag_v3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -495,11 +495,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.ice_orc.tag_v4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -580,11 +580,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.ice_orc.tag_v1 where company_id is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v1
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v1 where company_id is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v1
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -627,11 +627,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.ice_orc.tag_v2 where company_id is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v2
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v2 where company_id is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -674,11 +674,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.ice_orc.tag_v3 where company_id is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v3
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v3 where company_id is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v3
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -721,11 +721,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.ice_orc.tag_v4 where company_id is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_orc
+PREHOOK: Input: default@ice_orc@tag_v4
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.ice_orc.tag_v4 where company_id is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_orc
+POSTHOOK: Input: default@ice_orc@tag_v4
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
