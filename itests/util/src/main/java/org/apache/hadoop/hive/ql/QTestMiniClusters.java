@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
@@ -544,6 +545,7 @@ public class QTestMiniClusters {
     // Different paths if running locally vs a remote fileSystem. Ideally this difference should not
     // exist.
     Path warehousePath;
+    Path warehouseCatPath;
     Path jarPath;
     Path userInstallPath;
     if (isLocalFs) {
@@ -554,16 +556,19 @@ public class QTestMiniClusters {
       // Create a fake fs root for local fs
       Path localFsRoot = new Path(path, "localfs");
       warehousePath = new Path(localFsRoot, "warehouse");
+      warehouseCatPath = new Path(localFsRoot, "catalog");
       jarPath = new Path(localFsRoot, "jar");
       userInstallPath = new Path(localFsRoot, "user_install");
     } else {
       // TODO Why is this changed from the default in hive-conf?
       warehousePath = new Path(fsUriString, "/build/ql/test/data/warehouse/");
+      warehouseCatPath = new Path(fsUriString, "/build/ql/test/data/catalog/");
       jarPath = new Path(new Path(fsUriString, "/user"), "hive");
       userInstallPath = new Path(fsUriString, "/user");
     }
 
     warehousePath = fs.makeQualified(warehousePath);
+    warehouseCatPath = fs.makeQualified(warehouseCatPath);
     jarPath = fs.makeQualified(jarPath);
     userInstallPath = fs.makeQualified(userInstallPath);
 
@@ -571,6 +576,7 @@ public class QTestMiniClusters {
 
     // Remote dirs
     conf.setVar(ConfVars.METASTORE_WAREHOUSE, warehousePath.toString());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE_CATALOG, warehouseCatPath.toString());
     conf.setVar(ConfVars.HIVE_JAR_DIRECTORY, jarPath.toString());
     conf.setVar(ConfVars.HIVE_USER_INSTALL_DIR, userInstallPath.toString());
     // ConfVars.SCRATCH_DIR - {test.tmp.dir}/scratchdir

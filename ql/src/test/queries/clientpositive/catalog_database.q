@@ -8,7 +8,7 @@ CREATE DATABASE testdb;
 SHOW DATABASES;
 
 -- CREATE a new catalog with comment
-CREATE CATALOG testcat LOCATION '/tmp/testcat' COMMENT 'Hive test catalog';
+CREATE CATALOG testcat LOCATION '/tmp/testcat' COMMENT 'Hive test catalog' PROPERTIES('type'='native');
 
 -- Check catalogs list
 SHOW CATALOGS;
