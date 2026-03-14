@@ -732,6 +732,8 @@ class ShowLocksRequest;
 
 class ShowLocksResponseElement;
 
+class LockMaterializationRebuildRequest;
+
 class ShowLocksResponse;
 
 class HeartbeatRequest;
@@ -10194,12 +10196,13 @@ void swap(SeedTxnIdRequest &a, SeedTxnIdRequest &b);
 std::ostream& operator<<(std::ostream& out, const SeedTxnIdRequest& obj);
 
 typedef struct _LockComponent__isset {
-  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isTransactional(true), isDynamicPartitionWrite(true) {}
+  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isTransactional(true), isDynamicPartitionWrite(true), catName(true) {}
   bool tablename :1;
   bool partitionname :1;
   bool operationType :1;
   bool isTransactional :1;
   bool isDynamicPartitionWrite :1;
+  bool catName :1;
 } _LockComponent__isset;
 
 class LockComponent : public virtual ::apache::thrift::TBase {
@@ -10207,15 +10210,15 @@ class LockComponent : public virtual ::apache::thrift::TBase {
 
   LockComponent(const LockComponent&);
   LockComponent& operator=(const LockComponent&);
-  LockComponent() noexcept
-                : type(static_cast<LockType::type>(0)),
-                  level(static_cast<LockLevel::type>(0)),
-                  dbname(),
-                  tablename(),
-                  partitionname(),
-                  operationType((DataOperationType::type)5),
-                  isTransactional(false),
-                  isDynamicPartitionWrite(false) {
+  LockComponent() : type(static_cast<LockType::type>(0)),
+                    level(static_cast<LockLevel::type>(0)),
+                    dbname(),
+                    tablename(),
+                    partitionname(),
+                    operationType((DataOperationType::type)5),
+                    isTransactional(false),
+                    isDynamicPartitionWrite(false),
+                    catName("hive") {
     operationType = (DataOperationType::type)5;
 
   }
@@ -10241,6 +10244,7 @@ class LockComponent : public virtual ::apache::thrift::TBase {
   DataOperationType::type operationType;
   bool isTransactional;
   bool isDynamicPartitionWrite;
+  std::string catName;
 
   _LockComponent__isset __isset;
 
@@ -10259,6 +10263,8 @@ class LockComponent : public virtual ::apache::thrift::TBase {
   void __set_isTransactional(const bool val);
 
   void __set_isDynamicPartitionWrite(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const LockComponent & rhs) const
   {
@@ -10287,6 +10293,10 @@ class LockComponent : public virtual ::apache::thrift::TBase {
     if (__isset.isDynamicPartitionWrite != rhs.__isset.isDynamicPartitionWrite)
       return false;
     else if (__isset.isDynamicPartitionWrite && !(isDynamicPartitionWrite == rhs.isDynamicPartitionWrite))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -10562,12 +10572,13 @@ void swap(UnlockRequest &a, UnlockRequest &b);
 std::ostream& operator<<(std::ostream& out, const UnlockRequest& obj);
 
 typedef struct _ShowLocksRequest__isset {
-  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true), txnid(false) {}
+  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true), txnid(false), catname(true) {}
   bool dbname :1;
   bool tablename :1;
   bool partname :1;
   bool isExtended :1;
   bool txnid :1;
+  bool catname :1;
 } _ShowLocksRequest__isset;
 
 class ShowLocksRequest : public virtual ::apache::thrift::TBase {
@@ -10575,12 +10586,12 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
 
   ShowLocksRequest(const ShowLocksRequest&);
   ShowLocksRequest& operator=(const ShowLocksRequest&);
-  ShowLocksRequest() noexcept
-                   : dbname(),
-                     tablename(),
-                     partname(),
-                     isExtended(false),
-                     txnid(0) {
+  ShowLocksRequest() : dbname(),
+                       tablename(),
+                       partname(),
+                       isExtended(false),
+                       txnid(0),
+                       catname("hive") {
   }
 
   virtual ~ShowLocksRequest() noexcept;
@@ -10589,6 +10600,7 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   std::string partname;
   bool isExtended;
   int64_t txnid;
+  std::string catname;
 
   _ShowLocksRequest__isset __isset;
 
@@ -10601,6 +10613,8 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   void __set_isExtended(const bool val);
 
   void __set_txnid(const int64_t val);
+
+  void __set_catname(const std::string& val);
 
   bool operator == (const ShowLocksRequest & rhs) const
   {
@@ -10623,6 +10637,10 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
     if (__isset.txnid != rhs.__isset.txnid)
       return false;
     else if (__isset.txnid && !(txnid == rhs.txnid))
+      return false;
+    if (__isset.catname != rhs.__isset.catname)
+      return false;
+    else if (__isset.catname && !(catname == rhs.catname))
       return false;
     return true;
   }
@@ -10676,7 +10694,8 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
                              agentInfo(),
                              blockedByExtId(0),
                              blockedByIntId(0),
-                             lockIdInternal(0) {
+                             lockIdInternal(0),
+                             catname() {
   }
 
   virtual ~ShowLocksResponseElement() noexcept;
@@ -10704,6 +10723,7 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
   int64_t blockedByExtId;
   int64_t blockedByIntId;
   int64_t lockIdInternal;
+  std::string catname;
 
   _ShowLocksResponseElement__isset __isset;
 
@@ -10738,6 +10758,8 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
   void __set_blockedByIntId(const int64_t val);
 
   void __set_lockIdInternal(const int64_t val);
+
+  void __set_catname(const std::string& val);
 
   bool operator == (const ShowLocksResponseElement & rhs) const
   {
@@ -10791,6 +10813,8 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.lockIdInternal && !(lockIdInternal == rhs.lockIdInternal))
       return false;
+    if (!(catname == rhs.catname))
+      return false;
     return true;
   }
   bool operator != (const ShowLocksResponseElement &rhs) const {
@@ -10808,6 +10832,61 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
 void swap(ShowLocksResponseElement &a, ShowLocksResponseElement &b);
 
 std::ostream& operator<<(std::ostream& out, const ShowLocksResponseElement& obj);
+
+
+class LockMaterializationRebuildRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  LockMaterializationRebuildRequest(const LockMaterializationRebuildRequest&);
+  LockMaterializationRebuildRequest& operator=(const LockMaterializationRebuildRequest&);
+  LockMaterializationRebuildRequest() noexcept
+                                    : catName(),
+                                      dbName(),
+                                      tableName(),
+                                      txnId(0) {
+  }
+
+  virtual ~LockMaterializationRebuildRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string tableName;
+  int64_t txnId;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  bool operator == (const LockMaterializationRebuildRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(txnId == rhs.txnId))
+      return false;
+    return true;
+  }
+  bool operator != (const LockMaterializationRebuildRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const LockMaterializationRebuildRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(LockMaterializationRebuildRequest &a, LockMaterializationRebuildRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const LockMaterializationRebuildRequest& obj);
 
 typedef struct _ShowLocksResponse__isset {
   _ShowLocksResponse__isset() : locks(false) {}
