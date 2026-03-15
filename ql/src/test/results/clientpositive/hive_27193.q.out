@@ -1,0 +1,44 @@
+PREHOOK: query: CREATE DATABASE `@test`
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:@test
+POSTHOOK: query: CREATE DATABASE `@test`
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:@test
+PREHOOK: query: USE `@test`
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:@test
+POSTHOOK: query: USE `@test`
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:@test
+PREHOOK: query: CREATE TABLE testtable (c1 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: @test@testtable
+PREHOOK: Output: database:@test
+POSTHOOK: query: CREATE TABLE testtable (c1 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: @test@testtable
+POSTHOOK: Output: database:@test
+PREHOOK: query: ALTER TABLE testtable ADD COLUMNS (c2 INT)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: @test@testtable
+PREHOOK: Output: @test@testtable
+POSTHOOK: query: ALTER TABLE testtable ADD COLUMNS (c2 INT)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: @test@testtable
+POSTHOOK: Output: @test@testtable
+PREHOOK: query: DROP TABLE testtable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: @test@testtable
+PREHOOK: Output: @test@testtable
+POSTHOOK: query: DROP TABLE testtable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: @test@testtable
+POSTHOOK: Output: @test@testtable
+PREHOOK: query: DROP DATABASE `@test`
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:@test
+PREHOOK: Output: database:@test
+POSTHOOK: query: DROP DATABASE `@test`
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:@test
+POSTHOOK: Output: database:@test
