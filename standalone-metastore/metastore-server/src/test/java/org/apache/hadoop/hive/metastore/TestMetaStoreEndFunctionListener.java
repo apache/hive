@@ -125,7 +125,8 @@ public class TestMetaStoreEndFunctionListener {
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), tblName);
+    assertEquals(context.getInputTableName(),
+        Warehouse.DEFAULT_CATALOG_NAME + "." + dbName + "." + tblName);
     try {
       msc.dropTable(dbName, unknownTable);
     } catch (Exception e4) {
