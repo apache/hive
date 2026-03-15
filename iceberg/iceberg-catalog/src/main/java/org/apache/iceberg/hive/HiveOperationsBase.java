@@ -20,6 +20,7 @@
 package org.apache.iceberg.hive;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -161,6 +162,12 @@ interface HiveOperationsBase {
 
   static StorageDescriptor storageDescriptor(
       Schema schema, String location, boolean hiveEngineEnabled) {
+    return storageDescriptor(schema, location, hiveEngineEnabled, null, -1);
+  }
+
+  static StorageDescriptor storageDescriptor(
+          Schema schema, String location, boolean hiveEngineEnabled,
+          List<String> bucketCols, int numBuckets) {
     final StorageDescriptor storageDescriptor = new StorageDescriptor();
     storageDescriptor.setCols(HiveSchemaUtil.convert(schema));
     storageDescriptor.setLocation(location);
@@ -178,6 +185,13 @@ interface HiveOperationsBase {
     }
 
     storageDescriptor.setSerdeInfo(serDeInfo);
+
+    // Preserve Hive bucketing information if provided (for CLUSTERED BY support)
+    if (bucketCols != null && !bucketCols.isEmpty() && numBuckets > 0) {
+      storageDescriptor.setBucketCols(bucketCols);
+      storageDescriptor.setNumBuckets(numBuckets);
+    }
+
     return storageDescriptor;
   }
 

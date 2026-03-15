@@ -20,6 +20,7 @@
 package org.apache.iceberg.hive;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.iceberg.BaseMetastoreOperations;
 import org.apache.iceberg.BaseMetastoreTableOperations;
@@ -178,11 +180,18 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         LOG.debug("Committing new table: {}", fullName);
       }
 
+      // Preserve Hive bucketing (CLUSTERED BY) if present in the existing table
+      StorageDescriptor sd = tbl.getSd();
+      List<String> bucketCols = sd != null ? sd.getBucketCols() : null;
+      int numBuckets = sd != null ? sd.getNumBuckets() : -1;
+
       tbl.setSd(
           HiveOperationsBase.storageDescriptor(
               metadata.schema(),
               metadata.location(),
-              hiveEngineEnabled)); // set to pickup any schema changes
+              hiveEngineEnabled,
+              bucketCols,
+              numBuckets));
 
       String metadataLocation = tbl.getParameters().get(METADATA_LOCATION_PROP);
       String baseMetadataLocation = base != null ? base.metadataFileLocation() : null;
