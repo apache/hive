@@ -3049,17 +3049,42 @@ public class StatsRulesProcFactory {
 
       if (satisfyPrecondition(selectStats) && satisfyPrecondition(udtfStats)) {
         final Map<String, ExprNodeDesc> columnExprMap = lop.getColumnExprMap();
-        final RowSchema schema = lop.getSchema();
+        final List<ColumnInfo> signature = lop.getSchema().getSignature();
+        final int numSelColumns = lop.getConf().getNumSelColumns();
 
+        // Split schemas using subList
+        RowSchema selectSchema = new RowSchema(new ArrayList<>(signature.subList(0, numSelColumns)));
+        RowSchema udtfSchema = new RowSchema(new ArrayList<>(signature.subList(numSelColumns, signature.size())));
+
+        // Filter expression maps to avoid cross-contamination in getColStatisticsFromExprMap
+        Map<String, ExprNodeDesc> selectExprMap = Maps.newHashMapWithExpectedSize(numSelColumns);
+        Map<String, ExprNodeDesc> udtfExprMap = Maps.newHashMapWithExpectedSize(signature.size() - numSelColumns);
+        for (int i = 0; i < signature.size(); i++) {
+          String name = signature.get(i).getInternalName();
+          ExprNodeDesc expr = columnExprMap.get(name);
+
+          if (expr == null) {
+            continue;
+          }
+
+          if (i < numSelColumns) {
+            selectExprMap.put(name, expr);
+          } else {
+            udtfExprMap.put(name, expr);
+          }
+        }
+
+        // Select branch stats
         joinedStats.updateColumnStatsState(selectStats.getColumnStatsState());
         final List<ColStatistics> selectColStats = StatsUtils
-                .getColStatisticsFromExprMap(conf, selectStats, columnExprMap, schema);
+                .getColStatisticsFromExprMap(conf, selectStats, selectExprMap, selectSchema);
         StatsUtils.scaleColStatistics(selectColStats, factor);
         joinedStats.addToColumnStats(selectColStats);
 
+        // UDTF branch stats
         joinedStats.updateColumnStatsState(udtfStats.getColumnStatsState());
         final List<ColStatistics> udtfColStats = StatsUtils
-                .getColStatisticsFromExprMap(conf, udtfStats, columnExprMap, schema);
+                .getColStatisticsFromExprMap(conf, udtfStats, udtfExprMap, udtfSchema);
         joinedStats.addToColumnStats(udtfColStats);
       }
 
