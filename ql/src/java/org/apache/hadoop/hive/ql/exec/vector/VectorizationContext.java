@@ -1717,6 +1717,10 @@ import com.google.common.annotations.VisibleForTesting;
       GenericUDF udf = ((ExprNodeGenericFuncDesc) exprNodeDesc).getGenericUDF();
       Class<?> udfClass = udf.getClass();
       if (udf instanceof GenericUDFToDecimal) {
+        ExprNodeDesc child = exprNodeDesc.getChildren().get(0);
+        if (isDecimalFamily(child.getTypeString())) {
+          return checkExprNodeDescForDecimal64(child);
+        }
         return true;
       }
       // We have a class-level annotation that says whether the UDF's vectorization expressions
