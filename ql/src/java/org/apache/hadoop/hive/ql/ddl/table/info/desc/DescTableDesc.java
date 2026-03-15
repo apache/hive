@@ -110,7 +110,7 @@ public class DescTableDesc implements DDLDesc, Serializable {
     return isFormatted;
   }
 
-  public static List<String> getColumnStatisticsHeaders(boolean histogramEnabled) {
+  public static List<String> getColumnStatisticsHeaders(boolean histogramEnabled, boolean isIcebergTable) {
     ImmutableList.Builder<String> builder = ImmutableList.<String>builder()
         .add("col_name")
         .add("data_type")
@@ -121,6 +121,11 @@ public class DescTableDesc implements DDLDesc, Serializable {
     }
 
     builder.add("comment");
+    
+    if (isIcebergTable) {
+      builder.add("initial_default")
+          .add("write_default");
+    }
     return builder.build();
   }
 }
