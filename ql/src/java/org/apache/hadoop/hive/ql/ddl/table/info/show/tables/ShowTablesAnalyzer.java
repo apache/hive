@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -49,6 +50,7 @@ public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
 
     ctx.setResFile(ctx.getLocalTmpPath());
 
+    String catName = HiveUtils.getCurrentCatalogOrDefault(conf);
     String dbName = SessionState.get().getCurrentDatabase();
     String tableNames = null;
     TableType tableTypeFilter = null;
@@ -57,7 +59,7 @@ public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) root.getChild(i);
       if (child.getType() == HiveParser.TOK_FROM) { // Specifies a DB
         dbName = unescapeIdentifier(root.getChild(++i).getText());
-        db.validateDatabaseExists(dbName);
+        db.validateDatabaseExists(catName,dbName);
       } else if (child.getType() == HiveParser.TOK_TABLE_TYPE) { // Filter on table type
         String tableType = unescapeIdentifier(child.getChild(0).getText());
         if (!"table_type".equalsIgnoreCase(tableType)) {
@@ -73,7 +75,7 @@ public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
 
     inputs.add(new ReadEntity(getDatabase(dbName)));
 
-    ShowTablesDesc desc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames, tableTypeFilter, isExtended);
+    ShowTablesDesc desc = new ShowTablesDesc(ctx.getResFile(), catName, dbName, tableNames, tableTypeFilter, isExtended);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 

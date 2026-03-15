@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -36,7 +37,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class CreateTableLikeDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final String tableName;
+  private final TableName tableName;
   private boolean isExternal;
   private final boolean isTemporary;
   private final String defaultInputFormat;
@@ -49,7 +50,7 @@ public class CreateTableLikeDesc implements DDLDesc, Serializable {
   private final String likeTableName;
   private final boolean isUserStorageFormat;
 
-  public CreateTableLikeDesc(String tableName, boolean isExternal, boolean isTemporary, String defaultInputFormat,
+  public CreateTableLikeDesc(TableName tableName, boolean isExternal, boolean isTemporary, String defaultInputFormat,
       String defaultOutputFormat, String location, String defaultSerName, Map<String, String> defaultSerdeProps,
       Map<String, String> tblProps, boolean ifNotExists, String likeTableName, boolean isUserStorageFormat) {
     this.tableName = tableName;
@@ -72,7 +73,7 @@ public class CreateTableLikeDesc implements DDLDesc, Serializable {
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 

@@ -1669,8 +1669,20 @@ public class Hive implements AutoCloseable {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(TableName tableName) throws HiveException {
-    return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), tableName.getTableMetaRef(), true);
+    return getTable(tableName, true);
+  }
+
+  /**
+   * Returns metadata of the table. We should prioritize this method and phase out other getTable calls.
+   *
+   * @param tableName the tableName object
+   * @param throwException
+   *           controls whether an exception is thrown or a returns a null
+   * @exception HiveException
+   *              if there's an internal error or if the table doesn't exist
+   */
+  public Table getTable(TableName tableName, boolean throwException) throws HiveException {
+    return this.getTable(tableName, throwException, false, false);
   }
 
   /**
@@ -1768,10 +1780,23 @@ public class Hive implements AutoCloseable {
    *          get column statistics if available
    * @return the table or if throwException is false a null value.
    * @throws HiveException
+   *
+   * @deprecated use {@link #getTable(TableName, boolean, boolean, boolean)}
    */
   public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
+    TableName table = new TableName(getDefaultCatalog(conf), dbName, tableName, tableMetaRef);
+    return getTable(table, throwException, checkTransactional, getColumnStats);
+  }
+
+  public Table getTable(final TableName table, boolean throwException,
+                        boolean checkTransactional, boolean getColumnStats) throws HiveException {
+
+    String catName = table.getCat() != null ? table.getCat() : HiveUtils.getCurrentCatalogOrDefault(conf);
+    String dbName = table.getDb() != null ? table.getDb() : SessionState.get().getCurrentDatabase();
+    String tableName = table.getTable();
+    String tableMetaRef = table.getTableMetaRef();
     if (tableName == null || tableName.equals("")) {
       throw new HiveException("empty table creation??");
     }
@@ -1781,7 +1806,7 @@ public class Hive implements AutoCloseable {
     try {
       // Note: this is currently called w/true from StatsOptimizer only.
       GetTableRequest request = new GetTableRequest(dbName, tableName);
-      request.setCatName(getDefaultCatalog(conf));
+      request.setCatName(catName);
       request.setGetColumnStats(getColumnStats);
       request.setEngine(Constants.HIVE_ENGINE);
       if (checkTransactional) {
@@ -2555,10 +2580,26 @@ public class Hive implements AutoCloseable {
     }
   }
 
+  /**
+   * @deprecated use {@link #validateDatabaseExists(String, String)}
+   */
   public void validateDatabaseExists(String databaseName) throws SemanticException {
     boolean exists;
     try {
       exists = databaseExists(databaseName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName), e);
+    }
+
+    if (!exists) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName));
+    }
+  }
+
+  public void validateDatabaseExists(String catalogName, String databaseName) throws SemanticException {
+    boolean exists;
+    try {
+      exists = databaseExists(catalogName, databaseName);
     } catch (HiveException e) {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName), e);
     }

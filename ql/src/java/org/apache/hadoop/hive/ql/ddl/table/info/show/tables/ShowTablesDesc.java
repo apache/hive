@@ -37,13 +37,15 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
   private static final String EXTENDED_TABLES_SCHEMA = "tab_name,table_type#string,string";
 
   private final String resFile;
+  private final String catName;
   private final String dbName;
   private final String pattern;
   private final TableType typeFilter;
   private final boolean isExtended;
 
-  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType typeFilter, boolean isExtended) {
+  public ShowTablesDesc(Path resFile, String catName, String dbName, String pattern, TableType typeFilter, boolean isExtended) {
     this.resFile = resFile.toString();
+    this.catName = catName;
     this.dbName = dbName;
     this.pattern = pattern;
     this.typeFilter = typeFilter;
@@ -58,6 +60,11 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
+  }
+
+  @Explain(displayName = "catalog name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatName() {
+    return catName;
   }
 
   @Explain(displayName = "database name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

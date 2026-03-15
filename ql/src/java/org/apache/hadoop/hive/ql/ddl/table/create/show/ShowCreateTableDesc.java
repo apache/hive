@@ -33,12 +33,14 @@ public class ShowCreateTableDesc implements DDLDesc, Serializable {
 
   public static final String SCHEMA = "createtab_stmt#string";
 
+  private final String catalogName;
   private final String databaseName;
   private final String tableName;
   private final String resFile;
   private final boolean isRelative;
 
-  public ShowCreateTableDesc(String databaseName, String tableName, String resFile, boolean isRelative) {
+  public ShowCreateTableDesc(String catalogName, String databaseName, String tableName, String resFile, boolean isRelative) {
+    this.catalogName = catalogName;
     this.databaseName = databaseName;
     this.tableName = tableName;
     this.resFile = resFile;
@@ -58,6 +60,11 @@ public class ShowCreateTableDesc implements DDLDesc, Serializable {
   @Explain(displayName = "database name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
+  }
+
+  @Explain(displayName = "catalog name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catalogName;
   }
 
   @Explain(displayName = "relative table location", explainLevels = { Level.EXTENDED })
