@@ -39,7 +39,7 @@ public class HiveIcebergStorageHandlerTxnStub extends HiveIcebergStorageHandlerS
       return super.getOutputCommitter();
     }
     txnManager.getOrSetTxnCoordinator(
-        HiveTxnCoordinator.class, msClient -> new HiveTxnCoordinatorStub(conf, msClient));
+        HiveTxnCoordinator.class, msClient -> new HiveTxnCoordinatorStub(conf, msClient, isExplicitTxnOpen));
     return new HiveIcebergOutputCommitter();
   }
 }

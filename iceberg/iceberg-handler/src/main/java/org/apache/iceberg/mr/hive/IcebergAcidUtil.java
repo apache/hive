@@ -238,7 +238,7 @@ public class IcebergAcidUtil {
       return table.newTransaction();
     }
     HiveTxnCoordinator txnCoordinator = txnManager.getOrSetTxnCoordinator(
-        HiveTxnCoordinator.class, msClient -> new HiveTxnCoordinator(conf, msClient));
+        HiveTxnCoordinator.class, msClient -> new HiveTxnCoordinator(conf, msClient, isExplicitTxnOpen));
     return txnCoordinator != null ?
         txnCoordinator.getOrCreateTransaction(table) : table.newTransaction();
   }
