@@ -42,6 +42,61 @@ execHiveCmd () {
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
   fi
 
+  # For services that may encounter SLF4J conflicts (schemaTool, schematool, beeline),
+  # filter out old SLF4J 1.x jars from HADOOP_CLASSPATH to prevent binding conflicts
+  if [[ "$SERVICE" =~ ^(schemaTool|schematool|beeline)$ ]]; then
+    # [FIX]: Prefer packaged Hive configs first so CI does not depend on host /etc/hive content.
+    if [ -f "${HIVE_HOME}/conf/hive-log4j2.properties" ]; then
+      export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_HOME}/conf/hive-log4j2.properties"
+    # Packaged dist may only ship the template; materialize a .properties file so Log4j2
+    # selects the PropertiesConfiguration parser (it infers parser from filename extension).
+    elif [ -f "${HIVE_HOME}/conf/hive-log4j2.properties.template" ]; then
+      HIVE_LOG4J2_DIR="$(mktemp -d -t hive-log4j2.XXXXXX)"
+      HIVE_LOG4J2_FILE="${HIVE_LOG4J2_DIR}/hive-log4j2.properties"
+      cp "${HIVE_HOME}/conf/hive-log4j2.properties.template" "${HIVE_LOG4J2_FILE}"
+      export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_LOG4J2_FILE}"
+    # Only fall back to system default if packaged configs are missing
+    elif [ -f "${HIVE_CONF_DIR}/hive-log4j2.properties" ]; then
+      export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_CONF_DIR}/hive-log4j2.properties"
+    fi
+
+    # Prevent Log4j2 from being reconfigured after initialization
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.disableShutdownHook=true"
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.shutdownHookEnabled=false"
+
+    # CRITICAL: Tell Hadoop to load Hive's jars FIRST, overriding globally-installed
+    # Hadoop/Tez jars that contain old SLF4J 1.x bindings. This prevents the multiple
+    # SLF4J binding conflict seen in CI environments.
+    export HADOOP_USER_CLASSPATH_FIRST=true
+
+    # Filter HADOOP_CLASSPATH to remove paths with old SLF4J/log4j bindings
+    if [ "$HADOOP_CLASSPATH" != "" ]; then
+      FILTERED_CP=""
+      IFS=':' read -ra CP_ARRAY <<< "$HADOOP_CLASSPATH"
+      for cp_entry in "${CP_ARRAY[@]}"; do
+        # Skip only specific SLF4J 1.x binding jars by filename
+        if [[ "$(basename "$cp_entry")" == slf4j-log4j12-*.jar || \
+              "$(basename "$cp_entry")" == slf4j-reload4j-*.jar || \
+              "$(basename "$cp_entry")" == log4j-slf4j-impl-*.jar || \
+              "$(basename "$cp_entry")" == reload4j-*.jar ]]; then
+          continue
+        fi
+        # Skip explicit SLF4J 1.x jar paths and reload4j
+        if [[ "$cp_entry" == *slf4j-log4j12* || \
+              "$cp_entry" == *slf4j-reload4j* || \
+              "$cp_entry" == */reload4j-* ]]; then
+          continue
+        fi
+        if [ "$FILTERED_CP" == "" ]; then
+          FILTERED_CP="$cp_entry"
+        else
+          FILTERED_CP="${FILTERED_CP}:${cp_entry}"
+        fi
+      done
+      export HADOOP_CLASSPATH="$FILTERED_CP"
+    fi
+  fi
+
   # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
   exec $HADOOP jar ${HIVE_LIB}/$JAR $CLASS $HIVE_OPTS "$@"
 }

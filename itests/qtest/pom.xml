@@ -32,7 +32,6 @@
     <clustermode/>
     <execute.beeline.tests>false</execute.beeline.tests>
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
-    <slf4j.version>1.7.30</slf4j.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
