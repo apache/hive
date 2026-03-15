@@ -1,0 +1,73 @@
+PREHOOK: query: create table mv_source (any_col int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_source
+POSTHOOK: query: create table mv_source (any_col int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_source
+PREHOOK: query: create table t1 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table t2 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: create materialized view any_mv as
+select any_col from mv_source where any_col > 20
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@any_mv
+POSTHOOK: query: create materialized view any_mv as
+select any_col from mv_source where any_col > 20
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@any_mv
+POSTHOOK: Lineage: any_mv.any_col SIMPLE [(mv_source)mv_source.FieldSchema(name:any_col, type:int, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+PREHOOK: query: explain cbo
+select * from t1 where 1 = 2
+union
+select * from t1
+where exists (select a from t2 where t1.a > 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from t1 where 1 = 2
+union
+select * from t1
+where exists (select a from t2 where t1.a > 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], b=[$1])
+  HiveAggregate(group=[{0, 1}])
+    HiveSemiJoin(condition=[=($3, $2)], joinType=[semi])
+      HiveProject(a=[$0], b=[$1], $f6=[>($0, 10)])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+      HiveProject($f6=[$1])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(DUMMY=[0])
+            HiveTableScan(table=[[default, t2]], table:alias=[t2])
+          HiveProject($f6=[$0])
+            HiveAggregate(group=[{0}])
+              HiveProject($f6=[CAST(IS NOT NULL($0)):BOOLEAN])
+                HiveFilter(condition=[>($0, 10)])
+                  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
