@@ -1,0 +1,104 @@
+# col_name            	data_type           	comment             
+inv_date_sk         	bigint              	                    
+inv_item_sk         	bigint              	                    
+inv_warehouse_sk    	bigint              	                    
+inv_quantity_on_hand	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"inv_date_sk\":\"true\",\"inv_item_sk\":\"true\",\"inv_quantity_on_hand\":\"true\",\"inv_warehouse_sk\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	50                  
+	numRows             	1627857000          
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.inventory   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_in	 
+Column Name:        	inv_date_sk         	 
+Column Name:        	inv_item_sk         	 
+Column Name:        	inv_warehouse_sk    	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.inventory   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_inv_d	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:inv_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_inv_i	 
+Parent Column Name:default.item.i_item_sk	Column Name:inv_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_inv_w	 
+Parent Column Name:default.warehouse.w_warehouse_sk	Column Name:inv_warehouse_sk	Key Sequence:1      
+	 	 
+col_name            	inv_date_sk         
+data_type           	bigint              
+min                 	2450815             
+max                 	2452635             
+num_nulls           	0                   
+distinct_count      	258                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"inv_date_sk\":\"true\",\"inv_item_sk\":\"true\",\"inv_quantity_on_hand\":\"true\",\"inv_warehouse_sk\":\"true\"}}
+col_name            	inv_item_sk         
+data_type           	bigint              
+min                 	1                   
+max                 	462000              
+num_nulls           	0                   
+distinct_count      	464811              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"inv_date_sk\":\"true\",\"inv_item_sk\":\"true\",\"inv_quantity_on_hand\":\"true\",\"inv_warehouse_sk\":\"true\"}}
+col_name            	inv_warehouse_sk    
+data_type           	bigint              
+min                 	1                   
+max                 	27                  
+num_nulls           	0                   
+distinct_count      	27                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"inv_date_sk\":\"true\",\"inv_item_sk\":\"true\",\"inv_quantity_on_hand\":\"true\",\"inv_warehouse_sk\":\"true\"}}
+col_name            	inv_quantity_on_hand
+data_type           	int                 
+min                 	0                   
+max                 	1000                
+num_nulls           	81397229            
+distinct_count      	987                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"inv_date_sk\":\"true\",\"inv_item_sk\":\"true\",\"inv_quantity_on_hand\":\"true\",\"inv_warehouse_sk\":\"true\"}}

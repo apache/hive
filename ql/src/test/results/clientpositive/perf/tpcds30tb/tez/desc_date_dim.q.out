@@ -1,0 +1,433 @@
+# col_name            	data_type           	comment             
+d_date_sk           	bigint              	                    
+d_date_id           	string              	                    
+d_date              	date                	                    
+d_month_seq         	int                 	                    
+d_week_seq          	int                 	                    
+d_quarter_seq       	int                 	                    
+d_year              	int                 	                    
+d_dow               	int                 	                    
+d_moy               	int                 	                    
+d_dom               	int                 	                    
+d_qoy               	int                 	                    
+d_fy_year           	int                 	                    
+d_fy_quarter_seq    	int                 	                    
+d_fy_week_seq       	int                 	                    
+d_day_name          	char(9)             	                    
+d_quarter_name      	char(6)             	                    
+d_holiday           	char(1)             	                    
+d_weekend           	char(1)             	                    
+d_following_holiday 	char(1)             	                    
+d_first_dom         	int                 	                    
+d_last_dom          	int                 	                    
+d_same_day_ly       	int                 	                    
+d_same_day_lq       	int                 	                    
+d_current_day       	char(1)             	                    
+d_current_week      	char(1)             	                    
+d_current_month     	char(1)             	                    
+d_current_quarter   	char(1)             	                    
+d_current_year      	char(1)             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	73049               
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.date_dim    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_dd	 
+Column Name:        	d_date_sk           	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.date_dim    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_did_nn	 
+Column Name:        	d_date_id           	 
+	 	 
+col_name            	d_date_sk           
+data_type           	bigint              
+min                 	2415022             
+max                 	2488070             
+num_nulls           	0                   
+distinct_count      	67850               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_date_id           
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	71022               
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_date              
+data_type           	date                
+min                 	1900-01-02          
+max                 	2100-01-01          
+num_nulls           	0                   
+distinct_count      	76511               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_month_seq         
+data_type           	int                 
+min                 	0                   
+max                 	2400                
+num_nulls           	0                   
+distinct_count      	2439                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_week_seq          
+data_type           	int                 
+min                 	1                   
+max                 	10436               
+num_nulls           	0                   
+distinct_count      	11297               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_quarter_seq       
+data_type           	int                 
+min                 	1                   
+max                 	801                 
+num_nulls           	0                   
+distinct_count      	808                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_year              
+data_type           	int                 
+min                 	1900                
+max                 	2100                
+num_nulls           	0                   
+distinct_count      	199                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_dow               
+data_type           	int                 
+min                 	0                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_moy               
+data_type           	int                 
+min                 	1                   
+max                 	12                  
+num_nulls           	0                   
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_dom               
+data_type           	int                 
+min                 	1                   
+max                 	31                  
+num_nulls           	0                   
+distinct_count      	31                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_qoy               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_fy_year           
+data_type           	int                 
+min                 	1900                
+max                 	2100                
+num_nulls           	0                   
+distinct_count      	199                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_fy_quarter_seq    
+data_type           	int                 
+min                 	1                   
+max                 	801                 
+num_nulls           	0                   
+distinct_count      	808                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_fy_week_seq       
+data_type           	int                 
+min                 	1                   
+max                 	10436               
+num_nulls           	0                   
+distinct_count      	11297               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_day_name          
+data_type           	char(9)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	7.142863009760572   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_quarter_name      
+data_type           	char(6)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	800                 
+avg_col_len         	6.0                 
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_holiday           
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_weekend           
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_following_holiday 
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_first_dom         
+data_type           	int                 
+min                 	2415021             
+max                 	2488070             
+num_nulls           	0                   
+distinct_count      	2332                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_last_dom          
+data_type           	int                 
+min                 	2415020             
+max                 	2488372             
+num_nulls           	0                   
+distinct_count      	2401                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_same_day_ly       
+data_type           	int                 
+min                 	2414657             
+max                 	2487705             
+num_nulls           	0                   
+distinct_count      	67791               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_same_day_lq       
+data_type           	int                 
+min                 	2414930             
+max                 	2487978             
+num_nulls           	0                   
+distinct_count      	67904               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_current_day       
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_current_week      
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_current_month     
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_current_quarter   
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}
+col_name            	d_current_year      
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d_current_day\":\"true\",\"d_current_month\":\"true\",\"d_current_quarter\":\"true\",\"d_current_week\":\"true\",\"d_current_year\":\"true\",\"d_date\":\"true\",\"d_date_id\":\"true\",\"d_date_sk\":\"true\",\"d_day_name\":\"true\",\"d_dom\":\"true\",\"d_dow\":\"true\",\"d_first_dom\":\"true\",\"d_following_holiday\":\"true\",\"d_fy_quarter_seq\":\"true\",\"d_fy_week_seq\":\"true\",\"d_fy_year\":\"true\",\"d_holiday\":\"true\",\"d_last_dom\":\"true\",\"d_month_seq\":\"true\",\"d_moy\":\"true\",\"d_qoy\":\"true\",\"d_quarter_name\":\"true\",\"d_quarter_seq\":\"true\",\"d_same_day_lq\":\"true\",\"d_same_day_ly\":\"true\",\"d_week_seq\":\"true\",\"d_weekend\":\"true\",\"d_year\":\"true\"}}

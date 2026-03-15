@@ -1,0 +1,237 @@
+# col_name            	data_type           	comment             
+w_warehouse_sk      	bigint              	                    
+w_warehouse_id      	string              	                    
+w_warehouse_name    	varchar(20)         	                    
+w_warehouse_sq_ft   	int                 	                    
+w_street_number     	char(10)            	                    
+w_street_name       	varchar(60)         	                    
+w_street_type       	char(15)            	                    
+w_suite_number      	char(10)            	                    
+w_city              	varchar(60)         	                    
+w_county            	varchar(30)         	                    
+w_state             	char(2)             	                    
+w_zip               	char(10)            	                    
+w_country           	varchar(20)         	                    
+w_gmt_offset        	decimal(5,2)        	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	27                  
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.warehouse   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_w	 
+Column Name:        	w_warehouse_sk      	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.warehouse   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wid_nn	 
+Column Name:        	w_warehouse_id      	 
+	 	 
+col_name            	w_warehouse_sk      
+data_type           	bigint              
+min                 	1                   
+max                 	27                  
+num_nulls           	0                   
+distinct_count      	27                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_warehouse_id      
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	27                  
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_warehouse_name    
+data_type           	varchar(20)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	27                  
+avg_col_len         	15.555555555555555  
+max_col_len         	20                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_warehouse_sq_ft   
+data_type           	int                 
+min                 	73065               
+max                 	977787              
+num_nulls           	1                   
+distinct_count      	26                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_street_number     
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	26                  
+avg_col_len         	2.7777777777777777  
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_street_name       
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	27                  
+avg_col_len         	8.407407407407407   
+max_col_len         	15                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_street_type       
+data_type           	char(15)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	16                  
+avg_col_len         	3.925925925925926   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_suite_number      
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	21                  
+avg_col_len         	7.444444444444445   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_city              
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	18                  
+avg_col_len         	9.148148148148149   
+max_col_len         	15                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_county            
+data_type           	varchar(30)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	14                  
+avg_col_len         	14.407407407407407  
+max_col_len         	17                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_state             
+data_type           	char(2)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	12                  
+avg_col_len         	2.0                 
+max_col_len         	2                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_zip               
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	24                  
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_country           
+data_type           	varchar(20)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	13.0                
+max_col_len         	13                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}
+col_name            	w_gmt_offset        
+data_type           	decimal(5,2)        
+min                 	-8                  
+max                 	-5                  
+num_nulls           	1                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"w_city\":\"true\",\"w_country\":\"true\",\"w_county\":\"true\",\"w_gmt_offset\":\"true\",\"w_state\":\"true\",\"w_street_name\":\"true\",\"w_street_number\":\"true\",\"w_street_type\":\"true\",\"w_suite_number\":\"true\",\"w_warehouse_id\":\"true\",\"w_warehouse_name\":\"true\",\"w_warehouse_sk\":\"true\",\"w_warehouse_sq_ft\":\"true\",\"w_zip\":\"true\"}}

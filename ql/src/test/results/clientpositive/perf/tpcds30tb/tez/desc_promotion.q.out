@@ -1,0 +1,319 @@
+# col_name            	data_type           	comment             
+p_promo_sk          	bigint              	                    
+p_promo_id          	string              	                    
+p_start_date_sk     	bigint              	                    
+p_end_date_sk       	bigint              	                    
+p_item_sk           	bigint              	                    
+p_cost              	decimal(15,2)       	                    
+p_response_target   	int                 	                    
+p_promo_name        	char(50)            	                    
+p_channel_dmail     	char(1)             	                    
+p_channel_email     	char(1)             	                    
+p_channel_catalog   	char(1)             	                    
+p_channel_tv        	char(1)             	                    
+p_channel_radio     	char(1)             	                    
+p_channel_press     	char(1)             	                    
+p_channel_event     	char(1)             	                    
+p_channel_demo      	char(1)             	                    
+p_channel_details   	varchar(100)        	                    
+p_purpose           	char(15)            	                    
+p_discount_active   	char(1)             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	2300                
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.promotion   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_p	 
+Column Name:        	p_promo_sk          	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.promotion   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_p_end_date	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:p_end_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_p_i	 
+Parent Column Name:default.item.i_item_sk	Column Name:p_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_p_start_date	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:p_start_date_sk	Key Sequence:1      
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.promotion   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pid_nn	 
+Column Name:        	p_promo_id          	 
+	 	 
+col_name            	p_promo_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	2300                
+num_nulls           	0                   
+distinct_count      	2365                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_promo_id          
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2307                
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_start_date_sk     
+data_type           	bigint              
+min                 	2450096             
+max                 	2450915             
+num_nulls           	30                  
+distinct_count      	761                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_end_date_sk       
+data_type           	bigint              
+min                 	2450102             
+max                 	2450970             
+num_nulls           	26                  
+distinct_count      	736                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_item_sk           
+data_type           	bigint              
+min                 	614                 
+max                 	461932              
+num_nulls           	28                  
+distinct_count      	2252                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_cost              
+data_type           	decimal(15,2)       
+min                 	1000                
+max                 	1000                
+num_nulls           	28                  
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_response_target   
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	33                  
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_promo_name        
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	11                  
+avg_col_len         	3.9469565217391303  
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_dmail     
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	0.9895652173913043  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_email     
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9882608695652174  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_catalog   
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9895652173913043  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_tv        
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9882608695652174  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_radio     
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9878260869565217  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_press     
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9886956521739131  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_event     
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9895652173913043  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_demo      
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9882608695652174  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_channel_details   
+data_type           	varchar(100)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2242                
+avg_col_len         	39.26521739130435   
+max_col_len         	60                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_purpose           
+data_type           	char(15)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	6.923913043478261   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}
+col_name            	p_discount_active   
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	0.9865217391304347  
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"p_channel_catalog\":\"true\",\"p_channel_demo\":\"true\",\"p_channel_details\":\"true\",\"p_channel_dmail\":\"true\",\"p_channel_email\":\"true\",\"p_channel_event\":\"true\",\"p_channel_press\":\"true\",\"p_channel_radio\":\"true\",\"p_channel_tv\":\"true\",\"p_cost\":\"true\",\"p_discount_active\":\"true\",\"p_end_date_sk\":\"true\",\"p_item_sk\":\"true\",\"p_promo_id\":\"true\",\"p_promo_name\":\"true\",\"p_promo_sk\":\"true\",\"p_purpose\":\"true\",\"p_response_target\":\"true\",\"p_start_date_sk\":\"true\"}}

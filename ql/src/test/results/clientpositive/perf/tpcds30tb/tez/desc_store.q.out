@@ -1,0 +1,453 @@
+# col_name            	data_type           	comment             
+s_store_sk          	bigint              	                    
+s_store_id          	string              	                    
+s_rec_start_date    	date                	                    
+s_rec_end_date      	date                	                    
+s_closed_date_sk    	bigint              	                    
+s_store_name        	varchar(50)         	                    
+s_number_employees  	int                 	                    
+s_floor_space       	int                 	                    
+s_hours             	char(20)            	                    
+s_manager           	varchar(40)         	                    
+s_market_id         	int                 	                    
+s_geography_class   	varchar(100)        	                    
+s_market_desc       	varchar(100)        	                    
+s_market_manager    	varchar(40)         	                    
+s_division_id       	int                 	                    
+s_division_name     	varchar(50)         	                    
+s_company_id        	int                 	                    
+s_company_name      	varchar(50)         	                    
+s_street_number     	varchar(10)         	                    
+s_street_name       	varchar(60)         	                    
+s_street_type       	char(15)            	                    
+s_suite_number      	char(10)            	                    
+s_city              	varchar(60)         	                    
+s_county            	varchar(30)         	                    
+s_state             	char(2)             	                    
+s_zip               	char(10)            	                    
+s_country           	varchar(20)         	                    
+s_gmt_offset        	decimal(5,2)        	                    
+s_tax_percentage    	decimal(5,2)        	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	1704                
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.store       	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_s	 
+Column Name:        	s_store_sk          	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.store       	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_s_close_date	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:s_closed_date_sk	Key Sequence:1      
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.store       	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_strid_nn	 
+Column Name:        	s_store_id          	 
+	 	 
+col_name            	s_store_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	1704                
+num_nulls           	0                   
+distinct_count      	1736                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_store_id          
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	879                 
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_rec_start_date    
+data_type           	date                
+min                 	1997-03-13          
+max                 	2001-03-13          
+num_nulls           	10                  
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_rec_end_date      
+data_type           	date                
+min                 	1999-03-13          
+max                 	2001-03-12          
+num_nulls           	852                 
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_closed_date_sk    
+data_type           	bigint              
+min                 	2450820             
+max                 	2451314             
+num_nulls           	1211                
+distinct_count      	263                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_store_name        
+data_type           	varchar(50)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	11                  
+avg_col_len         	3.9113849765258215  
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_number_employees  
+data_type           	int                 
+min                 	200                 
+max                 	300                 
+num_nulls           	13                  
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_floor_space       
+data_type           	int                 
+min                 	5000201             
+max                 	9997773             
+num_nulls           	12                  
+distinct_count      	1289                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_hours             
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	7.077464788732394   
+max_col_len         	8                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_manager           
+data_type           	varchar(40)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1245                
+avg_col_len         	12.658450704225352  
+max_col_len         	21                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_market_id         
+data_type           	int                 
+min                 	1                   
+max                 	10                  
+num_nulls           	15                  
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_geography_class   
+data_type           	varchar(100)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	6.946596244131455   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_market_desc       
+data_type           	varchar(100)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1311                
+avg_col_len         	57.71948356807512   
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_market_manager    
+data_type           	varchar(40)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1236                
+avg_col_len         	12.781103286384976  
+max_col_len         	20                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_division_id       
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	10                  
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_division_name     
+data_type           	varchar(50)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	6.950704225352113   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_company_id        
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	13                  
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_company_name      
+data_type           	varchar(50)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	6.950704225352113   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_street_number     
+data_type           	varchar(10)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	736                 
+avg_col_len         	2.8779342723004695  
+max_col_len         	4                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_street_name       
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	851                 
+avg_col_len         	8.585093896713616   
+max_col_len         	19                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_street_type       
+data_type           	char(15)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	21                  
+avg_col_len         	4.193075117370892   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_suite_number      
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	76                  
+avg_col_len         	7.839788732394366   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_city              
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	267                 
+avg_col_len         	8.53462441314554    
+max_col_len         	15                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_county            
+data_type           	varchar(30)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	128                 
+avg_col_len         	13.923708920187794  
+max_col_len         	22                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_state             
+data_type           	char(2)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	44                  
+avg_col_len         	1.9859154929577465  
+max_col_len         	2                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_zip               
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	983                 
+avg_col_len         	4.964788732394366   
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_country           
+data_type           	varchar(20)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	12.931338028169014  
+max_col_len         	13                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_gmt_offset        
+data_type           	decimal(5,2)        
+min                 	-9                  
+max                 	-5                  
+num_nulls           	9                   
+distinct_count      	5                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}
+col_name            	s_tax_percentage    
+data_type           	decimal(5,2)        
+min                 	0                   
+max                 	0.11                
+num_nulls           	12                  
+distinct_count      	12                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"s_city\":\"true\",\"s_closed_date_sk\":\"true\",\"s_company_id\":\"true\",\"s_company_name\":\"true\",\"s_country\":\"true\",\"s_county\":\"true\",\"s_division_id\":\"true\",\"s_division_name\":\"true\",\"s_floor_space\":\"true\",\"s_geography_class\":\"true\",\"s_gmt_offset\":\"true\",\"s_hours\":\"true\",\"s_manager\":\"true\",\"s_market_desc\":\"true\",\"s_market_id\":\"true\",\"s_market_manager\":\"true\",\"s_number_employees\":\"true\",\"s_rec_end_date\":\"true\",\"s_rec_start_date\":\"true\",\"s_state\":\"true\",\"s_store_id\":\"true\",\"s_store_name\":\"true\",\"s_store_sk\":\"true\",\"s_street_name\":\"true\",\"s_street_number\":\"true\",\"s_street_type\":\"true\",\"s_suite_number\":\"true\",\"s_tax_percentage\":\"true\",\"s_zip\":\"true\"}}

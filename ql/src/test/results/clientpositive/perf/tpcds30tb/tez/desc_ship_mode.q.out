@@ -1,0 +1,125 @@
+# col_name            	data_type           	comment             
+sm_ship_mode_sk     	bigint              	                    
+sm_ship_mode_id     	string              	                    
+sm_type             	char(30)            	                    
+sm_code             	char(10)            	                    
+sm_carrier          	char(20)            	                    
+sm_contract         	char(20)            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sm_carrier\":\"true\",\"sm_code\":\"true\",\"sm_contract\":\"true\",\"sm_ship_mode_id\":\"true\",\"sm_ship_mode_sk\":\"true\",\"sm_type\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	20                  
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.ship_mode   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_sm	 
+Column Name:        	sm_ship_mode_sk     	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.ship_mode   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_smid_nn	 
+Column Name:        	sm_ship_mode_id     	 
+	 	 
+col_name            	sm_ship_mode_sk     
+data_type           	bigint              
+min                 	1                   
+max                 	20                  
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sm_carrier\":\"true\",\"sm_code\":\"true\",\"sm_contract\":\"true\",\"sm_ship_mode_id\":\"true\",\"sm_ship_mode_sk\":\"true\",\"sm_type\":\"true\"}}
+col_name            	sm_ship_mode_id     
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sm_carrier\":\"true\",\"sm_code\":\"true\",\"sm_contract\":\"true\",\"sm_ship_mode_id\":\"true\",\"sm_ship_mode_sk\":\"true\",\"sm_type\":\"true\"}}
+col_name            	sm_type             
+data_type           	char(30)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	7.5                 
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sm_carrier\":\"true\",\"sm_code\":\"true\",\"sm_contract\":\"true\",\"sm_ship_mode_id\":\"true\",\"sm_ship_mode_sk\":\"true\",\"sm_type\":\"true\"}}
+col_name            	sm_code             
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	4.35                
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sm_carrier\":\"true\",\"sm_code\":\"true\",\"sm_contract\":\"true\",\"sm_ship_mode_id\":\"true\",\"sm_ship_mode_sk\":\"true\",\"sm_type\":\"true\"}}
+col_name            	sm_carrier          
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	6.65                
+max_col_len         	14                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sm_carrier\":\"true\",\"sm_code\":\"true\",\"sm_contract\":\"true\",\"sm_ship_mode_id\":\"true\",\"sm_ship_mode_sk\":\"true\",\"sm_type\":\"true\"}}
+col_name            	sm_contract         
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	12.6                
+max_col_len         	20                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sm_carrier\":\"true\",\"sm_code\":\"true\",\"sm_contract\":\"true\",\"sm_ship_mode_id\":\"true\",\"sm_ship_mode_sk\":\"true\",\"sm_type\":\"true\"}}

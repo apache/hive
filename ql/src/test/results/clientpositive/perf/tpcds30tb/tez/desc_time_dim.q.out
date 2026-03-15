@@ -1,0 +1,181 @@
+# col_name            	data_type           	comment             
+t_time_sk           	bigint              	                    
+t_time_id           	string              	                    
+t_time              	int                 	                    
+t_hour              	int                 	                    
+t_minute            	int                 	                    
+t_second            	int                 	                    
+t_am_pm             	char(2)             	                    
+t_shift             	char(20)            	                    
+t_sub_shift         	char(20)            	                    
+t_meal_time         	char(20)            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	86400               
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.time_dim    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_td	 
+Column Name:        	t_time_sk           	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.time_dim    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_tid_nn	 
+Column Name:        	t_time_id           	 
+	 	 
+col_name            	t_time_sk           
+data_type           	bigint              
+min                 	0                   
+max                 	86399               
+num_nulls           	0                   
+distinct_count      	85503               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_time_id           
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	87002               
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_time              
+data_type           	int                 
+min                 	0                   
+max                 	86399               
+num_nulls           	0                   
+distinct_count      	85503               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_hour              
+data_type           	int                 
+min                 	0                   
+max                 	23                  
+num_nulls           	0                   
+distinct_count      	24                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_minute            
+data_type           	int                 
+min                 	0                   
+max                 	59                  
+num_nulls           	0                   
+distinct_count      	62                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_second            
+data_type           	int                 
+min                 	0                   
+max                 	59                  
+num_nulls           	0                   
+distinct_count      	62                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_am_pm             
+data_type           	char(2)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	2.0                 
+max_col_len         	2                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_shift             
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	5.333333333333333   
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_sub_shift         
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	6.916666666666667   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}
+col_name            	t_meal_time         
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	2.875               
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t_am_pm\":\"true\",\"t_hour\":\"true\",\"t_meal_time\":\"true\",\"t_minute\":\"true\",\"t_second\":\"true\",\"t_shift\":\"true\",\"t_sub_shift\":\"true\",\"t_time\":\"true\",\"t_time_id\":\"true\",\"t_time_sk\":\"true\"}}

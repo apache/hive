@@ -1,0 +1,10 @@
+DESCRIBE FORMATTED customer_demographics;
+DESCRIBE FORMATTED customer_demographics cd_demo_sk;
+DESCRIBE FORMATTED customer_demographics cd_gender;
+DESCRIBE FORMATTED customer_demographics cd_marital_status;
+DESCRIBE FORMATTED customer_demographics cd_education_status;
+DESCRIBE FORMATTED customer_demographics cd_purchase_estimate;
+DESCRIBE FORMATTED customer_demographics cd_credit_rating;
+DESCRIBE FORMATTED customer_demographics cd_dep_count;
+DESCRIBE FORMATTED customer_demographics cd_dep_employed_count;
+DESCRIBE FORMATTED customer_demographics cd_dep_college_count;

@@ -1,0 +1,11 @@
+DESCRIBE FORMATTED time_dim;
+DESCRIBE FORMATTED time_dim t_time_sk;
+DESCRIBE FORMATTED time_dim t_time_id;
+DESCRIBE FORMATTED time_dim t_time;
+DESCRIBE FORMATTED time_dim t_hour;
+DESCRIBE FORMATTED time_dim t_minute;
+DESCRIBE FORMATTED time_dim t_second;
+DESCRIBE FORMATTED time_dim t_am_pm;
+DESCRIBE FORMATTED time_dim t_shift;
+DESCRIBE FORMATTED time_dim t_sub_shift;
+DESCRIBE FORMATTED time_dim t_meal_time;

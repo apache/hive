@@ -1,0 +1,409 @@
+# col_name            	data_type           	comment             
+wr_returned_time_sk 	bigint              	                    
+wr_item_sk          	bigint              	                    
+wr_refunded_customer_sk	bigint              	                    
+wr_refunded_cdemo_sk	bigint              	                    
+wr_refunded_hdemo_sk	bigint              	                    
+wr_refunded_addr_sk 	bigint              	                    
+wr_returning_customer_sk	bigint              	                    
+wr_returning_cdemo_sk	bigint              	                    
+wr_returning_hdemo_sk	bigint              	                    
+wr_returning_addr_sk	bigint              	                    
+wr_web_page_sk      	bigint              	                    
+wr_reason_sk        	bigint              	                    
+wr_order_number     	bigint              	                    
+wr_return_quantity  	int                 	                    
+wr_return_amt       	decimal(7,2)        	                    
+wr_return_tax       	decimal(7,2)        	                    
+wr_return_amt_inc_tax	decimal(7,2)        	                    
+wr_fee              	decimal(7,2)        	                    
+wr_return_ship_cost 	decimal(7,2)        	                    
+wr_refunded_cash    	decimal(7,2)        	                    
+wr_reversed_charge  	decimal(7,2)        	                    
+wr_account_credit   	decimal(7,2)        	                    
+wr_net_loss         	decimal(7,2)        	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+wr_returned_date_sk 	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2185                
+	numPartitions       	2185                
+	numRows             	2160007345          
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.web_returns 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_wr	 
+Column Name:        	wr_item_sk          	 
+Column Name:        	wr_order_number     	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.web_returns 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_i	 
+Parent Column Name:default.item.i_item_sk	Column Name:wr_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_r	 
+Parent Column Name:default.reason.r_reason_sk	Column Name:wr_reason_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_ref_cd	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:wr_refunded_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_ref_hd	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:wr_refunded_hdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_ret_cd	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:wr_returning_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_ret_d	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:wr_returned_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_ret_hd	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:wr_returning_hdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_ret_t	 
+Parent Column Name:default.time_dim.t_time_sk	Column Name:wr_returned_time_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_wp	 
+Parent Column Name:default.web_page.wp_web_page_sk	Column Name:wr_web_page_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wr_ws	 
+Parent Column Name:default.web_sales.ws_order_number	Column Name:wr_order_number	Key Sequence:2      
+Parent Column Name:default.web_sales.ws_item_sk	Column Name:wr_item_sk	Key Sequence:1      
+	 	 
+col_name            	wr_returned_date_sk 
+data_type           	bigint              
+min                 	2450819             
+max                 	2453002             
+num_nulls           	0                   
+distinct_count      	2185                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_returned_date_sk\":\"true\"}}
+col_name            	wr_returned_time_sk 
+data_type           	bigint              
+min                 	0                   
+max                 	86399               
+num_nulls           	97208291            
+distinct_count      	85503               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_returned_time_sk\":\"true\"}}
+col_name            	wr_item_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	462000              
+num_nulls           	0                   
+distinct_count      	462000              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_item_sk\":\"true\"}}
+col_name            	wr_refunded_customer_sk
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	97211326            
+distinct_count      	78525965            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_refunded_customer_sk\":\"true\"}}
+col_name            	wr_refunded_cdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	97220021            
+distinct_count      	1920801             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_refunded_cdemo_sk\":\"true\"}}
+col_name            	wr_refunded_hdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	97214436            
+distinct_count      	7201                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_refunded_hdemo_sk\":\"true\"}}
+col_name            	wr_refunded_addr_sk 
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	97201248            
+distinct_count      	40000001            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_refunded_addr_sk\":\"true\"}}
+col_name            	wr_returning_customer_sk
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	97178121            
+distinct_count      	78525965            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_returning_customer_sk\":\"true\"}}
+col_name            	wr_returning_cdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	97221110            
+distinct_count      	1920801             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_returning_cdemo_sk\":\"true\"}}
+col_name            	wr_returning_hdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	97196443            
+distinct_count      	7201                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_returning_hdemo_sk\":\"true\"}}
+col_name            	wr_returning_addr_sk
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	97206869            
+distinct_count      	40000001            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_returning_addr_sk\":\"true\"}}
+col_name            	wr_web_page_sk      
+data_type           	bigint              
+min                 	1                   
+max                 	4602                
+num_nulls           	97196120            
+distinct_count      	4556                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_web_page_sk\":\"true\"}}
+col_name            	wr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	72                  
+num_nulls           	97211076            
+distinct_count      	73                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_reason_sk\":\"true\"}}
+col_name            	wr_order_number     
+data_type           	bigint              
+min                 	1                   
+max                 	1800000000          
+num_nulls           	0                   
+distinct_count      	1317116406          
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_order_number\":\"true\"}}
+col_name            	wr_return_quantity  
+data_type           	int                 
+min                 	1                   
+max                 	100                 
+num_nulls           	97218721            
+distinct_count      	101                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_return_quantity\":\"true\"}}
+col_name            	wr_return_amt       
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	29191               
+num_nulls           	97205086            
+distinct_count      	1108704             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_return_amt\":\"true\"}}
+col_name            	wr_return_tax       
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	2620.34             
+num_nulls           	97194320            
+distinct_count      	198904              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_return_tax\":\"true\"}}
+col_name            	wr_return_amt_inc_tax
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	31735.25            
+num_nulls           	97194547            
+distinct_count      	2111617             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_return_amt_inc_tax\":\"true\"}}
+col_name            	wr_fee              
+data_type           	decimal(7,2)        
+min                 	0.5                 
+max                 	100                 
+num_nulls           	97200413            
+distinct_count      	9408                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_fee\":\"true\"}}
+col_name            	wr_return_ship_cost 
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	14624               
+num_nulls           	97209161            
+distinct_count      	553061              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_return_ship_cost\":\"true\"}}
+col_name            	wr_refunded_cash    
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	28085.82            
+num_nulls           	97208984            
+distinct_count      	1631618             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_refunded_cash\":\"true\"}}
+col_name            	wr_reversed_charge  
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	26135.99            
+num_nulls           	97203634            
+distinct_count      	1277260             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_reversed_charge\":\"true\"}}
+col_name            	wr_account_credit   
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	24649.69            
+num_nulls           	97195247            
+distinct_count      	1249055             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_account_credit\":\"true\"}}
+col_name            	wr_net_loss         
+data_type           	decimal(7,2)        
+min                 	0.5                 
+max                 	16733.32            
+num_nulls           	97197311            
+distinct_count      	1227508             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"wr_net_loss\":\"true\"}}

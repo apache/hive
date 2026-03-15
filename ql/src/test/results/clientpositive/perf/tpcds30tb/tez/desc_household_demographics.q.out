@@ -1,0 +1,110 @@
+# col_name            	data_type           	comment             
+hd_demo_sk          	bigint              	                    
+hd_income_band_sk   	bigint              	                    
+hd_buy_potential    	char(15)            	                    
+hd_dep_count        	int                 	                    
+hd_vehicle_count    	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"hd_buy_potential\":\"true\",\"hd_demo_sk\":\"true\",\"hd_dep_count\":\"true\",\"hd_income_band_sk\":\"true\",\"hd_vehicle_count\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	7200                
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.household_demographics	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_hd	 
+Column Name:        	hd_demo_sk          	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.household_demographics	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_hd_ib	 
+Parent Column Name:default.income_band.ib_income_band_sk	Column Name:hd_income_band_sk	Key Sequence:1      
+	 	 
+col_name            	hd_demo_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	0                   
+distinct_count      	7225                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"hd_buy_potential\":\"true\",\"hd_demo_sk\":\"true\",\"hd_dep_count\":\"true\",\"hd_income_band_sk\":\"true\",\"hd_vehicle_count\":\"true\"}}
+col_name            	hd_income_band_sk   
+data_type           	bigint              
+min                 	1                   
+max                 	20                  
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"hd_buy_potential\":\"true\",\"hd_demo_sk\":\"true\",\"hd_dep_count\":\"true\",\"hd_income_band_sk\":\"true\",\"hd_vehicle_count\":\"true\"}}
+col_name            	hd_buy_potential    
+data_type           	char(15)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	7.5                 
+max_col_len         	10                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"hd_buy_potential\":\"true\",\"hd_demo_sk\":\"true\",\"hd_dep_count\":\"true\",\"hd_income_band_sk\":\"true\",\"hd_vehicle_count\":\"true\"}}
+col_name            	hd_dep_count        
+data_type           	int                 
+min                 	0                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"hd_buy_potential\":\"true\",\"hd_demo_sk\":\"true\",\"hd_dep_count\":\"true\",\"hd_income_band_sk\":\"true\",\"hd_vehicle_count\":\"true\"}}
+col_name            	hd_vehicle_count    
+data_type           	int                 
+min                 	-1                  
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"hd_buy_potential\":\"true\",\"hd_demo_sk\":\"true\",\"hd_dep_count\":\"true\",\"hd_income_band_sk\":\"true\",\"hd_vehicle_count\":\"true\"}}
