@@ -256,3 +256,51 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tbl
 POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
 #### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like 'a.*'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=abc
+PREHOOK: Input: default@test_tbl@b=af%25
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'a.*'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=abc
+POSTHOOK: Input: default@test_tbl@b=af%25
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like 'd.\%.*'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'd.\%.*'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like 'd.\\%.*'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'd.\\%.*'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like 'd.\\\\%.*'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like 'd.\\\\%.*'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+PREHOOK: query: select * from test_tbl where b like '.\\_.*'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_tbl
+PREHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_tbl where b like '.\\_.*'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_tbl
+POSTHOOK: Input: default@test_tbl@b=d_%5C%25ae
+#### A masked pattern was here ####
