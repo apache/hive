@@ -878,7 +878,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     {
       // check partitioning column order and types
-      List<FieldSchema> existingTablePartCols = table.getPartCols();
+      List<FieldSchema> existingTablePartCols = table.getNativePartCols();
       List<FieldSchema> importedTablePartCols = tableDesc.getPartCols();
       if (!EximUtil.schemaCompare(importedTablePartCols, existingTablePartCols)) {
         throw new SemanticException(

@@ -581,8 +581,7 @@ public final class ParseUtils {
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
     String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     Map<String, String> colTypes = new HashMap<>();
-    List<FieldSchema> partitionKeys = table.hasNonNativePartitionSupport() ?
-        table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
+    List<FieldSchema> partitionKeys = table.getSupportedPartCols();
     for (FieldSchema fs : partitionKeys) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }
@@ -692,7 +691,7 @@ public final class ParseUtils {
    */
   private static int calculatePartPrefix(Table tbl, Set<String> partSpecKeys) {
     int partPrefixToDrop = 0;
-    for (FieldSchema fs : tbl.getPartCols()) {
+    for (FieldSchema fs : tbl.getNativePartCols()) {
       if (!partSpecKeys.contains(fs.getName())) {
         break;
       }

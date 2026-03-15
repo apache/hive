@@ -83,7 +83,7 @@ public class ColumnStatsAutoGatherContext {
     this.isInsertInto = isInsertInto;
     this.origCtx = ctx;
     columns = tbl.getCols();
-    partitionColumns = tbl.getPartCols();
+    partitionColumns = tbl.getNativePartCols();
   }
 
   public List<LoadFileDesc> getLoadFileWork() {
