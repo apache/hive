@@ -3958,4 +3958,72 @@ public abstract class TestHiveMetaStore {
     // No such data connector, ignore NoSuchObjectException
     client.dropDataConnector("no_such_data_connector", true, false);
   }
+  
+  @Test
+  public void testGetFieldsForAvroSerDe() throws Exception {
+    String dbName = "test_avro_serde_db";
+    String avroTbl = "avro_tbl";
+
+    client.dropTable(dbName, avroTbl, true, true);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(avroTbl)
+        .setSerdeLib("org.apache.hadoop.hive.serde2.avro.AvroSerDe")
+        .setInputFormat("org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat")
+        .setOutputFormat("org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat")
+        .addCol("foo", "int", "")
+        .addCol("bar", "string", "")
+        .addCol("baz", "bigint", "")
+        .create(client, conf);
+
+    List<FieldSchema> fields = client.getFields(dbName, avroTbl);
+    assertEquals("AvroSerDe table should return 3 fields from metastore", 3, fields.size());
+    assertEquals("foo", fields.get(0).getName());
+    assertEquals("bar", fields.get(1).getName());
+    assertEquals("baz", fields.get(2).getName());
+
+    List<FieldSchema> schema = client.getSchema(dbName, avroTbl);
+    assertEquals("AvroSerDe getSchema should return 3 columns", 3, schema.size());
+
+    client.dropTable(dbName, avroTbl, true, true);
+    client.dropDatabase(dbName);
+  }
+  
+  @Test
+  public void testGetFieldsForHBaseSerDe() throws Exception {
+    String dbName = "test_hbase_serde_db";
+    String hbaseTbl = "hbase_tbl";
+
+    client.dropTable(dbName, hbaseTbl, true, true);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(hbaseTbl)
+        .setSerdeLib("org.apache.hadoop.hive.hbase.HBaseSerDe")
+        .addCol("key", "string", "")
+        .addCol("value", "string", "")
+        .create(client, conf);
+
+    List<FieldSchema> fields = client.getFields(dbName, hbaseTbl);
+    assertEquals("HBaseSerDe table should return 2 fields from metastore", 2, fields.size());
+    assertEquals("key", fields.get(0).getName());
+    assertEquals("value", fields.get(1).getName());
+
+    List<FieldSchema> schema = client.getSchema(dbName, hbaseTbl);
+    assertEquals("HBaseSerDe getSchema should return 2 columns", 2, schema.size());
+
+    client.dropTable(dbName, hbaseTbl, true, true);
+    client.dropDatabase(dbName);
+  }
 }

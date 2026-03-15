@@ -4271,14 +4271,25 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } catch (NoSuchObjectException e) {
         throw new UnknownTableException(e.getMessage());
       }
-      if (null == tbl.getSd().getSerdeInfo().getSerializationLib() ||
+      String serdeLib = tbl.getSd().getSerdeInfo().getSerializationLib();
+      if (serdeLib == null ||
               MetastoreConf.getStringCollection(conf,
-                      ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(
-                      tbl.getSd().getSerdeInfo().getSerializationLib())) {
+                      ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(serdeLib)) {
         ret = tbl.getSd().getCols();
       } else {
-        StorageSchemaReader schemaReader = getStorageSchemaReader();
-        ret = schemaReader.readSchema(tbl, envContext, getConf());
+        try {
+          StorageSchemaReader schemaReader = getStorageSchemaReader();
+          ret = schemaReader.readSchema(tbl, envContext, getConf());
+        } catch (Exception e) {
+          if ("org.apache.hadoop.hive.serde2.avro.AvroSerDe".equals(serdeLib)) {
+            LOG.warn("Unable to read schema from storage for AvroSerDe table '{}.{}' ({}). " +
+                "Returning metastore SD columns as fallback; schema may be stale ",
+                db, tableName, e.getMessage());
+            ret = tbl.getSd().getCols();
+          } else {
+            throw new UnsupportedOperationException("Storage schema reading not supported");
+          }
+        }
       }
     } catch (Exception e) {
       ex = e;
