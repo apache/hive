@@ -1,0 +1,28 @@
+PREHOOK: query: CREATE TABLE tab(attr varchar(5))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab
+POSTHOOK: query: CREATE TABLE tab(attr varchar(5))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab
+PREHOOK: query: select * from tab t1 left join tab t2
+on t1.attr = t2.attr and t2.attr in ( trim(t1.attr), '*')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab t1 left join tab t2
+on t1.attr = t2.attr and t2.attr in ( trim(t1.attr), '*')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab
+POSTHOOK: query: DROP TABLE tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab
