@@ -75,6 +75,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   public ExprNodeGenericFuncDesc() {;
   }
 
+  /**
+   * Constructor.
+   *
+   * @param children the children; a copy is made, so later changes to the passed list
+   *                 do not affect the children of this instance
+   */
   /* If the function has an explicit name like func(args) then call a
    * constructor that explicitly provides the function name in the
    * funcText argument.
@@ -86,6 +92,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
          genericUDF, funcText, children);
   }
 
+  /**
+   * Constructor.
+   *
+   * @param children the children; a copy is made, so later changes to the passed list
+   *                 do not affect the children of this instance
+   */
   public ExprNodeGenericFuncDesc(ObjectInspector oi, GenericUDF genericUDF,
       String funcText,
       List<ExprNodeDesc> children) {
@@ -94,16 +106,28 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
         ObjectInspectorUtils.getWritableObjectInspector(oi);
     assert (genericUDF != null);
     this.genericUDF = genericUDF;
-    this.children = children;
+    this.children = children == null ? new ArrayList<>() : new ArrayList<>(children);
     this.funcText = funcText;
   }
 
+  /**
+   * Constructor.
+   *
+   * @param children the children; a copy is made, so later changes to the passed list
+   *                 do not affect the children of this instance
+   */
   // Backward-compatibility interfaces for functions without a user-visible name.
   public ExprNodeGenericFuncDesc(TypeInfo typeInfo, GenericUDF genericUDF,
       List<ExprNodeDesc> children) {
     this(typeInfo, genericUDF, null, children);
   }
 
+  /**
+   * Constructor.
+   *
+   * @param children the children; a copy is made, so later changes to the passed list
+   *                 do not affect the children of this instance
+   */
   public ExprNodeGenericFuncDesc(ObjectInspector oi, GenericUDF genericUDF,
       List<ExprNodeDesc> children) {
     this(oi, genericUDF, null, children);
@@ -125,8 +149,14 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     this.genericUDF = genericUDF;
   }
 
+  /**
+   * Sets the children.
+   *
+   * @param children the new children; a copy is made, so later changes to the passed list
+   *                 do not affect the children of this instance
+   */
   public void setChildren(List<ExprNodeDesc> children) {
-    this.children = children;
+    this.children = children == null ? new ArrayList<>() : new ArrayList<>(children);
   }
 
   @Override
