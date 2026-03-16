@@ -151,13 +151,14 @@ class TextDescTableFormatter extends DescTableFormatter {
       statsData += "# ";
       metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
     }
-    JsonNode FieldsNode = OBJECT_MAPPER.readTree(table.getParameters().get("current-schema")).get("fields");
+    JsonNode fieldsNode = needColStats && isIcebergTable ?
+        OBJECT_MAPPER.readTree(table.getParameters().get("current-schema")).get("fields") : null;
     for (FieldSchema column : columns) {
       List<String> values = new ArrayList<>(List.of(ShowUtils.extractColumnValues(column, needColStats,
           getColumnStatisticsObject(column.getName(), column.getType(), columnStats), histogramEnabled)));
       if (needColStats && isIcebergTable) {
-        values.add(getColumnDefaults(FieldsNode, column.getName(), "initial-default"));
-        values.add(getColumnDefaults(FieldsNode, column.getName(), "write-default"));
+        values.add(getColumnDefaults(fieldsNode, column.getName(), "initial-default"));
+        values.add(getColumnDefaults(fieldsNode, column.getName(), "write-default"));
       }
       metaDataTable.addRow(values.toArray(new String[0]));
     }
