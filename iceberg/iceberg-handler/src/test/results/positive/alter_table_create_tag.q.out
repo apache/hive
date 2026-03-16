@@ -127,11 +127,11 @@ POSTHOOK: type: ALTERTABLE_CREATETAG
 POSTHOOK: Input: default@icetbl
 PREHOOK: query: select * from default.iceTbl.tag_test_tag_1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@icetbl
+PREHOOK: Input: default@icetbl@tag_test_tag_1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.iceTbl.tag_test_tag_1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@icetbl
+POSTHOOK: Input: default@icetbl@tag_test_tag_1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	jack
 2	bob

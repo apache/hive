@@ -76,11 +76,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl_ice_puffin_time_travel
+PREHOOK: Input: default@tbl_ice_puffin_time_travel@tag_checkpoint
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl_ice_puffin_time_travel
+POSTHOOK: Input: default@tbl_ice_puffin_time_travel@tag_checkpoint
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -193,11 +193,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl_ice_puffin_time_travel
+PREHOOK: Input: default@tbl_ice_puffin_time_travel@tag_checkpoint
 #### A masked pattern was here ####
 POSTHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl_ice_puffin_time_travel
+POSTHOOK: Input: default@tbl_ice_puffin_time_travel@tag_checkpoint
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

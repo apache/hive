@@ -41,11 +41,11 @@ POSTHOOK: type: ALTERTABLE_CREATEBRANCH
 POSTHOOK: Input: default@ice01
 PREHOOK: query: explain select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -65,11 +65,11 @@ STAGE PLANS:
 
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one	50
 111	one	55
@@ -88,11 +88,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain insert into default.ice01.branch_test1 values(22, 'three', 44), (33, 'three', 66)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: explain insert into default.ice01.branch_test1 values(22, 'three', 44), (33, 'three', 66)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_test1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -191,18 +191,18 @@ STAGE PLANS:
 PREHOOK: query: insert into default.ice01.branch_test1 values(22, 'three', 44), (33, 'three', 66)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: insert into default.ice01.branch_test1 values(22, 'three', 44), (33, 'three', 66)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_test1
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one	50
 111	one	55
@@ -211,12 +211,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 33	three	66
 PREHOOK: query: explain delete from default.ice01.branch_test1 where a=22
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
-PREHOOK: Output: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: explain delete from default.ice01.branch_test1 where a=22
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
-POSTHOOK: Output: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -271,19 +271,19 @@ STAGE PLANS:
 
 PREHOOK: query: delete from default.ice01.branch_test1 where a=22
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
-PREHOOK: Output: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: delete from default.ice01.branch_test1 where a=22
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
-POSTHOOK: Output: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one	50
 111	one	55
@@ -291,14 +291,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 33	three	66
 PREHOOK: query: explain update default.ice01.branch_test1 set a=33 where c=66
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
-PREHOOK: Output: default@ice01
-PREHOOK: Output: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: explain update default.ice01.branch_test1 set a=33 where c=66
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
-POSTHOOK: Output: default@ice01
-POSTHOOK: Output: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -369,21 +369,21 @@ STAGE PLANS:
 
 PREHOOK: query: update default.ice01.branch_test1 set a=33 where c=66
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
-PREHOOK: Output: default@ice01
-PREHOOK: Output: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: update default.ice01.branch_test1 set a=33 where c=66
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
-POSTHOOK: Output: default@ice01
-POSTHOOK: Output: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	one	50
 111	one	55
@@ -395,10 +395,10 @@ when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Input: default@source01
-PREHOOK: Output: default@ice01
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
 PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain
 merge into default.ice01.branch_test1 as t using source01 src ON t.a = src.a
@@ -406,10 +406,10 @@ when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Input: default@source01
-POSTHOOK: Output: default@ice01
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
 POSTHOOK: Output: default@merge_tmp_table
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -623,29 +623,29 @@ when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Input: default@source01
-PREHOOK: Output: default@ice01
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_test1
+PREHOOK: Output: default@ice01@branch_test1
 PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: merge into default.ice01.branch_test1 as t using source01 src ON t.a = src.a
 when matched and t.a > 100 THEN DELETE
 when matched then update set b = 'Merged', c = t.c + 10
 when not matched then insert values (src.a, src.b, src.c)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Input: default@source01
-POSTHOOK: Output: default@ice01
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_test1
+POSTHOOK: Output: default@ice01@branch_test1
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice01)ice01.null, ]
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	Merged	60
 2	Merged	61
@@ -656,11 +656,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain insert overwrite table default.ice01.branch_test1 values (77, 'one', 88)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: explain insert overwrite table default.ice01.branch_test1 values (77, 'one', 88)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_test1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -759,27 +759,27 @@ STAGE PLANS:
 PREHOOK: query: insert overwrite table default.ice01.branch_test1 values (77, 'one', 88)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_test1
 POSTHOOK: query: insert overwrite table default.ice01.branch_test1 values (77, 'one', 88)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_test1
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 77	one	88
 PREHOOK: query: explain select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -817,11 +817,11 @@ STAGE PLANS:
 
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_test1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_test1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_test1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 77	one	88
 PREHOOK: query: drop table ice01
