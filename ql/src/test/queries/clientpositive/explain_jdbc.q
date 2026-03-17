@@ -1,3 +1,4 @@
+--!qt:database:derby:qdb
 CREATE TABLE explain_jdbc_hive_table (id INT, bigId BIGINT);
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
@@ -7,10 +8,10 @@ FROM (select 1 as hello) src
 
 SELECT
 
-dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_explain_jdbc_db;create=true','','',
+dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE DERBY_TABLE ("id" INTEGER, "bigId" BIGINT)' ),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_explain_jdbc_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO DERBY_TABLE ("id","bigId") VALUES (?,?)','20','20')
 limit 1;
 
@@ -22,8 +23,8 @@ CREATE EXTERNAL TABLE ext_DERBY_TABLE
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_explain_jdbc_db;create=true;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "DERBY_TABLE",

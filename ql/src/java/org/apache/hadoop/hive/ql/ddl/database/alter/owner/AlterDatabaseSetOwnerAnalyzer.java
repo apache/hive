@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.alter.owner;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.database.alter.AbstractAlterDatabaseAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -38,8 +40,10 @@ public class AlterDatabaseSetOwnerAnalyzer extends AbstractAlterDatabaseAnalyzer
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String databaseName = getUnescapedName((ASTNode) root.getChild(0));
-    PrincipalDesc principalDesc = AuthorizationParseUtils.getPrincipalDesc((ASTNode) root.getChild(1));
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
+    String catalogName = catDbNamePair.getLeft();
+    String databaseName = catDbNamePair.getRight();
+    PrincipalDesc principalDesc = AuthorizationParseUtils.getPrincipalDesc((ASTNode) root.getChild(1).getChild(0));
 
     if (principalDesc.getName() == null) {
       throw new SemanticException("Owner name can't be null in alter database set owner command");
@@ -48,7 +52,7 @@ public class AlterDatabaseSetOwnerAnalyzer extends AbstractAlterDatabaseAnalyzer
       throw new SemanticException("Owner type can't be null in alter database set owner command");
     }
 
-    AlterDatabaseSetOwnerDesc desc = new AlterDatabaseSetOwnerDesc(databaseName, principalDesc, null);
+    AlterDatabaseSetOwnerDesc desc = new AlterDatabaseSetOwnerDesc(catalogName, databaseName, principalDesc, null);
     addAlterDatabaseDesc(desc);
   }
 }

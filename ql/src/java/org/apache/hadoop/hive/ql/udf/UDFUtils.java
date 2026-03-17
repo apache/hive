@@ -28,9 +28,11 @@ import java.time.ZoneId;
 
 public class UDFUtils {
 
+  private static final HiveConf HIVE_CONF = new HiveConf();
+
   public static TimestampTZ getTimestampTZFromTimestamp(Timestamp timestamp) {
     ZoneId zone = ((SessionState.get() == null) ?
-      new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone());
+        HIVE_CONF.getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone());
     return TimestampTZUtil.convert(timestamp, zone);
   }
 }

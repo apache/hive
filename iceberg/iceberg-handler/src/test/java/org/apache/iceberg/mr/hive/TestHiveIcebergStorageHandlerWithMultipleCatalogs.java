@@ -30,7 +30,11 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
+import org.apache.iceberg.mr.hive.test.TestTables;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -43,7 +47,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
+import static org.apache.iceberg.mr.hive.test.TestTables.TestTableType.HIVE_CATALOG;
 
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {

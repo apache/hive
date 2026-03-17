@@ -18,15 +18,15 @@ POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+OPTIMIZED SQL: SELECT `t`.`key` AS `a_n4.key`, `t`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`
 FROM (SELECT `key`, `value`, `value` = 60 AS `EXPR$0`, `value` = 50 AS `EXPR$1`
 FROM `default`.`a_n4`) AS `t`
 LEFT JOIN (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`EXPR$1` AND `t`.`key` = `t1`.`key`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`EXPR$1`
 LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`EXPR$0` AND `t`.`key` = `t3`.`key`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`EXPR$0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -296,15 +296,15 @@ POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a_n4.key`, `t0`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`
 FROM (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
 RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `EXPR$0`, `value` = 50 AS `EXPR$1`
-FROM `default`.`a_n4`) AS `t1` ON `t1`.`EXPR$1` AND `t0`.`key` = `t1`.`key`
+FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`EXPR$1`
 LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`EXPR$0` AND `t1`.`key` = `t3`.`key`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`EXPR$0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -574,15 +574,15 @@ POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a_n4.key`, `t0`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`
 FROM (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
 RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `EXPR$0`, `value` = 50 AS `EXPR$1`
-FROM `default`.`a_n4`) AS `t1` ON `t1`.`EXPR$1` AND `t0`.`key` = `t1`.`key`
+FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`EXPR$1`
 LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`EXPR$0` AND `t1`.`key` = `t3`.`key`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`EXPR$0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -852,17 +852,17 @@ POSTHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t0`.`key` AS `key1`, `t0`.`value` AS `value1`, `t2`.`key` AS `key2`, `t2`.`value` AS `value2`, `t4`.`key` AS `key3`, `t4`.`value` AS `value3`
+OPTIMIZED SQL: SELECT `t`.`key` AS `a_n4.key`, `t`.`value` AS `a_n4.value`, `t0`.`key` AS `b.key`, `t0`.`value` AS `b.value`, `t2`.`key` AS `c.key`, `t2`.`value` AS `c.value`, `t4`.`key` AS `d.key`, `t4`.`value` AS `d.value`
 FROM (SELECT `key`, `value`, `value` = 40 AS `EXPR$0`, `value` = 50 AS `EXPR$1`
 FROM `default`.`a_n4`) AS `t`
 FULL JOIN (SELECT `key`, `value`, `value` = 60 AS `EXPR$1`, `value` = 50 AS `EXPR$13`
-FROM `default`.`a_n4`) AS `t0` ON `t`.`EXPR$1` AND `t0`.`EXPR$13` AND `t`.`key` = `t0`.`key`
+FROM `default`.`a_n4`) AS `t0` ON `t`.`key` = `t0`.`key` AND `t`.`EXPR$1` AND `t0`.`EXPR$13`
 LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t2` ON `t0`.`EXPR$1` AND `t0`.`key` = `t2`.`key`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`EXPR$1`
 LEFT JOIN (SELECT `key`, CAST(40 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 40 AND `key` IS NOT NULL) AS `t4` ON `t`.`EXPR$0` AND `t`.`key` = `t4`.`key`
+WHERE `value` = 40 AND `key` IS NOT NULL) AS `t4` ON `t`.`key` = `t4`.`key` AND `t`.`EXPR$0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1168,18 +1168,18 @@ POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`, `t5`.`key` AS `key3`, `t5`.`value` AS `value3`
+OPTIMIZED SQL: SELECT `t`.`key` AS `a_n4.key`, `t`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`, `t5`.`key` AS `d.key`, `t5`.`value` AS `d.value`
 FROM (SELECT `key`, `value`, `value` = 40 AS `EXPR$0`, `value` = 60 AS `EXPR$1`, `value` = 50 AS `EXPR$2`
 FROM `default`.`a_n4`) AS `t`
 LEFT JOIN (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`EXPR$2` AND `t`.`key` = `t1`.`key`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`EXPR$2`
 LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`EXPR$1` AND `t`.`key` = `t3`.`key`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`EXPR$1`
 LEFT JOIN (SELECT `key`, CAST(40 AS INT) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 40 AND `key` IS NOT NULL) AS `t5` ON `t`.`EXPR$0` AND `t`.`key` = `t5`.`key`
+WHERE `value` = 40 AND `key` IS NOT NULL) AS `t5` ON `t`.`key` = `t5`.`key` AND `t`.`EXPR$0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

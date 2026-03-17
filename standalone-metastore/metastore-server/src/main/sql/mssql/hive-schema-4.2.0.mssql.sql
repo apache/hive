@@ -1404,6 +1404,16 @@ CREATE UNIQUE INDEX DCPRIVILEGEINDEX ON DC_PRIVS (AUTHORIZER,NAME,PRINCIPAL_NAME
 
 CREATE INDEX DC_PRIVS_N49 ON DC_PRIVS (NAME);
 
+-- HIVE-29178
+-- Table structure for table CATALOG_PARAMS
+CREATE TABLE CATALOG_PARAMS (
+     CTLG_ID bigint NOT NULL,
+     PARAM_KEY nvarchar(180) NOT NULL,
+     PARAM_VALUE nvarchar(4000) DEFAULT NULL,
+     PRIMARY KEY (CTLG_ID, PARAM_KEY),
+     CONSTRAINT CATALOG_PARAMS_FK1 FOREIGN KEY (CTLG_ID) REFERENCES CTLGS (CTLG_ID) ON DELETE CASCADE
+);
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLongHashUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
@@ -169,7 +170,7 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
       throw new HiveException("DeserializeRead details: " +
           keyBinarySortableDeserializeRead.getDetailedReadPositionString(), e);
     }
-    long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(keyBinarySortableDeserializeRead, hashTableKeyType);
+    long key = VectorMapJoinLongHashUtil.deserializeLongKey(keyBinarySortableDeserializeRead, hashTableKeyType);
     return HashCodeUtil.calculateLongHashCode(key);
   }
 

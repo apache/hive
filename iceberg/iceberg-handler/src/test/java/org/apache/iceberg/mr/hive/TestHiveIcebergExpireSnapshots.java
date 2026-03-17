@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.collections4.IterableUtils;
@@ -32,9 +33,12 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.TableProperties.MAX_SNAPSHOT_AGE_MS;
 import static org.apache.iceberg.TableProperties.MIN_SNAPSHOTS_TO_KEEP;
@@ -44,10 +48,13 @@ import static org.apache.iceberg.TableProperties.MIN_SNAPSHOTS_TO_KEEP;
  */
 public class TestHiveIcebergExpireSnapshots extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.fileFormat() == FileFormat.PARQUET &&
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized() &&
+        p.formatVersion() == 2);
   }
 
   @Test

@@ -21,13 +21,14 @@ package org.apache.iceberg.mr.hive.metastore.task;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -35,10 +36,10 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class TestIcebergHouseKeeperService {
   private static final HiveConf conf = new HiveConf(TestIcebergHouseKeeperService.class);
   private static Hive db;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
     conf.set("hive.security.authorization.enabled", "false");
     conf.set("hive.security.authorization.manager",
@@ -58,7 +59,7 @@ public class TestIcebergHouseKeeperService {
     db = Hive.get(conf);
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     db.close(true);
   }
@@ -69,8 +70,12 @@ public class TestIcebergHouseKeeperService {
 
     TableFetcher tableFetcher = IcebergTableUtil.getTableFetcher(db.getMSC(), null, "default", "*");
 
-    List<TableName> tables = tableFetcher.getTables();
-    Assert.assertEquals(new TableName("hive", "default", "iceberg_table"), tables.get(0));
+    int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    Iterator<org.apache.hadoop.hive.metastore.api.Table> tables = tableFetcher.getTables(maxBatchSize).iterator();
+    org.apache.hadoop.hive.metastore.api.Table table = tables.next();
+    Assertions.assertEquals("hive", table.getCatName());
+    Assertions.assertEquals("default", table.getDbName());
+    Assertions.assertEquals("iceberg_table", table.getTableName());
   }
 
   @Test
@@ -136,7 +141,7 @@ public class TestIcebergHouseKeeperService {
     File[] matchingFiles = new File(metadataDirectory).listFiles((dir, name) -> name.startsWith("snap-"));
     List<File> files = Optional.ofNullable(matchingFiles).map(Arrays::asList).orElse(Collections.emptyList());
     LOG.debug("Snapshot files found in directory({}): {}", metadataDirectory, files);
-    Assert.assertEquals(String.format("Unexpected no. of snapshot files in metadata directory: %s",
-        metadataDirectory), numberForSnapshotFiles, files.size());
+    Assertions.assertEquals(numberForSnapshotFiles, files.size(),
+        String.format("Unexpected no. of snapshot files in metadata directory: %s", metadataDirectory));
   }
 }

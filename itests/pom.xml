@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it</artifactId>
@@ -26,6 +26,8 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
+    <iceberg.version>1.10.1</iceberg.version>
+    <assertj.version>3.27.3</assertj.version>
   </properties>
   <modules>
     <module>custom-serde</module>
@@ -34,6 +36,7 @@
     <module>hive-unit</module>
     <module>hive-blobstore</module>
     <module>util</module>
+    <module>test-jdbc</module>
     <module>test-serde</module>
     <module>qtest</module>
     <module>qtest-accumulo</module>
@@ -43,6 +46,8 @@
     <module>qtest-druid</module>
     <module>qtest-kudu</module>
     <module>qtest-iceberg</module>
+    <module>test-docker</module>
+    <module>hive-iceberg</module>
   </modules>
   <dependencyManagement>
     <dependencies>
@@ -66,6 +71,11 @@
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-metastore</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-standalone-metastore-client</artifactId>
+        <version>${standalone-metastore.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
@@ -495,6 +505,12 @@
         <artifactId>hive-iceberg-handler</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
@@ -517,20 +533,6 @@
                 </exec>
               </target>
             </configuration>
-          </execution>
-          <execution>
-            <id>copy-database</id>
-            <phase>install</phase>
-            <configuration>
-              <tasks>
-                <copy todir="${hive.path.to.root}/itests/qtest/target/db_for_connectortest.db">
-                  <fileset dir="${hive.path.to.root}/data/files/dataconnector_derbydb/db_for_connectortest.db"/>
-                </copy>
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

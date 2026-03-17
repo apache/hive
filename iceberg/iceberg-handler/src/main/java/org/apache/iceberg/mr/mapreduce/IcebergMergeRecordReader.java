@@ -28,7 +28,7 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.avro.Avro;
-import org.apache.iceberg.data.avro.DataReader;
+import org.apache.iceberg.data.avro.PlannedDataReader;
 import org.apache.iceberg.data.orc.GenericOrcReader;
 import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.apache.iceberg.encryption.EncryptedFiles;
@@ -59,7 +59,7 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
     if (mergeSplit.getContentFile() instanceof DeleteFile) {
       Schema deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(table.schema().columns());
       return new IcebergAcidUtil.MergeTaskVirtualColumnAwareIterator<>(closeableIterator,
-          deleteSchema, conf, mergeSplit.getContentFile(), table);
+          deleteSchema, mergeSplit.getContentFile(), table);
     } else {
       return closeableIterator;
     }
@@ -67,14 +67,12 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
 
   @Override
   public boolean nextKeyValue() throws IOException {
-    while (true) {
-      if (currentIterator.hasNext()) {
-        current = currentIterator.next();
-        return true;
-      } else {
-        currentIterator.close();
-        return false;
-      }
+    if (currentIterator.hasNext()) {
+      current = currentIterator.next();
+      return true;
+    } else {
+      currentIterator.close();
+      return false;
     }
   }
 
@@ -88,7 +86,7 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
     currentIterator.close();
   }
 
-  private CloseableIterable<T> openGeneric(ContentFile contentFile, Schema readSchema) {
+  private CloseableIterable<T> openGeneric(ContentFile<?> contentFile, Schema readSchema) {
     Schema schema = null;
     if (contentFile instanceof DataFile) {
       schema = readSchema;
@@ -96,29 +94,20 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
       schema = new Schema(MetadataColumns.DELETE_FILE_PATH, MetadataColumns.DELETE_FILE_POS);
     }
     InputFile inputFile = table.encryption().decrypt(EncryptedFiles.encryptedInput(
-            table.io().newInputFile(contentFile.path().toString()),
-            contentFile.keyMetadata()));
-    CloseableIterable<T> iterable;
-    switch (contentFile.format()) {
-      case AVRO:
-        iterable = newAvroIterable(inputFile, schema);
-        break;
-      case ORC:
-        iterable = newOrcIterable(inputFile, schema);
-        break;
-      case PARQUET:
-        iterable = newParquetIterable(inputFile, schema);
-        break;
-      default:
-        throw new UnsupportedOperationException(
-          String.format("Cannot read %s file: %s", contentFile.format().name(), contentFile.path()));
-    }
+        table.io().newInputFile(contentFile.location()),
+        contentFile.keyMetadata()));
 
-    return iterable;
+    CloseableIterable<T> iterable = switch (contentFile.format()) {
+      case AVRO -> newAvroIterable(inputFile, schema);
+      case ORC -> newOrcIterable(inputFile, schema);
+      case PARQUET -> newParquetIterable(inputFile, schema);
+      default -> throw new UnsupportedOperationException(
+          String.format("Cannot read %s file: %s", contentFile.format().name(), contentFile.location()));
+    };
+    return applyResidualFiltering(iterable, null, readSchema);
   }
 
-  private CloseableIterable<T> newAvroIterable(
-          InputFile inputFile, Schema readSchema) {
+  private CloseableIterable<T> newAvroIterable(InputFile inputFile, Schema readSchema) {
     Avro.ReadBuilder avroReadBuilder = Avro.read(inputFile)
         .project(readSchema)
         .split(mergeSplit.getStart(), mergeSplit.getLength());
@@ -126,16 +115,12 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
     if (isReuseContainers()) {
       avroReadBuilder.reuseContainers();
     }
-
     if (getNameMapping() != null) {
       avroReadBuilder.withNameMapping(NameMappingParser.fromJson(getNameMapping()));
     }
-
-    avroReadBuilder.createReaderFunc(
-        (expIcebergSchema, expAvroSchema) ->
-             DataReader.create(expIcebergSchema, expAvroSchema, Maps.newHashMap()));
-
-    return applyResidualFiltering(avroReadBuilder.build(), null, readSchema);
+    avroReadBuilder.createResolvingReader(
+        schema -> PlannedDataReader.create(schema, Maps.newHashMap()));
+    return avroReadBuilder.build();
   }
 
   private CloseableIterable<T> newOrcIterable(InputFile inputFile, Schema readSchema) {
@@ -147,16 +132,12 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
     if (getNameMapping() != null) {
       orcReadBuilder.withNameMapping(NameMappingParser.fromJson(getNameMapping()));
     }
-
     orcReadBuilder.createReaderFunc(
-        fileSchema -> GenericOrcReader.buildReader(
-            readSchema, fileSchema, Maps.newHashMap()));
-
-    return applyResidualFiltering(orcReadBuilder.build(), null, readSchema);
+        fileSchema -> GenericOrcReader.buildReader(readSchema, fileSchema, Maps.newHashMap()));
+    return orcReadBuilder.build();
   }
 
   private CloseableIterable<T> newParquetIterable(InputFile inputFile, Schema readSchema) {
-
     Parquet.ReadBuilder parquetReadBuilder = Parquet.read(inputFile)
         .project(readSchema)
         .caseSensitive(isCaseSensitive())
@@ -165,15 +146,11 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
     if (isReuseContainers()) {
       parquetReadBuilder.reuseContainers();
     }
-
     if (getNameMapping() != null) {
       parquetReadBuilder.withNameMapping(NameMappingParser.fromJson(getNameMapping()));
     }
-
     parquetReadBuilder.createReaderFunc(
-        fileSchema -> GenericParquetReaders.buildReader(
-            readSchema, fileSchema, Maps.newHashMap()));
-
-    return applyResidualFiltering(parquetReadBuilder.build(), null, readSchema);
+        fileSchema -> GenericParquetReaders.buildReader(readSchema, fileSchema, Maps.newHashMap()));
+    return parquetReadBuilder.build();
   }
 }

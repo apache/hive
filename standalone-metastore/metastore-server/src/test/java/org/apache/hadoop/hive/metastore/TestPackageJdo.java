@@ -52,7 +52,7 @@ public class TestPackageJdo {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, password);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, "APP");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER,
-        "org.apache.derby.jdbc.EmbeddedDriver");
+        "org.apache.derby.iapi.jdbc.AutoloadedDriver");
     TestTxnDbUtil.prepDb(conf);
 
     // Init the schema from package.jdo

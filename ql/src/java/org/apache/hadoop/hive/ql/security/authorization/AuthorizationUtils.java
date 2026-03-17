@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.security.authorization;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
@@ -163,8 +164,13 @@ public class AuthorizationUtils {
       return null;
     }
     HivePrivilegeObjectType objType = getHiveObjType(privObj.getObjectType());
-    return new HivePrivilegeObject(objType, privObj.getDbName(), privObj.getObjectName(),
-        privObj.getPartValues(), privObj.getColumnName());
+    String columnName = privObj.getColumnName();
+    List<String> columns = null;
+    if (columnName != null) {
+      columns = Arrays.asList(columnName);
+    }
+    return new HivePrivilegeObject(objType, privObj.getCatName(), privObj.getDbName(), privObj.getObjectName(),
+        privObj.getPartValues(), columns);
   }
 
   /**
@@ -273,7 +279,11 @@ public class AuthorizationUtils {
       return null;
     }
     HiveObjectType objType = getThriftHiveObjType(privObj.getType());
-    return new HiveObjectRef(objType, privObj.getDbname(), privObj.getObjectName(), null, null);
+    HiveObjectRef objectRef = new HiveObjectRef(objType, privObj.getDbname(), privObj.getObjectName(), null, null);
+    if (privObj.getCatName() != null) {
+      objectRef.setCatName(privObj.getCatName());
+    }
+    return objectRef;
   }
 
   public static HivePrivObjectActionType getActionType(Entity privObject) {

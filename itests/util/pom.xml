@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it-util</artifactId>
@@ -42,6 +42,10 @@
         <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jline</groupId>
+          <artifactId>jline</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -192,6 +196,26 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mariadb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mysql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>oracle-xe</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mssqlserver</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>

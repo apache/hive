@@ -38,7 +38,7 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -102,7 +102,7 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -167,7 +167,7 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -232,7 +232,7 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -297,7 +297,7 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -364,7 +364,7 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -432,7 +432,7 @@ EXPLAIN select * from alter1;
 EXPLAIN CBO select * from alter1;
 
 EXPLAIN VECTORIZED select * from alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[default, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -516,7 +516,7 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -580,7 +580,7 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -645,7 +645,7 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -710,7 +710,7 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -775,7 +775,7 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -842,7 +842,7 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -910,7 +910,7 @@ EXPLAIN select * from alter1_db.alter1;
 EXPLAIN CBO select * from alter1_db.alter1;
 
 EXPLAIN VECTORIZED select * from alter1_db.alter1;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(alter1.a=[$0], alter1.b=[$1])
   HiveTableScan(table=[[alter1_db, alter1]], table:alias=[alter1])
 
 PLAN VECTORIZATION:
@@ -992,7 +992,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1066,7 +1066,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1145,7 +1145,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1227,7 +1227,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1301,7 +1301,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1380,7 +1380,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[default, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1486,7 +1486,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1560,7 +1560,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1639,7 +1639,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1721,7 +1721,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1795,7 +1795,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:
@@ -1874,7 +1874,7 @@ EXPLAIN select * from alter2;
 EXPLAIN CBO select * from alter2;
 
 EXPLAIN VECTORIZED select * from alter2;
-CBO PLAN:HiveProject(a=[$0], b=[$1], insertdate=[$2])
+CBO PLAN:HiveProject(alter2.a=[$0], alter2.b=[$1], alter2.insertdate=[$2])
   HiveTableScan(table=[[alter2_db, alter2]], table:alias=[alter2])
 
 PLAN VECTORIZATION:

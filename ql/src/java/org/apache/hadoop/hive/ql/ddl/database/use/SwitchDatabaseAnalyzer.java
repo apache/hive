@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.use;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -40,14 +42,13 @@ public class SwitchDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String databaseName = unescapeIdentifier(root.getChild(0).getText());
-
-    Database database = getDatabase(databaseName, true);
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
+    Database database = getDatabase(catDbNamePair.getLeft(), catDbNamePair.getRight(), true);
     ReadEntity readEntity = new ReadEntity(database);
     readEntity.noLockNeeded();
     inputs.add(readEntity);
 
-    SwitchDatabaseDesc desc = new SwitchDatabaseDesc(databaseName);
+    SwitchDatabaseDesc desc = new SwitchDatabaseDesc(catDbNamePair.getLeft(), catDbNamePair.getRight());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

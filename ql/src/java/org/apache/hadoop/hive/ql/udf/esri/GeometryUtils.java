@@ -21,6 +21,7 @@ import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.MapGeometry;
 import com.esri.core.geometry.OperatorImportFromESRIShape;
+import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.SpatialReference;
 import com.esri.core.geometry.ogc.OGCGeometry;
 import com.google.common.cache.Cache;
@@ -194,7 +195,14 @@ public class GeometryUtils {
   public static OGCType getInferredOGCType(Geometry geom) {
     switch (geom.getType()) {
     case Polygon:
-      return OGCType.ST_MULTIPOLYGON;
+      Polygon poly = (Polygon) geom;
+      // Number of outer rings defines single vs multi
+      int ringCount = poly.getExteriorRingCount();
+      if (ringCount == 1) {
+        return OGCType.ST_POLYGON;
+      } else {
+        return OGCType.ST_MULTIPOLYGON;
+      }
     case Polyline:
       return OGCType.ST_MULTILINESTRING;
     case MultiPoint:

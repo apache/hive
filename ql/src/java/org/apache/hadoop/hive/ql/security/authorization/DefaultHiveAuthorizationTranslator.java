@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilege;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
-
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Default implementation of HiveAuthorizationTranslator
@@ -74,7 +74,7 @@ public class DefaultHiveAuthorizationTranslator implements HiveAuthorizationTran
       columns = privSubjectDesc.getColumns();
       objectType = AuthorizationUtils.getPrivObjectType(privSubjectDesc);
     }
-    return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns, null);
+    return new HivePrivilegeObject(objectType, SessionState.get().getCurrentCatalog(), dbTable[0], dbTable[1], partSpec, columns);
   }
 
 

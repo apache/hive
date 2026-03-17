@@ -65,8 +65,8 @@ import org.apache.iceberg.transforms.Transforms;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.JsonUtil;
 import org.apache.thrift.TException;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -595,7 +595,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     try {
       database = HIVE_METASTORE_EXTENSION.metastoreClient().getDatabase(namespace.level(0));
     } catch (TException e) {
-      Assert.fail();
+      Assertions.fail();
     }
     assertThat(database.getParameters()).containsEntry("owner", "alter_apache");
     assertThat(database.getParameters()).containsEntry("test", "test");
@@ -799,7 +799,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     try {
       database = HIVE_METASTORE_EXTENSION.metastoreClient().getDatabase(namespace.level(0));
     } catch (TException e) {
-      Assert.fail();
+      Assertions.fail();
     }
     assertThat(database.getParameters()).doesNotContainKey("owner");
     assertThat(database.getParameters()).containsEntry("group", "iceberg");
@@ -1076,6 +1076,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
 
   @Test
   public void testSetSnapshotSummary() throws Exception {
+    final long maxHiveTablePropertySize = 4000;
     Snapshot snapshot = mock(Snapshot.class);
     Map<String, String> summary = Maps.newHashMap();
     when(snapshot.summary()).thenReturn(summary);
@@ -1086,7 +1087,6 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     }
     assertThat(JsonUtil.mapper().writeValueAsString(summary).length()).isLessThan(4000);
     Map<String, String> parameters = Maps.newHashMap();
-    final long maxHiveTablePropertySize = 4000;
     HMSTablePropertyHelper.setSnapshotSummary(parameters, snapshot, maxHiveTablePropertySize);
     assertThat(parameters).as("The snapshot summary must be in parameters").hasSize(1);
 

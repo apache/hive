@@ -19,25 +19,36 @@ package org.apache.hadoop.hive.ql.parse.rewrite.sql;
 
 import org.apache.hadoop.hive.ql.Context;
 
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addSourceColumnsForRowLineage;
+
 public class COWWithClauseBuilder {
 
   public void appendWith(MultiInsertSqlGenerator sqlGenerator, String filePathCol, String whereClause) {
     appendWith(sqlGenerator, null, filePathCol, whereClause, true);
   }
-  public void appendWith(MultiInsertSqlGenerator sqlGenerator, String sourceName, String filePathCol, 
-                         String whereClause, boolean skipPrefix) {
+
+  public void appendWith(MultiInsertSqlGenerator sqlGenerator, String sourceName, String filePathCol,
+      String whereClause, boolean skipPrefix) {
+    appendWith(sqlGenerator, sourceName, filePathCol, whereClause, skipPrefix, false, "");
+  }
+
+  public void appendWith(MultiInsertSqlGenerator sqlGenerator, String sourceName, String filePathCol,
+      String whereClause, boolean skipPrefix, boolean isRowLineageSupported, String rowLineagePrefix) {
     sqlGenerator.newCteExpr();
-    
+
     sqlGenerator.append("t AS (");
     sqlGenerator.append("\n").indent();
     sqlGenerator.append("select ");
     sqlGenerator.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE, skipPrefix);
     sqlGenerator.removeLastChar();
+    addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, rowLineagePrefix, sqlGenerator.conf);
     sqlGenerator.append(" from (");
     sqlGenerator.append("\n").indent().indent();
     sqlGenerator.append("select ");
     sqlGenerator.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE, skipPrefix);
-    sqlGenerator.append(" row_number() OVER (partition by ").append(filePathCol).append(") rn");
+    sqlGenerator.removeLastChar();
+    addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, rowLineagePrefix, sqlGenerator.conf);
+    sqlGenerator.append(", row_number() OVER (partition by ").append(filePathCol).append(") rn");
     sqlGenerator.append(" from ");
     sqlGenerator.append(sourceName == null ? sqlGenerator.getTargetTableFullName() : sourceName);
     sqlGenerator.append("\n").indent().indent();

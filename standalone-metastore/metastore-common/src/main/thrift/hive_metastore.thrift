@@ -393,7 +393,8 @@ struct Catalog {
   3: string locationUri,              // default storage location.  When databases are created in
                                       // this catalog, if they do not specify a location, they will
                                       // be placed in this location.
-  4: optional i32 createTime          // creation time of catalog in seconds since epoch
+  4: optional i32 createTime,          // creation time of catalog in seconds since epoch
+  5: optional map<string, string> parameters
 }
 
 struct CreateCatalogRequest {
@@ -753,9 +754,7 @@ struct Schema {
 struct PrimaryKeysRequest {
   1: required string db_name,
   2: required string tbl_name,
-  3: optional string catName,
-  4: optional string validWriteIdList,
-  5: optional i64 tableId=-1
+  3: optional string catName
 }
 
 struct PrimaryKeysResponse {
@@ -766,10 +765,8 @@ struct ForeignKeysRequest {
   1: string parent_db_name,
   2: string parent_tbl_name,
   3: string foreign_db_name,
-  4: string foreign_tbl_name,
-  5: optional string catName,          // No cross catalog constraints
-  6: optional string validWriteIdList,
-  7: optional i64 tableId=-1
+  4: string foreign_tbl_name
+  5: optional string catName          // No cross catalog constraints
 }
 
 struct ForeignKeysResponse {
@@ -780,8 +777,6 @@ struct UniqueConstraintsRequest {
   1: required string catName,
   2: required string db_name,
   3: required string tbl_name,
-  4: optional string validWriteIdList,
-  5: optional i64 tableId=-1
 }
 
 struct UniqueConstraintsResponse {
@@ -792,8 +787,6 @@ struct NotNullConstraintsRequest {
   1: required string catName,
   2: required string db_name,
   3: required string tbl_name,
-  4: optional string validWriteIdList,
-  5: optional i64 tableId=-1
 }
 
 struct NotNullConstraintsResponse {
@@ -803,9 +796,7 @@ struct NotNullConstraintsResponse {
 struct DefaultConstraintsRequest {
   1: required string catName,
   2: required string db_name,
-  3: required string tbl_name,
-  4: optional string validWriteIdList,
-  5: optional i64 tableId=-1
+  3: required string tbl_name
 }
 
 struct DefaultConstraintsResponse {
@@ -815,9 +806,7 @@ struct DefaultConstraintsResponse {
 struct CheckConstraintsRequest {
   1: required string catName,
   2: required string db_name,
-  3: required string tbl_name,
-  4: optional string validWriteIdList,
-  5: optional i64 tableId=-1
+  3: required string tbl_name
 }
 
 struct CheckConstraintsResponse {
@@ -827,9 +816,7 @@ struct CheckConstraintsResponse {
 struct AllTableConstraintsRequest {
   1: required string dbName,
   2: required string tblName,
-  3: required string catName,
-  4: optional string validWriteIdList,
-  5: optional i64 tableId=-1
+  3: required string catName
 }
 
 struct AllTableConstraintsResponse {
@@ -1259,7 +1246,8 @@ struct LockComponent {
     5: optional string partitionname,
     6: optional DataOperationType operationType = DataOperationType.UNSET,
     7: optional bool isTransactional = false,
-    8: optional bool isDynamicPartitionWrite = false
+    8: optional bool isDynamicPartitionWrite = false,
+    9: optional string catName = "hive"
 }
 
 struct LockRequest {
@@ -1295,6 +1283,7 @@ struct ShowLocksRequest {
     3: optional string partname,
     4: optional bool isExtended=false,
     5: optional i64 txnid,
+    6: optional string catname="hive",
 }
 
 struct ShowLocksResponseElement {
@@ -1314,6 +1303,14 @@ struct ShowLocksResponseElement {
     14: optional i64 blockedByExtId,
     15: optional i64 blockedByIntId,
     16: optional i64 lockIdInternal,
+    17: required string catname,
+}
+
+struct LockMaterializationRebuildRequest {
+    1: required string catName,
+    2: required string dbName,
+    3: required string tableName,
+    4: required i64 txnId,
 }
 
 struct ShowLocksResponse {
@@ -1783,7 +1780,16 @@ struct DropTableRequest {
  3: required string tableName,
  4: optional bool deleteData,
  5: optional EnvironmentContext envContext,
- 6: optional bool dropPartitions
+ 6: optional bool dropPartitions,
+ 7: optional string id,
+ 8: optional bool asyncDrop,
+ 9: optional bool cancel
+}
+
+struct AsyncOperationResp {
+ 1: required string id,
+ 2: optional string message,
+ 3: optional bool finished
 }
 
 struct GetDatabaseRequest {
@@ -1806,7 +1812,10 @@ struct DropDatabaseRequest {
   5: required bool cascade,
   6: optional bool softDelete=false,
   7: optional i64 txnId=0,
-  8: optional bool deleteManagedDir=true
+  8: optional bool deleteManagedDir=true,
+  9: optional string id,
+  10: optional bool asyncDrop,
+  11: optional bool cancel
 }
 
 struct GetFunctionsRequest {
@@ -2311,6 +2320,15 @@ struct AlterTableRequest {
 struct AlterTableResponse {
 }
 
+struct TableParamsUpdate {
+    1: optional string cat_name
+    2: required string db_name
+    3: required string table_name
+    4: required map<string, string> params
+    5: optional string expected_param_key
+    6: optional string expected_param_value
+}
+
 enum PartitionFilterMode {
    BY_NAMES,                 // filter by names
    BY_VALUES,                // filter by values
@@ -2627,7 +2645,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
-  void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  AsyncOperationResp drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   GetDatabaseObjectsResponse get_databases_req (1:GetDatabaseObjectsRequest request) throws(1:MetaException o1)
@@ -2708,7 +2726,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_table_with_environment_context(1:string dbname, 2:string name, 3:bool deleteData,
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
-  void drop_table_req(1:DropTableRequest dropTableReq)
+  AsyncOperationResp drop_table_req(1:DropTableRequest dropTableReq)
         throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)
@@ -2779,6 +2797,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
   AlterTableResponse alter_table_req(1:AlterTableRequest req)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  // multi-table table-parameter update
+  void update_table_params(1:list<TableParamsUpdate> updates) throws (1:MetaException o1)
 
 
 
@@ -3309,8 +3330,13 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void add_serde(1: SerDeInfo serde) throws(1:AlreadyExistsException o1, 2:MetaException o2)
   SerDeInfo get_serde(1: GetSerdeRequest rqst) throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
+  // @deprecated, use get_lock_materialization_rebuild_req(rqst)
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+  // @deprecated, use heartbeat_lock_materialization_rebuild_req(rqst)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+
+  LockResponse get_lock_materialization_rebuild_req(1: LockMaterializationRebuildRequest req)
+  bool heartbeat_lock_materialization_rebuild_req(1: LockMaterializationRebuildRequest req)
 
   void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
   list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)

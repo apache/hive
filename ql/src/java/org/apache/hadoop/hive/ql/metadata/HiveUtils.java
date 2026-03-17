@@ -22,13 +22,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java.util.Optional;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.CostLessRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -40,6 +43,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.Quotation;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -57,6 +61,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHive
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * General collection of helper functions.
@@ -317,14 +323,21 @@ public final class HiveUtils {
     return unparseIdentifier(identifier, Quotation.BACKTICKS);
   }
 
+  public static String getSqlTextWithQuotedIdentifiers(
+          ASTNode node, TokenRewriteStream tokenRewriteStream, String rewriteProgram)
+          throws SemanticException {
+    UnparseTranslator unparseTranslator = HiveUtils.collectUnescapeIdentifierTranslations(node);
+    unparseTranslator.applyTranslations(tokenRewriteStream, rewriteProgram);
+    return tokenRewriteStream.toString(rewriteProgram, node.getTokenStartIndex(), node.getTokenStopIndex());
+  }
+
   public static UnparseTranslator collectUnescapeIdentifierTranslations(ASTNode node)
       throws SemanticException {
     UnparseTranslator unparseTranslator = new UnparseTranslator(Quotation.BACKTICKS);
     unparseTranslator.enable();
 
     SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
-    astNodeToProcessor.put(HiveParser.TOK_TABLE_OR_COL, new ColumnExprProcessor());
-    astNodeToProcessor.put(HiveParser.DOT, new ColumnExprProcessor());
+    astNodeToProcessor.put(HiveParser.Identifier, new IdentifierProcessor());
     NodeProcessorCtx nodeProcessorCtx = new QuotedIdExpressionContext(unparseTranslator);
 
     CostLessRuleDispatcher costLessRuleDispatcher = new CostLessRuleDispatcher(
@@ -334,19 +347,19 @@ public final class HiveUtils {
     return unparseTranslator;
   }
 
-  static class ColumnExprProcessor implements SemanticNodeProcessor {
+  static class IdentifierProcessor implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
+            throws SemanticException {
       UnparseTranslator unparseTranslator = ((QuotedIdExpressionContext)procCtx).getUnparseTranslator();
-      ASTNode tokTableOrColNode = (ASTNode) nd;
-      for (int i = 0; i < tokTableOrColNode.getChildCount(); ++i) {
-        ASTNode child = (ASTNode) tokTableOrColNode.getChild(i);
-        if (child.getType() == HiveParser.Identifier) {
-          unparseTranslator.addIdentifierTranslation(child);
-        }
+      ASTNode identifier = (ASTNode) nd;
+      String id = identifier.getText();
+      if (FunctionRegistry.getFunctionInfo(id) != null){
+        return null;
       }
+
+      unparseTranslator.addIdentifierTranslation(identifier);
       return null;
     }
   }
@@ -533,5 +546,11 @@ public final class HiveUtils {
       return (refParts[0] + "." + refParts[1]).toLowerCase() + "." + refParts[2];
     }
     return refName.toLowerCase();
+  }
+
+  public static String getCurrentCatalogOrDefault(Configuration conf) {
+    return Optional.ofNullable(SessionState.get())
+            .map(SessionState::getCurrentCatalog)
+            .orElseGet(() -> getDefaultCatalog(conf));
   }
 }

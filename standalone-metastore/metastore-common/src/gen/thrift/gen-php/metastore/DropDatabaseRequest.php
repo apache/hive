@@ -61,6 +61,21 @@ class DropDatabaseRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        9 => array(
+            'var' => 'id',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        10 => array(
+            'var' => 'asyncDrop',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
+        11 => array(
+            'var' => 'cancel',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -95,6 +110,18 @@ class DropDatabaseRequest
      * @var bool
      */
     public $deleteManagedDir = true;
+    /**
+     * @var string
+     */
+    public $id = null;
+    /**
+     * @var bool
+     */
+    public $asyncDrop = null;
+    /**
+     * @var bool
+     */
+    public $cancel = null;
 
     public function __construct($vals = null)
     {
@@ -122,6 +149,15 @@ class DropDatabaseRequest
             }
             if (isset($vals['deleteManagedDir'])) {
                 $this->deleteManagedDir = $vals['deleteManagedDir'];
+            }
+            if (isset($vals['id'])) {
+                $this->id = $vals['id'];
+            }
+            if (isset($vals['asyncDrop'])) {
+                $this->asyncDrop = $vals['asyncDrop'];
+            }
+            if (isset($vals['cancel'])) {
+                $this->cancel = $vals['cancel'];
             }
         }
     }
@@ -201,6 +237,27 @@ class DropDatabaseRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 10:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->asyncDrop);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 11:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->cancel);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -253,6 +310,21 @@ class DropDatabaseRequest
         if ($this->deleteManagedDir !== null) {
             $xfer += $output->writeFieldBegin('deleteManagedDir', TType::BOOL, 8);
             $xfer += $output->writeBool($this->deleteManagedDir);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->id !== null) {
+            $xfer += $output->writeFieldBegin('id', TType::STRING, 9);
+            $xfer += $output->writeString($this->id);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->asyncDrop !== null) {
+            $xfer += $output->writeFieldBegin('asyncDrop', TType::BOOL, 10);
+            $xfer += $output->writeBool($this->asyncDrop);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->cancel !== null) {
+            $xfer += $output->writeFieldBegin('cancel', TType::BOOL, 11);
+            $xfer += $output->writeBool($this->cancel);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

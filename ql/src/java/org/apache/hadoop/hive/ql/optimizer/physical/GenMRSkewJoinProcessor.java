@@ -271,7 +271,7 @@ public final class GenMRSkewJoinProcessor {
       PartitionDesc part = new PartitionDesc(tableDescList.get(src), null);
 
       newPlan.addPathToPartitionInfo(bigKeyDirPath, part);
-      newPlan.getAliasToPartnInfo().put(alias, part);
+      newPlan.putPartitionDesc(alias, part);
 
       Operator<? extends OperatorDesc> reducer = clonePlan.getReduceWork().getReducer();
       assert reducer instanceof JoinOperator;
@@ -319,8 +319,7 @@ public final class GenMRSkewJoinProcessor {
       }
       mapJoinOp.setChildOperators(childOps);
 
-      HiveConf jc = new HiveConf(parseCtx.getConf(),
-          GenMRSkewJoinProcessor.class);
+      HiveConf jc = new HiveConf(parseCtx.getConf());
 
       newPlan.setNumMapTasks(HiveConf
           .getIntVar(jc, HiveConf.ConfVars.HIVE_SKEWJOIN_MAPJOIN_NUM_MAP_TASK));

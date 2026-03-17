@@ -249,6 +249,7 @@ public class TestReplChangeManager {
     db.putToParameters(SOURCE_OF_REPLICATION, "1, 2, 3");
     db.setName(dbName);
     client.createDatabase(db);
+    db = client.getDatabase(dbName);
 
     String tblName = "t1";
     List<FieldSchema> columns = new ArrayList<FieldSchema>();

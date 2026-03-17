@@ -84,30 +84,30 @@ or assuming that you're relying on current `project.version` from pom.xml,
 ```shell
 export HIVE_VERSION=$(mvn -f pom.xml -q help:evaluate -Dexpression=project.version -DforceStdout)
 ```
-- Metastore
+#### Metastore
 
 For a quick start, launch the Metastore with Derby,
-  ```shell
-  docker run -d -p 9083:9083 --name metastore-standalone apache/hive:standalone-metastore-${HIVE_VERSION}
-  ```
-  Everything would be lost when the service is down. In order to save the Hive table's schema and data, start the container with an external Postgres and Volume to keep them,
+```shell
+docker run -d -p 9083:9083 --name metastore-standalone apache/hive:standalone-metastore-${HIVE_VERSION}
+```
+Everything would be lost when the service is down. In order to save the Hive table's schema and data, start the container with an external Postgres and Volume to keep them,
 
-  ```shell
-  docker run -d -p 9083:9083 --env DB_DRIVER=postgres \
-       --env SERVICE_OPTS="-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password" \
-       --mount source=warehouse,target=/opt/hive/data/warehouse \
-       --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
-       --name metastore-standalone apache/hive:standalone-metastore-${HIVE_VERSION}
-  ```
+```shell
+docker run -d -p 9083:9083 --env DB_DRIVER=postgres \
+    --env SERVICE_OPTS="-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password" \
+    --mount source=warehouse,target=/opt/hive/data/warehouse \
+    --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
+    --name metastore-standalone apache/hive:standalone-metastore-${HIVE_VERSION}
+```
 
-  If you want to use your own `hdfs-site.xml` for the service, you can provide the environment variable `HIVE_CUSTOM_CONF_DIR` for the command. For instance, put the custom configuration file under the directory `/opt/hive/conf`, then run,
+If you want to use your own `hdfs-site.xml` for the service, you can provide the environment variable `HIVE_CUSTOM_CONF_DIR` for the command. For instance, put the custom configuration file under the directory `/opt/hive/conf`, then run,
 
-  ```shell
-   docker run -d -p 9083:9083 --env DB_DRIVER=postgres \
-        -v /opt/hive/conf:/hive_custom_conf --env HIVE_CUSTOM_CONF_DIR=/hive_custom_conf \
-        --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
-        --name metastore apache/hive:standalone-metastore-${HIVE_VERSION}
-  ```
+```shell
+docker run -d -p 9083:9083 --env DB_DRIVER=postgres \
+    -v /opt/hive/conf:/hive_custom_conf --env HIVE_CUSTOM_CONF_DIR=/hive_custom_conf \
+    --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
+    --name metastore apache/hive:standalone-metastore-${HIVE_VERSION}
+```
 
 NOTE:
 
@@ -116,7 +116,7 @@ then add "--env SCHEMA_COMMAND=upgradeSchema" to the command.
 
 2) If the full Acid support (Compaction) is needed, use the Hive docker image to bring up the container.
 
-- Metastore with Postgres
+#### Metastore with Postgres
 
 To spin up Metastore with a remote DB, there is a `docker-compose.yml` placed under `packaging/src/docker` for this purpose,
 specify the `POSTGRES_LOCAL_PATH` first:
@@ -131,9 +131,29 @@ export POSTGRES_LOCAL_PATH=`mvn help:evaluate -Dexpression=settings.localReposit
 If you don't install maven or have problem in resolving the postgres driver, you can always download this jar yourself,
 change the `POSTGRES_LOCAL_PATH` to the path of the downloaded jar.
 
+#### Metastore with S3-backed warehouse storage
+
+1. Download the AWS SDK bundle and place it under jars/ directory.
+
+**Disclaimer:**  
+Hadoop **3.4.1** requires **AWS SDK v2**.
+```shell
+wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.26.19/bundle-2.26.19.jar -P jars/
+```
+
+2. Set the following environment variables:
+- AWS_ACCESS_KEY_ID 
+- AWS_SECRET_ACCESS_KEY 
+- DEFAULT_FS 
+- HIVE_WAREHOUSE_PATH 
+- S3_ENDPOINT_URL
+
 Then,
 ```shell
-docker compose up -d
+DEFAULT_FS="s3a://dw-team-bucket" \
+HIVE_WAREHOUSE_PATH="/data/warehouse/tablespace/managed/hive" \
+S3_ENDPOINT_URL="s3.us-west-2.amazonaws.com" \
+docker-compose up
 ```
 Metastore and Postgres services will be started as a consequence.
 

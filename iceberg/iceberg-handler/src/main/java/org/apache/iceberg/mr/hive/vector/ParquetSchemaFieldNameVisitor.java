@@ -115,6 +115,17 @@ class ParquetSchemaFieldNameVisitor extends TypeWithSchemaVisitor<Type> {
   }
 
   @Override
+  public Type variant(Types.VariantType iVariant, GroupType variant, Type result) {
+    if (variant.getId() != null) {
+      typesById.put(variant.getId().intValue(), variant);
+    }
+    // Add the variant field name to the column names list
+    appendToColNamesList(variant instanceof MessageType, variant.getName());
+
+    return variant;
+  }
+
+  @Override
   public Type map(Types.MapType iMap, GroupType map, Type key, Type value) {
     if (map.getId() != null) {
       typesById.put(map.getId().intValue(), map);

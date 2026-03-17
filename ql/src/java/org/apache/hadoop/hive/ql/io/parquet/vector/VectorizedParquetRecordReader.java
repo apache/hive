@@ -84,9 +84,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.getRequestedSchemaWithRowLineageColumns;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
 
 /**
@@ -96,6 +98,7 @@ import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FI
 public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   implements RecordReader<NullWritable, VectorizedRowBatch>, RowPositionAwareVectorizedRecordReader {
   public static final Logger LOG = LoggerFactory.getLogger(VectorizedParquetRecordReader.class);
+  private final Map<String, Object> initialDefaults;
 
   private List<Integer> colsToInclude;
 
@@ -154,7 +157,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   }
 
   public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf, FileMetadataCache metadataCache,
-      DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata) throws IOException {
+      DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata,
+      Map<String, Object> initialDefaults) throws IOException {
     super(conf, oldInputSplit);
     try {
       this.metadataCache = metadataCache;
@@ -188,6 +192,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       initPartitionValues(fileSplit, conf);
       bucketIdentifier = BucketIdentifier.from(conf, filePath);
+      this.initialDefaults = initialDefaults;
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
@@ -196,7 +201,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
   public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf, FileMetadataCache metadataCache,
       DataCache dataCache, Configuration cacheConf) throws IOException {
-    this(oldInputSplit, conf, metadataCache, dataCache, cacheConf, null);
+    this(oldInputSplit, conf, metadataCache, dataCache, cacheConf, null, null);
   }
 
   private void initPartitionValues(FileSplit fileSplit, JobConf conf) throws IOException {
@@ -270,6 +275,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
+    requestedSchema = getRequestedSchemaWithRowLineageColumns(rbCtx, requestedSchema, fileSchema, colsToInclude);
 
     Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(
@@ -519,20 +525,23 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     int depth) throws IOException {
     List<ColumnDescriptor> descriptors =
       getAllColumnDescriptorByType(depth, type, columnDescriptors);
+    // Support for schema evolution: if the column from the current
+    // query schema is not present in the file schema, return a dummy
+    // reader that produces nulls. This allows queries to proceed even
+    // when new columns have been added after the file was written.
+    if (!fileSchema.getColumns().contains(descriptors.get(0))) {
+      return new VectorizedDummyColumnReader(Optional.ofNullable(initialDefaults)
+          .map(defaults -> defaults.getOrDefault(descriptors.get(0).getPath()[0], null)).orElse(null));
+    }
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {
         throw new RuntimeException(
           "Failed to find related Parquet column descriptor with type " + type);
       }
-      if (fileSchema.getColumns().contains(descriptors.get(0))) {
         return new VectorizedPrimitiveColumnReader(descriptors.get(0),
             pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone, skipProlepticConversion,
             legacyConversionEnabled, type, typeInfo);
-      } else {
-        // Support for schema evolution
-        return new VectorizedDummyColumnReader();
-      }
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
       List<VectorizedColumnReader> fieldReaders = new ArrayList<>();

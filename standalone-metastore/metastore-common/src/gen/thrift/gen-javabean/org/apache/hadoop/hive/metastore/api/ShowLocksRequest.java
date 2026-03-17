@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField PARTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partname", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField IS_EXTENDED_FIELD_DESC = new org.apache.thrift.protocol.TField("isExtended", org.apache.thrift.protocol.TType.BOOL, (short)4);
   private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)5);
+  private static final org.apache.thrift.protocol.TField CATNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catname", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ShowLocksRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ShowLocksRequestTupleSchemeFactory();
@@ -25,6 +26,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String partname; // optional
   private boolean isExtended; // optional
   private long txnid; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catname; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +34,8 @@ package org.apache.hadoop.hive.metastore.api;
     TABLENAME((short)2, "tablename"),
     PARTNAME((short)3, "partname"),
     IS_EXTENDED((short)4, "isExtended"),
-    TXNID((short)5, "txnid");
+    TXNID((short)5, "txnid"),
+    CATNAME((short)6, "catname");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +61,8 @@ package org.apache.hadoop.hive.metastore.api;
           return IS_EXTENDED;
         case 5: // TXNID
           return TXNID;
+        case 6: // CATNAME
+          return CATNAME;
         default:
           return null;
       }
@@ -102,7 +107,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ISEXTENDED_ISSET_ID = 0;
   private static final int __TXNID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTNAME,_Fields.IS_EXTENDED,_Fields.TXNID};
+  private static final _Fields optionals[] = {_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTNAME,_Fields.IS_EXTENDED,_Fields.TXNID,_Fields.CATNAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -116,12 +121,16 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.TXNID, new org.apache.thrift.meta_data.FieldMetaData("txnid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.CATNAME, new org.apache.thrift.meta_data.FieldMetaData("catname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowLocksRequest.class, metaDataMap);
   }
 
   public ShowLocksRequest() {
     this.isExtended = false;
+
+    this.catname = "hive";
 
   }
 
@@ -141,6 +150,9 @@ package org.apache.hadoop.hive.metastore.api;
     }
     this.isExtended = other.isExtended;
     this.txnid = other.txnid;
+    if (other.isSetCatname()) {
+      this.catname = other.catname;
+    }
   }
 
   public ShowLocksRequest deepCopy() {
@@ -156,6 +168,8 @@ package org.apache.hadoop.hive.metastore.api;
 
     setTxnidIsSet(false);
     this.txnid = 0;
+    this.catname = "hive";
+
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -274,6 +288,30 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatname() {
+    return this.catname;
+  }
+
+  public void setCatname(@org.apache.thrift.annotation.Nullable java.lang.String catname) {
+    this.catname = catname;
+  }
+
+  public void unsetCatname() {
+    this.catname = null;
+  }
+
+  /** Returns true if field catname is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatname() {
+    return this.catname != null;
+  }
+
+  public void setCatnameIsSet(boolean value) {
+    if (!value) {
+      this.catname = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DBNAME:
@@ -316,6 +354,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case CATNAME:
+      if (value == null) {
+        unsetCatname();
+      } else {
+        setCatname((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -336,6 +382,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case TXNID:
       return getTxnid();
+
+    case CATNAME:
+      return getCatname();
 
     }
     throw new java.lang.IllegalStateException();
@@ -358,6 +407,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetIsExtended();
     case TXNID:
       return isSetTxnid();
+    case CATNAME:
+      return isSetCatname();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -420,6 +471,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_catname = true && this.isSetCatname();
+    boolean that_present_catname = true && that.isSetCatname();
+    if (this_present_catname || that_present_catname) {
+      if (!(this_present_catname && that_present_catname))
+        return false;
+      if (!this.catname.equals(that.catname))
+        return false;
+    }
+
     return true;
   }
 
@@ -446,6 +506,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetTxnid()) ? 131071 : 524287);
     if (isSetTxnid())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(txnid);
+
+    hashCode = hashCode * 8191 + ((isSetCatname()) ? 131071 : 524287);
+    if (isSetCatname())
+      hashCode = hashCode * 8191 + catname.hashCode();
 
     return hashCode;
   }
@@ -504,6 +568,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetTxnid()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnid, other.txnid);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCatname(), other.isSetCatname());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatname()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catname, other.catname);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -568,6 +642,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("txnid:");
       sb.append(this.txnid);
+      first = false;
+    }
+    if (isSetCatname()) {
+      if (!first) sb.append(", ");
+      sb.append("catname:");
+      if (this.catname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catname);
+      }
       first = false;
     }
     sb.append(")");
@@ -655,6 +739,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // CATNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catname = iprot.readString();
+              struct.setCatnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -699,6 +791,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.txnid);
         oprot.writeFieldEnd();
       }
+      if (struct.catname != null) {
+        if (struct.isSetCatname()) {
+          oprot.writeFieldBegin(CATNAME_FIELD_DESC);
+          oprot.writeString(struct.catname);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -732,7 +831,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetTxnid()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatname()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetDbname()) {
         oprot.writeString(struct.dbname);
       }
@@ -748,12 +850,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetTxnid()) {
         oprot.writeI64(struct.txnid);
       }
+      if (struct.isSetCatname()) {
+        oprot.writeString(struct.catname);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowLocksRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.dbname = iprot.readString();
         struct.setDbnameIsSet(true);
@@ -773,6 +878,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(4)) {
         struct.txnid = iprot.readI64();
         struct.setTxnidIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catname = iprot.readString();
+        struct.setCatnameIsSet(true);
       }
     }
   }

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -31,15 +32,14 @@ import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.apache.hadoop.hive.ql.txn.compactor.TestCleaner;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -68,11 +68,11 @@ public class TestHandler extends TestCleaner {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(stop);
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
   }
 
   @Test
@@ -99,13 +99,13 @@ public class TestHandler extends TestCleaner {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(1, compacts.size());
-    Mockito.verify(mockedMetadataCache, times(3)).computeIfAbsent(any(), any());
+    assertEquals(1, compacts.size());
+    Mockito.verify(mockedMetadataCache, times(4)).computeIfAbsent(any(), any());
     Mockito.verify(mockedTaskHandler, times(1)).resolveTable(any(), any());
   }
 }

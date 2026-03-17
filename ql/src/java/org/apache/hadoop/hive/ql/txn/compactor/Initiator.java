@@ -52,8 +52,6 @@ public class Initiator extends MetaStoreCompactorThread {
   private static final String CLASS_NAME = Initiator.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  private ExecutorService compactionExecutor;
-
   private boolean metricsEnabled;
   private boolean shouldUseMutex = true;
   private List<TableOptimizer> optimizers;
@@ -63,8 +61,9 @@ public class Initiator extends MetaStoreCompactorThread {
     LOG.info("Starting Initiator thread");
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
-    try {
-      recoverFailedCompactions(false);
+    try (ExecutorService compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+        COMPACTOR_INTIATOR_THREAD_NAME_FORMAT)) {
       TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
       // Make sure we run through the loop once before checking to stop as this makes testing
@@ -80,6 +79,9 @@ public class Initiator extends MetaStoreCompactorThread {
         try (TxnStore.MutexAPI.LockHandle handle = mutex.acquireLock(TxnStore.MUTEX_KEY.Initiator.name())) {
           startedAt = System.currentTimeMillis();
           prevStart = handle.getLastUpdateTime();
+
+          // Check for timed out workers.
+          recoverFailedCompactions();
 
           if (metricsEnabled) {
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
@@ -159,8 +161,6 @@ public class Initiator extends MetaStoreCompactorThread {
           //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
           CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0])).get();
 
-          // Check for timed out remote workers.
-          recoverFailedCompactions(true);
           handle.releaseLocks(startedAt);
         } catch (InterruptedException e) {
           // do not ignore interruption requests
@@ -182,9 +182,6 @@ public class Initiator extends MetaStoreCompactorThread {
     } finally {
       if (Thread.currentThread().isInterrupted()) {
         LOG.info("Interrupt received, Initiator is shutting down.");
-      }
-      if (compactionExecutor != null) {
-        compactionExecutor.shutdownNow();
       }
     }
   }
@@ -214,9 +211,6 @@ public class Initiator extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
-            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
     optimizers = Arrays.stream(MetastoreConf.getTrimmedStringsVar(conf,
@@ -241,8 +235,7 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
-  private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
-    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(ServerUtils.hostname());
+  private void recoverFailedCompactions() throws MetaException {
     txnHandler.revokeTimedoutWorkers(HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }

@@ -1,0 +1,70 @@
+PREHOOK: query: drop table if exists shredded_variant
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists shredded_variant
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE shredded_variant (
+  id INT,
+  data VARIANT
+) STORED BY ICEBERG
+TBLPROPERTIES (
+  'format-version'='3',
+  'variant.shredding.enabled'='true'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@shredded_variant
+POSTHOOK: query: CREATE EXTERNAL TABLE shredded_variant (
+  id INT,
+  data VARIANT
+) STORED BY ICEBERG
+TBLPROPERTIES (
+  'format-version'='3',
+  'variant.shredding.enabled'='true'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@shredded_variant
+PREHOOK: query: INSERT INTO shredded_variant VALUES
+(1, parse_json('{"name": "John", "age": 30}')),
+(2, parse_json('{"name": "Bill"}')),
+(3, parse_json('{"name": "Henry", "address": {"city": "NYC"}}'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@shredded_variant
+POSTHOOK: query: INSERT INTO shredded_variant VALUES
+(1, parse_json('{"name": "John", "age": 30}')),
+(2, parse_json('{"name": "Bill"}')),
+(3, parse_json('{"name": "Henry", "address": {"city": "NYC"}}'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@shredded_variant
+PREHOOK: query: INSERT INTO shredded_variant (id) SELECT 4
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@shredded_variant
+POSTHOOK: query: INSERT INTO shredded_variant (id) SELECT 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@shredded_variant
+PREHOOK: query: SELECT id,
+  variant_get(data, '$.name') AS name,
+  variant_get(data, '$.age', 'int') AS age,
+  variant_get(data, '$.address.city') AS city
+FROM shredded_variant
+PREHOOK: type: QUERY
+PREHOOK: Input: default@shredded_variant
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id,
+  variant_get(data, '$.name') AS name,
+  variant_get(data, '$.age', 'int') AS age,
+  variant_get(data, '$.address.city') AS city
+FROM shredded_variant
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@shredded_variant
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	John	30	NULL
+2	Bill	NULL	NULL
+3	Henry	NULL	NYC
+4	NULL	NULL	NULL

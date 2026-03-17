@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.iceberg.FileFormat;
@@ -29,11 +30,13 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -45,6 +48,12 @@ import static org.junit.Assume.assumeTrue;
  * here.
  */
 public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Parameterized.Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.formatVersion() == 2);
+  }
 
   @Test
   public void testScanTable() throws IOException {
@@ -242,7 +251,7 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
    */
   @Test
   public void testVectorizedOrcMultipleSplits() throws Exception {
-    assumeTrue(isVectorized && FileFormat.ORC.equals(fileFormat));
+    assumeTrue(isVectorized && FileFormat.ORC == fileFormat);
 
     // This data will be held by a ~870kB ORC file
     List<Record> records = TestHelper.generateRandomRecords(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,

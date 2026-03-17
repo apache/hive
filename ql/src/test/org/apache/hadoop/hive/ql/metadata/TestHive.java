@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.junit.Assert.assertThat;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -38,19 +39,23 @@ import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
@@ -319,7 +324,7 @@ public class TestHive {
       hm.getAllDatabases();
       hm.dumpAndClearMetaCallTiming("test");
       String logStr = appender.getOutput();
-      String expectedString = "getAllDatabases_()=";
+      String expectedString = "getAllDatabases_(String)=";
       Assert.assertTrue(logStr + " should contain <" + expectedString,
           logStr.contains(expectedString));
 
@@ -420,6 +425,50 @@ public class TestHive {
     Hive hive2 = Hive.get();
     Hive.closeCurrent();
     assertTrue(hive1 != hive2);
+  }
+
+  @Test
+  public void testValidatePartitions() {
+    Map<String, String> partitionSpec = new HashMap<>();
+
+    partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.DEFAULT_PARTITION_NAME));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+
+    partitionSpec.clear();
+    partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+
+    partitionSpec.clear();
+    partitionSpec.put("a", "random" + HiveConf.getVar(hiveConf, ConfVars.DEFAULT_PARTITION_NAME) + "partition");
+    PartitionUtils.validatePartitions(hiveConf, partitionSpec);
+
+    partitionSpec.clear();
+    partitionSpec.put("a", "random" + HiveConf.getVar(hiveConf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME) + "partition");
+    PartitionUtils.validatePartitions(hiveConf, partitionSpec);
+
+    partitionSpec.clear();
+    partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ORIGINAL));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+
+    partitionSpec.clear();
+    partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ARCHIVED));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+
+    partitionSpec.clear();
+    partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_EXTRACTED));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+
+    partitionSpec.clear();
+    partitionSpec.put("a", "random_part" + HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ORIGINAL));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+
+    partitionSpec.clear();
+    partitionSpec.put("a", "random_part" + HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ARCHIVED));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+
+    partitionSpec.clear();
+    partitionSpec.put("a", "random_part" + HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_EXTRACTED));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
   }
 
   @Test
@@ -696,6 +745,46 @@ public class TestHive {
     finally {
       cleanUpTableQuietly(dbName, tableName);
     }
+  }
+
+  @Test
+  public void testDropPartitionsByNames() throws Throwable {
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
+    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    String tblName = "table_for_testDropPartitionsByNames";
+    TableName tableName = new TableName(catName, dbName, tblName);
+
+    Table table = createPartitionedTable(dbName, tblName);
+    for (int i = 10; i <= 12; i++) {
+      Map<String, String> partitionSpec = new ImmutableMap.Builder<String, String>()
+          .put("ds", "20231129")
+          .put("hr", String.valueOf(i))
+          .build();
+      hm.createPartition(table, partitionSpec);
+    }
+
+    List<Partition> partitions = hm.getPartitions(table);
+    assertEquals(3, partitions.size());
+
+    RequestPartsSpec partsSpec = new RequestPartsSpec();
+    partsSpec.setNames(Arrays.asList("ds=20231129/hr=10"));
+    hm.dropPartitions(tableName, partsSpec, PartitionDropOptions.instance());
+    assertEquals(2, hm.getPartitions(table).size());
+
+    try {
+      // drop missing partition name
+      partsSpec.setNames(Arrays.asList("ds=20231129/hr=10", "ds=20231129/hr=11"));
+      hm.dropPartitions(tableName, partsSpec, PartitionDropOptions.instance());
+      fail("Expected exception");
+    } catch (HiveException e) {
+      // expected
+      assertEquals("Some partitions to drop are missing", e.getCause().getMessage());
+      assertEquals(2, hm.getPartitions(table).size());
+    }
+
+    partsSpec.setNames(Arrays.asList("ds=20231129/hr=12", "ds=20231129/hr=11"));
+    hm.dropPartitions(tableName, partsSpec, PartitionDropOptions.instance());
+    assertEquals(0, hm.getPartitions(table).size());
   }
 
   @Test
@@ -1076,6 +1165,37 @@ public class TestHive {
       return checksumString;
     }
     return "";
+  }
+
+  @Test
+  public void testLoadingIMetaStoreClient() throws Throwable {
+    String clientClassName = ThriftHiveMetaStoreClient.class.getName();
+    HiveConf conf = new HiveConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, clientClassName);
+    // The current object was constructed in setUp() before we got here
+    // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
+    Hive.closeCurrent();
+    Hive hive = Hive.get(conf);
+    IMetaStoreClient tmp = hive.getMSC();
+    assertNotNull("getMSC() failed.", tmp);
+  }
+
+  @Test
+  public void testLoadingInvalidIMetaStoreClient() throws Throwable {
+    // Intentionally invalid class
+    String clientClassName = String.class.getName();
+    HiveConf conf = new HiveConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, clientClassName);
+    // The current object was constructed in setUp() before we got here
+    // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
+    Hive.closeCurrent();
+    Hive hive = Hive.get(conf);
+    try {
+      hive.getMSC();
+      fail("getMSC() was expected to throw MetaException.");
+    } catch (Exception e) {
+      assertTrue("getMSC() failed, which IS expected.", true);
+    }
   }
 
   // shamelessly copied from Path in hadoop-2

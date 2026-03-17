@@ -72,16 +72,16 @@ class ReplayedTxnsForPolicyResult
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->replTxnMapEntry = array();
-                        $_size1423 = 0;
-                        $_ktype1424 = 0;
-                        $_vtype1425 = 0;
-                        $xfer += $input->readMapBegin($_ktype1424, $_vtype1425, $_size1423);
-                        for ($_i1427 = 0; $_i1427 < $_size1423; ++$_i1427) {
-                            $key1428 = '';
-                            $val1429 = '';
-                            $xfer += $input->readString($key1428);
-                            $xfer += $input->readString($val1429);
-                            $this->replTxnMapEntry[$key1428] = $val1429;
+                        $_size1441 = 0;
+                        $_ktype1442 = 0;
+                        $_vtype1443 = 0;
+                        $xfer += $input->readMapBegin($_ktype1442, $_vtype1443, $_size1441);
+                        for ($_i1445 = 0; $_i1445 < $_size1441; ++$_i1445) {
+                            $key1446 = '';
+                            $val1447 = '';
+                            $xfer += $input->readString($key1446);
+                            $xfer += $input->readString($val1447);
+                            $this->replTxnMapEntry[$key1446] = $val1447;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -108,9 +108,9 @@ class ReplayedTxnsForPolicyResult
             }
             $xfer += $output->writeFieldBegin('replTxnMapEntry', TType::MAP, 1);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->replTxnMapEntry));
-            foreach ($this->replTxnMapEntry as $kiter1430 => $viter1431) {
-                $xfer += $output->writeString($kiter1430);
-                $xfer += $output->writeString($viter1431);
+            foreach ($this->replTxnMapEntry as $kiter1448 => $viter1449) {
+                $xfer += $output->writeString($kiter1448);
+                $xfer += $output->writeString($viter1449);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

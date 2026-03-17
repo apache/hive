@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
 
 public class TestAutoPurgeTables {
 
-  private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String testDbName = "auto_purge_test_db";
   //private static final String testTableName = "auto_purge_test_table";
   private static final String INSERT_OVERWRITE_COMMAND_FORMAT =
@@ -118,7 +117,6 @@ public class TestAutoPurgeTables {
     // Create test database and base tables once for all the test
     miniHS2 = new MiniHS2.Builder().withConf(conf).build();
     miniHS2.start(new HashMap<String, String>());
-    Class.forName(driverName);
     con = getConnection(miniHS2.getBaseJdbcURL() + ";create=true");
     try (Statement stmt = con.createStatement()) {
       Assert.assertNotNull("Statement is null", stmt);

@@ -16,7 +16,7 @@
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-standalone-metastore-common</artifactId>
@@ -75,6 +75,12 @@
     <dependency>
       <groupId>com.github.joshelser</groupId>
       <artifactId>dropwizard-metrics-hadoop-metrics2-reporter</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>com.nimbusds</groupId>
+          <artifactId>nimbus-jose-jwt</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -245,10 +251,6 @@
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.zookeeper</groupId>
@@ -558,29 +560,6 @@
         </executions>
       </plugin>
       <!-- TODO MS-SPLIT javadoc plugin -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>enforce-banned-dependencies</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <bannedDependencies>
-                  <excludes>
-                    <!--LGPL licenced library-->
-                    <exclude>com.google.code.findbugs:annotations</exclude>
-                  </excludes>
-                </bannedDependencies>
-              </rules>
-              <fail>true</fail>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>

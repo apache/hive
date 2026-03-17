@@ -39,7 +39,7 @@ ALTER TABLE source.src RENAME TO target.src1;
 select * from target.src1 tablesample (10 rows);
 
 set metastore.rawstore.batch.size=1;
-set metastore.try.direct.sql=false;
+set metaconf:metastore.try.direct.sql=false;
 
 create table source.src2 like default.src;
 load data local inpath '../../data/files/kv1.txt' overwrite into table source.src2;

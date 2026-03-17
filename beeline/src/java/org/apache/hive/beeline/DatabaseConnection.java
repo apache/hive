@@ -39,8 +39,8 @@ import java.util.TreeSet;
 
 import org.apache.hive.jdbc.HiveConnection;
 
-import jline.console.completer.ArgumentCompleter;
-import jline.console.completer.Completer;
+import org.jline.reader.Completer;
+import org.jline.reader.impl.completer.ArgumentCompleter;
 
 class DatabaseConnection {
   private static final String HIVE_VAR_PREFIX = "hivevar:";
@@ -49,7 +49,6 @@ class DatabaseConnection {
   private final BeeLine beeLine;
   private Connection connection;
   private DatabaseMetaData meta;
-  private final String driver;
   private final String url;
   private final Properties info;
   private Schema schema = null;
@@ -59,10 +58,8 @@ class DatabaseConnection {
     return (null == connection);
   }
 
-  public DatabaseConnection(BeeLine beeLine, String driver, String url,
-       Properties info) throws SQLException {
+  DatabaseConnection(BeeLine beeLine, String url, Properties info) {
     this.beeLine = beeLine;
-    this.driver = driver;
     this.url = url;
     this.info = info;
   }
@@ -74,29 +71,8 @@ class DatabaseConnection {
 
 
   void setCompletions(boolean skipmeta) throws SQLException, IOException {
-    final String extraNameCharacters =
-        getDatabaseMetaData() == null || getDatabaseMetaData().getExtraNameCharacters() == null ? ""
-            : getDatabaseMetaData().getExtraNameCharacters();
-
     // setup the completer for the database
-    sqlCompleter = new ArgumentCompleter(
-        new ArgumentCompleter.AbstractArgumentDelimiter() {
-          // delimiters for SQL statements are any
-          // non-letter-or-number characters, except
-          // underscore and characters that are specified
-          // by the database to be valid name identifiers.
-          @Override
-          public boolean isDelimiterChar(CharSequence buffer, int pos) {
-            char c = buffer.charAt(pos);
-            if (Character.isWhitespace(c)) {
-              return true;
-            }
-            return !(Character.isLetterOrDigit(c))
-                && c != '_'
-                && extraNameCharacters.indexOf(c) == -1;
-          }
-        },
-        new SQLCompleter(SQLCompleter.getSQLCompleters(beeLine, skipmeta)));
+    sqlCompleter = new ArgumentCompleter(new SQLCompleter(SQLCompleter.getSQLCompleters(beeLine, skipmeta)));
     // not all argument elements need to hold true
     ((ArgumentCompleter) sqlCompleter).setStrict(false);
   }
@@ -106,14 +82,6 @@ class DatabaseConnection {
    * Connection to the specified data source.
    */
   boolean connect() throws SQLException {
-    try {
-      if (driver != null && driver.length() != 0) {
-        Class.forName(driver);
-      }
-    } catch (ClassNotFoundException cnfe) {
-      return beeLine.error(cnfe);
-    }
-
     boolean isDriverRegistered = false;
     try {
       isDriverRegistered = DriverManager.getDriver(getUrl()) != null;
@@ -184,18 +152,19 @@ class DatabaseConnection {
 
   public Connection getConnectionFromLocalDriver(String url, Properties properties) {
     Collection<Driver> drivers = beeLine.getDrivers();
-    for (Driver d : drivers) {
+    for (Driver driver : drivers) {
       try {
-        if (d.acceptsURL(url) && beeLine.isSupportedLocalDriver(d)) {
-          String clazzName = d.getClass().getName();
-          beeLine.debug("Driver name is " + clazzName);
-          Driver driver =
-            (Driver) Class.forName(clazzName, true, Thread.currentThread().getContextClassLoader())
-              .newInstance();
+        if (driver.acceptsURL(url) && beeLine.isSupportedLocalDriver(driver)) {
+          beeLine.debug("Driver name is " + driver.getClass().getName());
+          // The 'driver' is already an instance from the ServiceLoader, so we can use it directly.
           return driver.connect(url, properties);
         }
-      } catch (Exception e) {
-        beeLine.error("Fail to connect with a local driver due to the exception:" + e);
+      } catch (SQLException e) {
+        beeLine.error(
+            "Failed to connect with local driver "
+                + driver.getClass().getName()
+                + " due to exception: "
+                + e);
         beeLine.error(e);
       }
     }

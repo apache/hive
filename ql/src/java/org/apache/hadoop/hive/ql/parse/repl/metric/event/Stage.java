@@ -32,6 +32,9 @@ public class Stage {
   private Status status;
   private long startTime;
   private long endTime;
+  private long endTimeOnSrc;
+  private long endTimeOnTgt;
+  private long lastSuccessfulDumpId;
   private Map<String, Metric> metrics = new HashMap<>();
   private String errorLogPath;
   private SnapshotUtils.ReplSnapshotCount replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
@@ -58,6 +61,9 @@ public class Stage {
     this.errorLogPath = stage.errorLogPath;
     this.replSnapshotCount = stage.replSnapshotCount;
     this.replStats = stage.replStats;
+    this.endTimeOnSrc = stage.endTimeOnSrc;
+    this.endTimeOnTgt = stage.endTimeOnTgt;
+    this.lastSuccessfulDumpId = stage.lastSuccessfulDumpId;
   }
 
   public String getName() {
@@ -92,6 +98,29 @@ public class Stage {
     this.endTime = endTime;
   }
 
+  public long getEndTimeOnSrc() {
+    return endTimeOnSrc;
+  }
+
+  public void setEndTimeOnSrc(long endTimeOnSrc) {
+    this.endTimeOnSrc = endTimeOnSrc;
+  }
+
+  public long getEndTimeOnTgt() {
+    return endTimeOnTgt;
+  }
+
+  public void setEndTimeOnTgt(long endTimeOnTgt) {
+    this.endTimeOnTgt = endTimeOnTgt;
+  }
+
+  public long getLastSuccessfulDumpId() {
+    return lastSuccessfulDumpId;
+  }
+
+  public void setLastSuccessfulDumpId(long lastSuccessfulDumpId) {
+    this.lastSuccessfulDumpId = lastSuccessfulDumpId;
+  }
 
   public void addMetric(Metric metric) {
     this.metrics.put(metric.getName(), metric);

@@ -26,7 +26,7 @@ SELECT key, count(1) FROM T1_n61 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n61
 POSTHOOK: Output: default@outputtbl1_n15
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `_c1`
 FROM `default`.`t1_n61`
 WHERE `ds` = '1'
 GROUP BY `key`
@@ -252,7 +252,7 @@ SELECT key, count(1) FROM T1_n61 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n61
 POSTHOOK: Output: default@outputtbl1_n15
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `_c1`
 FROM `default`.`t1_n61`
 WHERE `ds` = '1'
 GROUP BY `key`
@@ -471,7 +471,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n61
 POSTHOOK: Input: default@t1_n61@ds=2
 POSTHOOK: Output: default@outputtbl1_n15
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `_c1`
 FROM `default`.`t1_n61`
 WHERE `ds` = '2'
 GROUP BY `key`

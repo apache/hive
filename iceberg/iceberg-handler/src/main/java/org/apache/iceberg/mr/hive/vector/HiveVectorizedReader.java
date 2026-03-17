@@ -61,7 +61,9 @@ import org.apache.iceberg.orc.VectorizedReadUtils;
 import org.apache.iceberg.parquet.ParquetFooterInputFromCache;
 import org.apache.iceberg.parquet.ParquetSchemaUtil;
 import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
+import org.apache.iceberg.parquet.VariantParquetFilters;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.apache.orc.impl.OrcTail;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
@@ -161,7 +163,9 @@ public class HiveVectorizedReader {
           break;
 
         case PARQUET:
-          recordReader = parquetRecordReader(job, reporter, task, path, start, length, fileId);
+          recordReader = parquetRecordReader(job, reporter, task, path, start, length, fileId,
+              getInitialColumnDefaults(table.schema().columns()),
+              HiveIcebergInputFormat.residualForReaderPruning(task, job));
           break;
         default:
           throw new UnsupportedOperationException("Vectorized Hive reading unimplemented for format: " + format);
@@ -175,6 +179,17 @@ public class HiveVectorizedReader {
     } catch (IOException ioe) {
       throw new RuntimeException("Error creating vectorized record reader for " + path, ioe);
     }
+  }
+
+  static Map<String, Object> getInitialColumnDefaults(List<Types.NestedField> columns) {
+    Map<String, Object> columnDefaults = Maps.newHashMap();
+
+    for (Types.NestedField column : columns) {
+      if (column.initialDefault() != null) {
+        columnDefaults.put(column.name(), column.initialDefault());
+      }
+    }
+    return columnDefaults;
   }
 
   private static RecordReader<NullWritable, VectorizedRowBatch> orcRecordReader(JobConf job, Reporter reporter,
@@ -218,7 +233,8 @@ public class HiveVectorizedReader {
   }
 
   private static RecordReader<NullWritable, VectorizedRowBatch> parquetRecordReader(JobConf job, Reporter reporter,
-      FileScanTask task, Path path, long start, long length, SyntheticFileId fileId) throws IOException {
+      FileScanTask task, Path path, long start, long length, SyntheticFileId fileId,
+      Map<String, Object> initialColumnDefaults, Expression residual) throws IOException {
     InputSplit split = new FileSplit(path, start, length, job);
     VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
 
@@ -232,9 +248,11 @@ public class HiveVectorizedReader {
     ParquetMetadata parquetMetadata = footerData != null ?
         ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER) :
         ParquetFileReader.readFooter(job, path);
-    inputFormat.setMetadata(parquetMetadata);
-
     MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
+    ParquetMetadata prunedMetadata =
+        VariantParquetFilters.pruneVariantRowGroups(parquetMetadata, fileSchema, residual);
+    inputFormat.setMetadata(prunedMetadata);
+
     MessageType typeWithIds = null;
     Schema expectedSchema = task.spec().schema();
 
@@ -249,7 +267,11 @@ public class HiveVectorizedReader {
     TypeWithSchemaVisitor.visit(expectedSchema.asStruct(), typeWithIds, psv);
     job.set(IOConstants.COLUMNS, psv.retrieveColumnNameList());
 
-    return inputFormat.getRecordReader(split, job, reporter);
+    inputFormat.seInitialColumnDefaults(initialColumnDefaults);
+    RecordReader<NullWritable, VectorizedRowBatch> reader = inputFormat.getRecordReader(split, job, reporter);
+    return ParquetVariantRecordReader
+        .tryWrap(reader, job, task, path, start, length, prunedMetadata)
+        .orElse(reader);
   }
 
   private static CloseableIterable<HiveBatchContext> createVectorizedRowBatchIterable(

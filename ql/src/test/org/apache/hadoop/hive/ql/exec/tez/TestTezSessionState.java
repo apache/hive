@@ -16,17 +16,33 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.tez.dag.api.TezException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestTezSessionState {
+  private static final Logger LOG = LoggerFactory.getLogger(TestTezSessionState.class.getName());
+
+  private static SessionState createSessionState() {
+    HiveConf hiveConf = new HiveConfForTest(TestTezSessionState.class);
+    hiveConf.set("hive.security.authorization.manager",
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdConfOnlyAuthorizerFactory");
+    return SessionState.start(hiveConf);
+  }
 
   @Test
   public void testSymlinkedLocalFilesAreLocalizedOnce() throws Exception {
@@ -39,8 +55,7 @@ public class TestTezSessionState {
 
     Assert.assertTrue(Files.isSymbolicLink(symlinkPath));
 
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.set(HiveConf.ConfVars.HIVE_JAR_DIRECTORY.varname, "/tmp");
+    HiveConf hiveConf = new HiveConfForTest(getClass());
 
     TezSessionState sessionState = new TezSessionState(DagUtils.getInstance(), hiveConf);
 
@@ -49,5 +64,72 @@ public class TestTezSessionState {
 
     // local resources point to the same original resource
     Assert.assertEquals(l1.getResource().toPath(), l2.getResource().toPath());
+  }
+
+  @Test
+  public void testScratchDirDeletedInTheEventOfExceptionWhileOpeningSession() throws Exception {
+    SessionState ss = createSessionState();
+    HiveConf hiveConf = ss.getConf();
+
+    final AtomicReference<String> scratchDirPath = new AtomicReference<>();
+
+    TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf) {
+      @Override
+      void openInternalUnsafe(boolean isAsync, SessionState.LogHelper console) throws TezException, IOException {
+        super.openInternalUnsafe(isAsync, console);
+        // save scratch dir here as it's nullified while calling the cleanup
+        scratchDirPath.set(tezScratchDir.toUri().getPath());
+        throw new RuntimeException("fake exception in openInternalUnsafe");
+      }
+    };
+
+    TezSessionState.HiveResources resources =
+        new TezSessionState.HiveResources(new org.apache.hadoop.fs.Path("/tmp"));
+
+    try {
+      sessionState.open(resources);
+      Assert.fail("An exception should have been thrown while calling openInternal");
+    } catch (Exception e) {
+      Assert.assertEquals("fake exception in openInternalUnsafe", e.getMessage());
+    }
+    LOG.info("Checking if scratch dir exists: {}", scratchDirPath.get());
+    Assert.assertFalse("Scratch dir is not supposed to exist after cleanup: " + scratchDirPath.get(),
+        Files.exists(Paths.get(scratchDirPath.get())));
+  }
+
+  /**
+   * Tests whether commonLocalResources is populated with app jar and localized resources when opening
+   * a Tez session.
+   */
+  @Test
+  public void testCommonLocalResourcesPopulatedOnSessionOpen() throws Exception {
+    Path jarPath = Files.createTempFile("test-jar", ".jar");
+    Files.write(jarPath, "testCommonLocalResourcesPopulated".getBytes(), StandardOpenOption.APPEND);
+
+    SessionState ss = createSessionState();
+    HiveConf hiveConf = ss.getConf();
+
+    TezSessionState.HiveResources resources =
+        new TezSessionState.HiveResources(new org.apache.hadoop.fs.Path("/tmp"));
+
+    TezSessionState tempSession = new TezSessionState(ss.getSessionId(), hiveConf);
+
+    LocalResource localizedLr = tempSession.createJarLocalResource(jarPath.toUri().toString());
+    resources.localizedResources.add(localizedLr);
+
+    final TezSessionState sessionStateForTest = new TezSessionState(ss.getSessionId(), hiveConf) {
+      @Override
+      void openInternalUnsafe(boolean isAsync, SessionState.LogHelper console) {
+        Map<String, LocalResource> commonLocalResources = buildCommonLocalResources();
+        Assert.assertEquals("commonLocalResources must contain exactly 2 jars (hive-exec app jar + localized test jar)",
+            2, commonLocalResources.size());
+        Assert.assertTrue("commonLocalResources must contain the hive-exec app jar",
+            commonLocalResources.keySet().stream().anyMatch(k -> k.contains("hive-exec")));
+        Assert.assertTrue("commonLocalResources must contain the added localized test jar",
+            commonLocalResources.containsKey(DagUtils.getBaseName(localizedLr)));
+      }
+    };
+
+    sessionStateForTest.open(resources);
   }
 }

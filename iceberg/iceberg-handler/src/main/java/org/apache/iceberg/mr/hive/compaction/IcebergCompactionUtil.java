@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
-import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PositionDeletesScanTask;
@@ -69,15 +68,16 @@ public class IcebergCompactionUtil {
    * @param table the iceberg table
    * @param partitionPath partition path
    */
-  public static List<DataFile> getDataFiles(Table table, String partitionPath, long fileSizeThreshold) {
-    CloseableIterable<FileScanTask> fileScanTasks =
-        table.newScan().useSnapshot(table.currentSnapshot().snapshotId()).ignoreResiduals().planFiles();
-    CloseableIterable<FileScanTask> filteredFileScanTasks =
-        CloseableIterable.filter(fileScanTasks, t -> {
+  public static List<DataFile> getDataFiles(Table table, Long snapshotId, String partitionPath,
+      long fileSizeThreshold) {
+    CloseableIterable<ScanTask> scanTasks =
+        table.newBatchScan().useSnapshot(snapshotId).planFiles();
+    CloseableIterable<ScanTask> filteredScanTasks =
+        CloseableIterable.filter(scanTasks, t -> {
           DataFile file = t.asFileScanTask().file();
           return shouldIncludeForCompaction(table, partitionPath, file, fileSizeThreshold);
         });
-    return Lists.newArrayList(CloseableIterable.transform(filteredFileScanTasks, t -> t.file()));
+    return Lists.newArrayList(CloseableIterable.transform(filteredScanTasks, t -> t.asFileScanTask().file()));
   }
 
   /**
@@ -88,10 +88,10 @@ public class IcebergCompactionUtil {
    * @param table the iceberg table
    * @param partitionPath partition path
    */
-  public static List<DeleteFile> getDeleteFiles(Table table, String partitionPath) {
+  public static List<DeleteFile> getDeleteFiles(Table table, Long snapshotId, String partitionPath) {
     Table deletesTable =
         MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.POSITION_DELETES);
-    CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().planFiles();
+    CloseableIterable<ScanTask> deletesScanTasks = deletesTable.newBatchScan().useSnapshot(snapshotId).planFiles();
     CloseableIterable<ScanTask> filteredDeletesScanTasks =
         CloseableIterable.filter(deletesScanTasks, t -> {
           DeleteFile file = ((PositionDeletesScanTask) t).file();

@@ -342,7 +342,7 @@ public class TestDbNotificationListener
     String dbName2 = "createdb2";
     String dbLocationUri = testTempDir;
     String dbDescription = "no description";
-    Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
+    Database db = new Database(dbName, dbDescription, "file:" + dbLocationUri, emptyParameters);
     db.setOwnerName("test_user");
     msClient.createDatabase(db);
 

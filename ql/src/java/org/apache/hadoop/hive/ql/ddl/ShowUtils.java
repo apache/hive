@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -54,7 +55,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -189,7 +189,9 @@ public final class ShowUtils {
           }
         } else if (statsData.isSetDoubleStats()) {
           DoubleColumnStatsData doubleStats = statsData.getDoubleStats();
-          values.addAll(Lists.newArrayList("" + doubleStats.getLowValue(), "" + doubleStats.getHighValue(),
+          String lowVal = doubleStats.isSetLowValue() ? "" + doubleStats.getLowValue() : "";
+          String highVal = doubleStats.isSetHighValue() ? "" + doubleStats.getHighValue() : "";
+          values.addAll(Lists.newArrayList(lowVal, highVal,
               "" + doubleStats.getNumNulls(), "" + doubleStats.getNumDVs(), "", "", "", "",
               convertToString(doubleStats.getBitVectors())));
           if (histogramEnabled) {
@@ -197,7 +199,9 @@ public final class ShowUtils {
           }
         } else if (statsData.isSetLongStats()) {
           LongColumnStatsData longStats = statsData.getLongStats();
-          values.addAll(Lists.newArrayList("" + longStats.getLowValue(), "" + longStats.getHighValue(),
+          String lowVal = longStats.isSetLowValue() ? "" + longStats.getLowValue() : "";
+          String highVal = longStats.isSetHighValue() ? "" + longStats.getHighValue() : "";
+          values.addAll(Lists.newArrayList(lowVal, highVal,
               "" + longStats.getNumNulls(), "" + longStats.getNumDVs(), "", "", "", "",
               convertToString(longStats.getBitVectors())));
           if (histogramEnabled) {
@@ -233,12 +237,7 @@ public final class ShowUtils {
   }
 
   public static String convertToString(Decimal val) {
-    if (val == null) {
-      return "";
-    }
-
-    HiveDecimal result = HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale());
-    return (result != null) ? result.toString() : "";
+    return MetaStoreServerUtils.decimalToString(val);
   }
 
   public static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {
@@ -475,11 +474,15 @@ public final class ShowUtils {
         newTable.add(new ArrayList<>());
       }
       for (List<String> sourceRow : table) {
-        if (newTable.size() != sourceRow.size()) {
+        if (newTable.size() < sourceRow.size()) {
           throw new RuntimeException("invalid table size");
         }
         for (int i = 0; i < sourceRow.size(); i++) {
           newTable.get(i).add(sourceRow.get(i));
+        }
+        // if a source row is too short, pad the output column with empty strings
+        for (int i = sourceRow.size(); i < newTable.size(); i++) {
+          newTable.get(i).add("");
         }
       }
       table = newTable;

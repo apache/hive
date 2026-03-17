@@ -32,7 +32,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1_n24
-OPTIMIZED SQL: SELECT `t8`.`key`, `t8`.`value`, `t6`.`$f1` AS `cnt`
+OPTIMIZED SQL: SELECT `t8`.`key` AS `x.key`, `t8`.`value` AS `x.value`, `t6`.`$f1` AS `subq1.cnt`
 FROM (SELECT *
 FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`src`

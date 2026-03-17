@@ -306,3 +306,27 @@ docker compose exec hiveserver2-standalone /bin/bash
 /opt/hive/bin/schematool -initSchema -dbType hive -metaDbType postgres -url jdbc:hive2://localhost:10000/default
 exit
 ```
+
+#### Hive with S3-backed warehouse storage
+
+1. Download the AWS SDK bundle and place it under jars/ directory.
+
+**Disclaimer:**  
+Hadoop **3.4.1** requires **AWS SDK v2**.
+```shell
+wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.26.19/bundle-2.26.19.jar -P jars/
+```
+
+2. Set the following environment variables:
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- DEFAULT_FS
+- HIVE_WAREHOUSE_PATH
+- S3_ENDPOINT_URL
+
+```shell
+DEFAULT_FS="s3a://dw-team-bucket" \
+HIVE_WAREHOUSE_PATH="/data/warehouse/tablespace/managed/hive" \
+S3_ENDPOINT_URL="s3.us-west-2.amazonaws.com" \
+docker-compose up
+```

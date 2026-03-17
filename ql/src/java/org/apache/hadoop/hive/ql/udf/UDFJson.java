@@ -241,6 +241,8 @@ public class UDFJson extends UDF {
 
     if (indexList.size() > 0) {
       json = extract_json_withindex(json, indexList);
+    } else if (path.indexOf('[') >= 0) {
+      return null; // index is invalid
     }
 
     return json;

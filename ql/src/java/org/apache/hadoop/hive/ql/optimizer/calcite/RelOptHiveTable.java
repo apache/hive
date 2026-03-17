@@ -708,7 +708,7 @@ public class RelOptHiveTable implements RelOptTable {
    * all columns in BitSet are partition columns.
    */
   public boolean containsPartitionColumnsOnly(ImmutableBitSet cols) {
-    for (int i = cols.nextSetBit(0); i >= 0; i++, i = cols.nextSetBit(i + 1)) {
+    for (int i = cols.nextSetBit(0); i >= 0; i = cols.nextSetBit(i + 1)) {
       if (!hivePartitionColsMap.containsKey(i)) {
         return false;
       }

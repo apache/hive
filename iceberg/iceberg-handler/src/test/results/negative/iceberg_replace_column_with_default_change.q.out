@@ -1,0 +1,30 @@
+PREHOOK: query: CREATE TABLE ice_t (
+  id INT,
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: CREATE TABLE ice_t (
+  id INT,
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: ALTER TABLE ice_t REPLACE COLUMNS (
+  id INT,
+  name STRING DEFAULT 'unknown1',
+  age INT DEFAULT 25)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@ice_t
+PREHOOK: Output: default@ice_t
+FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. MetaException(message:Unsupported operation to use REPLACE COLUMNS for adding a column, changing a column type, column comment, column default or reordering columns. Only use REPLACE COLUMNS for dropping columns. For the other operations, consider using the ADD COLUMNS or CHANGE COLUMN commands.)
+#### A masked pattern was here ####
+

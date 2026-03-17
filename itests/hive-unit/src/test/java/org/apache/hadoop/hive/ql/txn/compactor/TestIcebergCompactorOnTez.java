@@ -83,8 +83,8 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
   @Test
   public void testIcebergAutoCompactionPartitionEvolution() throws Exception {
     executeStatementOnDriver(String.format("create table %s " +
-        "(id int, a string) " +
-        "partitioned by spec(id) stored by iceberg stored as orc " +
+        "(a int, b string) " +
+        "partitioned by spec(a) stored by iceberg stored as orc " +
         "tblproperties ('compactor.threshold.min.input.files'='1')", QUALIFIED_TABLE_NAME), driver);
 
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (1, 'a')", QUALIFIED_TABLE_NAME), driver);
@@ -94,26 +94,44 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (5, 'e')", QUALIFIED_TABLE_NAME), driver);
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (6, 'd')", QUALIFIED_TABLE_NAME), driver);
 
-    executeStatementOnDriver(String.format("alter table %s set partition spec(truncate(3, a))", QUALIFIED_TABLE_NAME), driver);
+    executeStatementOnDriver(String.format("alter table %s set partition spec(truncate(3, b))", QUALIFIED_TABLE_NAME), driver);
 
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (7, 'aaa111')", QUALIFIED_TABLE_NAME), driver);
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (8, 'aaa111')", QUALIFIED_TABLE_NAME), driver);
-    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (9, 'bbb222')", QUALIFIED_TABLE_NAME), driver);
-    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (10, 'bbb222')", QUALIFIED_TABLE_NAME), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (9, 'bbb111')", QUALIFIED_TABLE_NAME), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (10, 'bbb111')", QUALIFIED_TABLE_NAME), driver);
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (11, null)", QUALIFIED_TABLE_NAME), driver);
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (12, null)", QUALIFIED_TABLE_NAME), driver);
 
-    runSingleInitiatorCycle();
+    Initiator initiator = createInitiator();
+    initiator.run();
+
+    Worker worker = createWorker(conf);
+    for (int i = 0; i < 4; i++) {
+      worker.run();
+    }
+    
     ShowCompactResponse rsp = msClient.showCompactions();
     Assert.assertEquals(4, rsp.getCompactsSize());
 
     // Compaction should be initiated for each partition from the latest spec
-    Assert.assertTrue(isCompactExist(rsp, "a_trunc_3=aaa", CompactionType.MINOR, CompactionState.INITIATED));
-    Assert.assertTrue(isCompactExist(rsp, "a_trunc_3=bbb", CompactionType.MINOR, CompactionState.INITIATED));
-    Assert.assertTrue(isCompactExist(rsp, "a_trunc_3=null", CompactionType.MINOR, CompactionState.INITIATED));
+    Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=aaa", CompactionType.MINOR, CompactionState.SUCCEEDED));
+    Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=bbb", CompactionType.MINOR, CompactionState.SUCCEEDED));
+    Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=null", CompactionType.MINOR, CompactionState.SUCCEEDED));
 
     // Additional compaction should be initiated for all partitions from past partition specs
-    Assert.assertTrue(isCompactExist(rsp, null, CompactionType.MINOR, CompactionState.INITIATED));
+    Assert.assertTrue(isCompactExist(rsp, null, CompactionType.MINOR, CompactionState.SUCCEEDED));
+
+    // Data changes after Iceberg initiator has been run
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (13, 'ccc111')", QUALIFIED_TABLE_NAME), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (14, 'ddd111')", QUALIFIED_TABLE_NAME), driver);
+
+    initiator.run();
+    rsp = msClient.showCompactions();
+    Assert.assertEquals(6, rsp.getCompactsSize());
+    
+    Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=ccc", CompactionType.MINOR, CompactionState.INITIATED));
+    Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=ddd", CompactionType.MINOR, CompactionState.INITIATED));
   }
 
   @Test
@@ -130,7 +148,9 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (11, null)", QUALIFIED_TABLE_NAME), driver);
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (12, null)", QUALIFIED_TABLE_NAME), driver);
 
-    runSingleInitiatorCycle();
+    Initiator initiator = createInitiator();
+    initiator.run();
+
     ShowCompactResponse rsp = msClient.showCompactions();
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertTrue(isCompactExist(rsp, null, CompactionType.MINOR, CompactionState.INITIATED));
@@ -140,7 +160,7 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     driver.run(String.format("select count(*) from %s.files", QUALIFIED_TABLE_NAME));
     List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
-    return Integer.parseInt(res.get(0));
+    return Integer.parseInt(res.getFirst());
   }
 
   private List<String> getAllRecords() throws Exception {

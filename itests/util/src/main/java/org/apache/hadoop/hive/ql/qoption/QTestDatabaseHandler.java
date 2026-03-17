@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.qoption;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
+import org.apache.hadoop.hive.ql.externalDB.Derby;
 import org.apache.hadoop.hive.ql.externalDB.MSSQLServer;
 import org.apache.hadoop.hive.ql.externalDB.MariaDB;
 import org.apache.hadoop.hive.ql.externalDB.MySQLExternalDB;
@@ -27,20 +28,18 @@ import org.apache.hadoop.hive.ql.externalDB.PostgresExternalDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * An option handler for spinning (resp. stopping) databases before (resp. after) running a test.
  *
- * Syntax: qt:database:DatabaseType:path_to_init_script
+ * Syntax: qt:database:DatabaseType:databaseName:path_to_init_script
  *
- * The database type ({@link DatabaseType}) is obligatory argument. The initialization script can be omitted.
- *
+ * The database type ({@link DatabaseType}) and the database name are obligatory arguments. The initialization script can be omitted.
+ * The database name is mainly used to distinguish between different databases when they are accessed via a system {@link AbstractExternalDB.ConnectionProperty}.
  * Current limitations:
  * <ol>
  *   <li>Only one test/file per run</li>
@@ -77,57 +76,58 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
       AbstractExternalDB create() {
         return new Oracle();
       }
+    }, DERBY {
+      @Override
+      AbstractExternalDB create() {
+        return new Derby();
+      }
     };
 
     abstract AbstractExternalDB create();
   }
 
-  private final Map<DatabaseType, String> databaseToScript = new EnumMap<>(DatabaseType.class);
+  private final String scriptsDir;
+  private final List<AbstractExternalDB> databases = new ArrayList<>();
+
+  public QTestDatabaseHandler(final String scriptDirectory) {
+    this.scriptsDir = scriptDirectory;
+  }
 
   @Override
   public void processArguments(String arguments) {
     String[] args = arguments.split(":");
-    if (args.length == 0) {
-      throw new IllegalArgumentException("No arguments provided");
-    }
-    if (args.length > 2) {
+    if (args.length < 2 || args.length > 3) {
       throw new IllegalArgumentException(
-          "Too many arguments. Expected {dbtype:script}. Found: " + Arrays.toString(args));
+          "Wrong number of arguments. Expected {dbtype:dbname:script?}. Found: " + Arrays.toString(args));
     }
     DatabaseType dbType = DatabaseType.valueOf(args[0].toUpperCase());
-    String initScript = args.length == 2 ? args[1] : "";
-    if (databaseToScript.containsKey(dbType)) {
-      throw new IllegalArgumentException(dbType + " database is already defined in this file.");
+    String dbName = args[1];
+    String initScript = args.length == 3 ? args[2] : null;
+    AbstractExternalDB db = dbType.create();
+    db.setName(dbName);
+    if (initScript != null && !initScript.isEmpty()) {
+      db.setInitScript(Paths.get(scriptsDir, initScript));
     }
-    databaseToScript.put(dbType, initScript);
+    databases.add(db);
   }
 
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
-    for (Map.Entry<DatabaseType, String> dbEntry : databaseToScript.entrySet()) {
-      String scriptsDir = QTestUtil.getScriptsDir(qt.getConf());
-      Path dbScript = Paths.get(scriptsDir, dbEntry.getValue());
-      AbstractExternalDB db = dbEntry.getKey().create();
-      db.launchDockerContainer();
-      if (Files.exists(dbScript)) {
-        db.execute(dbScript.toString());
-      } else {
-        LOG.warn("Initialization script {} not found", dbScript);
-      }
+    for (AbstractExternalDB db : databases) {
+      db.start();
     }
   }
 
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
-    for (Map.Entry<DatabaseType, String> dbEntry : databaseToScript.entrySet()) {
-      AbstractExternalDB db = dbEntry.getKey().create();
+    for (AbstractExternalDB db : databases) {
       try {
-        db.cleanupDockerContainer();
+        db.stop();
       } catch (Exception e) {
-        LOG.error("Failed to cleanup database {}", dbEntry.getKey(), e);
+        LOG.error("Failed to cleanup database {}", db, e);
       }
     }
-    databaseToScript.clear();
+    databases.clear();
   }
 
 }

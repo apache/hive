@@ -51,7 +51,9 @@ import java.util.concurrent.Future;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -834,6 +836,38 @@ public class TestUtilities {
     fs.setPermission(path, new FsPermission((short) 00755));
     Utilities.ensurePathIsWritable(path, conf);
     Assert.assertEquals((short) 0777, fs.getFileStatus(path).getPermission().toShort());
+  }
+
+  @Test
+  public void testWritingManifestFile() throws HiveException, IOException {
+    String testTableName = "testWritingManifest";
+    JobConf jobConf = new JobConf();
+    FileSystem fs = FileSystem.getLocal(jobConf);
+    Path testTablePath = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR) + "/" + testTableName);
+    try {
+      fs.mkdirs(testTablePath);
+      List<Path> commitPaths = new ArrayList<>();
+      commitPaths.add(new Path(testTableName + "/delta00001_00001/00000_0"));
+      Utilities.writeCommitManifest(commitPaths, testTablePath, fs,
+          "00001", 2L, 0, null, false,
+          false, null, null, false);
+
+      RemoteIterator<LocatedFileStatus> it = fs.listFiles(testTablePath, true);
+      List<Path> resultPaths = new ArrayList<>();
+      while(it.hasNext()) {
+        resultPaths.add(it.next().getPath());
+      }
+      assertEquals(1, resultPaths.size());
+      Path resultPath = resultPaths.get(0);
+      assertEquals("00001.manifest", resultPath.getName());
+      assertEquals("_tmp.delta_0000002_0000002_0000", resultPath.getParent().getName());
+      FileStatus[] files = fs.listStatus(testTablePath, AcidUtils.acidHiddenFileFilter);
+      assertEquals(0, files.length);
+    } finally {
+      if (fs.exists(testTablePath)) {
+        fs.delete(testTablePath, true);
+      }
+    }
   }
 
   private FileStatus[] generateTestNotEmptyFileStatuses(String... fileNames) {

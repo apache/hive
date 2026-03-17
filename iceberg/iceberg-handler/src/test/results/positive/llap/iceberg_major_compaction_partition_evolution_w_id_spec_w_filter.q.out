@@ -180,6 +180,11 @@ dept_id             	bigint
 team_id             	bigint              	                    
 company_id          	bigint              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+company_id          	bigint              	Transform: identity 
+dept_id             	bigint              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 company_id          	IDENTITY            	 
@@ -220,6 +225,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -287,6 +293,11 @@ dept_id             	bigint
 team_id             	bigint              	                    
 company_id          	bigint              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+company_id          	bigint              	Transform: identity 
+dept_id             	bigint              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 company_id          	IDENTITY            	 
@@ -327,6 +338,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

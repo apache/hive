@@ -19,9 +19,7 @@
 
 package org.apache.iceberg.rest;
 
-import com.codahale.metrics.Counter;
 import com.google.common.base.Preconditions;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +69,6 @@ import org.apache.iceberg.rest.responses.ListNamespacesResponse;
 import org.apache.iceberg.rest.responses.ListTablesResponse;
 import org.apache.iceberg.rest.responses.LoadTableResponse;
 import org.apache.iceberg.rest.responses.LoadViewResponse;
-import org.apache.iceberg.rest.responses.OAuthTokenResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
@@ -81,8 +78,6 @@ import org.apache.iceberg.util.PropertyUtil;
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements RESTClient {
-  /**  The metric names prefix. */
-  static final String HMS_METRIC_PREFIX = "hmscatalog.";
   private static final Splitter SLASH = Splitter.on('/');
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
@@ -104,15 +99,6 @@ public class HMSCatalogAdapter implements RESTClient {
           .put(CommitStateUnknownException.class, 500)
           .buildOrThrow();
 
-  private static final String URN_OAUTH_TOKEN_EXCHANGE = "urn:ietf:params:oauth:grant-type:token-exchange";
-  private static final String URN_OAUTH_ACCESS_TOKEN = "urn:ietf:params:oauth:token-type:access_token";
-  private static final String GRANT_TYPE = "grant_type";
-  private static final String CLIENT_CREDENTIALS = "client_credentials";
-  private static final String BEARER = "Bearer";
-  private static final String CLIENT_ID = "client_id";
-  private static final String ACTOR_TOKEN = "actor_token";
-  private static final String SUBJECT_TOKEN = "subject_token";
-
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
@@ -127,9 +113,7 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   enum Route {
-    TOKENS(HTTPMethod.POST, "v1/oauth/tokens", null),
-    SEPARATE_AUTH_TOKENS_URI(HTTPMethod.POST, "https://auth-server.com/token", null),
-    CONFIG(HTTPMethod.GET, "v1/config", null),
+    CONFIG(HTTPMethod.GET, ResourcePaths.config(), null),
     LIST_NAMESPACES(HTTPMethod.GET, ResourcePaths.V1_NAMESPACES, null),
     CREATE_NAMESPACE(HTTPMethod.POST, ResourcePaths.V1_NAMESPACES, CreateNamespaceRequest.class),
     NAMESPACE_EXISTS(HTTPMethod.HEAD, ResourcePaths.V1_NAMESPACE),
@@ -226,47 +210,10 @@ public class HMSCatalogAdapter implements RESTClient {
     }
   }
 
-  /**
-   * @param route a route/api-call name
-   * @return the metric counter name for the api-call
-   */
-  static String hmsCatalogMetricCount(String route) {
-    return HMS_METRIC_PREFIX + route.toLowerCase() + ".count";
-  }
-
   private ConfigResponse config() {
     final List<Endpoint> endpoints = Arrays.stream(Route.values())
         .map(r -> Endpoint.create(r.method.name(), r.resourcePath)).toList();
     return castResponse(ConfigResponse.class, ConfigResponse.builder().withEndpoints(endpoints).build());
-  }
-
-  private OAuthTokenResponse tokens(Object body) {
-    @SuppressWarnings("unchecked")
-    Map<String, String> request = (Map<String, String>) castRequest(Map.class, body);
-    String grantType = request.get(GRANT_TYPE);
-    switch (grantType) {
-      case CLIENT_CREDENTIALS:
-        return OAuthTokenResponse.builder()
-            .withToken("client-credentials-token:sub=" + request.get(CLIENT_ID))
-            .withIssuedTokenType(URN_OAUTH_ACCESS_TOKEN)
-            .withTokenType(BEARER)
-            .build();
-
-      case URN_OAUTH_TOKEN_EXCHANGE:
-        String actor = request.get(ACTOR_TOKEN);
-        String token =
-            String.format(
-                "token-exchange-token:sub=%s%s",
-                request.get(SUBJECT_TOKEN), actor != null ? ",act=" + actor : "");
-        return OAuthTokenResponse.builder()
-            .withToken(token)
-            .withIssuedTokenType(URN_OAUTH_ACCESS_TOKEN)
-            .withTokenType(BEARER)
-            .build();
-
-      default:
-        throw new UnsupportedOperationException("Unsupported grant_type: " + grantType);
-    }
   }
 
   private ListNamespacesResponse listNamespaces(Map<String, String> vars) {
@@ -462,16 +409,7 @@ public class HMSCatalogAdapter implements RESTClient {
   @SuppressWarnings({"MethodLength", "unchecked"})
   private <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body) {
-    // update HMS catalog route counter metric
-    final String metricName = hmsCatalogMetricCount(route.name());
-    Counter counter = Metrics.getOrCreateCounter(metricName);
-    if (counter != null) {
-      counter.inc();
-    }
     switch (route) {
-      case TOKENS:
-        return (T) tokens(body);
-
       case CONFIG:
         return (T) config();
 

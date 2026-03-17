@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControl
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.common.util.TxnIdUtils;
@@ -482,8 +483,9 @@ public class HiveMaterializedViewUtils {
               .map(FieldSchema::getName)
               .collect(Collectors.toList());
 
-      HivePrivilegeObject privObject = new HivePrivilegeObject(cachedMVTable.getDbName(),
-          cachedMVTable.getTableName(), colNames);
+      HivePrivilegeObject privObject = new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW,
+          cachedMVTable.getCatalogName(), cachedMVTable.getDbName(), cachedMVTable.getTableName(),
+          null, colNames);
       privObjects.add(privObject);
     }
 
@@ -567,7 +569,7 @@ public class HiveMaterializedViewUtils {
     hiveTable.setMaterializedTable(true);
     RelOptHiveTable optTable =
         new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), hiveTable, columns,
-            Collections.emptyList(), Collections.emptyList(), new HiveConf(), new QueryTables(true), new HashMap<>(),
+            Collections.emptyList(), Collections.emptyList(), conf, new QueryTables(true), new HashMap<>(),
             new HashMap<>(), new AtomicInteger());
     optTable.setRowCount(cluster.getMetadataQuery().getRowCount(body));
     final TableScan scan =

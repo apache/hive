@@ -37,7 +37,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Database get_database(string name)')
     print('  Database get_database_req(GetDatabaseRequest request)')
     print('  void drop_database(string name, bool deleteData, bool cascade)')
-    print('  void drop_database_req(DropDatabaseRequest req)')
+    print('  AsyncOperationResp drop_database_req(DropDatabaseRequest req)')
     print('   get_databases(string pattern)')
     print('   get_all_databases()')
     print('  GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)')
@@ -72,7 +72,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Table translate_table_dryrun(CreateTableRequest request)')
     print('  void drop_table(string dbname, string name, bool deleteData)')
     print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
-    print('  void drop_table_req(DropTableRequest dropTableReq)')
+    print('  AsyncOperationResp drop_table_req(DropTableRequest dropTableReq)')
     print('  void truncate_table(string dbName, string tableName,  partNames)')
     print('  TruncateTableResponse truncate_table_req(TruncateTableRequest req)')
     print('   get_tables(string db_name, string pattern)')
@@ -91,6 +91,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)')
     print('  void alter_table_with_cascade(string dbname, string tbl_name, Table new_tbl, bool cascade)')
     print('  AlterTableResponse alter_table_req(AlterTableRequest req)')
+    print('  void update_table_params( updates)')
     print('  Partition add_partition(Partition new_part)')
     print('  Partition add_partition_with_environment_context(Partition new_part, EnvironmentContext environment_context)')
     print('  i32 add_partitions( new_parts)')
@@ -288,6 +289,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  SerDeInfo get_serde(GetSerdeRequest rqst)')
     print('  LockResponse get_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
     print('  bool heartbeat_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
+    print('  LockResponse get_lock_materialization_rebuild_req(LockMaterializationRebuildRequest req)')
+    print('  bool heartbeat_lock_materialization_rebuild_req(LockMaterializationRebuildRequest req)')
     print('  void add_runtime_stats(RuntimeStat stat)')
     print('   get_runtime_stats(GetRuntimeStatsRequest rqst)')
     print('  GetPartitionsResponse get_partitions_with_specs(GetPartitionsRequest request)')
@@ -801,6 +804,12 @@ elif cmd == 'alter_table_req':
         print('alter_table_req requires 1 args')
         sys.exit(1)
     pp.pprint(client.alter_table_req(eval(args[0]),))
+
+elif cmd == 'update_table_params':
+    if len(args) != 1:
+        print('update_table_params requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.update_table_params(eval(args[0]),))
 
 elif cmd == 'add_partition':
     if len(args) != 1:
@@ -1983,6 +1992,18 @@ elif cmd == 'heartbeat_lock_materialization_rebuild':
         print('heartbeat_lock_materialization_rebuild requires 3 args')
         sys.exit(1)
     pp.pprint(client.heartbeat_lock_materialization_rebuild(args[0], args[1], eval(args[2]),))
+
+elif cmd == 'get_lock_materialization_rebuild_req':
+    if len(args) != 1:
+        print('get_lock_materialization_rebuild_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_lock_materialization_rebuild_req(eval(args[0]),))
+
+elif cmd == 'heartbeat_lock_materialization_rebuild_req':
+    if len(args) != 1:
+        print('heartbeat_lock_materialization_rebuild_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.heartbeat_lock_materialization_rebuild_req(eval(args[0]),))
 
 elif cmd == 'add_runtime_stats':
     if len(args) != 1:

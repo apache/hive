@@ -56,8 +56,8 @@ final class MergeCompactor extends QueryCompactor {
 
     if (isMergeCompaction(hiveConf, dir, storageDescriptor)) {
       // Only inserts happened, it is much more performant to merge the files than running a query
-      Path outputDirPath = getOutputDirPath(hiveConf, writeIds,
-              compactionInfo.isMajorCompaction(), storageDescriptor);
+      Path outputDirPath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
+          hiveConf, compactionInfo.isMajorCompaction(), false, dir);
       try {
         return mergeFiles(hiveConf, compactionInfo.isMajorCompaction(),
                 dir, outputDirPath, AcidUtils.isInsertOnlyTable(table.getParameters()));
@@ -159,27 +159,6 @@ final class MergeCompactor extends QueryCompactor {
       bucketIdToBucketFilePath.computeIfPresent(bucketNum, (k, v) -> v).add(reader);
     }
     return bucketIdToBucketFilePath;
-  }
-
-  /**
-   * Generate output path for compaction. This can be used to generate delta or base directories.
-   * @param conf hive configuration, must be non-null
-   * @param writeIds list of valid write IDs
-   * @param isBaseDir if base directory path should be generated
-   * @param sd the resolved storadge descriptor
-   * @return output path, always non-null
-   */
-  private Path getOutputDirPath(HiveConf conf, ValidWriteIdList writeIds, boolean isBaseDir,
-                                         StorageDescriptor sd) {
-    long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
-    long highWatermark = writeIds.getHighWatermark();
-    long compactorTxnId = Compactor.getCompactorTxnId(conf);
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
-            .writingBase(isBaseDir).writingDeleteDelta(false)
-            .isCompressed(false)
-            .minimumWriteId(minOpenWriteId).maximumWriteId(highWatermark)
-            .statementId(-1).visibilityTxnId(compactorTxnId);
-    return AcidUtils.baseOrDeltaSubdirPath(new Path(sd.getLocation()), options);
   }
 
   /**

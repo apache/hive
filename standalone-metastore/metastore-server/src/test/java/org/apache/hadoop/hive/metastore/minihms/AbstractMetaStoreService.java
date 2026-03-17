@@ -166,9 +166,9 @@ public abstract class AbstractMetaStoreService {
    * @throws MetaException IO failure
    */
   public void cleanWarehouseDirs() throws MetaException {
-    warehouse.deleteDir(getWarehouseRoot(), true, true, false);
-    warehouse.deleteDir(getExternalWarehouseRoot(), true, true, false);
-    warehouse.deleteDir(trashDir, true, true, false);
+    warehouse.deleteDir(getWarehouseRoot(), true, false);
+    warehouse.deleteDir(getExternalWarehouseRoot(), true, false);
+    warehouse.deleteDir(trashDir, true, false);
   }
 
   /**

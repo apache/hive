@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid CHECK constraint expression: 3=(select count(*) from t). Invalid Constraint syntax Subqueries are not allowed in Check Constraints
+FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid CHECK constraint expression: 3=(select count(*) from `t`). Invalid Constraint syntax Subqueries are not allowed in Check Constraints

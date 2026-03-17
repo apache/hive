@@ -21,17 +21,22 @@ package org.apache.hadoop.hive.ql.externalDB;
  * MySQLExternalDB is a extension of abstractExternalDB
  * Designed for MySQL external database connection
  */
-public class PostgresExternalDB extends AbstractExternalDB {
+public class PostgresExternalDB extends DockerizedDatabase {
 
     public PostgresExternalDB() {
     }
 
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getContainerHostAddress() + ":5432/" + dbName;
+        return "jdbc:postgresql://" + getContainerHostAddress() + ":" + getPort() + "/" + dbName;
     }
 
     public String getJdbcDriver() {
         return "org.postgresql.Driver";
+    }
+
+    @Override
+    protected int getPort() {
+        return 5432;
     }
 
     public String getDockerImageName() {
@@ -39,7 +44,7 @@ public class PostgresExternalDB extends AbstractExternalDB {
     }
 
     public String[] getDockerAdditionalArgs() {
-        return new String[] {"-p", "5432:5432",
+        return new String[] { "-p", getPort() + ":5432",
             "-e", "POSTGRES_PASSWORD=" + getRootPassword(),
             "-e", "POSTGRES_USER=" + getRootUser(),
             "-e", "POSTGRES_DB=" + dbName,

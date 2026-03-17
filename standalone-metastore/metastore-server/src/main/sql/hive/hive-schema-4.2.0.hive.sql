@@ -1597,7 +1597,7 @@ PARTITIONED BY (
   `date` string
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe'
-STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageInputFormat'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.LenientProtobufMessageInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION '_REPLACE_WITH_QUERY_DATA_LOCATION_'
 TBLPROPERTIES (
@@ -1610,7 +1610,7 @@ PARTITIONED BY (
   `date` string
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe'
-STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageInputFormat'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.LenientProtobufMessageInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION '_REPLACE_WITH_APP_DATA_LOCATION_'
 TBLPROPERTIES (
@@ -1623,7 +1623,7 @@ PARTITIONED BY (
   `date` string
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe'
-STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageInputFormat'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.LenientProtobufMessageInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION '_REPLACE_WITH_DAG_DATA_LOCATION_'
 TBLPROPERTIES (
@@ -1636,7 +1636,7 @@ PARTITIONED BY (
   `date` string
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageSerDe'
-STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.ProtobufMessageInputFormat'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.protobuf.LenientProtobufMessageInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION '_REPLACE_WITH_DAG_META_LOCATION_'
 TBLPROPERTIES (

@@ -136,7 +136,7 @@ public class VectorAppMasterEventOperator extends AppMasterEventOperator
       throw new HiveException(e);
     }
 
-    forward(data, rowInspector);
+    vectorForward(batch);
   }
 
   @Override

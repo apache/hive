@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
@@ -118,6 +119,7 @@ public class AlterTableChangeColumnAnalyzer extends AbstractAlterTableAnalyzer {
     List<SQLUniqueConstraint> uniqueConstraints = null;
     List<SQLNotNullConstraint> notNullConstraints = null;
     List<SQLDefaultConstraint> defaultConstraints = null;
+    List<ConstraintsUtils.ConstraintInfo> defaultConstraintInfo = null;
     List<SQLCheckConstraint> checkConstraints = null;
     if (constraintChild != null) {
       // Process column constraint
@@ -128,9 +130,9 @@ public class AlterTableChangeColumnAnalyzer extends AbstractAlterTableAnalyzer {
             checkConstraints, (ASTNode) command.getChild(2), this.ctx.getTokenRewriteStream());
         break;
       case HiveParser.TOK_DEFAULT_VALUE:
-        defaultConstraints = new ArrayList<>();
-        ConstraintsUtils.processDefaultConstraints(tableName, constraintChild, ImmutableList.of(newColumnName),
-            defaultConstraints, (ASTNode) command.getChild(2), this.ctx.getTokenRewriteStream());
+        defaultConstraintInfo =
+            ConstraintsUtils.processDefaultConstraints(constraintChild, ImmutableList.of(newColumnName),
+                (ASTNode) command.getChild(2), this.ctx.getTokenRewriteStream());
         break;
       case HiveParser.TOK_NOT_NULL:
         notNullConstraints = new ArrayList<>();
@@ -161,8 +163,18 @@ public class AlterTableChangeColumnAnalyzer extends AbstractAlterTableAnalyzer {
       ConstraintsUtils.validateCheckConstraint(table.getCols(), checkConstraints, ctx.getConf());
     }
 
-    if (table.getTableType() == TableType.EXTERNAL_TABLE &&
-        ConstraintsUtils.hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints, checkConstraints)) {
+    boolean isNativeColumnDefaultSupported = table.getStorageHandler() != null && table.getStorageHandler()
+        .supportsDefaultColumnValues(table.getParameters());
+
+    if (defaultConstraintInfo != null) {
+      defaultConstraints = new ArrayList<>();
+      ConstraintsUtils.constraintInfosToDefaultConstraints(tableName, defaultConstraintInfo, defaultConstraints,
+          isNativeColumnDefaultSupported);
+      DDLUtils.setDefaultColumnValues(table, tableName, defaultConstraintInfo, ctx.getConf());
+    }
+
+    if (table.getTableType() == TableType.EXTERNAL_TABLE && ConstraintsUtils.hasEnabledOrValidatedConstraints(
+        notNullConstraints, defaultConstraints, checkConstraints, isNativeColumnDefaultSupported)) {
       throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
           "Constraints are disallowed with External tables. Only RELY is allowed."));
     }

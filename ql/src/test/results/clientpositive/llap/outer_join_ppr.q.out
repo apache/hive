@@ -26,7 +26,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`value` AS `a.value`, `t2`.`key` AS `b.key`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` > 15 AND `key` < 20 AND `key` IS NOT NULL) AS `t0`
@@ -328,7 +328,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`value` AS `a.value`, `t2`.`key` AS `b.key`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` > 15 AND `key` < 20 AND `key` IS NOT NULL) AS `t0`

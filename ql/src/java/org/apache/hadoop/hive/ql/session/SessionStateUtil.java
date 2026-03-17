@@ -38,6 +38,10 @@ public class SessionStateUtil {
   private static final String COMMIT_INFO_PREFIX = "COMMIT_INFO.";
   private static final String CONFLICT_DETECTION_FILTER = "conflictDetectionFilter.";
   public static final String DEFAULT_TABLE_LOCATION = "defaultLocation";
+  public static final String MISSING_COLUMNS = "missingColumns";
+  public static final String COLUMN_DEFAULTS = "columnDefaults";
+  public static final String ROW_LINEAGE = "rowLineage";
+  public static final String OUTPUT_TABLE_COUNT = "outputTablesCount";
 
   private SessionStateUtil() {
   }
@@ -140,6 +144,15 @@ public class SessionStateUtil {
   public static Optional<QueryState> getQueryState(Configuration conf) {
     return Optional.ofNullable(SessionState.get())
         .map(ss -> ss.getQueryState(HiveConf.getQueryId(conf)));
+  }
+
+  public static void setOutputTableCount(Configuration conf, int outputTableCount) {
+    SessionStateUtil.addResource(conf, OUTPUT_TABLE_COUNT, outputTableCount);
+  }
+
+  public static Optional<Integer> getOutputTableCount(Configuration conf) {
+    return getResource(conf, OUTPUT_TABLE_COUNT)
+        .map(Integer.class::cast);
   }
 
   /**

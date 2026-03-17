@@ -40,7 +40,7 @@ import static org.apache.iceberg.TableProperties.COMMIT_MIN_RETRY_WAIT_MS;
 import static org.apache.iceberg.TableProperties.COMMIT_NUM_RETRIES;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TestHiveTableConcurrency extends HiveTableBaseTest {
+public class TestHiveTableConcurrency extends HiveTableTestBase {
 
   @Test
   public synchronized void testConcurrentFastAppends() {

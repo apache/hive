@@ -1269,7 +1269,7 @@ select count(*) from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`alltypesorc`
 WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR `cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) < 50 AND `cstring1` LIKE '%n' AND CHARACTER_LENGTH(`cstring1`) > 0
 STAGE DEPENDENCIES:
@@ -30080,7 +30080,7 @@ POSTHOOK: query: explain extended select * from alltypesorc where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
+OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesorc.ctinyint`, `csmallint` AS `alltypesorc.csmallint`, `cint` AS `alltypesorc.cint`, `cbigint` AS `alltypesorc.cbigint`, `cfloat` AS `alltypesorc.cfloat`, `cdouble` AS `alltypesorc.cdouble`, `cstring1` AS `alltypesorc.cstring1`, `cstring2` AS `alltypesorc.cstring2`, `ctimestamp1` AS `alltypesorc.ctimestamp1`, `ctimestamp2` AS `alltypesorc.ctimestamp2`, `cboolean1` AS `alltypesorc.cboolean1`, `cboolean2` AS `alltypesorc.cboolean2`
 FROM `default`.`alltypesorc`
 WHERE `cint` = 49 AND `cfloat` = 3.5 OR `cint` = 47 AND `cfloat` = 2.09 OR `cint` = 45 AND `cfloat` = 3.02
 STAGE DEPENDENCIES:
@@ -30191,7 +30191,7 @@ POSTHOOK: query: explain extended select * from alltypesorc where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
+OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesorc.ctinyint`, `csmallint` AS `alltypesorc.csmallint`, `cint` AS `alltypesorc.cint`, `cbigint` AS `alltypesorc.cbigint`, `cfloat` AS `alltypesorc.cfloat`, `cdouble` AS `alltypesorc.cdouble`, `cstring1` AS `alltypesorc.cstring1`, `cstring2` AS `alltypesorc.cstring2`, `ctimestamp1` AS `alltypesorc.ctimestamp1`, `ctimestamp2` AS `alltypesorc.ctimestamp2`, `cboolean1` AS `alltypesorc.cboolean1`, `cboolean2` AS `alltypesorc.cboolean2`
 FROM `default`.`alltypesorc`
 WHERE (`cint`, `cfloat`) IN ((49, 3.5), (47, 2.09), (45, 3.02))
 STAGE DEPENDENCIES:
@@ -30302,7 +30302,7 @@ POSTHOOK: query: explain extended select * from alltypesorc where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `ctinyint`, `csmallint`, `cint`, `cbigint`, `cfloat`, `cdouble`, `cstring1`, `cstring2`, `ctimestamp1`, `ctimestamp2`, `cboolean1`, `cboolean2`
+OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesorc.ctinyint`, `csmallint` AS `alltypesorc.csmallint`, `cint` AS `alltypesorc.cint`, `cbigint` AS `alltypesorc.cbigint`, `cfloat` AS `alltypesorc.cfloat`, `cdouble` AS `alltypesorc.cdouble`, `cstring1` AS `alltypesorc.cstring1`, `cstring2` AS `alltypesorc.cstring2`, `ctimestamp1` AS `alltypesorc.ctimestamp1`, `ctimestamp2` AS `alltypesorc.ctimestamp2`, `cboolean1` AS `alltypesorc.cboolean1`, `cboolean2` AS `alltypesorc.cboolean2`
 FROM `default`.`alltypesorc`
 WHERE (`cint` = 49 OR `cfloat` = 3.5) AND (`cint` = 47 OR `cfloat` = 2.09) AND (`cint` = 45 OR `cfloat` = 3.02)
 STAGE DEPENDENCIES:
@@ -30411,7 +30411,7 @@ POSTHOOK: query: explain extended select count(*),cstring1 from alltypesorc wher
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `_o__c0`, `cstring1`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`, `cstring1`
 FROM `default`.`alltypesorc`
 WHERE `cstring1` IN ('biology', 'history', 'topology')
 GROUP BY `cstring1`

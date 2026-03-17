@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
+import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.hive.metastore.utils.LogUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -302,7 +304,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (Exception e) {
           LOG.error("Error removing znode for this metastore instance from ZooKeeper.", e);
         }
-        ThreadPool.shutdown();
       }, 10);
 
       //Start Metrics for Standalone (Remote) Mode
@@ -322,18 +323,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       LOG.error("Metastore Thrift Server threw an exception...", t);
       throw t;
     }
-  }
-
-  /**
-   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
-   *
-   * @param port
-   * @param bridge
-   * @throws Throwable
-   */
-  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge)
-      throws Throwable {
-    startMetaStore(port, bridge, MetastoreConf.newMetastoreConf(), false, null);
   }
 
   /**
@@ -498,7 +487,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
     int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
-    boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf);
@@ -620,6 +608,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
         // cleaned up thread local RawStore. Otherwise, do it now.
         HMSHandler.cleanupHandlerContext();
+        TTransport transport = tProtocol.getTransport();
+        if (transport instanceof TUGIContainingTransport t && t.getClientUGI() != null) {
+          UserGroupInformation clientUgi = t.getClientUGI();
+          try {
+            FileSystem.closeAllForUGI(clientUgi);
+          } catch (IOException exception) {
+            LOG.error("Could not clean up file-system handles for UGI: {}", clientUgi, exception);
+          }
+        }
       }
 
       @Override
@@ -634,7 +631,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         HMSHandler.LOG.info("Started the new metaserver on port [{}]...", port);
         HMSHandler.LOG.info("Options.minWorkerThreads = {}", minWorkerThreads);
         HMSHandler.LOG.info("Options.maxWorkerThreads = {}", maxWorkerThreads);
-        HMSHandler.LOG.info("TCP keepalive = {}", tcpKeepAlive);
         HMSHandler.LOG.info("Enable SSL = {}", useSSL);
         tServer.serve();
       }
@@ -687,6 +683,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
     isMetaStoreRemote = true;
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
+      String principal = MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
+      String keyTab = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
+      SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keyTab);
+    }
     String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
     boolean isHttpTransport = transportMode.equalsIgnoreCase("http");
     if (isHttpTransport) {
@@ -725,10 +727,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // optionally create and start the property and Iceberg REST server
     ServletServerBuilder builder = new ServletServerBuilder(conf);
     ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
-    builder.addServlet(createCatalogServlet(conf));
+    ServletServerBuilder.Descriptor catalogDescriptor = builder.addServlet(createCatalogServlet(conf));
+    
     servletServer = builder.start(LOG);
     if (servletServer != null && properties != null) {
       propertyServletPort = properties.getPort();
+    }
+    
+    // If REST Catalog server was required but failed to start, fail HMS startup
+    int servletPort = MetastoreConf.getIntVar(conf, ConfVars.CATALOG_SERVLET_PORT);
+    boolean restCatalogRequired = catalogDescriptor != null && servletPort >= 0;
+    
+    if (restCatalogRequired && servletServer == null) {
+      throw new IllegalStateException(String.format(
+          "Failed to start embedded REST Catalog server on port %d. Port may already be in use.", servletPort));
     }
 
     // main server
@@ -845,12 +857,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
              .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING) // housekeeping tasks
              .addListener(new CMClearer(conf))
              .addListener(new StatsUpdaterTask(conf))
-             .addListener(new CompactorTasks(conf, false))
+             .addListener(new CompactorTasks(conf))
              .addListener(new CompactorPMF())
              .addListener(new HouseKeepingTasks(conf, true))
-             .setTType(LeaderElectionContext.TTYPE.WORKER) // compactor worker
-             .addListener(new CompactorTasks(conf, true),
-                 MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore"))
              .build();
           if (shutdownHookMgr != null) {
             shutdownHookMgr.addShutdownHook(() -> context.close(), 0);

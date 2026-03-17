@@ -156,6 +156,15 @@ public class MergeStatement {
     return false;
   }
 
+  public boolean hasWhenMatchedUpdateClause() {
+    for (WhenClause whenClause : whenClauses) {
+      if (whenClause instanceof UpdateClause) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Per SQL Spec ISO/IEC 9075-2:2011(E) Section 14.2 under "General Rules" Item 6/Subitem a/Subitem 2/Subitem B,
    * an error should be raised if &gt; 1 row of "source" matches the same row in "target".

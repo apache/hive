@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-packaging</artifactId>
@@ -184,6 +184,9 @@
                 <MIT>
                   https?://(www\.)?opensource\.org/licenses/mit(-license.php)?
                 </MIT>
+                <public-domain-1.0.html>
+                  https?://creativecommons\.org/publicdomain/zero/1\.0/?
+                </public-domain-1.0.html>
               </licenseUrlFileNames>
               <licenseUrlFileNameSanitizers>
                 <licenseUrlFileNameSanitizer>
@@ -416,6 +419,12 @@
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-pig-adapter</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jline</groupId>
+          <artifactId>jline</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>

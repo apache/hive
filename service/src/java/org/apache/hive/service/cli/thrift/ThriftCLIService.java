@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -544,11 +543,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
    * @param res
    * @return
    * @throws HiveSQLException
-   * @throws LoginException
    * @throws IOException
    */
   private SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res, String userName)
-      throws HiveSQLException, LoginException, IOException {
+      throws HiveSQLException, IOException {
     final String ipAddress = getIpAddress();
 
     LOG.info("Creating Hive session handle for user [{}] from IP {}", req.getUsername(), ipAddress);
@@ -579,7 +577,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   }
 
   private String getDelegationToken(String userName)
-      throws HiveSQLException, LoginException, IOException {
+      throws HiveSQLException, IOException {
     try {
       return cliService.getDelegationTokenFromMetaStore(userName);
     } catch (UnsupportedOperationException e) {

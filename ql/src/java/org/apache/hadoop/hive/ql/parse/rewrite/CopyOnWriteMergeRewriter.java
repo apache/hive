@@ -43,6 +43,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addRowLineageValuesForAppendWhenNotMatchedClause;
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addSourceForRowLineageCopyOnWriteMerge;
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addValuesForRowLineageForCopyOnMerge;
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.shouldAddRowLineageColumnsForMerge;
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TARGET_PREFIX;
 
 public class CopyOnWriteMergeRewriter extends MergeRewriter {
@@ -56,6 +60,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
     setOperation(ctx);
     MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
+    isRowLineageSupported = shouldAddRowLineageColumnsForMerge(mergeStatement, conf);
     handleSource(mergeStatement, sqlGenerator);
 
     sqlGenerator.append('\n');
@@ -111,6 +116,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Context.Operation.MERGE);
     sqlGenerator.appendAllColsOfTargetTable(TARGET_PREFIX);
+    addSourceForRowLineageCopyOnWriteMerge(isRowLineageSupported, sqlGenerator, conf);
     sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
     sqlGenerator.append(targetAlias);
     sqlGenerator.append('\n');
@@ -135,7 +141,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
     CopyOnWriteMergeWhenClauseSqlGenerator(
       HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
-      super(conf, sqlGenerator, mergeStatement);
+      super(conf, sqlGenerator, mergeStatement, shouldAddRowLineageColumnsForMerge(mergeStatement, conf));
       this.cowWithClauseBuilder = new COWWithClauseBuilder();
     }
 
@@ -166,7 +172,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       } else {
         values.addAll(insertClause.getValuesClause());
       }
-      sqlGenerator.append(StringUtils.join(values, ","));
+      sqlGenerator.append(
+          StringUtils.join(addRowLineageValuesForAppendWhenNotMatchedClause(isRowLineageSupported, values), ","));
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
       
@@ -198,7 +205,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
       values.addAll(sqlGenerator.getDeleteValues(Context.Operation.MERGE));
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
-      
+      addValuesForRowLineageForCopyOnMerge(isRowLineageSupported, values,
+          "NULL AS " + HiveUtils.unparseIdentifier(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()), conf);
       sqlGenerator.append(columnRefsFunc.apply(StringUtils.join(values, ",")));
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
 
@@ -222,6 +230,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       List<String> deleteValues = sqlGenerator.getDeleteValues(Context.Operation.DELETE);
+      addValuesForRowLineageForCopyOnMerge(isRowLineageSupported, deleteValues,
+          HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()), conf);
 
       if (++subQueryCount > 1) {
         sqlGenerator.append("union all\n");
@@ -257,7 +267,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nunion all");
       sqlGenerator.append("\nselect * from t");
 
-      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false);
+      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false,
+          isRowLineageSupported, TARGET_PREFIX);
     }
   }
 }

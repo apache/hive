@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.Sasl;
@@ -40,6 +41,7 @@ import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hive.service.auth.ldap.LdapGroupCallbackHandler;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.thrift.TProcessorFactory;
@@ -69,11 +71,21 @@ public class HiveAuthFactory {
     hadoopAuth = conf.get(HADOOP_SECURITY_AUTHENTICATION, "simple");
     authType = AuthType.authTypeFromConf(conf, isHttpMode);
     if (isSASLWithKerberizedHadoop()) {
-      saslServer =
-          HadoopThriftAuthBridge.getBridge().createServer(
-              conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
-              conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
-              conf.getVar(ConfVars.HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL));
+      boolean enableLdapGroupCheck = conf.getBoolVar(
+          ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
+      if (enableLdapGroupCheck) {
+        CallbackHandler callbackHandler = new LdapGroupCallbackHandler(conf);
+        saslServer = HadoopThriftAuthBridge.getBridge().createServer(
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+            conf.getVar(ConfVars.HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL),
+            callbackHandler);
+      } else {
+        saslServer = HadoopThriftAuthBridge.getBridge().createServer(
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+            conf.getVar(ConfVars.HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL));
+      }
 
       // Start delegation token manager
       delegationTokenManager = new MetastoreDelegationTokenManager();

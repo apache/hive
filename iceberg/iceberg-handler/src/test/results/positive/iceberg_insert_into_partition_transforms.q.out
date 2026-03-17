@@ -612,6 +612,10 @@ bigintcol           	bigint
 intcol              	int                 	                    
 pcol                	date                	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	date                	Transform: year     
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	YEAR                	 
@@ -649,6 +653,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -1303,6 +1308,10 @@ bigintcol           	bigint
 pcol                	date                	                    
 intcol              	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	date                	Transform: month    
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	MONTH               	 
@@ -1340,6 +1349,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -1994,6 +2004,10 @@ pcol                	date
 bigintcol           	bigint              	                    
 intcol              	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	date                	Transform: day      
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	DAY                 	 
@@ -2031,6 +2045,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -2444,6 +2459,10 @@ pcol                	string
 bigintcol           	bigint              	                    
 intcol              	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	string              	Transform: truncate[2]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	TRUNCATE[2]         	 
@@ -2481,6 +2500,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -2878,6 +2898,10 @@ pcol                	string
 bigintcol           	bigint              	                    
 intcol              	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	string              	Transform: bucket[16]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	BUCKET[16]          	 
@@ -2915,6 +2939,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -3100,6 +3125,10 @@ POSTHOOK: Input: default@ice_parquet_decimal_transform_bucket
 # col_name            	data_type           	comment             
 pcol                	decimal(38,0)       	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	decimal(38,0)       	Transform: bucket[16]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	BUCKET[16]          	 
@@ -3137,6 +3166,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

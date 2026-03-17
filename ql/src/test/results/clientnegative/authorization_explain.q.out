@@ -33,4 +33,4 @@ PREHOOK: Output: default@authorization_explain
 POSTHOOK: query: revoke Select on table authorization_explain from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@authorization_explain
-FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=TABLE_OR_VIEW, name=default.authorization_explain]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=TABLE_OR_VIEW, name=hive.default.authorization_explain]]

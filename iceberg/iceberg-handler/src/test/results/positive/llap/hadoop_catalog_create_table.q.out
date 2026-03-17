@@ -92,6 +92,11 @@ tradets             	timestamp
 p1                  	string              	                    
 p2                  	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 p1                  	IDENTITY            	 
@@ -169,6 +174,11 @@ itemid              	int
 tradets             	timestamp           	                    
 p1                  	string              	                    
 p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -256,6 +266,11 @@ tradets             	timestamp
 p1                  	string              	                    
 p2                  	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 p1                  	IDENTITY            	 
@@ -340,6 +355,11 @@ tradets             	timestamp
 p1                  	string              	                    
 p2                  	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 p1                  	IDENTITY            	 
@@ -409,6 +429,11 @@ itemid              	int
 tradets             	timestamp           	                    
 p1                  	string              	                    
 p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

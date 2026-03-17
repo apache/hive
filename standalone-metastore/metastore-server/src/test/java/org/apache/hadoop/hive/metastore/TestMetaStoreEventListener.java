@@ -219,7 +219,10 @@ public class TestMetaStoreEventListener {
     Database db = msc.getDatabase(dbName);
     assertEquals(listSize, notifyList.size());
     assertEquals(listSize + 1, preNotifyList.size());
-    validateCreateDb(db, preDbEvent.getDatabase());
+    // The location uri in preDbEvent.getDatabase() is null as "skipAuthorization" is true.
+    Database expectedDb = new Database(db);
+    expectedDb.setLocationUri(null);
+    validateCreateDb(expectedDb, preDbEvent.getDatabase());
 
     CreateDatabaseEvent dbEvent = (CreateDatabaseEvent)(notifyList.get(listSize - 1));
     Assert.assertTrue(dbEvent.getStatus());
@@ -262,6 +265,9 @@ public class TestMetaStoreEventListener {
     // Test adding multiple partitions in a single partition-set, atomically.
     int currentTime = (int)System.currentTimeMillis();
     HiveMetaStoreClient hmsClient = new HiveMetaStoreClient(conf);
+    // A ConfigChangeEvent will be triggered on new Client creation because of
+    // org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient#overlaySessionModifiedMetaConf()
+    ++listSize;
     table = hmsClient.getTable(dbName, "tmptbl");
     Partition partition1 = new Partition(Arrays.asList("20110101"), dbName, "tmptbl", currentTime,
                                         currentTime, table.getSd(), table.getParameters());

@@ -105,8 +105,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{4}])
-  HiveTableScan(table=[[default, alltypestiny]], table:alias=[t1])
+HiveProject(t1.bigint_col=[$0])
+  HiveAggregate(group=[{4}])
+    HiveTableScan(table=[[default, alltypestiny]], table:alias=[t1])
 
 PREHOOK: query: SELECT t1.bigint_col
 FROM alltypestiny t1

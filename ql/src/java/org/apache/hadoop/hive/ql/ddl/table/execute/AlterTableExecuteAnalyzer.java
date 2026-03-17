@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.time.ZoneId;
 import java.util.List;
@@ -109,14 +108,14 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
-  private static AlterTableExecuteDesc getCherryPickDesc(TableName tableName, Map<String, String> partitionSpec,
+  private AlterTableExecuteDesc getCherryPickDesc(TableName tableName, Map<String, String> partitionSpec,
       ASTNode childNode) throws SemanticException {
     long snapshotId = Long.parseLong(childNode.getText());
     AlterTableExecuteSpec spec = new AlterTableExecuteSpec(CHERRY_PICK, new CherryPickSpec(snapshotId));
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
-  private static AlterTableExecuteDesc getFastForwardDesc(TableName tableName, Map<String, String> partitionSpec,
+  private AlterTableExecuteDesc getFastForwardDesc(TableName tableName, Map<String, String> partitionSpec,
       ASTNode command) throws SemanticException {
     String branchName;
     String targetBranchName;
@@ -135,7 +134,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
-  private static AlterTableExecuteDesc getSetCurrentSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
+  private AlterTableExecuteDesc getSetCurrentSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
       ASTNode childNode) throws SemanticException {
     AlterTableExecuteSpec<AlterTableExecuteSpec.SetCurrentSnapshotSpec> spec =
         new AlterTableExecuteSpec(SET_CURRENT_SNAPSHOT,
@@ -143,16 +142,14 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
-  private static AlterTableExecuteDesc getExpireSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
+  private AlterTableExecuteDesc getExpireSnapshotDesc(TableName tableName, Map<String, String> partitionSpec,
       List<Node> children, HiveConf conf) throws SemanticException {
     AlterTableExecuteSpec<ExpireSnapshotsSpec> spec;
     if (children.size() == 1) {
       spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, null);
       return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     }
-    ZoneId timeZone = SessionState.get() == null ?
-        new HiveConf().getLocalTimeZone() :
-        SessionState.get().getConf().getLocalTimeZone();
+    ZoneId timeZone = conf.getLocalTimeZone();
     ASTNode firstNode = (ASTNode) children.get(1);
     String firstNodeText = PlanUtils.stripQuotes(firstNode.getText().trim());
     if (firstNode.getType() == KW_RETAIN) {
@@ -176,7 +173,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
-  private static String getTimeStampString(HiveConf conf, ASTNode node, String nodeText) throws SemanticException {
+  private String getTimeStampString(HiveConf conf, ASTNode node, String nodeText) throws SemanticException {
     if (node.getChildCount() > 0) {
       QueryState queryState = new QueryState.Builder().withGenerateNewQueryId(false).withHiveConf(conf).build();
       SemanticAnalyzer sem = (SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, node);
@@ -190,14 +187,12 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     return nodeText;
   }
 
-  private static AlterTableExecuteDesc getRollbackDesc(TableName tableName, Map<String, String> partitionSpec,
+  private AlterTableExecuteDesc getRollbackDesc(TableName tableName, Map<String, String> partitionSpec,
       ASTNode childNode) throws SemanticException {
     AlterTableExecuteSpec<RollbackSpec> spec;
     // the child must be the rollback parameter
     if (childNode.getType() == HiveParser.StringLiteral) {
-      ZoneId timeZone = SessionState.get() == null ?
-          new HiveConf().getLocalTimeZone() :
-          SessionState.get().getConf().getLocalTimeZone();
+      ZoneId timeZone = conf.getLocalTimeZone();
       TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(childNode.getText()), timeZone);
       spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(TIME, time.toEpochMilli()));
     } else {
@@ -206,7 +201,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
-  private static AlterTableExecuteDesc getDeleteOrphanFilesDesc(TableName tableName, Map<String, String> partitionSpec,
+  private AlterTableExecuteDesc getDeleteOrphanFilesDesc(TableName tableName, Map<String, String> partitionSpec,
       List<Node> children) throws SemanticException {
 
     long time = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3);
@@ -217,11 +212,9 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
-  private static long getTimeStampMillis(ASTNode childNode) {
+  private long getTimeStampMillis(ASTNode childNode) {
     String childNodeText = PlanUtils.stripQuotes(childNode.getText());
-    ZoneId timeZone = SessionState.get() == null ?
-        new HiveConf().getLocalTimeZone() :
-        SessionState.get().getConf().getLocalTimeZone();
+    ZoneId timeZone = conf.getLocalTimeZone();
     TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(childNodeText), timeZone);
     return time.toEpochMilli();
   }

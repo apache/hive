@@ -3,7 +3,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
     "hive.sql.dbcp.username" = "qtestuser",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.schema" = "bob",
@@ -16,7 +16,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
     "hive.sql.dbcp.username" = "qtestuser",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.schema" = "bob",
@@ -33,9 +33,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_0
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_0]], table:alias=[country_0])
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_0]], table:alias=[country_0])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_0
 PREHOOK: type: QUERY
@@ -51,7 +53,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "POSTGRES",
         "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
         "hive.sql.dbcp.username" = "qtestuser",
         "hive.sql.dbcp.password" = "qtestpassword",
         "hive.sql.schema" = "alice",
@@ -64,7 +66,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "POSTGRES",
         "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
         "hive.sql.dbcp.username" = "qtestuser",
         "hive.sql.dbcp.password" = "qtestpassword",
         "hive.sql.schema" = "alice",
@@ -81,9 +83,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_1]], table:alias=[country_1])
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_1]], table:alias=[country_1])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_1
 PREHOOK: type: QUERY
@@ -120,7 +124,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE country_2 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "POSTGRES",
         "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
         "hive.sql.dbcp.username" = "greg",
         "hive.sql.dbcp.password" = "GregPass123!$",
         "hive.sql.table" = "country")
@@ -132,7 +136,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE country_2 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "POSTGRES",
         "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+        "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
         "hive.sql.dbcp.username" = "greg",
         "hive.sql.dbcp.password" = "GregPass123!$",
         "hive.sql.table" = "country")
@@ -148,9 +152,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_2]], table:alias=[country_2])
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_2]], table:alias=[country_2])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_2
 PREHOOK: type: QUERY

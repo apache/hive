@@ -37,7 +37,7 @@ import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergYear;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
 /**
- * A utility class which provides Iceberg transform sort functions.
+ * Utility for building Iceberg transform expressions used by both partitioning and sorting.
  */
 public final class IcebergTransformSortFunctionUtil {
 
@@ -136,12 +136,12 @@ public final class IcebergTransformSortFunctionUtil {
             }
           };
 
-  public static Function<List<ExprNodeDesc>, ExprNodeDesc> getCustomSortExprs(TransformSpec spec, int index) {
+  public static Function<List<ExprNodeDesc>, ExprNodeDesc> getCustomTransformExpr(TransformSpec spec, int index) {
     switch (spec.getTransformType()) {
       case BUCKET:
-        return BUCKET_SORT_EXPR.apply(index, spec.getTransformParam().get());
+        return BUCKET_SORT_EXPR.apply(index, spec.getTransformParam());
       case TRUNCATE:
-        return TRUNCATE_SORT_EXPR.apply(index, spec.getTransformParam().get());
+        return TRUNCATE_SORT_EXPR.apply(index, spec.getTransformParam());
       case YEAR:
         return YEAR_SORT_EXPR.apply(index);
       case MONTH:

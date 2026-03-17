@@ -36,3 +36,4 @@ POSTHOOK: Input: default@encrypted_table_n3
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
 1	foo
 2	bar
+Encryption key deleted: 'key_128'

@@ -27,22 +27,13 @@ import java.util.Properties;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.kudu.KuduOutputFormat.KuduRecordWriter;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
-import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -57,12 +48,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides a HiveStorageHandler implementation for Apache Kudu.
  */
-public class KuduStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
+public class KuduStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(KuduStorageHandler.class);
 
   private static final String KUDU_PREFIX = "kudu:";
-
   private static final String KUDU_PROPERTY_PREFIX = "kudu.";
 
   /** Table Properties. Used in the hive table definition when creating a new table. */
@@ -71,8 +61,6 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
   public static final String KUDU_MASTER_ADDRS_KEY = KUDU_PROPERTY_PREFIX + "master_addresses";
   public static final List<String> KUDU_TABLE_PROPERTIES =
       Arrays.asList(KUDU_TABLE_ID_KEY, KUDU_TABLE_NAME_KEY, KUDU_MASTER_ADDRS_KEY);
-
-  private Configuration conf;
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
@@ -87,26 +75,6 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
   @Override
   public Class<? extends AbstractSerDe> getSerDeClass() {
     return KuduSerDe.class;
-  }
-
-  @Override
-  public HiveMetaHook getMetaHook() {
-    return null;
-  }
-
-  @Override
-  public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
-    return new DefaultHiveAuthorizationProvider();
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
-  }
-
-  @Override
-  public void setConf(Configuration conf) {
-    this.conf = conf;
   }
 
   @Override
@@ -133,8 +101,8 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
     if (UserGroupInformation.isSecurityEnabled()) {
       // AM can not do Kerberos Auth so will do the input split generation in the HS2
       LOG.debug("Setting {} to {} to enable split generation on HS2",
-          HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(),
-          Boolean.FALSE.toString());
+          HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION,
+          Boolean.FALSE);
       jobConf.set(HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(), Boolean.FALSE.toString());
     }
     try {
@@ -192,11 +160,4 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
     return KuduPredicateHandler.decompose(predicate, schema);
   }
 
-  /**
-   * Used to fetch runtime information about storage handler during DESCRIBE EXTENDED statement.
-   */
-  @Override
-  public StorageHandlerInfo getStorageHandlerInfo(Table table) throws MetaException {
-    return null;
-  }
 }

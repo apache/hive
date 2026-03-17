@@ -66,10 +66,10 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -91,7 +91,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
@@ -131,10 +130,9 @@ public class ASTConverter {
     this.ctes = ctes;
   }
 
-  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns, PlanMapper planMapper)
+  public static ASTNode convert(final RelNode relNode, PlanMapper planMapper)
       throws CalciteSemanticException {
-    RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema, alignColumns);
-    ASTConverter c = new ASTConverter(root, 0, planMapper, new ArrayList<>());
+    ASTConverter c = new ASTConverter(relNode, 0, planMapper, new ArrayList<>());
     ASTNode r = c.convert();
     for (ASTNode cte : c.ctes) {
       r.insertChild(0, cte);
@@ -599,15 +597,7 @@ public class ASTConverter {
       }
     } else if (isLateralView(r)) {
       TableFunctionScan tfs = ((TableFunctionScan) r);
-
-      // retrieve the base table source.
-      QueryBlockInfo tableFunctionSource = convertSource(tfs.getInput(0));
-      String sqAlias = tableFunctionSource.schema.get(0).table;
-      // the schema will contain the base table source fields
-      s = new Schema(tfs, sqAlias);
-
-      ast = createASTLateralView(tfs, s, tableFunctionSource, sqAlias);
-
+      return createASTLateralView(tfs, convertSource(tfs.getInput(0)), nextAlias());
     } else if (r instanceof TableSpool) {
       TableSpool spool = (TableSpool) r;
       ASTConverter cteConverter =
@@ -661,8 +651,8 @@ public class ASTConverter {
     }
   }
 
-  private static ASTNode createASTLateralView(TableFunctionScan tfs, Schema s,
-      QueryBlockInfo tableFunctionSource, String sqAlias) {
+  private static QueryBlockInfo createASTLateralView(TableFunctionScan tfs, QueryBlockInfo tableFunctionSource,
+      String alias) {
     // The structure of the AST LATERAL VIEW will be:
     //
     //   TOK_LATERAL_VIEW
@@ -683,7 +673,7 @@ public class ASTConverter {
     RexCall lateralCall = (RexCall) tfs.getCall();
     RexCall call = (RexCall) lateralCall.getOperands().get(0);
     for (RexNode rn : call.getOperands()) {
-      ASTNode expr = rn.accept(new RexVisitor(s, rn instanceof RexLiteral,
+      ASTNode expr = rn.accept(new RexVisitor(tableFunctionSource.schema, rn instanceof RexLiteral,
           tfs.getCluster().getRexBuilder()));
       children.add(expr);
     }
@@ -695,16 +685,15 @@ public class ASTConverter {
 
     // Add only the table generated size columns to the select expr for the function,
     // skipping over the base table columns from the input side of the join.
-    int i = 0;
-    for (ColumnInfo c : s) {
-      if (i++ < tableFunctionSource.schema.size()) {
-        continue;
-      }
-      selexpr.add(HiveParser.Identifier, c.column);
+    List<RelDataTypeField> lvFields = tfs.getRowType().getFieldList()
+        .subList(tableFunctionSource.schema.size(), tfs.getRowType().getFieldCount());
+    for (RelDataTypeField field : lvFields) {
+      selexpr.add(HiveParser.Identifier, field.getName());
     }
+
     // add the table alias for the lateral view.
     ASTBuilder tabAlias = ASTBuilder.construct(HiveParser.TOK_TABALIAS, "TOK_TABALIAS");
-    tabAlias.add(HiveParser.Identifier, sqAlias);
+    tabAlias.add(HiveParser.Identifier, alias);
 
     // add the table alias to the SEL_EXPR
     selexpr.add(tabAlias.node());
@@ -720,7 +709,8 @@ public class ASTConverter {
     // finally, add the LATERAL VIEW clause under the left side source which is the base table.
     lateralview.add(tableFunctionSource.ast);
 
-    return lateralview.node();
+    Schema outputSchema = new Schema(tableFunctionSource.schema, new Schema(alias, lvFields));
+    return new QueryBlockInfo(outputSchema, lateralview.node());
   }
 
   private boolean isLateralView(RelNode relNode) {
@@ -1011,7 +1001,21 @@ public class ASTConverter {
       }
 
       // 1. Translate the UDAF
-      final ASTNode wUDAFAst = visitCall(over);
+      // Case for the common window function calls: e.g., MIN(salary)
+      ASTNode wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      // Case for window function calls with star syntax: e.g., COUNT(*), SUM(*), AVG(*)
+      if (over.getOperands().isEmpty() && over.op.getSyntax() == SqlSyntax.FUNCTION_STAR) {
+        wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTIONSTAR, "TOK_FUNCTIONSTAR");
+      }
+      // Case for window functions with DISTINCT: e.g., COUNT(DISTINCT deptno)
+      if (over.isDistinct()) {
+        wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTIONDI, "TOK_FUNCTIONDI");
+      }
+      wUDAFAst.addChild(ASTBuilder.createAST(HiveParser.Identifier, over.op.getName()));
+      wUDAFAst.setTypeInfo(TypeConverter.convert(over.type));
+      for (RexNode operand : over.getOperands()) {
+        wUDAFAst.addChild(operand.accept(this));
+      }
 
       // 2. Add TOK_WINDOW as child of UDAF
       ASTNode wSpec = ASTBuilder.createAST(HiveParser.TOK_WINDOWSPEC, "TOK_WINDOWSPEC");

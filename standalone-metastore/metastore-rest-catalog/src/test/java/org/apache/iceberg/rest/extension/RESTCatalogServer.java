@@ -23,10 +23,14 @@ import java.nio.file.Path;
 import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +40,7 @@ public class RESTCatalogServer {
   private Path warehouseDir;
   private int hmsPort = -1;
   private int restPort = -1;
+  private Class<? extends MetaStoreSchemaInfo> schemaInfoClass = RESTCatalogSchemaInfo.class;
 
   private static int createMetastoreServerWithRESTCatalog(int restPort, Configuration conf) throws Exception {
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT, restPort);
@@ -43,7 +48,11 @@ public class RESTCatalogServer {
         true, false, false, false);
   }
 
-  void start(Configuration conf) throws Exception {
+  public void setSchemaInfoClass(Class<? extends MetaStoreSchemaInfo> schemaInfoClass) {
+    this.schemaInfoClass = schemaInfoClass;
+  }
+
+  public void start(Configuration conf) throws Exception {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     // Avoid reusing the JVM-level caching across Hive Metastore servers
@@ -60,8 +69,12 @@ public class RESTCatalogServer {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL, externalPath);
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, externalPath);
 
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SCHEMA_INFO_CLASS,
-        RESTCatalogSchemaInfo.class.getCanonicalName());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SCHEMA_INFO_CLASS, schemaInfoClass.getCanonicalName());
+
+    MetastoreConf.setClass(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, MockHiveAuthorizerFactory.class,
+        HiveAuthorizerFactory.class);
+    MetastoreConf.setClass(conf, ConfVars.PRE_EVENT_LISTENERS, HiveMetaStoreAuthorizer.class,
+        MetaStorePreEventListener.class);
 
     for (int i = 0; i < MetaStoreTestUtils.RETRY_COUNT; i++) {
       try {
@@ -79,15 +92,15 @@ public class RESTCatalogServer {
     LOG.info("Starting HMS(port={}) with Iceberg REST Catalog(port={})", hmsPort, restPort);
   }
 
-  void stop() {
+  public void stop() {
     MetaStoreTestUtils.close(hmsPort);
   }
 
-  Path getWarehouseDir() {
+  public Path getWarehouseDir() {
     return warehouseDir;
   }
 
-  String getRestEndpoint() {
+  public String getRestEndpoint() {
     return String.format("http://localhost:%d/iceberg", restPort);
   }
 }

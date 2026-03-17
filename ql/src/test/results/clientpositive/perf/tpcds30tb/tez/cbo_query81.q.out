@@ -1,13 +1,3 @@
-CTE Suggestion:
-HiveProject(ca_address_sk=[$0], ca_state=[$8])
-  HiveFilter(condition=[IS NOT NULL($8)])
-    HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
-
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[=($6, 1998)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_name=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_street_type=[$6], ca_suite_number=[$7], ca_city=[$8], ca_county=[$9], ca_state=[CAST(_UTF-16LE'IL'):CHAR(2) CHARACTER SET "UTF-16LE"], ca_zip=[$10], ca_country=[$11], ca_gmt_offset=[$12], ca_location_type=[$13], ctr_total_return=[$14])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], sort10=[$10], sort11=[$11], sort12=[$12], sort13=[$13], sort14=[$14], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], dir10=[ASC], dir11=[ASC], dir12=[ASC], dir13=[ASC], dir14=[ASC], fetch=[100])

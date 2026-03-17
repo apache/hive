@@ -166,8 +166,8 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     String[][] expected2 = new String[][] {
         {"1\t2", "t/base_0000003_v0000011/000000_0"},
         {"4\t5", "t/base_0000003_v0000011/000000_0"},
-        {"5\t6", "t/base_0000003_v0000011/000000_0"},
-        {"8\t8", "t/base_0000003_v0000011/000000_0"}};
+        {"5\t6", "t/base_0000003_v0000011/000001_0"},
+        {"8\t8", "t/base_0000003_v0000011/000001_0"}};
     checkResultAndVectorization(expected2, testQuery, "check data after concatenate", LOG);
   }
 }

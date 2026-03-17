@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -39,7 +38,6 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterTableAnalyzer {
   protected AlterTableType alterTableType;
@@ -72,8 +70,7 @@ public abstract class AlterTableCreateSnapshotRefAnalyzer extends AbstractAlterT
         snapshotId = Long.parseLong(childNode.getChild(0).getText());
         break;
       case HiveParser.TOK_AS_OF_TIME:
-        ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
-            SessionState.get().getConf().getLocalTimeZone();
+        ZoneId timeZone = conf.getLocalTimeZone();
         TimestampTZ ts = TimestampTZUtil.parse(stripQuotes(childNode.getChild(0).getText()), timeZone);
         asOfTime = ts.toEpochMilli();
         break;

@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
-public class Oracle extends AbstractExternalDB {
+public class Oracle extends DockerizedDatabase {
   @Override
   public String getRootUser() {
     return "SYS as SYSDBA";
@@ -30,12 +30,17 @@ public class Oracle extends AbstractExternalDB {
 
   @Override
   public String getJdbcUrl() {
-    return "jdbc:oracle:thin:@//" + getContainerHostAddress() + ":1521/xe";
+    return "jdbc:oracle:thin:@//" + getContainerHostAddress() + ":" + getPort() + "/xe";
   }
 
   @Override
   public String getJdbcDriver() {
     return "oracle.jdbc.OracleDriver";
+  }
+
+  @Override
+  protected int getPort() {
+    return 1521;
   }
 
   @Override
@@ -45,7 +50,7 @@ public class Oracle extends AbstractExternalDB {
 
   @Override
   protected String[] getDockerAdditionalArgs() {
-    return new String[] { "-p", "1521:1521", "-d", "-e", "ORACLE_PASSWORD=" + getRootPassword() };
+    return new String[] { "-p", getPort() + ":1521", "-d", "-e", "ORACLE_PASSWORD=" + getRootPassword() };
   }
 
   @Override

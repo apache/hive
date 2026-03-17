@@ -37,16 +37,6 @@ public class Derby extends DatabaseRule {
   }
 
   @Override
-  public String getDockerImageName() {
-    return null;
-  }
-
-  @Override
-  public String[] getDockerAdditionalArgs() {
-    return null;
-  }
-
-  @Override
   public String getDbType() {
     return "derby";
   }
@@ -73,28 +63,23 @@ public class Derby extends DatabaseRule {
 
   @Override
   public String getJdbcDriver() {
-    return "org.apache.derby.jdbc.EmbeddedDriver";
+    return "org.apache.derby.iapi.jdbc.AutoloadedDriver";
   }
 
   @Override
-  public String getJdbcUrl(String hostAddress) {
+  public String getJdbcUrl() {
 
     return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
   @Override
-  public String getInitialJdbcUrl(String hostAddress) {
+  public String getInitialJdbcUrl() {
     return String.format("jdbc:derby:memory:%s;create=true", getDb());
   }
 
   public String getDb() {
     return MetaStoreServerUtils.JUNIT_DATABASE_PREFIX;
   };
-
-  @Override
-  public boolean isContainerReady(ProcessResults pr) {
-    return true;
-  }
 
   @Override
   public void before() throws Exception {

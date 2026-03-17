@@ -381,43 +381,80 @@ public class OpTraitsRulesProcFactory {
   public static class SelectRule implements SemanticNodeProcessor {
 
     // For bucket columns
-    // If all the columns match to the parent, put them in the bucket cols
+    // If the projected columns are compatible with the bucketing requirement, put them in the bucket cols
     // else, add empty list.
+    private void putConvertedColNamesForBucket(
+        List<List<String>> parentColNamesList, List<CustomBucketFunction> parentBucketFunctions, SelectOperator selOp,
+        List<List<String>> newBucketColNamesList, List<CustomBucketFunction> newBucketFunctions) {
+      Preconditions.checkState(parentColNamesList.size() == parentBucketFunctions.size());
+      for (int i = 0; i < parentColNamesList.size(); i++) {
+        List<String> colNames = parentColNamesList.get(i);
+
+        List<String> newBucketColNames = new ArrayList<>();
+        boolean[] retainedColumns = new boolean[colNames.size()];
+        boolean allFound = true;
+        for (int j = 0; j < colNames.size(); j++) {
+          final String colName = colNames.get(j);
+          Optional<String> newColName = resolveNewColName(colName, selOp);
+          if (newColName.isPresent()) {
+            retainedColumns[j] = true;
+            newBucketColNames.add(newColName.get());
+          } else {
+            retainedColumns[j] = false;
+            allFound = false;
+          }
+        }
+
+        CustomBucketFunction bucketFunction = parentBucketFunctions.get(i);
+        if (allFound) {
+          newBucketColNamesList.add(newBucketColNames);
+          newBucketFunctions.add(bucketFunction);
+        } else if (bucketFunction == null) {
+          // Hive's native bucketing is effective only when all the bucketing columns are used
+          newBucketColNamesList.add(new ArrayList<>());
+          newBucketFunctions.add(null);
+        } else {
+          Optional<CustomBucketFunction> newBucketFunction = bucketFunction.select(retainedColumns);
+          if (newBucketFunction.isPresent()) {
+            newBucketColNamesList.add(newBucketColNames);
+            newBucketFunctions.add(newBucketFunction.get());
+          } else {
+            newBucketColNamesList.add(new ArrayList<>());
+            newBucketFunctions.add(null);
+          }
+        }
+      }
+    }
+
     // For sort columns
     // Keep the subset of all the columns as long as order is maintained.
-    public List<List<String>> getConvertedColNames(
-        List<List<String>> parentColNames, SelectOperator selOp, boolean processSortCols) {
+    private List<List<String>> getConvertedColNamesForSort(List<List<String>> parentColNames, SelectOperator selOp) {
       List<List<String>> listBucketCols = new ArrayList<>();
       for (List<String> colNames : parentColNames) {
         List<String> bucketColNames = new ArrayList<>();
-        boolean found = false;
         for (String colName : colNames) {
-          // Reset found
-          found = false;
-          for (Entry<String, ExprNodeDesc> entry : selOp.getColumnExprMap().entrySet()) {
-            if ((entry.getValue() instanceof ExprNodeColumnDesc) &&
-                (((ExprNodeColumnDesc) (entry.getValue())).getColumn().equals(colName))) {
-              bucketColNames.add(entry.getKey());
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
+          Optional<String> newColName = resolveNewColName(colName, selOp);
+          if (newColName.isPresent()) {
+            bucketColNames.add(newColName.get());
+          } else {
             // Bail out on first missed column.
             break;
           }
         }
-        if (!processSortCols && !found) {
-          // While processing bucket columns, atleast one bucket column
-          // missed. This results in a different bucketing scheme.
-          // Add empty list
-          listBucketCols.add(new ArrayList<>());
-        } else  {
-          listBucketCols.add(bucketColNames);
-        }
+        listBucketCols.add(bucketColNames);
       }
 
       return listBucketCols;
+    }
+
+    private Optional<String> resolveNewColName(String parentColName, SelectOperator selOp) {
+      for (Entry<String, ExprNodeDesc> entry : selOp.getColumnExprMap().entrySet()) {
+        if ((entry.getValue() instanceof ExprNodeColumnDesc) &&
+            (((ExprNodeColumnDesc) (entry.getValue())).getColumn().equals(parentColName))) {
+          return Optional.of(entry.getKey());
+        }
+      }
+      return Optional.empty();
     }
 
     @Override
@@ -428,28 +465,18 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> parentBucketColNames = parentOpTraits.getBucketColNames();
 
       List<List<String>> listBucketCols = null;
+      List<CustomBucketFunction> bucketFunctions = null;
       List<List<String>> listSortCols = null;
       if (selOp.getColumnExprMap() != null) {
         if (parentBucketColNames != null) {
-          listBucketCols = getConvertedColNames(parentBucketColNames, selOp, false);
+          listBucketCols = new ArrayList<>();
+          bucketFunctions = new ArrayList<>();
+          putConvertedColNamesForBucket(parentBucketColNames, parentOpTraits.getCustomBucketFunctions(), selOp,
+              listBucketCols, bucketFunctions);
         }
         List<List<String>> parentSortColNames = parentOpTraits.getSortCols();
         if (parentSortColNames != null) {
-          listSortCols = getConvertedColNames(parentSortColNames, selOp, true);
-        }
-      }
-
-      List<CustomBucketFunction> bucketFunctions = null;
-      if (listBucketCols != null) {
-        Preconditions.checkState(parentBucketColNames.size() == listBucketCols.size());
-        bucketFunctions = new ArrayList<>();
-        for (int i = 0; i < listBucketCols.size(); i++) {
-          if (listBucketCols.get(i).isEmpty()) {
-            bucketFunctions.add(null);
-          } else {
-            Preconditions.checkState(listBucketCols.get(i).size() == parentBucketColNames.get(i).size());
-            bucketFunctions.add(parentOpTraits.getCustomBucketFunctions().get(i));
-          }
+          listSortCols = getConvertedColNamesForSort(parentSortColNames, selOp);
         }
       }
 

@@ -49,8 +49,6 @@ import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +97,6 @@ public class HiveConf extends Configuration {
   private static byte[] confVarByteArray = null;
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
-  private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
   private final Set<String> hiddenSet = new HashSet<String>();
   private final Set<String> lockedSet = new HashSet<>();
@@ -254,118 +251,10 @@ public class HiveConf extends Configuration {
     }
   }
 
-
-
-
   @InterfaceAudience.Private
   public static final String PREFIX_LLAP = "llap.";
   @InterfaceAudience.Private
   public static final String PREFIX_HIVE_LLAP = "hive.llap.";
-
-  /**
-   * Metastore related options that the db is initialized against. When a conf
-   * var in this is list is changed, the metastore instance for the CLI will
-   * be recreated so that the change will take effect.
-   */
-  public static final HiveConf.ConfVars[] metaVars = {
-      HiveConf.ConfVars.METASTORE_WAREHOUSE,
-      HiveConf.ConfVars.REPL_DIR,
-      HiveConf.ConfVars.METASTORE_URIS,
-      HiveConf.ConfVars.METASTORE_SELECTION,
-      HiveConf.ConfVars.METASTORE_SERVER_PORT,
-      HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES,
-      HiveConf.ConfVars.METASTORE_THRIFT_FAILURE_RETRIES,
-      HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
-      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
-      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_LIFETIME,
-      HiveConf.ConfVars.METASTORE_PWD,
-      HiveConf.ConfVars.METASTORE_CONNECT_URL_HOOK,
-      HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY,
-      HiveConf.ConfVars.METASTORE_SERVER_MIN_THREADS,
-      HiveConf.ConfVars.METASTORE_SERVER_MAX_THREADS,
-      HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE,
-      HiveConf.ConfVars.METASTORE_INT_ORIGINAL,
-      HiveConf.ConfVars.METASTORE_INT_ARCHIVED,
-      HiveConf.ConfVars.METASTORE_INT_EXTRACTED,
-      HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE,
-      HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL,
-      HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL,
-      HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE,
-      HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES,
-      HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE,
-      HiveConf.ConfVars.METASTORE_VALIDATE_TABLES,
-      HiveConf.ConfVars.METASTORE_DATANUCLEUS_INIT_COL_INFO,
-      HiveConf.ConfVars.METASTORE_VALIDATE_COLUMNS,
-      HiveConf.ConfVars.METASTORE_VALIDATE_CONSTRAINTS,
-      HiveConf.ConfVars.METASTORE_STORE_MANAGER_TYPE,
-      HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL,
-      HiveConf.ConfVars.METASTORE_TRANSACTION_ISOLATION,
-      HiveConf.ConfVars.METASTORE_CACHE_LEVEL2,
-      HiveConf.ConfVars.METASTORE_CACHE_LEVEL2_TYPE,
-      HiveConf.ConfVars.METASTORE_IDENTIFIER_FACTORY,
-      HiveConf.ConfVars.METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK,
-      HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS,
-      HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX,
-      HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
-      HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
-      HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
-      HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
-      HiveConf.ConfVars.METASTORE_EVENT_MESSAGE_FACTORY,
-      HiveConf.ConfVars.METASTORE_FILTER_HOOK,
-      HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-      HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
-      HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
-      HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX,
-      HiveConf.ConfVars.METASTORE_INIT_HOOKS,
-      HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS,
-      HiveConf.ConfVars.HMS_HANDLER_ATTEMPTS,
-      HiveConf.ConfVars.HMS_HANDLER_INTERVAL,
-      HiveConf.ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF,
-      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
-      HiveConf.ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS,
-      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      HiveConf.ConfVars.USERS_IN_ADMIN_ROLE,
-      HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-      HiveConf.ConfVars.HIVE_TXN_MANAGER,
-      HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
-      HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES,
-      HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE,
-      HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
-      HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX,
-      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER,
-      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_FPP,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_VARIANCE,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_TTL,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_FULL,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
-      HiveConf.ConfVars.METASTORE_FASTPATH,
-      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS,
-      HiveConf.ConfVars.METASTORE_WM_DEFAULT_POOL_SIZE
-      };
-
-  /**
-   * User configurable Metastore vars
-   */
-  static final HiveConf.ConfVars[] metaConfVars = {
-      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
-      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
-      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
-      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
-      HiveConf.ConfVars.METASTORE_CAPABILITY_CHECK,
-      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
-  };
-
-  static {
-    for (ConfVars confVar : metaConfVars) {
-      metaConfs.put(confVar.varname, confVar);
-    }
-  }
 
   public static final String HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME = "hive.llap.daemon.service.principal";
   public static final String HIVE_SERVER2_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
@@ -1097,13 +986,6 @@ public class HiveConf extends Configuration {
     METASTORE_SERVER_MAX_THREADS("hive.metastore.server.max.threads", 1000,
         "Maximum number of worker threads in the Thrift server's pool."),
     /**
-     * @deprecated Use MetastoreConf.TCP_KEEP_ALIVE
-     */
-    @Deprecated
-    METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true,
-        "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
-
-    /**
      * @deprecated Use MetastoreConf.WM_DEFAULT_POOL_SIZE
      */
     @Deprecated
@@ -1562,7 +1444,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.CONNECTION_DRIVER
      */
     @Deprecated
-    METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
+    METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName", "org.apache.derby.iapi.jdbc.AutoloadedDriver",
         "Driver class name for a JDBC metastore"),
     /**
      * @deprecated Use MetastoreConf.MANAGER_FACTORY_CLASS
@@ -1746,11 +1628,6 @@ public class HiveConf extends Configuration {
     CLI_PROMPT("hive.cli.prompt", "hive",
         "Command line prompt configuration value. Other hiveconf can be used in this configuration value. \n" +
         "Variable substitution will only be invoked at the Hive CLI startup."),
-    /**
-     * @deprecated Use MetastoreConf.FS_HANDLER_CLS
-     */
-    @Deprecated
-    HIVE_METASTORE_FS_HANDLER_CLS("hive.metastore.fs.handler.class", "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl", ""),
 
     // Things we log in the jobconf
 
@@ -2777,8 +2654,15 @@ public class HiveConf extends Configuration {
 
     // CTE
     @InterfaceStability.Unstable
-    HIVE_CTE_SUGGESTER_CLASS("hive.optimize.cte.suggester.class", "",
-        "Class for finding and suggesting common table expressions (CTEs) based on a given query. The class must implement the CommonTableExpressionSuggester interface."),
+    HIVE_CTE_SUGGESTER_TYPE("hive.optimize.cte.suggester.type", "AST", new StringSet("AST", "CBO", "NONE"),
+        "The type of the suggester that is used for finding and materializing common table expressions " +
+            "(CTEs) based on a given query."),
+    @InterfaceStability.Unstable
+    HIVE_CTE_SUGGESTER_CLASS("hive.optimize.cte.suggester.class",
+        "org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester",
+        "The class implementing the common table expression (CTE) suggester logic. This configuration is " +
+            "only relevant for the CBO suggester. The class must implement the CommonTableExpressionSuggester " +
+            "interface."),
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
@@ -3744,10 +3628,6 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
-    HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", "",
-        "A list of io exception handler class names. This is used\n" +
-        "to construct a list exception handlers to handle exceptions thrown\n" +
-        "by record readers"),
 
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
@@ -3784,6 +3664,10 @@ public class HiveConf extends Configuration {
             + "prints) the same node multiple times. The number of visits can become exponential and make the server "
             + "crash or become unresponsive so this limit acts as a safety net to fail-fast the problematic query and "
             + "avoid bringing down the entire server."),
+    @InterfaceAudience.Private
+    HIVE_EXPLAIN_FORMATTED_INDENT("hive.explain.formatted.indent", false,
+        "Whether to indent the JSON output of EXPLAIN FORMATTED for better readability. " +
+        "The property is private to be used in tests only."),
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
@@ -4365,6 +4249,13 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD("hive.server2.authentication.ldap.bindpw", null,
         "The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
         "If the username is specified, this parameter must also be specified."),
+    HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS(
+        "hive.server2.authentication.ldap.enableGroupCheckAfterKerberos", false,
+        "If set to true, LDAP user and group filters are applied to Kerberos-authenticated users.\n" +
+            "Uses the same filter resolution as LDAP authentication (userSearchFilter, groupSearchFilter,\n" +
+            "customLDAPQuery, userFilter, groupFilter). Filters are not applied to authorized proxy users.\n" +
+            "Requires valid LDAP bind credentials to be configured.\n" +
+            "Default value is false."),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
         "Custom authentication class. Used when property\n" +
         "'hive.server2.authentication' is set to 'CUSTOM'. Provided class\n" +
@@ -4605,8 +4496,6 @@ public class HiveConf extends Configuration {
     SERVER_READ_SOCKET_TIMEOUT("hive.server.read.socket.timeout", "10s",
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for the HiveServer to close the connection if no response from the client. By default, 10 seconds."),
-    SERVER_TCP_KEEP_ALIVE("hive.server.tcp.keepalive", true,
-        "Whether to enable TCP keepalive for the Hive Server. Keepalive will prevent accumulation of half-open connections."),
 
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
@@ -5653,7 +5542,8 @@ public class HiveConf extends Configuration {
             "hive.zookeeper.ssl.truststore.type," +
             "hive.iceberg.allow.datafiles.in.table.location.only," +
             "hive.hook.proto.base-directory," +
-            "hive.rewrite.data.policy",
+            "hive.rewrite.data.policy," +
+            "hive.query.history.enabled", // Query History service is initialized on HS2 startup (HIVE-29170)
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -5869,7 +5759,10 @@ public class HiveConf extends Configuration {
 
     HIVE_OTEL_RETRY_BACKOFF_MULTIPLIER("hive.otel.retry.backoff.multiplier", 5f,
         "The multiplier applied to the backoff interval for retries in the OTEL exporter."
-            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy.");
+            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy."),
+
+    HIVE_OTEL_EXPORT_TEZ_COUNTERS("hive.otel.export.tez.counters", false,
+        "Enables the inclusion of Tez counters in OTEL output for a particular query.");
 
     public final String varname;
     public final String altName;
@@ -6475,10 +6368,6 @@ public class HiveConf extends Configuration {
     return vars.get(name);
   }
 
-  public static ConfVars getMetaConf(String name) {
-    return metaConfs.get(name);
-  }
-
   public String getVar(ConfVars var) {
     return getVar(this, var);
   }
@@ -6562,6 +6451,19 @@ public class HiveConf extends Configuration {
   public HiveConf(Configuration other, Class<?> cls) {
     super(other);
     initialize(cls);
+  }
+
+  /**
+   * For internal use only, assumed the "other" has loaded all properties that intend to use
+   * and want to cast it to a HiveConf without extra re-loading the source file.
+   * @param other The Configuration whose properties are to be wrapped by this HiveConf.
+   */
+  private HiveConf(Configuration other) {
+    super(other);
+    setupRestrictList();
+    hiddenSet.addAll(HiveConfUtil.getHiddenSet(other));
+    lockedSet.addAll(HiveConfUtil.getLockedSet(other));
+    origProp = getProperties(other);
   }
 
   /**
@@ -6660,12 +6562,6 @@ public class HiveConf extends Configuration {
     }
     // Overlay the values of any system properties and manual overrides
     applySystemProperties();
-
-    if ((this.get("hive.metastore.ds.retry.attempts") != null) ||
-      this.get("hive.metastore.ds.retry.interval") != null) {
-        LOG.warn("DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  " +
-        "Use hive.hmshandler.retry.* instead");
-    }
 
     // if the running class was loaded directly (through eclipse) rather than through a
     // jar then this would be needed
@@ -7064,12 +6960,8 @@ public class HiveConf extends Configuration {
    * @throws IOException
    */
   public String getUser() throws IOException {
-    try {
-      UserGroupInformation ugi = Utils.getUGI();
-      return ugi.getUserName();
-    } catch (LoginException le) {
-      throw new IOException(le);
-    }
+    UserGroupInformation ugi = Utils.getUGI();
+    return ugi.getUserName();
   }
 
   public static String getColumnInternalName(int pos) {
@@ -7328,6 +7220,21 @@ public class HiveConf extends Configuration {
     while (iter.hasNext()) {
       Map.Entry<String, String> e = iter.next();
       set(e.getKey(), e.getValue());
+    }
+  }
+
+  /**
+   * Sometimes if the configuration contains all the information we want,
+   * but want to cast it to a HiveConf, without loading the props from the
+   * source file again, which is wasteful and might cost dozens of milliseconds.
+   * @param configuration The original configuration
+   * @return A HiveConf wrapping on the original configuration
+   */
+  public static HiveConf cloneConf(Configuration configuration) {
+    if (configuration instanceof HiveConf config) {
+      return new HiveConf(config);
+    } else {
+      return new HiveConf(configuration);
     }
   }
 }

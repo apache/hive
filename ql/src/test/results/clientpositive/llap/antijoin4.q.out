@@ -1,0 +1,294 @@
+PREHOOK: query: create table antijoin3_t1 (t1id int not null, t1notnull string not null, t1nullable string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@antijoin3_t1
+POSTHOOK: query: create table antijoin3_t1 (t1id int not null, t1notnull string not null, t1nullable string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@antijoin3_t1
+PREHOOK: query: create table antijoin3_t2 (t2id int not null, t2notnull string not null, t2nullable string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@antijoin3_t2
+POSTHOOK: query: create table antijoin3_t2 (t2id int not null, t2notnull string not null, t2nullable string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@antijoin3_t2
+PREHOOK: query: create table antijoin3_t3 (t3id int not null)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@antijoin3_t3
+POSTHOOK: query: create table antijoin3_t3 (t3id int not null)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@antijoin3_t3
+PREHOOK: query: insert into antijoin3_t1 values
+(0, "val_0", null),
+(1, "val_1", null),
+(2, "val_2", "val_2"),
+(3, "val_3", "val_3"),
+(4, "val_4", "val_4")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@antijoin3_t1
+POSTHOOK: query: insert into antijoin3_t1 values
+(0, "val_0", null),
+(1, "val_1", null),
+(2, "val_2", "val_2"),
+(3, "val_3", "val_3"),
+(4, "val_4", "val_4")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@antijoin3_t1
+POSTHOOK: Lineage: antijoin3_t1.t1id SCRIPT []
+POSTHOOK: Lineage: antijoin3_t1.t1notnull SCRIPT []
+POSTHOOK: Lineage: antijoin3_t1.t1nullable SCRIPT []
+PREHOOK: query: insert into antijoin3_t2 values
+(0, "val_0", null),
+(1, "val_1", null),
+(4, "val_4", "val_4"),
+(5, "val_5", "val_5")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@antijoin3_t2
+POSTHOOK: query: insert into antijoin3_t2 values
+(0, "val_0", null),
+(1, "val_1", null),
+(4, "val_4", "val_4"),
+(5, "val_5", "val_5")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@antijoin3_t2
+POSTHOOK: Lineage: antijoin3_t2.t2id SCRIPT []
+POSTHOOK: Lineage: antijoin3_t2.t2notnull SCRIPT []
+POSTHOOK: Lineage: antijoin3_t2.t2nullable SCRIPT []
+PREHOOK: query: insert into antijoin3_t3 values (0), (4), (6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@antijoin3_t3
+POSTHOOK: query: insert into antijoin3_t3 values (0), (4), (6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@antijoin3_t3
+POSTHOOK: Lineage: antijoin3_t3.t3id SCRIPT []
+PREHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2nullable is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2nullable is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+  HiveFilter(condition=[IS NULL($4)])
+    HiveJoin(condition=[=($0, $3)], joinType=[left], algorithm=[none], cost=[not available])
+      HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+        HiveTableScan(table=[[default, antijoin3_t1]], table:alias=[t1])
+      HiveProject(t2id=[$0], t2nullable=[$2])
+        HiveTableScan(table=[[default, antijoin3_t2]], table:alias=[t2])
+
+PREHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2nullable is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2nullable is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+0	val_0	NULL
+1	val_1	NULL
+2	val_2	val_2
+3	val_3	val_3
+PREHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+  HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+    HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+      HiveTableScan(table=[[default, antijoin3_t1]], table:alias=[t1])
+    HiveProject(t2id=[$0], t2notnull=[$1])
+      HiveTableScan(table=[[default, antijoin3_t2]], table:alias=[t2])
+
+PREHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+2	val_2	val_2
+3	val_3	val_3
+PREHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where (coalesce(t1notnull,t2notnull)) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where (coalesce(t1notnull,t2notnull)) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where (coalesce(t1notnull,t2notnull)) is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where (coalesce(t1notnull,t2notnull)) is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo select t1id, t1notnull, t1nullable, "foo" from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select t1id, t1notnull, t1nullable, "foo" from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2], _c3=[_UTF-16LE'foo':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+    HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+      HiveTableScan(table=[[default, antijoin3_t1]], table:alias=[t1])
+    HiveProject(t2id=[$0], t2notnull=[$1])
+      HiveTableScan(table=[[default, antijoin3_t2]], table:alias=[t2])
+
+PREHOOK: query: select t1id, t1notnull, t1nullable, "foo" from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1id, t1notnull, t1nullable, "foo" from antijoin3_t1 t1 left join antijoin3_t2 t2 on t1id=t2id where t2notnull is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+#### A masked pattern was here ####
+2	val_2	val_2	foo
+3	val_3	val_3	foo
+PREHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+where t2notnull is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+PREHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+where t2notnull is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+POSTHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+  HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+    HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+      HiveTableScan(table=[[default, antijoin3_t1]], table:alias=[t1])
+    HiveProject(t2id=[$0], t2notnull=[$1], t3id=[$2])
+      HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(t2id=[$0], t2notnull=[$1])
+          HiveTableScan(table=[[default, antijoin3_t2]], table:alias=[antijoin3_t2])
+        HiveProject(t3id=[$0])
+          HiveTableScan(table=[[default, antijoin3_t3]], table:alias=[antijoin3_t3])
+
+PREHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+where t2notnull is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+PREHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+POSTHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+where t2notnull is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+POSTHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+2	val_2	val_2
+3	val_3	val_3
+PREHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+
+where t3id is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+PREHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+
+where t3id is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+POSTHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+  HiveFilter(condition=[IS NULL($4)])
+    HiveJoin(condition=[=($0, $3)], joinType=[left], algorithm=[none], cost=[not available])
+      HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
+        HiveTableScan(table=[[default, antijoin3_t1]], table:alias=[t1])
+      HiveJoin(condition=[=($0, $1)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(t2id=[$0])
+          HiveTableScan(table=[[default, antijoin3_t2]], table:alias=[antijoin3_t2])
+        HiveProject(t3id=[$0])
+          HiveTableScan(table=[[default, antijoin3_t3]], table:alias=[antijoin3_t3])
+
+PREHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+
+where t3id is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@antijoin3_t1
+PREHOOK: Input: default@antijoin3_t2
+PREHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+POSTHOOK: query: select t1id, t1notnull, t1nullable from antijoin3_t1 t1
+left join (select * from antijoin3_t2 left join antijoin3_t3 on t2id=t3id) sq
+on t1id=t2id
+
+where t3id is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@antijoin3_t1
+POSTHOOK: Input: default@antijoin3_t2
+POSTHOOK: Input: default@antijoin3_t3
+#### A masked pattern was here ####
+1	val_1	NULL
+2	val_2	val_2
+3	val_3	val_3

@@ -20,6 +20,7 @@
 package org.apache.iceberg.rest;
 
 import java.util.Map;
+import java.util.Optional;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
@@ -37,5 +38,10 @@ class TestRESTCatalogNoneAuth extends BaseRESTCatalogTests {
     return Map.of(
         "uri", REST_CATALOG_EXTENSION.getRestEndpoint()
     );
+  }
+
+  @Override
+  protected Optional<Map<String, String>> getPermissionTestClientConfiguration() {
+    return Optional.empty();
   }
 }

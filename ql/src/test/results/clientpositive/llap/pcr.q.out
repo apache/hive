@@ -2290,7 +2290,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `t1.key`, `t0`.`value` AS `t1.value`, CAST('2000-04-08' AS STRING) AS `t1.ds`, `t2`.`key` AS `t2.key`, `t2`.`value` AS `t2.value`, CAST('2000-04-08' AS STRING) AS `t2.ds`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
@@ -2571,7 +2571,7 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `t1.key`, `t0`.`value` AS `t1.value`, CAST('2000-04-08' AS STRING) AS `t1.ds`, `t2`.`key` AS `t2.key`, `t2`.`value` AS `t2.value`, CAST('2000-04-09' AS STRING) AS `t2.ds`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`

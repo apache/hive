@@ -35,11 +35,11 @@ POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.cbigint SCRIPT []
 POSTHOOK: Lineage: t1.cint SCRIPT []
 POSTHOOK: Lineage: t1.cts SCRIPT []
-PREHOOK: query: select * from t1 where cint < -1070551679
+PREHOOK: query: select * from `t1` where `cint` < -1070551679
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from t1 where cint < -1070551679
+POSTHOOK: query: select * from `t1` where `cint` < -1070551679
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -68,11 +68,11 @@ Stage-0
             TableScan [TS_0] (rows=9/9 width=52)
               default@t1,t1, ACID table,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint","cts"]
 
-PREHOOK: query: select * from t1 where cbigint >= 1704034800000
+PREHOOK: query: select * from `t1` where `cbigint` >= 1704034800000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from t1 where cbigint >= 1704034800000
+POSTHOOK: query: select * from `t1` where `cbigint` >= 1704034800000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -101,11 +101,11 @@ Stage-0
             TableScan [TS_0] (rows=9/9 width=52)
               default@t1,t1, ACID table,Tbl:COMPLETE,Col:NONE,Output:["cint","cbigint","cts"]
 
-PREHOOK: query: select * from t1 where cts > '2025-06-25 10:00:00.000'
+PREHOOK: query: select * from `t1` where `cts` > '2025-06-25 10:00:00.000'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from t1 where cts > '2025-06-25 10:00:00.000'
+POSTHOOK: query: select * from `t1` where `cts` > '2025-06-25 10:00:00.000'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: hdfs://### HDFS PATH ###

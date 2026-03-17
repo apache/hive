@@ -21,6 +21,9 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.tez.common.counters.CounterGroup;
+import org.apache.tez.common.counters.TezCounter;
+import org.apache.tez.common.counters.TezCounters;
 
 import java.io.IOException;
 import java.util.*;
@@ -37,6 +40,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Some limited query information to save for WebUI.
@@ -58,6 +62,7 @@ public class QueryDisplay {
   private String explainPlan;
   private String errorMessage;
   private String queryId;
+  private TezCounters tezCounters;
   private long queryStartTime = System.currentTimeMillis();
 
   private final Map<Phase, Map<String, Long>> hmsTimingMap = new HashMap<Phase, Map<String, Long>>();
@@ -303,6 +308,32 @@ public class QueryDisplay {
 
   public synchronized void setExplainPlan(String explainPlan) {
     this.explainPlan = explainPlan;
+  }
+
+  public synchronized void setTezCounters(TezCounters tc) {
+    this.tezCounters = tc;
+  }
+
+  public synchronized TezCounters getTezCounters() {
+    return this.tezCounters;
+  }
+
+  public synchronized Map<String, String> getCountersAsString() {
+    Map<String, String> allCounterGroups = new HashMap<>();
+    if (tezCounters != null) {
+      for (CounterGroup group : tezCounters) {
+        ObjectNode groupNode = OBJECT_MAPPER.createObjectNode();
+        for (TezCounter counter : group) {
+          groupNode.put(counter.getDisplayName(), counter.getValue());
+        }
+        String counterGroupName = group.getName();
+        String[] counterGroupSplits = counterGroupName.split("\\.");
+        counterGroupName = counterGroupName.contains(".") ? counterGroupSplits[counterGroupSplits.length - 1] :
+            counterGroupName + " Counter";
+        allCounterGroups.put(counterGroupName, groupNode.toString());
+      }
+    }
+    return allCounterGroups;
   }
 
   /**

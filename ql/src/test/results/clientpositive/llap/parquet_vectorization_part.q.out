@@ -105,7 +105,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') csmallint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -123,7 +123,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cfloat
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -141,7 +141,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cdouble
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -159,7 +159,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cstring1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -177,7 +177,7 @@ max_col_len         	16
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') ctimestamp1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -195,7 +195,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cboolean1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -213,7 +213,7 @@ max_col_len
 num_trues           	100                 
 num_falses          	0                   
 bit_vector          	                    
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') ctinyint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -231,7 +231,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') csmallint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -249,7 +249,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cfloat
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -267,7 +267,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cdouble
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -285,7 +285,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cstring1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -303,7 +303,7 @@ max_col_len         	16
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') ctimestamp1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -321,7 +321,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	from deserializer   
+comment             	                    
 PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cboolean1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesparquet_part
@@ -339,4 +339,4 @@ max_col_len
 num_trues           	100                 
 num_falses          	0                   
 bit_vector          	                    
-comment             	from deserializer   
+comment             	                    

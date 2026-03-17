@@ -166,7 +166,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n2
 POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('406' AS STRING) AS `$f0`
+OPTIMIZED SQL: SELECT CAST('406' AS STRING) AS `key`
 FROM `default`.`fact_daily_n2`
 WHERE `key` = '406' AND `ds` = '1' AND `hr` = '4'
 STAGE DEPENDENCIES:

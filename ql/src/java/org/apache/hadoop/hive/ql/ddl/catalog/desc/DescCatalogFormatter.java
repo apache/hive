@@ -66,27 +66,24 @@ abstract class DescCatalogFormatter {
     void showCatalogDescription(DataOutputStream out, String catalog, String comment, String location,
         int createTime) throws HiveException {
       try {
-        writeLine(out, "Catalog Name", catalog);
+        out.write(catalog.getBytes(StandardCharsets.UTF_8));
+        out.write(Utilities.tabCode);
         if (comment != null) {
-          writeLine(out, "Comment", HiveStringUtils.escapeJava(comment));
+          out.write(HiveStringUtils.escapeJava(comment).getBytes(StandardCharsets.UTF_8));
         }
+        out.write(Utilities.tabCode);
         if (location != null) {
-          writeLine(out, "Location", location);
+          out.write(location.getBytes(StandardCharsets.UTF_8));
         }
+        out.write(Utilities.tabCode);
         if (createTime != 0) {
           String createTimeStr = CalendarUtils.formatTimestamp((long) createTime * 1000, true);
-          writeLine(out, "CreateTime", createTimeStr);
+          out.write(createTimeStr.getBytes(StandardCharsets.UTF_8));
         }
+        out.write(Utilities.newLineCode);
       } catch (IOException e) {
         throw new HiveException(e);
       }
-    }
-
-    private void writeLine(DataOutputStream out, String label, String value) throws IOException {
-      out.write(label.getBytes(StandardCharsets.UTF_8));
-      out.write(Utilities.tabCode);
-      out.write(value.getBytes(StandardCharsets.UTF_8));
-      out.write(Utilities.newLineCode);
     }
   }
 }

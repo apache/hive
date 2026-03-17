@@ -379,6 +379,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -430,6 +431,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -482,6 +484,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -587,6 +590,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 

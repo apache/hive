@@ -10,4 +10,4 @@ tblproperties ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test
-FAILED: SemanticException [Error 10287]: Detected default.masking_test has row masking/column filtering enabled, which is not supported for query involving ACID operations
+FAILED: SemanticException [Error 10287]: Detected hive.default.masking_test has row masking/column filtering enabled, which is not supported for query involving ACID operations

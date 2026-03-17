@@ -88,6 +88,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   public boolean isValidBase(long writeId) {
     return (writeId < minOpenWriteId) && (writeId <= highWatermark);
   }
+
   @Override
   public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId) {
     // check the easy cases first

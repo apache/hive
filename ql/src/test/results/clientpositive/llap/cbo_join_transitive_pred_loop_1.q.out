@@ -57,7 +57,7 @@ POSTHOOK: Input: default@test2
 POSTHOOK: Input: default@test3
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(month=[$0], con_usd=[$2])
+HiveProject(c.month=[$0], d.con_usd=[$2])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(month=[$0])
       HiveUnion(all=[true])

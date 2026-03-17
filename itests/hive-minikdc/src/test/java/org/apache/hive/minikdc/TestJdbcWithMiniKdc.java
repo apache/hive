@@ -66,7 +66,6 @@ public class TestJdbcWithMiniKdc {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
     confOverlay.put(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         SessionHookTest.class.getName());
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");

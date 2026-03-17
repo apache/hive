@@ -1,4 +1,3 @@
-package org.apache.hadoop.hive.metastore;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -16,6 +15,7 @@ package org.apache.hadoop.hive.metastore;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;

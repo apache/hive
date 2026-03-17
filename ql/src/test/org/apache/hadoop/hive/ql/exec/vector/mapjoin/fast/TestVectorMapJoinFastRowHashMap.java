@@ -496,6 +496,47 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
   }
 
   @Test
+  public void testDateRowsExact() throws Exception {
+    random = new Random(44332);
+
+    // Use a large capacity that doesn't require expansion, yet.
+    VectorMapJoinFastLongHashMapContainer map =
+        new VectorMapJoinFastLongHashMapContainer(
+            false,
+            false,
+            HashTableKeyType.DATE,
+            LARGE_CAPACITY,
+            LOAD_FACTOR,
+            LARGE_WB_SIZE,
+            -1,
+            tableDesc,
+            4);
+
+    VerifyFastRowHashMap verifyTable = new VerifyFastRowHashMap();
+    VectorRandomRowSource valueSource = new VectorRandomRowSource();
+
+    valueSource.init(
+        random,
+        VectorRandomRowSource.SupportedTypes.ALL,
+        4,
+        false,
+        false);
+
+    int rowCount = 1000;
+    Object[][] rows = valueSource.randomRows(rowCount);
+
+    addAndVerifyRows(
+        valueSource,
+        rows,
+        map,
+        HashTableKeyType.DATE,
+        verifyTable,
+        new String[] {"date"},
+        false,
+        true);
+  }
+
+  @Test
   public void testIntRowsExact() throws Exception {
     random = new Random(8238383);
 

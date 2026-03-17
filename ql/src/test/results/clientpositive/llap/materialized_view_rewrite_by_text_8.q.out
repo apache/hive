@@ -59,7 +59,8 @@ POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+HiveProject(col0=[$0])
+  HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
 PREHOOK: query: explain cbo
 select col0 from (
@@ -136,13 +137,14 @@ POSTHOOK: Input: default@mat2
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
-  HiveProject(col0=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, t1]], table:alias=[t1])
-  HiveProject(col0=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+HiveProject(col0=[$0])
+  HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+    HiveProject(col0=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+    HiveProject(col0=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 
 PREHOOK: query: drop materialized view mat2
 PREHOOK: type: DROP_MATERIALIZED_VIEW

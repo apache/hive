@@ -1,0 +1,75 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hive-metastore
+  name: hive-metastore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hive-metastore
+  template:
+    metadata:
+      labels:
+        app: hive-metastore
+    spec:
+      initContainers:
+      - name: download-aws-sdk
+        image: ubuntu:26.04
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates wget
+          wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.26.19/bundle-2.26.19.jar -P /tmp/ext-jars
+        volumeMounts:
+        - name: ext-jars
+          mountPath: /tmp/ext-jars
+      containers:
+      - name: hive-metastore
+        image: hive:standalone-metastore-test
+        env:
+        - name: HADOOP_OPTIONAL_TOOLS
+          value: hadoop-aws
+        - name: HIVE_CUSTOM_CONF_DIR
+          value: /etc/hive/conf
+        readinessProbe:
+          tcpSocket:
+            port: 9083
+        volumeMounts:
+        - name: ext-jars
+          mountPath: /tmp/ext-jars
+        - name: hadoop-config
+          mountPath: /etc/hive/conf/core-site.xml
+          subPath: core-site.xml
+        - name: hive-metastore-config
+          mountPath: /etc/hive/conf/metastore-site.xml
+          subPath: metastore-site.xml
+      volumes:
+      - name: ext-jars
+        emptyDir: {}
+      - name: hadoop-config
+        configMap:
+          name: hadoop-config
+      - name: hive-metastore-config
+        configMap:
+          name: hive-metastore-config

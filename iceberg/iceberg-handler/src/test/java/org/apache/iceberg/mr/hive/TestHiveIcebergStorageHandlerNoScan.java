@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -59,6 +60,7 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
@@ -66,10 +68,15 @@ import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
+import org.apache.iceberg.mr.hive.test.TestTables;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -148,7 +155,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Parameters(name = "catalog={0}")
   public static Collection<Object[]> parameters() {
     Collection<Object[]> testParams = Lists.newArrayList();
-    for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
+    for (TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
       testParams.add(new Object[] {testTableType});
     }
     return testParams;
@@ -159,7 +166,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   private TestTables testTables;
 
   @Parameter(0)
-  public TestTables.TestTableType testTableType;
+  public TestTableType testTableType;
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -431,7 +438,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void testInvalidCreateWithPartitionTransform() {
-    Assume.assumeTrue("Test on hive catalog is enough", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue("Test on hive catalog is enough", testTableType == TestTableType.HIVE_CATALOG);
     String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
                     "STRING) PARTITIONED BY spec(TRUNCATE(2, last_name)) STORED AS ORC");
     Assertions.assertThatThrownBy(() -> shell.executeStatement(query))
@@ -498,8 +505,9 @@ public class TestHiveIcebergStorageHandlerNoScan {
   public void testCreateDropTableNonDefaultCatalog() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String catalogName = "nondefaultcatalog";
-    testTables.properties().entrySet()
-        .forEach(e -> shell.setHiveSessionValue(e.getKey().replace(testTables.catalog, catalogName), e.getValue()));
+    testTables.properties().forEach((key, value) -> shell.setHiveSessionValue(
+        key.replace(testTables.getCatalog(), catalogName),
+        value));
     String createSql = "CREATE EXTERNAL TABLE " + identifier +
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name'," +
         " last_name STRING COMMENT 'This is last name')" +
@@ -625,7 +633,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testDropTableWithCorruptedMetadata() throws TException, IOException, InterruptedException {
     Assume.assumeTrue("Only HiveCatalog attempts to load the Iceberg table prior to dropping it.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
 
     // create test table
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
@@ -699,7 +707,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
                                   "'='" +
                                   testTables.catalogName() +
                                   "')"));
-      if (testTableType != TestTables.TestTableType.HADOOP_CATALOG) {
+      if (testTableType != TestTableType.HADOOP_CATALOG &&
+          testTableType != TestTableType.CUSTOM_CATALOG) {
         assertThatThrownBy
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageStartingWith("Failed to execute Hive query")
@@ -717,7 +726,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     testTables.createIcebergTable(shell.getHiveConf(), "customers", COMPLEX_SCHEMA, FileFormat.PARQUET,
         Collections.emptyMap(), Collections.emptyList());
 
-    if (testTableType == TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType == TestTableType.HIVE_CATALOG) {
       // In HiveCatalog we just expect an exception since the table is already exists
       Assertions.assertThatThrownBy(
         () ->
@@ -747,7 +756,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void testFormatVersion() throws IOException {
-    Assume.assumeTrue(testTableType != TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(testTableType != TestTableType.HIVE_CATALOG);
     TableIdentifier tbl = TableIdentifier.of("default", "customers");
     // Create the Iceberg table
     testTables.createIcebergTable(shell.getHiveConf(), "customers", COMPLEX_SCHEMA, FileFormat.PARQUET,
@@ -950,8 +959,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     List<Object[]> rows = shell.executeStatement("DESCRIBE default.partitioned_with_comment_table");
     List<Types.NestedField> columns = icebergTable.schema().columns();
-    // The partition transform information is 3 extra lines, and 2 more line for the columns
-    Assert.assertEquals(columns.size() + 5, rows.size());
+    // The partition transform information and partition information is 6 extra lines, and 4 more line for the columns
+    Assert.assertEquals(columns.size() + 10, rows.size());
     for (int i = 0; i < columns.size(); i++) {
       Types.NestedField field = columns.get(i);
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
@@ -1012,6 +1021,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     expectedIcebergProperties.put("custom_property", "initial_val");
     expectedIcebergProperties.put("EXTERNAL", "TRUE");
     expectedIcebergProperties.put("storage_handler", HiveIcebergStorageHandler.class.getName());
+    expectedIcebergProperties.put(TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED, "true");
     expectedIcebergProperties.put(serdeConstants.SERIALIZATION_FORMAT, "1");
     expectedIcebergProperties.put(
         TableProperties.PARQUET_COMPRESSION,
@@ -1026,9 +1036,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Properties tableProperties = new Properties();
     tableProperties.putAll(hmsParams);
 
-    if (HiveVersion.min(HiveVersion.HIVE_3)) {
-      expectedIcebergProperties.put("bucketing_version", "2");
-    }
+    expectedIcebergProperties.put("bucketing_version", "2");
     expectedIcebergProperties.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
     expectedIcebergProperties.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
     expectedIcebergProperties.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
@@ -1107,7 +1115,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testIcebergHMSPropertiesTranslation() throws Exception {
     Assume.assumeTrue("Iceberg - HMS property translation is only relevant for HiveCatalog",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
@@ -1215,7 +1223,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testDropHiveTableWithoutUnderlyingTable() throws IOException {
     Assume.assumeFalse("Not relevant for HiveCatalog",
-            testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+            testTableType.equals(TestTableType.HIVE_CATALOG));
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     // Create the Iceberg table in non-HiveCatalog
@@ -1261,7 +1269,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
     Assert.assertEquals("should create table using format v2",
-        2, ((BaseTable) icebergTable).operations().current().formatVersion());
+        2, TableUtil.formatVersion(icebergTable));
   }
 
   @Test
@@ -1313,8 +1321,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (region, city)");
 
     List<Object[]> result = shell.executeStatement("DESCRIBE default.customers");
-    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(8));
-    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(9));
+    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(14));
+    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(15));
   }
 
   @Test
@@ -1467,7 +1475,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testMetaHookWithUndefinedAlterOperationType() throws Exception {
     Assume.assumeTrue("Enough to check for one type only",
-        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+        testTableType.equals(TestTableType.HIVE_CATALOG));
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
         FileFormat.PARQUET, ImmutableList.of());
@@ -1481,21 +1489,25 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testCommandsWithPartitionClauseThrow() {
+  public void testCommandsWithPartitionClause() throws IOException {
     TableIdentifier target = TableIdentifier.of("default", "target");
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").build();
     testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         spec, FileFormat.PARQUET, ImmutableList.of());
+    PartitionData partitionData = new PartitionData(spec.partitionType());
+    partitionData.set(0, "Johnson");
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(target);
+    testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, FileFormat.PARQUET, partitionData,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     String[] commands = {
         "DESCRIBE target PARTITION (last_name='Johnson')"
     };
 
     for (String command : commands) {
-      Assertions.assertThatThrownBy(() -> shell.executeStatement(command))
-              .isInstanceOf(IllegalArgumentException.class)
-              .hasMessageContaining("Using partition spec in query is unsupported");
+      Assertions.assertThatCode(() -> shell.executeStatement(command))
+          .doesNotThrowAnyException();
     }
   }
 
@@ -1521,7 +1533,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
 
     String metadataLocation =
-        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+        storageHandler.getPathForAuth(TableUtil.metadataFileLocation(table),
             hmsTable.getSd().getLocation());
 
     if (masked) {
@@ -1555,13 +1567,13 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
-        "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+        "org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory");
     TableIdentifier source = TableIdentifier.of("default", "source");
     Table sourceTable = testTables.createTable(shell, source.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
 
     String metadataFileLocation =
-        URI.create(((BaseTable) sourceTable).operations().current().metadataFileLocation()).getPath();
+        URI.create(TableUtil.metadataFileLocation(sourceTable)).getPath();
     TableIdentifier target = TableIdentifier.of("default", "target");
 
     Table targetTable = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1586,7 +1598,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizerMasked()
       throws HiveException, TException, InterruptedException {
-    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    Assume.assumeTrue(testTableType.equals(TestTableType.HIVE_CATALOG));
     testAuthzURIWithAuthEnabledAndMockCommandAuthorizer(true);
   }
 
@@ -1601,7 +1613,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
-        "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+        "org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory");
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
@@ -1616,7 +1628,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
       storageHandler.setConf(shell.getHiveConf());
       String metadataLocation = HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(
-          storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+          storageHandler.getPathForAuth(TableUtil.metadataFileLocation(table),
               hmsTable.getSd().getLocation()));
 
       if (masked) {
@@ -1634,7 +1646,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void testAuthzURIWithAuthEnabledMasked() throws TException, URISyntaxException, InterruptedException {
-    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    Assume.assumeTrue(testTableType.equals(TestTableType.HIVE_CATALOG));
     testAuthzURIWithAuthEnabled(true);
   }
 
@@ -1655,7 +1667,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
     String metadataLocation =
-        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+        storageHandler.getPathForAuth(TableUtil.metadataFileLocation(table),
             hmsTable.getSd().getLocation());
 
     if (masked) {
@@ -1669,7 +1681,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testCreateTableWithMetadataLocation() throws IOException {
     Assume.assumeTrue("Create with metadata location is only supported for Hive Catalog tables",
-        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+        testTableType.equals(TestTableType.HIVE_CATALOG));
     TableIdentifier sourceIdentifier = TableIdentifier.of("default", "source");
     Table sourceTable =
         testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1677,7 +1689,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
             ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
     testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    String metadataLocation = TableUtil.metadataFileLocation(sourceTable);
     shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
     TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
     Table targetTable =
@@ -1685,7 +1697,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
             PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
             ImmutableMap.<String, String>builder().put("metadata_location", metadataLocation).build()
         );
-    Assert.assertEquals(metadataLocation, ((BaseTable) targetTable).operations().current().metadataFileLocation());
+    Assert.assertEquals(metadataLocation, TableUtil.metadataFileLocation(targetTable));
     List<Object[]> rows = shell.executeStatement("SELECT * FROM " + targetIdentifier.name());
     List<Record> records = HiveIcebergTestUtils.valueForRow(targetTable.schema(), rows);
     HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, records, 0);
@@ -1702,7 +1714,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testAlterTableWithMetadataLocation() throws IOException {
     Assume.assumeTrue("Alter table with metadata location is only supported for Hive Catalog tables",
-        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+        testTableType.equals(TestTableType.HIVE_CATALOG));
     TableIdentifier tableIdentifier = TableIdentifier.of("default", "source");
     // create a test table with some dummy data
     Table table =
@@ -1710,11 +1722,11 @@ public class TestHiveIcebergStorageHandlerNoScan {
             PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1, Collections.emptyMap());
     testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    String firstMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    String firstMetadataLocation = TableUtil.metadataFileLocation(table);
     testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     table.refresh();
-    String secondMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    String secondMetadataLocation = TableUtil.metadataFileLocation(table);
     Assert.assertNotEquals(firstMetadataLocation, secondMetadataLocation);
     shell.executeStatement("ALTER TABLE " + tableIdentifier.name() + " SET TBLPROPERTIES('metadata_location'='" +
         firstMetadataLocation + "')");
@@ -1741,7 +1753,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
             ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
     testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    String metadataLocation = TableUtil.metadataFileLocation(sourceTable);
     shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
     TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
     testTables.createTable(shell, targetIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1771,7 +1783,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testCTLT() throws TException, InterruptedException {
     Assume.assumeTrue(" CTLT target table must be a HiveCatalog table",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
     // Create a normal table and add some data
     shell.executeStatement("CREATE TABLE source(a int)");
     shell.executeStatement("insert into source values(1)");
@@ -1799,7 +1811,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testCTLTHiveCatalogValidation() throws TException, InterruptedException {
     Assume.assumeTrue(" CTLT target table works on HiveCatalog table",
-        testTableType != TestTables.TestTableType.HIVE_CATALOG);
+        testTableType != TestTableType.HIVE_CATALOG);
 
     // Create a normal table and add some data
     shell.executeStatement("CREATE TABLE source(a int)");
@@ -1855,7 +1867,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void testConcurrentIcebergCommitsAndHiveAlterTableCalls() throws Exception {
-    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    Assume.assumeTrue(testTableType.equals(TestTableType.HIVE_CATALOG));
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     testTables.createTable(
@@ -1910,7 +1922,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     executorService.awaitTermination(1, TimeUnit.MINUTES);
 
     // Verify that the insert was effective
-    Assert.assertEquals(((BaseTable) testTables.loadTable(identifier)).operations().current().metadataFileLocation(),
+    Assert.assertEquals(TableUtil.metadataFileLocation(testTables.loadTable(identifier)),
         (long) HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size(),
         shell.executeStatement("select count(*) from customers").get(0)[0]
     );
@@ -1926,7 +1938,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testCreateTableWithMetadataLocationWithoutSchema() throws IOException, TException, InterruptedException {
     Assume.assumeTrue("Create with metadata location is only supported for Hive Catalog tables",
-        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+        testTableType.equals(TestTableType.HIVE_CATALOG));
     TableIdentifier sourceIdentifier = TableIdentifier.of("default", "source");
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("customer_id").build();
@@ -1935,7 +1947,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
             FileFormat.PARQUET, records, 1,
             ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
-    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    String metadataLocation = TableUtil.metadataFileLocation(sourceTable);
     shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
     TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
 
@@ -1988,7 +2000,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void checkIcebergTableLocation() throws TException, InterruptedException, IOException {
-    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTableType.HIVE_CATALOG);
 
     String dBName = "testdb";
     String tableName = "tbl";
@@ -2022,8 +2034,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testSnycProperties() throws TException, InterruptedException {
-    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+  public void testSyncProperties() throws TException, InterruptedException {
+    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTableType.HIVE_CATALOG);
 
     // Test create v2 iceberg table and check iceberg properties & hms properties
     TableIdentifier identifier = TableIdentifier.of("default", "customers_v2");
@@ -2130,7 +2142,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void testCreateTableWithPercentInName() throws IOException {
-    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTableType.HIVE_CATALOG);
 
     TableIdentifier identifier = TableIdentifier.of("default", "[|]#&%_@");
 

@@ -85,7 +85,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_database\n");
   }
 
-  void drop_database_req(const DropDatabaseRequest& req) {
+  void drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req) {
     // Your implementation goes here
     printf("drop_database_req\n");
   }
@@ -260,7 +260,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table_with_environment_context\n");
   }
 
-  void drop_table_req(const DropTableRequest& dropTableReq) {
+  void drop_table_req(AsyncOperationResp& _return, const DropTableRequest& dropTableReq) {
     // Your implementation goes here
     printf("drop_table_req\n");
   }
@@ -353,6 +353,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req) {
     // Your implementation goes here
     printf("alter_table_req\n");
+  }
+
+  void update_table_params(const std::vector<TableParamsUpdate> & updates) {
+    // Your implementation goes here
+    printf("update_table_params\n");
   }
 
   void add_partition(Partition& _return, const Partition& new_part) {
@@ -1338,6 +1343,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) {
     // Your implementation goes here
     printf("heartbeat_lock_materialization_rebuild\n");
+  }
+
+  void get_lock_materialization_rebuild_req(LockResponse& _return, const LockMaterializationRebuildRequest& req) {
+    // Your implementation goes here
+    printf("get_lock_materialization_rebuild_req\n");
+  }
+
+  bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req) {
+    // Your implementation goes here
+    printf("heartbeat_lock_materialization_rebuild_req\n");
   }
 
   void add_runtime_stats(const RuntimeStat& stat) {

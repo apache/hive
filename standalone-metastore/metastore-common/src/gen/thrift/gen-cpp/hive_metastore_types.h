@@ -732,6 +732,8 @@ class ShowLocksRequest;
 
 class ShowLocksResponseElement;
 
+class LockMaterializationRebuildRequest;
+
 class ShowLocksResponse;
 
 class HeartbeatRequest;
@@ -845,6 +847,8 @@ class GetTablesExtRequest;
 class ExtendedTableInfo;
 
 class DropTableRequest;
+
+class AsyncOperationResp;
 
 class GetDatabaseRequest;
 
@@ -1009,6 +1013,8 @@ class RenamePartitionResponse;
 class AlterTableRequest;
 
 class AlterTableResponse;
+
+class TableParamsUpdate;
 
 class GetPartitionsFilterSpec;
 
@@ -3199,11 +3205,12 @@ void swap(GrantRevokeRoleResponse &a, GrantRevokeRoleResponse &b);
 std::ostream& operator<<(std::ostream& out, const GrantRevokeRoleResponse& obj);
 
 typedef struct _Catalog__isset {
-  _Catalog__isset() : name(false), description(false), locationUri(false), createTime(false) {}
+  _Catalog__isset() : name(false), description(false), locationUri(false), createTime(false), parameters(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
   bool createTime :1;
+  bool parameters :1;
 } _Catalog__isset;
 
 class Catalog : public virtual ::apache::thrift::TBase {
@@ -3223,6 +3230,7 @@ class Catalog : public virtual ::apache::thrift::TBase {
   std::string description;
   std::string locationUri;
   int32_t createTime;
+  std::map<std::string, std::string>  parameters;
 
   _Catalog__isset __isset;
 
@@ -3233,6 +3241,8 @@ class Catalog : public virtual ::apache::thrift::TBase {
   void __set_locationUri(const std::string& val);
 
   void __set_createTime(const int32_t val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
 
   bool operator == (const Catalog & rhs) const
   {
@@ -3247,6 +3257,10 @@ class Catalog : public virtual ::apache::thrift::TBase {
     if (__isset.createTime != rhs.__isset.createTime)
       return false;
     else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (__isset.parameters != rhs.__isset.parameters)
+      return false;
+    else if (__isset.parameters && !(parameters == rhs.parameters))
       return false;
     return true;
   }
@@ -6222,10 +6236,8 @@ void swap(Schema &a, Schema &b);
 std::ostream& operator<<(std::ostream& out, const Schema& obj);
 
 typedef struct _PrimaryKeysRequest__isset {
-  _PrimaryKeysRequest__isset() : catName(false), validWriteIdList(false), tableId(true) {}
+  _PrimaryKeysRequest__isset() : catName(false) {}
   bool catName :1;
-  bool validWriteIdList :1;
-  bool tableId :1;
 } _PrimaryKeysRequest__isset;
 
 class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
@@ -6236,17 +6248,13 @@ class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
   PrimaryKeysRequest() noexcept
                      : db_name(),
                        tbl_name(),
-                       catName(),
-                       validWriteIdList(),
-                       tableId(-1LL) {
+                       catName() {
   }
 
   virtual ~PrimaryKeysRequest() noexcept;
   std::string db_name;
   std::string tbl_name;
   std::string catName;
-  std::string validWriteIdList;
-  int64_t tableId;
 
   _PrimaryKeysRequest__isset __isset;
 
@@ -6255,10 +6263,6 @@ class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
   void __set_tbl_name(const std::string& val);
 
   void __set_catName(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
-
-  void __set_tableId(const int64_t val);
 
   bool operator == (const PrimaryKeysRequest & rhs) const
   {
@@ -6269,14 +6273,6 @@ class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (__isset.tableId != rhs.__isset.tableId)
-      return false;
-    else if (__isset.tableId && !(tableId == rhs.tableId))
       return false;
     return true;
   }
@@ -6333,14 +6329,12 @@ void swap(PrimaryKeysResponse &a, PrimaryKeysResponse &b);
 std::ostream& operator<<(std::ostream& out, const PrimaryKeysResponse& obj);
 
 typedef struct _ForeignKeysRequest__isset {
-  _ForeignKeysRequest__isset() : parent_db_name(false), parent_tbl_name(false), foreign_db_name(false), foreign_tbl_name(false), catName(false), validWriteIdList(false), tableId(true) {}
+  _ForeignKeysRequest__isset() : parent_db_name(false), parent_tbl_name(false), foreign_db_name(false), foreign_tbl_name(false), catName(false) {}
   bool parent_db_name :1;
   bool parent_tbl_name :1;
   bool foreign_db_name :1;
   bool foreign_tbl_name :1;
   bool catName :1;
-  bool validWriteIdList :1;
-  bool tableId :1;
 } _ForeignKeysRequest__isset;
 
 class ForeignKeysRequest : public virtual ::apache::thrift::TBase {
@@ -6353,9 +6347,7 @@ class ForeignKeysRequest : public virtual ::apache::thrift::TBase {
                        parent_tbl_name(),
                        foreign_db_name(),
                        foreign_tbl_name(),
-                       catName(),
-                       validWriteIdList(),
-                       tableId(-1LL) {
+                       catName() {
   }
 
   virtual ~ForeignKeysRequest() noexcept;
@@ -6364,8 +6356,6 @@ class ForeignKeysRequest : public virtual ::apache::thrift::TBase {
   std::string foreign_db_name;
   std::string foreign_tbl_name;
   std::string catName;
-  std::string validWriteIdList;
-  int64_t tableId;
 
   _ForeignKeysRequest__isset __isset;
 
@@ -6378,10 +6368,6 @@ class ForeignKeysRequest : public virtual ::apache::thrift::TBase {
   void __set_foreign_tbl_name(const std::string& val);
 
   void __set_catName(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
-
-  void __set_tableId(const int64_t val);
 
   bool operator == (const ForeignKeysRequest & rhs) const
   {
@@ -6396,14 +6382,6 @@ class ForeignKeysRequest : public virtual ::apache::thrift::TBase {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (__isset.tableId != rhs.__isset.tableId)
-      return false;
-    else if (__isset.tableId && !(tableId == rhs.tableId))
       return false;
     return true;
   }
@@ -6459,11 +6437,6 @@ void swap(ForeignKeysResponse &a, ForeignKeysResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const ForeignKeysResponse& obj);
 
-typedef struct _UniqueConstraintsRequest__isset {
-  _UniqueConstraintsRequest__isset() : validWriteIdList(false), tableId(true) {}
-  bool validWriteIdList :1;
-  bool tableId :1;
-} _UniqueConstraintsRequest__isset;
 
 class UniqueConstraintsRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -6473,29 +6446,19 @@ class UniqueConstraintsRequest : public virtual ::apache::thrift::TBase {
   UniqueConstraintsRequest() noexcept
                            : catName(),
                              db_name(),
-                             tbl_name(),
-                             validWriteIdList(),
-                             tableId(-1LL) {
+                             tbl_name() {
   }
 
   virtual ~UniqueConstraintsRequest() noexcept;
   std::string catName;
   std::string db_name;
   std::string tbl_name;
-  std::string validWriteIdList;
-  int64_t tableId;
-
-  _UniqueConstraintsRequest__isset __isset;
 
   void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
   void __set_tbl_name(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
-
-  void __set_tableId(const int64_t val);
 
   bool operator == (const UniqueConstraintsRequest & rhs) const
   {
@@ -6504,14 +6467,6 @@ class UniqueConstraintsRequest : public virtual ::apache::thrift::TBase {
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (__isset.tableId != rhs.__isset.tableId)
-      return false;
-    else if (__isset.tableId && !(tableId == rhs.tableId))
       return false;
     return true;
   }
@@ -6567,11 +6522,6 @@ void swap(UniqueConstraintsResponse &a, UniqueConstraintsResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const UniqueConstraintsResponse& obj);
 
-typedef struct _NotNullConstraintsRequest__isset {
-  _NotNullConstraintsRequest__isset() : validWriteIdList(false), tableId(true) {}
-  bool validWriteIdList :1;
-  bool tableId :1;
-} _NotNullConstraintsRequest__isset;
 
 class NotNullConstraintsRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -6581,29 +6531,19 @@ class NotNullConstraintsRequest : public virtual ::apache::thrift::TBase {
   NotNullConstraintsRequest() noexcept
                             : catName(),
                               db_name(),
-                              tbl_name(),
-                              validWriteIdList(),
-                              tableId(-1LL) {
+                              tbl_name() {
   }
 
   virtual ~NotNullConstraintsRequest() noexcept;
   std::string catName;
   std::string db_name;
   std::string tbl_name;
-  std::string validWriteIdList;
-  int64_t tableId;
-
-  _NotNullConstraintsRequest__isset __isset;
 
   void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
   void __set_tbl_name(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
-
-  void __set_tableId(const int64_t val);
 
   bool operator == (const NotNullConstraintsRequest & rhs) const
   {
@@ -6612,14 +6552,6 @@ class NotNullConstraintsRequest : public virtual ::apache::thrift::TBase {
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (__isset.tableId != rhs.__isset.tableId)
-      return false;
-    else if (__isset.tableId && !(tableId == rhs.tableId))
       return false;
     return true;
   }
@@ -6675,11 +6607,6 @@ void swap(NotNullConstraintsResponse &a, NotNullConstraintsResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const NotNullConstraintsResponse& obj);
 
-typedef struct _DefaultConstraintsRequest__isset {
-  _DefaultConstraintsRequest__isset() : validWriteIdList(false), tableId(true) {}
-  bool validWriteIdList :1;
-  bool tableId :1;
-} _DefaultConstraintsRequest__isset;
 
 class DefaultConstraintsRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -6689,29 +6616,19 @@ class DefaultConstraintsRequest : public virtual ::apache::thrift::TBase {
   DefaultConstraintsRequest() noexcept
                             : catName(),
                               db_name(),
-                              tbl_name(),
-                              validWriteIdList(),
-                              tableId(-1LL) {
+                              tbl_name() {
   }
 
   virtual ~DefaultConstraintsRequest() noexcept;
   std::string catName;
   std::string db_name;
   std::string tbl_name;
-  std::string validWriteIdList;
-  int64_t tableId;
-
-  _DefaultConstraintsRequest__isset __isset;
 
   void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
   void __set_tbl_name(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
-
-  void __set_tableId(const int64_t val);
 
   bool operator == (const DefaultConstraintsRequest & rhs) const
   {
@@ -6720,14 +6637,6 @@ class DefaultConstraintsRequest : public virtual ::apache::thrift::TBase {
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (__isset.tableId != rhs.__isset.tableId)
-      return false;
-    else if (__isset.tableId && !(tableId == rhs.tableId))
       return false;
     return true;
   }
@@ -6783,11 +6692,6 @@ void swap(DefaultConstraintsResponse &a, DefaultConstraintsResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const DefaultConstraintsResponse& obj);
 
-typedef struct _CheckConstraintsRequest__isset {
-  _CheckConstraintsRequest__isset() : validWriteIdList(false), tableId(true) {}
-  bool validWriteIdList :1;
-  bool tableId :1;
-} _CheckConstraintsRequest__isset;
 
 class CheckConstraintsRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -6797,29 +6701,19 @@ class CheckConstraintsRequest : public virtual ::apache::thrift::TBase {
   CheckConstraintsRequest() noexcept
                           : catName(),
                             db_name(),
-                            tbl_name(),
-                            validWriteIdList(),
-                            tableId(-1LL) {
+                            tbl_name() {
   }
 
   virtual ~CheckConstraintsRequest() noexcept;
   std::string catName;
   std::string db_name;
   std::string tbl_name;
-  std::string validWriteIdList;
-  int64_t tableId;
-
-  _CheckConstraintsRequest__isset __isset;
 
   void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
   void __set_tbl_name(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
-
-  void __set_tableId(const int64_t val);
 
   bool operator == (const CheckConstraintsRequest & rhs) const
   {
@@ -6828,14 +6722,6 @@ class CheckConstraintsRequest : public virtual ::apache::thrift::TBase {
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (__isset.tableId != rhs.__isset.tableId)
-      return false;
-    else if (__isset.tableId && !(tableId == rhs.tableId))
       return false;
     return true;
   }
@@ -6891,11 +6777,6 @@ void swap(CheckConstraintsResponse &a, CheckConstraintsResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const CheckConstraintsResponse& obj);
 
-typedef struct _AllTableConstraintsRequest__isset {
-  _AllTableConstraintsRequest__isset() : validWriteIdList(false), tableId(true) {}
-  bool validWriteIdList :1;
-  bool tableId :1;
-} _AllTableConstraintsRequest__isset;
 
 class AllTableConstraintsRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -6905,29 +6786,19 @@ class AllTableConstraintsRequest : public virtual ::apache::thrift::TBase {
   AllTableConstraintsRequest() noexcept
                              : dbName(),
                                tblName(),
-                               catName(),
-                               validWriteIdList(),
-                               tableId(-1LL) {
+                               catName() {
   }
 
   virtual ~AllTableConstraintsRequest() noexcept;
   std::string dbName;
   std::string tblName;
   std::string catName;
-  std::string validWriteIdList;
-  int64_t tableId;
-
-  _AllTableConstraintsRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
   void __set_tblName(const std::string& val);
 
   void __set_catName(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
-
-  void __set_tableId(const int64_t val);
 
   bool operator == (const AllTableConstraintsRequest & rhs) const
   {
@@ -6936,14 +6807,6 @@ class AllTableConstraintsRequest : public virtual ::apache::thrift::TBase {
     if (!(tblName == rhs.tblName))
       return false;
     if (!(catName == rhs.catName))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
-      return false;
-    if (__isset.tableId != rhs.__isset.tableId)
-      return false;
-    else if (__isset.tableId && !(tableId == rhs.tableId))
       return false;
     return true;
   }
@@ -10333,12 +10196,13 @@ void swap(SeedTxnIdRequest &a, SeedTxnIdRequest &b);
 std::ostream& operator<<(std::ostream& out, const SeedTxnIdRequest& obj);
 
 typedef struct _LockComponent__isset {
-  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isTransactional(true), isDynamicPartitionWrite(true) {}
+  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isTransactional(true), isDynamicPartitionWrite(true), catName(true) {}
   bool tablename :1;
   bool partitionname :1;
   bool operationType :1;
   bool isTransactional :1;
   bool isDynamicPartitionWrite :1;
+  bool catName :1;
 } _LockComponent__isset;
 
 class LockComponent : public virtual ::apache::thrift::TBase {
@@ -10346,15 +10210,15 @@ class LockComponent : public virtual ::apache::thrift::TBase {
 
   LockComponent(const LockComponent&);
   LockComponent& operator=(const LockComponent&);
-  LockComponent() noexcept
-                : type(static_cast<LockType::type>(0)),
-                  level(static_cast<LockLevel::type>(0)),
-                  dbname(),
-                  tablename(),
-                  partitionname(),
-                  operationType((DataOperationType::type)5),
-                  isTransactional(false),
-                  isDynamicPartitionWrite(false) {
+  LockComponent() : type(static_cast<LockType::type>(0)),
+                    level(static_cast<LockLevel::type>(0)),
+                    dbname(),
+                    tablename(),
+                    partitionname(),
+                    operationType((DataOperationType::type)5),
+                    isTransactional(false),
+                    isDynamicPartitionWrite(false),
+                    catName("hive") {
     operationType = (DataOperationType::type)5;
 
   }
@@ -10380,6 +10244,7 @@ class LockComponent : public virtual ::apache::thrift::TBase {
   DataOperationType::type operationType;
   bool isTransactional;
   bool isDynamicPartitionWrite;
+  std::string catName;
 
   _LockComponent__isset __isset;
 
@@ -10398,6 +10263,8 @@ class LockComponent : public virtual ::apache::thrift::TBase {
   void __set_isTransactional(const bool val);
 
   void __set_isDynamicPartitionWrite(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const LockComponent & rhs) const
   {
@@ -10426,6 +10293,10 @@ class LockComponent : public virtual ::apache::thrift::TBase {
     if (__isset.isDynamicPartitionWrite != rhs.__isset.isDynamicPartitionWrite)
       return false;
     else if (__isset.isDynamicPartitionWrite && !(isDynamicPartitionWrite == rhs.isDynamicPartitionWrite))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -10701,12 +10572,13 @@ void swap(UnlockRequest &a, UnlockRequest &b);
 std::ostream& operator<<(std::ostream& out, const UnlockRequest& obj);
 
 typedef struct _ShowLocksRequest__isset {
-  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true), txnid(false) {}
+  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true), txnid(false), catname(true) {}
   bool dbname :1;
   bool tablename :1;
   bool partname :1;
   bool isExtended :1;
   bool txnid :1;
+  bool catname :1;
 } _ShowLocksRequest__isset;
 
 class ShowLocksRequest : public virtual ::apache::thrift::TBase {
@@ -10714,12 +10586,12 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
 
   ShowLocksRequest(const ShowLocksRequest&);
   ShowLocksRequest& operator=(const ShowLocksRequest&);
-  ShowLocksRequest() noexcept
-                   : dbname(),
-                     tablename(),
-                     partname(),
-                     isExtended(false),
-                     txnid(0) {
+  ShowLocksRequest() : dbname(),
+                       tablename(),
+                       partname(),
+                       isExtended(false),
+                       txnid(0),
+                       catname("hive") {
   }
 
   virtual ~ShowLocksRequest() noexcept;
@@ -10728,6 +10600,7 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   std::string partname;
   bool isExtended;
   int64_t txnid;
+  std::string catname;
 
   _ShowLocksRequest__isset __isset;
 
@@ -10740,6 +10613,8 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   void __set_isExtended(const bool val);
 
   void __set_txnid(const int64_t val);
+
+  void __set_catname(const std::string& val);
 
   bool operator == (const ShowLocksRequest & rhs) const
   {
@@ -10762,6 +10637,10 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
     if (__isset.txnid != rhs.__isset.txnid)
       return false;
     else if (__isset.txnid && !(txnid == rhs.txnid))
+      return false;
+    if (__isset.catname != rhs.__isset.catname)
+      return false;
+    else if (__isset.catname && !(catname == rhs.catname))
       return false;
     return true;
   }
@@ -10815,7 +10694,8 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
                              agentInfo(),
                              blockedByExtId(0),
                              blockedByIntId(0),
-                             lockIdInternal(0) {
+                             lockIdInternal(0),
+                             catname() {
   }
 
   virtual ~ShowLocksResponseElement() noexcept;
@@ -10843,6 +10723,7 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
   int64_t blockedByExtId;
   int64_t blockedByIntId;
   int64_t lockIdInternal;
+  std::string catname;
 
   _ShowLocksResponseElement__isset __isset;
 
@@ -10877,6 +10758,8 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
   void __set_blockedByIntId(const int64_t val);
 
   void __set_lockIdInternal(const int64_t val);
+
+  void __set_catname(const std::string& val);
 
   bool operator == (const ShowLocksResponseElement & rhs) const
   {
@@ -10930,6 +10813,8 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.lockIdInternal && !(lockIdInternal == rhs.lockIdInternal))
       return false;
+    if (!(catname == rhs.catname))
+      return false;
     return true;
   }
   bool operator != (const ShowLocksResponseElement &rhs) const {
@@ -10947,6 +10832,61 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
 void swap(ShowLocksResponseElement &a, ShowLocksResponseElement &b);
 
 std::ostream& operator<<(std::ostream& out, const ShowLocksResponseElement& obj);
+
+
+class LockMaterializationRebuildRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  LockMaterializationRebuildRequest(const LockMaterializationRebuildRequest&);
+  LockMaterializationRebuildRequest& operator=(const LockMaterializationRebuildRequest&);
+  LockMaterializationRebuildRequest() noexcept
+                                    : catName(),
+                                      dbName(),
+                                      tableName(),
+                                      txnId(0) {
+  }
+
+  virtual ~LockMaterializationRebuildRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string tableName;
+  int64_t txnId;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  bool operator == (const LockMaterializationRebuildRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(txnId == rhs.txnId))
+      return false;
+    return true;
+  }
+  bool operator != (const LockMaterializationRebuildRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const LockMaterializationRebuildRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(LockMaterializationRebuildRequest &a, LockMaterializationRebuildRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const LockMaterializationRebuildRequest& obj);
 
 typedef struct _ShowLocksResponse__isset {
   _ShowLocksResponse__isset() : locks(false) {}
@@ -14588,11 +14528,14 @@ void swap(ExtendedTableInfo &a, ExtendedTableInfo &b);
 std::ostream& operator<<(std::ostream& out, const ExtendedTableInfo& obj);
 
 typedef struct _DropTableRequest__isset {
-  _DropTableRequest__isset() : catalogName(false), deleteData(false), envContext(false), dropPartitions(false) {}
+  _DropTableRequest__isset() : catalogName(false), deleteData(false), envContext(false), dropPartitions(false), id(false), asyncDrop(false), cancel(false) {}
   bool catalogName :1;
   bool deleteData :1;
   bool envContext :1;
   bool dropPartitions :1;
+  bool id :1;
+  bool asyncDrop :1;
+  bool cancel :1;
 } _DropTableRequest__isset;
 
 class DropTableRequest : public virtual ::apache::thrift::TBase {
@@ -14605,7 +14548,10 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
                      dbName(),
                      tableName(),
                      deleteData(0),
-                     dropPartitions(0) {
+                     dropPartitions(0),
+                     id(),
+                     asyncDrop(0),
+                     cancel(0) {
   }
 
   virtual ~DropTableRequest() noexcept;
@@ -14615,6 +14561,9 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
   bool deleteData;
   EnvironmentContext envContext;
   bool dropPartitions;
+  std::string id;
+  bool asyncDrop;
+  bool cancel;
 
   _DropTableRequest__isset __isset;
 
@@ -14629,6 +14578,12 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
   void __set_envContext(const EnvironmentContext& val);
 
   void __set_dropPartitions(const bool val);
+
+  void __set_id(const std::string& val);
+
+  void __set_asyncDrop(const bool val);
+
+  void __set_cancel(const bool val);
 
   bool operator == (const DropTableRequest & rhs) const
   {
@@ -14652,6 +14607,18 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.dropPartitions && !(dropPartitions == rhs.dropPartitions))
       return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.asyncDrop != rhs.__isset.asyncDrop)
+      return false;
+    else if (__isset.asyncDrop && !(asyncDrop == rhs.asyncDrop))
+      return false;
+    if (__isset.cancel != rhs.__isset.cancel)
+      return false;
+    else if (__isset.cancel && !(cancel == rhs.cancel))
+      return false;
     return true;
   }
   bool operator != (const DropTableRequest &rhs) const {
@@ -14669,6 +14636,66 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
 void swap(DropTableRequest &a, DropTableRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const DropTableRequest& obj);
+
+typedef struct _AsyncOperationResp__isset {
+  _AsyncOperationResp__isset() : message(false), finished(false) {}
+  bool message :1;
+  bool finished :1;
+} _AsyncOperationResp__isset;
+
+class AsyncOperationResp : public virtual ::apache::thrift::TBase {
+ public:
+
+  AsyncOperationResp(const AsyncOperationResp&);
+  AsyncOperationResp& operator=(const AsyncOperationResp&);
+  AsyncOperationResp() noexcept
+                     : id(),
+                       message(),
+                       finished(0) {
+  }
+
+  virtual ~AsyncOperationResp() noexcept;
+  std::string id;
+  std::string message;
+  bool finished;
+
+  _AsyncOperationResp__isset __isset;
+
+  void __set_id(const std::string& val);
+
+  void __set_message(const std::string& val);
+
+  void __set_finished(const bool val);
+
+  bool operator == (const AsyncOperationResp & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (__isset.message != rhs.__isset.message)
+      return false;
+    else if (__isset.message && !(message == rhs.message))
+      return false;
+    if (__isset.finished != rhs.__isset.finished)
+      return false;
+    else if (__isset.finished && !(finished == rhs.finished))
+      return false;
+    return true;
+  }
+  bool operator != (const AsyncOperationResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AsyncOperationResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AsyncOperationResp &a, AsyncOperationResp &b);
+
+std::ostream& operator<<(std::ostream& out, const AsyncOperationResp& obj);
 
 typedef struct _GetDatabaseRequest__isset {
   _GetDatabaseRequest__isset() : name(false), catalogName(false), processorCapabilities(false), processorIdentifier(false) {}
@@ -14784,11 +14811,14 @@ void swap(AlterDatabaseRequest &a, AlterDatabaseRequest &b);
 std::ostream& operator<<(std::ostream& out, const AlterDatabaseRequest& obj);
 
 typedef struct _DropDatabaseRequest__isset {
-  _DropDatabaseRequest__isset() : catalogName(false), softDelete(true), txnId(true), deleteManagedDir(true) {}
+  _DropDatabaseRequest__isset() : catalogName(false), softDelete(true), txnId(true), deleteManagedDir(true), id(false), asyncDrop(false), cancel(false) {}
   bool catalogName :1;
   bool softDelete :1;
   bool txnId :1;
   bool deleteManagedDir :1;
+  bool id :1;
+  bool asyncDrop :1;
+  bool cancel :1;
 } _DropDatabaseRequest__isset;
 
 class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
@@ -14804,7 +14834,10 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
                         cascade(0),
                         softDelete(false),
                         txnId(0LL),
-                        deleteManagedDir(true) {
+                        deleteManagedDir(true),
+                        id(),
+                        asyncDrop(0),
+                        cancel(0) {
   }
 
   virtual ~DropDatabaseRequest() noexcept;
@@ -14816,6 +14849,9 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
   bool softDelete;
   int64_t txnId;
   bool deleteManagedDir;
+  std::string id;
+  bool asyncDrop;
+  bool cancel;
 
   _DropDatabaseRequest__isset __isset;
 
@@ -14834,6 +14870,12 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
   void __set_txnId(const int64_t val);
 
   void __set_deleteManagedDir(const bool val);
+
+  void __set_id(const std::string& val);
+
+  void __set_asyncDrop(const bool val);
+
+  void __set_cancel(const bool val);
 
   bool operator == (const DropDatabaseRequest & rhs) const
   {
@@ -14860,6 +14902,18 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
     if (__isset.deleteManagedDir != rhs.__isset.deleteManagedDir)
       return false;
     else if (__isset.deleteManagedDir && !(deleteManagedDir == rhs.deleteManagedDir))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.asyncDrop != rhs.__isset.asyncDrop)
+      return false;
+    else if (__isset.asyncDrop && !(asyncDrop == rhs.asyncDrop))
+      return false;
+    if (__isset.cancel != rhs.__isset.cancel)
+      return false;
+    else if (__isset.cancel && !(cancel == rhs.cancel))
       return false;
     return true;
   }
@@ -19444,6 +19498,86 @@ class AlterTableResponse : public virtual ::apache::thrift::TBase {
 void swap(AlterTableResponse &a, AlterTableResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj);
+
+typedef struct _TableParamsUpdate__isset {
+  _TableParamsUpdate__isset() : cat_name(false), expected_param_key(false), expected_param_value(false) {}
+  bool cat_name :1;
+  bool expected_param_key :1;
+  bool expected_param_value :1;
+} _TableParamsUpdate__isset;
+
+class TableParamsUpdate : public virtual ::apache::thrift::TBase {
+ public:
+
+  TableParamsUpdate(const TableParamsUpdate&);
+  TableParamsUpdate& operator=(const TableParamsUpdate&);
+  TableParamsUpdate() noexcept
+                    : cat_name(),
+                      db_name(),
+                      table_name(),
+                      expected_param_key(),
+                      expected_param_value() {
+  }
+
+  virtual ~TableParamsUpdate() noexcept;
+  std::string cat_name;
+  std::string db_name;
+  std::string table_name;
+  std::map<std::string, std::string>  params;
+  std::string expected_param_key;
+  std::string expected_param_value;
+
+  _TableParamsUpdate__isset __isset;
+
+  void __set_cat_name(const std::string& val);
+
+  void __set_db_name(const std::string& val);
+
+  void __set_table_name(const std::string& val);
+
+  void __set_params(const std::map<std::string, std::string> & val);
+
+  void __set_expected_param_key(const std::string& val);
+
+  void __set_expected_param_value(const std::string& val);
+
+  bool operator == (const TableParamsUpdate & rhs) const
+  {
+    if (__isset.cat_name != rhs.__isset.cat_name)
+      return false;
+    else if (__isset.cat_name && !(cat_name == rhs.cat_name))
+      return false;
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(table_name == rhs.table_name))
+      return false;
+    if (!(params == rhs.params))
+      return false;
+    if (__isset.expected_param_key != rhs.__isset.expected_param_key)
+      return false;
+    else if (__isset.expected_param_key && !(expected_param_key == rhs.expected_param_key))
+      return false;
+    if (__isset.expected_param_value != rhs.__isset.expected_param_value)
+      return false;
+    else if (__isset.expected_param_value && !(expected_param_value == rhs.expected_param_value))
+      return false;
+    return true;
+  }
+  bool operator != (const TableParamsUpdate &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableParamsUpdate & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TableParamsUpdate &a, TableParamsUpdate &b);
+
+std::ostream& operator<<(std::ostream& out, const TableParamsUpdate& obj);
 
 typedef struct _GetPartitionsFilterSpec__isset {
   _GetPartitionsFilterSpec__isset() : filterMode(false), filters(false) {}

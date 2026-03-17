@@ -148,7 +148,7 @@ INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null
 DROP TABLE tablePartitioned_n0;
 
 -- try constraint with direct sql as false
-set hive.metastore.try.direct.sql=false;
+set metaconf:metastore.try.direct.sql=false;
 CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');

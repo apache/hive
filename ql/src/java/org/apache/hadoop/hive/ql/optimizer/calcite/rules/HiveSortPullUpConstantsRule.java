@@ -42,6 +42,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -94,8 +95,23 @@ public final class HiveSortPullUpConstantsRule {
     @Override
     protected void buildSort(RelBuilder relBuilder, HiveSortExchange sortNode, Mappings.TargetMapping mapping) {
       List<RelFieldCollation> fieldCollations = applyToFieldCollations(sortNode.getCollation(), mapping);
-      RelDistribution distribution = sortNode.getDistribution().apply(mapping);
+      RelDistribution distribution = applyToDistribution(sortNode.getDistribution(), mapping);
       relBuilder.sortExchange(distribution, RelCollations.of(fieldCollations));
+    }
+    
+    private RelDistribution applyToDistribution(
+        RelDistribution distribution, Mappings.TargetMapping mapping) {
+      List<Integer> newKeys = new ArrayList<>();
+      for (int key : distribution.getKeys()) {
+        final int target = mapping.getTargetOpt(key);
+        if (target < 0) {
+          // It is a constant, we can ignore it
+          continue;
+        }
+        newKeys.add(target);
+      }
+      
+      return new HiveRelDistribution(distribution.getType(), newKeys);
     }
   }
 

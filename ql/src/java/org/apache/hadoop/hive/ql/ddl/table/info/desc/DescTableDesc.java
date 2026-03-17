@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -55,16 +56,16 @@ public class DescTableDesc implements DDLDesc, Serializable {
 
   private final String resFile;
   private final TableName tableName;
-  private final Map<String, String> partitionSpec;
+  private final Partition partition;
   private final String columnPath;
   private final boolean isExtended;
   private final boolean isFormatted;
 
-  public DescTableDesc(Path resFile, TableName tableName, Map<String, String> partitionSpec, String columnPath,
+  public DescTableDesc(Path resFile, TableName tableName, Partition partition, String columnPath,
       boolean isExtended, boolean isFormatted) {
     this.resFile = resFile.toString();
     this.tableName = tableName;
-    this.partitionSpec = partitionSpec;
+    this.partition = partition;
     this.columnPath = columnPath;
     this.isExtended = isExtended;
     this.isFormatted = isFormatted;
@@ -84,9 +85,13 @@ public class DescTableDesc implements DDLDesc, Serializable {
     return tableName;
   }
 
+  public Partition getPartition() {
+    return partition;
+  }
+
   @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartitionSpec() {
-    return partitionSpec;
+    return partition != null ? partition.getSpec() : null;
   }
 
   public String getColumnPath() {

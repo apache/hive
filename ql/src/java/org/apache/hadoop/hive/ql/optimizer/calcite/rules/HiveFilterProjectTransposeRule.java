@@ -23,7 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
+import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -35,6 +37,7 @@ import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
@@ -59,14 +62,22 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
+  private static RelOptRuleOperand joinOperand() {
+    Predicate<Join> isRewritable = join -> {
+      RelMetadataQuery mq = join.getCluster().getMetadataQuery();
+      return HiveRelOptUtil.isRewritablePKFKJoin(join, join.getLeft(), join.getRight(), mq).rewritable;
+    };
+    return operandJ(Join.class, null, isRewritable, any());
+  }
+
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
-          operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
+          operand(Filter.class, operand(Project.class, joinOperand())),
           HiveRelFactories.HIVE_BUILDER, true, true, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING =
@@ -75,7 +86,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
-          operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
+          operand(Filter.class, operand(Project.class, joinOperand())),
           HiveRelFactories.HIVE_BUILDER, true, false, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC =
@@ -85,6 +96,20 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   public static final HiveFilterProjectTransposeRule INSTANCE =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
                   HiveRelFactories.HIVE_BUILDER, false, false, ProjectMergeRule.DEFAULT_BLOAT);
+
+  public static final HiveFilterProjectTransposeRule SCAN = new HiveFilterProjectTransposeRule(
+      operand(Filter.class, operand(HiveProject.class, operand(HiveTableScan.class, none()))),
+      HiveRelFactories.HIVE_BUILDER,
+      false,
+      false,
+      ProjectMergeRule.DEFAULT_BLOAT);
+
+  public static final HiveFilterProjectTransposeRule DRUID = new HiveFilterProjectTransposeRule(
+      operand(Filter.class, operand(HiveProject.class, operand(DruidQuery.class, none()))),
+      HiveRelFactories.HIVE_BUILDER,
+      false,
+      false,
+      ProjectMergeRule.DEFAULT_BLOAT);
 
   private final boolean onlyDeterministic;
 
@@ -127,16 +152,6 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
     if (this.onlyDeterministic && !HiveCalciteUtil.isDeterministic(condition)) {
       return false;
     }
-
-    if (call.rels.length > 2) {
-      final Join joinRel = call.rel(2);
-      RewritablePKFKJoinInfo joinInfo = HiveRelOptUtil.isRewritablePKFKJoin(
-          joinRel, joinRel.getLeft(), joinRel.getRight(), call.getMetadataQuery());
-      if (!joinInfo.rewritable) {
-        return false;
-      }
-    }
-
     return super.matches(call);
   }
 

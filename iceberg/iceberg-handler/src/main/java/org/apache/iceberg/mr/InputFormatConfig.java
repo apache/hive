@@ -48,12 +48,14 @@ public class InputFormatConfig {
   public static final String SCHEMA_AUTO_CONVERSION = "iceberg.mr.schema.auto.conversion";
   public static final String TABLE_IDENTIFIER = "iceberg.mr.table.identifier";
   public static final String TABLE_LOCATION = "iceberg.mr.table.location";
+  public static final String TABLE_METADATA_LOCATION = "iceberg.mr.table.metadata.location";
   public static final String TABLE_SCHEMA = "iceberg.mr.table.schema";
   public static final String PARTITION_SPEC = "iceberg.mr.table.partition.spec";
   public static final String SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
   public static final String TABLE_CATALOG_PREFIX = "iceberg.mr.table.catalog.";
   public static final String LOCALITY = "iceberg.mr.locality";
   public static final String WRITE_FANOUT_ENABLED = "write.fanout.enabled";
+  public static final String VARIANT_SHREDDING_ENABLED = "variant.shredding.enabled";
 
   public static final String CTAS_TABLE_NAME = "iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
@@ -69,24 +71,18 @@ public class InputFormatConfig {
   public static final int COMMIT_TABLE_THREAD_POOL_SIZE_DEFAULT = 10;
   public static final String COMMIT_FILE_THREAD_POOL_SIZE = "iceberg.mr.commit.file.thread.pool.size";
   public static final int COMMIT_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
-  public static final String WRITE_TARGET_FILE_SIZE = "iceberg.mr.write.target.file.size";
 
   public static final String CASE_SENSITIVE = "iceberg.mr.case.sensitive";
   public static final boolean CASE_SENSITIVE_DEFAULT = true;
 
   public static final String CATALOG_NAME = "iceberg.catalog";
-  public static final String HADOOP_CATALOG = "hadoop.catalog";
-  public static final String HADOOP_TABLES = "hadoop.tables";
   public static final String HIVE_CATALOG = "hive.catalog";
-  public static final String ICEBERG_SNAPSHOTS_TABLE_SUFFIX = ".snapshots";
-  public static final String SNAPSHOT_TABLE = "iceberg.snapshots.table";
-  public static final String SNAPSHOT_TABLE_SUFFIX = "__snapshots";
 
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
-  public static final String CATALOG_TYPE_TEMPLATE = "iceberg.catalog.%s.type";
-  public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
-  public static final String CATALOG_CLASS_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
-  public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
+
+  public static final String SORT_ORDER = "sort.order";
+  public static final String SORT_COLUMNS = "sort.columns";
+  public static final String ZORDER = "ZORDER";
 
   public enum InMemoryDataModel {
     HIVE,
@@ -213,18 +209,6 @@ public class InputFormatConfig {
 
   public static boolean fetchVirtualColumns(Configuration conf) {
     return conf.getBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS, false);
-  }
-
-  /**
-   * Get Hadoop config key of a catalog property based on catalog name
-   * @param catalogName catalog name
-   * @param catalogProperty catalog property, can be any custom property,
-   *                        a commonly used list of properties can be found
-   *                        at {@link org.apache.iceberg.CatalogProperties}
-   * @return Hadoop config key of a catalog property for the catalog name
-   */
-  public static String catalogPropertyConfigKey(String catalogName, String catalogProperty) {
-    return String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
   }
 
   private static Schema schema(Configuration conf, String key) {

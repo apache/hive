@@ -44,6 +44,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -67,6 +68,8 @@ import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
+import org.jline.reader.History;
+import org.jline.reader.impl.LineReaderImpl;
 
 public class Commands {
 
@@ -186,13 +189,9 @@ public class Commands {
   }
 
   public boolean history(String line) {
-    Iterator hist = beeLine.getConsoleReader().getHistory().entries();
-    String[] tmp;
-    while(hist.hasNext()){
-      tmp = hist.next().toString().split(":", 2);
-      tmp[0] = Integer.toString(Integer.parseInt(tmp[0]) + 1);
-      beeLine.output(beeLine.getColorBuffer().pad(tmp[0], 6)
-          .append(":" + tmp[1]));
+    for (History.Entry entry : beeLine.getLineReader().getHistory()) {
+      beeLine.output(beeLine.getColorBuffer().pad(Integer.toString(entry.index() + 1), 6)
+          .append(": " + entry.line()));
     }
     return true;
   }
@@ -291,7 +290,7 @@ public class Commands {
       return beeLine.error(beeLine.loc("no-current-connection"));
     }
     try {
-      if (!(beeLine.getConsoleReader().readLine(beeLine.loc("really-drop-all")).equals("y"))) {
+      if (!(beeLine.getLineReader().readLine(beeLine.loc("really-drop-all")).equals("y"))) {
         return beeLine.error("abort-drop-all");
       }
 
@@ -342,47 +341,47 @@ public class Commands {
     return true;
   }
 
-
   public boolean scan(String line) throws IOException {
-    TreeSet<String> names = new TreeSet<String>();
-
     if (beeLine.getDrivers() == null) {
       beeLine.setDrivers(beeLine.scanDrivers());
     }
 
-    beeLine.info(beeLine.loc("drivers-found-count", beeLine.getDrivers().size()));
+    // Use a TreeSet to get a unique, sorted list of drivers by class name.
+    Set<Driver> drivers =
+        new TreeSet<>(Comparator.comparing(d -> d.getClass().getName()));
+    drivers.addAll(beeLine.getDrivers());
 
-    // unique the list
-    for (Iterator<Driver> i = beeLine.getDrivers().iterator(); i.hasNext();) {
-      names.add(i.next().getClass().getName());
-    }
+    // Get count of the unique driver in classpath
+    beeLine.info(beeLine.loc("drivers-found-count", drivers.size()));
 
-    beeLine.output(beeLine.getColorBuffer()
-        .bold(beeLine.getColorBuffer().pad(beeLine.loc("compliant"), 10).getMono())
-        .bold(beeLine.getColorBuffer().pad(beeLine.loc("jdbc-version"), 8).getMono())
-        .bold(beeLine.getColorBuffer(beeLine.loc("driver-class")).getMono()));
+    beeLine.output(
+        beeLine
+            .getColorBuffer()
+            .bold(beeLine.getColorBuffer().pad(beeLine.loc("compliant"), 10).getMono())
+            .bold(beeLine.getColorBuffer().pad(beeLine.loc("jdbc-version"), 8).getMono())
+            .bold(beeLine.getColorBuffer(beeLine.loc("driver-class")).getMono()));
 
-    for (Iterator<String> i = names.iterator(); i.hasNext();) {
-      String name = i.next().toString();
+    for (Driver driver : drivers) {
+      String name = driver.getClass().getName();
       try {
-        Driver driver = (Driver) Class.forName(name).newInstance();
-        ColorBuffer msg = beeLine.getColorBuffer()
-            .pad(driver.jdbcCompliant() ? "yes" : "no", 10)
-            .pad(driver.getMajorVersion() + "."
-                + driver.getMinorVersion(), 8)
-            .append(name);
+        // Use the driver instance that ServiceLoader already created for us.
+        ColorBuffer msg =
+            beeLine
+                .getColorBuffer()
+                .pad(driver.jdbcCompliant() ? "yes" : "no", 10)
+                .pad(driver.getMajorVersion() + "." + driver.getMinorVersion(), 8)
+                .append(name);
         if (driver.jdbcCompliant()) {
           beeLine.output(msg);
         } else {
           beeLine.output(beeLine.getColorBuffer().red(msg.getMono()));
         }
       } catch (Throwable t) {
-        beeLine.output(beeLine.getColorBuffer().red(name)); // error with driver
+        beeLine.error("Error processing driver " + name);
       }
     }
     return true;
   }
-
 
   public boolean save(String line) throws IOException {
     beeLine.info(beeLine.loc("saving-options", beeLine.getOpts().getPropertiesFile()));
@@ -1087,10 +1086,10 @@ public class Commands {
   /*
    * Check if the input line is a multi-line command which needs to read further
    */
-  public String handleMultiLineCmd(String line) throws IOException {
+  public String handleMultiLineCmd(String line) {
     line = HiveStringUtils.removeComments(line);
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
-                       : jline.console.ConsoleReader.NULL_MASK;
+                       : LineReaderImpl.NULL_MASK;
 
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
       StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
@@ -1101,17 +1100,15 @@ public class Commands {
           }
         }
       }
-      String extra;
+
       //avoid NPE below if for some reason -e argument has multi-line command
-      if (beeLine.getConsoleReader() == null) {
+      if (beeLine.getLineReader() == null) {
         throw new RuntimeException("Console reader not initialized. This could happen when there "
             + "is a multi-line command using -e option and which requires further reading from console");
       }
-      if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
-        extra = beeLine.getConsoleReader().readLine(null, mask);
-      } else {
-        extra = beeLine.getConsoleReader().readLine(prompt.toString());
-      }
+
+      String extra = (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) ?
+          beeLine.readLine(null, mask) : beeLine.readLine(prompt.toString(), null);
 
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
         break;
@@ -1663,19 +1660,18 @@ public class Commands {
         && !JdbcConnectionParams.AUTH_SSO_BROWSER_MODE.equals(auth)) {
       String urlForPrompt = url.substring(0, url.contains(";") ? url.indexOf(';') : url.length());
       if (username == null) {
-        username = beeLine.getConsoleReader().readLine("Enter username for " + urlForPrompt + ": ");
+        username = beeLine.readLine("Enter username for " + urlForPrompt + ": ", null);
       }
       props.setProperty(JdbcConnectionParams.AUTH_USER, username);
       if (password == null) {
-        password = beeLine.getConsoleReader().readLine("Enter password for " + urlForPrompt + ": ",
-          new Character('*'));
+        password = beeLine.readLine("Enter password for " + urlForPrompt + ": ", '*');
       }
       props.setProperty(JdbcConnectionParams.AUTH_PASSWD, password);
     }
 
     try {
       beeLine.getDatabaseConnections().setConnection(
-          new DatabaseConnection(beeLine, driver, url, props));
+          new DatabaseConnection(beeLine, url, props));
       beeLine.getDatabaseConnection().getConnection();
 
       if (!beeLine.isBeeLine()) {
@@ -1963,7 +1959,7 @@ public class Commands {
 
       // silly little pager
       if (index % (beeLine.getOpts().getMaxHeight() - 1) == 0) {
-        String ret = beeLine.getConsoleReader().readLine(beeLine.loc("enter-for-more"));
+        String ret = beeLine.getLineReader().readLine(beeLine.loc("enter-for-more"));
         if (ret != null && ret.startsWith("q")) {
           break;
         }

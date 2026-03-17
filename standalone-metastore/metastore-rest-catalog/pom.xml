@@ -14,7 +14,7 @@
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
@@ -23,8 +23,7 @@
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
-    <hive.version>${project.parent.version}</hive.version>
-    <iceberg.version>1.9.1</iceberg.version>
+    <iceberg.version>1.10.1</iceberg.version>
   </properties>
   <dependencies>
     <dependency>
@@ -43,7 +42,42 @@
       <artifactId>hive-iceberg-catalog</artifactId>
       <version>${hive.version}</version>
     </dependency>
+    <!-- Spring Boot dependencies - use Jetty instead of Tomcat for Java 21 compatibility -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jetty</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>1.9.17</version>
+    </dependency>
     <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <version>${hive.version}</version>
+      <classifier>core</classifier>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
@@ -99,6 +133,11 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -220,6 +259,23 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-admin-client</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Required by keycloak-admin-client/Resteasy for jakarta.annotation.Priority -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>${jakarta.annotation.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -252,7 +308,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -269,6 +335,22 @@
                 </systemProperty>
               </systemProperties>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <configuration>
+          <mainClass>org.apache.iceberg.rest.standalone.StandaloneRESTCatalogServer</mainClass>
+          <classifier>exec</classifier>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

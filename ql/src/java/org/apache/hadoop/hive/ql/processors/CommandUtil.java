@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import com.google.common.base.Joiner;
@@ -120,8 +121,7 @@ class CommandUtil {
   private static void authorizeCommandThrowEx(SessionState ss, HiveOperationType type,
     List<String> command, String serviceObject) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
-    HivePrivilegeObject serviceObj = new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.SERVICE_NAME,
-      null, serviceObject, null, null, null);
+    HivePrivilegeObject serviceObj = new HivePrivilegeObject(HivePrivilegeObjectType.SERVICE_NAME, serviceObject);
     HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
     ctxBuilder.setCommandString(Joiner.on(' ').join(command));
     ctxBuilder.setUserIpAddress(ss.getUserIpAddress());

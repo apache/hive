@@ -544,6 +544,8 @@ class ShowLocksRequest; end
 
 class ShowLocksResponseElement; end
 
+class LockMaterializationRebuildRequest; end
+
 class ShowLocksResponse; end
 
 class HeartbeatRequest; end
@@ -657,6 +659,8 @@ class GetTablesExtRequest; end
 class ExtendedTableInfo; end
 
 class DropTableRequest; end
+
+class AsyncOperationResp; end
 
 class GetDatabaseRequest; end
 
@@ -821,6 +825,8 @@ class RenamePartitionResponse; end
 class AlterTableRequest; end
 
 class AlterTableResponse; end
+
+class TableParamsUpdate; end
 
 class GetPartitionsFilterSpec; end
 
@@ -1668,12 +1674,14 @@ class Catalog
   DESCRIPTION = 2
   LOCATIONURI = 3
   CREATETIME = 4
+  PARAMETERS = 5
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
     LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'},
-    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true}
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2770,15 +2778,11 @@ class PrimaryKeysRequest
   DB_NAME = 1
   TBL_NAME = 2
   CATNAME = 3
-  VALIDWRITEIDLIST = 4
-  TABLEID = 5
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
     TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2815,17 +2819,13 @@ class ForeignKeysRequest
   FOREIGN_DB_NAME = 3
   FOREIGN_TBL_NAME = 4
   CATNAME = 5
-  VALIDWRITEIDLIST = 6
-  TABLEID = 7
 
   FIELDS = {
     PARENT_DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'parent_db_name'},
     PARENT_TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'parent_tbl_name'},
     FOREIGN_DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'foreign_db_name'},
     FOREIGN_TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'foreign_tbl_name'},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2858,15 +2858,11 @@ class UniqueConstraintsRequest
   CATNAME = 1
   DB_NAME = 2
   TBL_NAME = 3
-  VALIDWRITEIDLIST = 4
-  TABLEID = 5
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'}
   }
 
   def struct_fields; FIELDS; end
@@ -2902,15 +2898,11 @@ class NotNullConstraintsRequest
   CATNAME = 1
   DB_NAME = 2
   TBL_NAME = 3
-  VALIDWRITEIDLIST = 4
-  TABLEID = 5
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'}
   }
 
   def struct_fields; FIELDS; end
@@ -2946,15 +2938,11 @@ class DefaultConstraintsRequest
   CATNAME = 1
   DB_NAME = 2
   TBL_NAME = 3
-  VALIDWRITEIDLIST = 4
-  TABLEID = 5
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'}
   }
 
   def struct_fields; FIELDS; end
@@ -2990,15 +2978,11 @@ class CheckConstraintsRequest
   CATNAME = 1
   DB_NAME = 2
   TBL_NAME = 3
-  VALIDWRITEIDLIST = 4
-  TABLEID = 5
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'}
   }
 
   def struct_fields; FIELDS; end
@@ -3034,15 +3018,11 @@ class AllTableConstraintsRequest
   DBNAME = 1
   TBLNAME = 2
   CATNAME = 3
-  VALIDWRITEIDLIST = 4
-  TABLEID = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'}
   }
 
   def struct_fields; FIELDS; end
@@ -4363,6 +4343,7 @@ class LockComponent
   OPERATIONTYPE = 6
   ISTRANSACTIONAL = 7
   ISDYNAMICPARTITIONWRITE = 8
+  CATNAME = 9
 
   FIELDS = {
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::LockType},
@@ -4372,7 +4353,8 @@ class LockComponent
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType},
     ISTRANSACTIONAL => {:type => ::Thrift::Types::BOOL, :name => 'isTransactional', :default => false, :optional => true},
-    ISDYNAMICPARTITIONWRITE => {:type => ::Thrift::Types::BOOL, :name => 'isDynamicPartitionWrite', :default => false, :optional => true}
+    ISDYNAMICPARTITIONWRITE => {:type => ::Thrift::Types::BOOL, :name => 'isDynamicPartitionWrite', :default => false, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4498,13 +4480,15 @@ class ShowLocksRequest
   PARTNAME = 3
   ISEXTENDED = 4
   TXNID = 5
+  CATNAME = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partname', :optional => true},
     ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true}
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catname', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4533,6 +4517,7 @@ class ShowLocksResponseElement
   BLOCKEDBYEXTID = 14
   BLOCKEDBYINTID = 15
   LOCKIDINTERNAL = 16
+  CATNAME = 17
 
   FIELDS = {
     LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'},
@@ -4550,7 +4535,8 @@ class ShowLocksResponseElement
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :optional => true},
     BLOCKEDBYEXTID => {:type => ::Thrift::Types::I64, :name => 'blockedByExtId', :optional => true},
     BLOCKEDBYINTID => {:type => ::Thrift::Types::I64, :name => 'blockedByIntId', :optional => true},
-    LOCKIDINTERNAL => {:type => ::Thrift::Types::I64, :name => 'lockIdInternal', :optional => true}
+    LOCKIDINTERNAL => {:type => ::Thrift::Types::I64, :name => 'lockIdInternal', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catname'}
   }
 
   def struct_fields; FIELDS; end
@@ -4563,12 +4549,39 @@ class ShowLocksResponseElement
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lastheartbeat is unset!') unless @lastheartbeat
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user is unset!') unless @user
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hostname is unset!') unless @hostname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catname is unset!') unless @catname
     unless @state.nil? || ::LockState::VALID_VALUES.include?(@state)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
     end
     unless @type.nil? || ::LockType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class LockMaterializationRebuildRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  TABLENAME = 3
+  TXNID = 4
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -5944,6 +5957,9 @@ class DropTableRequest
   DELETEDATA = 4
   ENVCONTEXT = 5
   DROPPARTITIONS = 6
+  ID = 7
+  ASYNCDROP = 8
+  CANCEL = 9
 
   FIELDS = {
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
@@ -5951,7 +5967,10 @@ class DropTableRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData', :optional => true},
     ENVCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'envContext', :class => ::EnvironmentContext, :optional => true},
-    DROPPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dropPartitions', :optional => true}
+    DROPPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'dropPartitions', :optional => true},
+    ID => {:type => ::Thrift::Types::STRING, :name => 'id', :optional => true},
+    ASYNCDROP => {:type => ::Thrift::Types::BOOL, :name => 'asyncDrop', :optional => true},
+    CANCEL => {:type => ::Thrift::Types::BOOL, :name => 'cancel', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5959,6 +5978,27 @@ class DropTableRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AsyncOperationResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ID = 1
+  MESSAGE = 2
+  FINISHED = 3
+
+  FIELDS = {
+    ID => {:type => ::Thrift::Types::STRING, :name => 'id'},
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message', :optional => true},
+    FINISHED => {:type => ::Thrift::Types::BOOL, :name => 'finished', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field id is unset!') unless @id
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -6016,6 +6056,9 @@ class DropDatabaseRequest
   SOFTDELETE = 6
   TXNID = 7
   DELETEMANAGEDDIR = 8
+  ID = 9
+  ASYNCDROP = 10
+  CANCEL = 11
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -6025,7 +6068,10 @@ class DropDatabaseRequest
     CASCADE => {:type => ::Thrift::Types::BOOL, :name => 'cascade'},
     SOFTDELETE => {:type => ::Thrift::Types::BOOL, :name => 'softDelete', :default => false, :optional => true},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => 0, :optional => true},
-    DELETEMANAGEDDIR => {:type => ::Thrift::Types::BOOL, :name => 'deleteManagedDir', :default => true, :optional => true}
+    DELETEMANAGEDDIR => {:type => ::Thrift::Types::BOOL, :name => 'deleteManagedDir', :default => true, :optional => true},
+    ID => {:type => ::Thrift::Types::STRING, :name => 'id', :optional => true},
+    ASYNCDROP => {:type => ::Thrift::Types::BOOL, :name => 'asyncDrop', :optional => true},
+    CANCEL => {:type => ::Thrift::Types::BOOL, :name => 'cancel', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -7704,6 +7750,35 @@ class AlterTableResponse
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TableParamsUpdate
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CAT_NAME = 1
+  DB_NAME = 2
+  TABLE_NAME = 3
+  PARAMS = 4
+  EXPECTED_PARAM_KEY = 5
+  EXPECTED_PARAM_VALUE = 6
+
+  FIELDS = {
+    CAT_NAME => {:type => ::Thrift::Types::STRING, :name => 'cat_name', :optional => true},
+    DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+    TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
+    PARAMS => {:type => ::Thrift::Types::MAP, :name => 'params', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+    EXPECTED_PARAM_KEY => {:type => ::Thrift::Types::STRING, :name => 'expected_param_key', :optional => true},
+    EXPECTED_PARAM_VALUE => {:type => ::Thrift::Types::STRING, :name => 'expected_param_value', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table_name is unset!') unless @table_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field params is unset!') unless @params
   end
 
   ::Thrift::Struct.generate_accessors self

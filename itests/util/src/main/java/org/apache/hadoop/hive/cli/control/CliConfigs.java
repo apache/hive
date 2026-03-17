@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.cli.control;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.hooks.ExplainFormattedCBOHook;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
 
 public class CliConfigs {
@@ -339,6 +341,49 @@ public class CliConfigs {
     }
   }
 
+  public static class TPCDSCteCliConfig extends AbstractCliConfig {
+    public TPCDSCteCliConfig() {
+      super(CorePerfCliDriver.class);
+      setQueryDir("ql/src/test/queries/clientpositive/perf");
+      setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds30tb/cte");
+      setResultsDir("ql/src/test/results/clientpositive/perf/tpcds30tb/cte");
+      setHiveConfDir("data/conf/perf/tpcds30tb/tez");
+      Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
+      conf.put(HiveConf.ConfVars.HIVE_CTE_SUGGESTER_TYPE, "CBO");
+      conf.put(
+          HiveConf.ConfVars.HIVE_CTE_SUGGESTER_CLASS,
+          "org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionPrintSuggester");
+      conf.put(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, "1");
+      conf.put(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY, "false");
+      setCustomConfigValueMap(conf);
+      setClusterType(MiniClusterType.LLAP_LOCAL);
+      setMetastoreType("postgres.tpcds");
+      // At the moment only makes sense to check CBO plans
+      for (int i = 1; i < 100; i++) {
+        includeQuery("cbo_query" + i + ".q");
+      }
+    }
+  }
+
+  public static class TPCDSFormattedCBOConfig extends AbstractCliConfig {
+    public TPCDSFormattedCBOConfig() {
+      super(CorePerfCliDriver.class);
+      setQueryDir("ql/src/test/queries/clientpositive/perf");
+      setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds30tb/json");
+      setResultsDir("ql/src/test/results/clientpositive/perf/tpcds30tb/json");
+      setHiveConfDir("data/conf/perf/tpcds30tb/tez");
+      Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
+      conf.put(HiveConf.ConfVars.HIVE_EXPLAIN_FORMATTED_INDENT, "true");
+      conf.put(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, ExplainFormattedCBOHook.class.getCanonicalName());
+      setCustomConfigValueMap(conf);
+      setClusterType(MiniClusterType.LLAP_LOCAL);
+      setMetastoreType("postgres.tpcds");
+      for (int i = 1; i < 100; i++) {
+        includeQuery("query" + i + ".q");
+      }
+    }
+  }
+
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);
@@ -644,6 +689,8 @@ public class CliConfigs {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
         excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.compactor.files");
+        excludesFrom(testConfigProps, "iceberg.llap.query.rest.hms.files");
+        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
@@ -682,6 +729,50 @@ public class CliConfigs {
       try {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
         includesFrom(testConfigProps, "iceberg.llap.query.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogHMSLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogHMSLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.hms.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");

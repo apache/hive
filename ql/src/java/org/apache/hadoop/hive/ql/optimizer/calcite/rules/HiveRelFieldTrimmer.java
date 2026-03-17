@@ -28,7 +28,6 @@ import java.util.Set;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
@@ -70,7 +69,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -102,8 +100,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
   private static final ThreadLocal<ColumnAccessInfo> COLUMN_ACCESS_INFO =
       new ThreadLocal<>();
-  private static final ThreadLocal<Map<HiveProject, Table>> VIEW_PROJECT_TO_TABLE_SCHEMA =
-      new ThreadLocal<>();
+  private static final ThreadLocal<Map<RelNode, Table>> REL_TO_TABLE = new ThreadLocal<>();
 
 
   protected HiveRelFieldTrimmer(boolean fetchStats) {
@@ -155,17 +152,18 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   }
 
   public RelNode trim(RelBuilder relBuilder, RelNode root,
-      ColumnAccessInfo columnAccessInfo, Map<HiveProject, Table> viewToTableSchema) {
+                      ColumnAccessInfo columnAccessInfo,
+                      Map<RelNode, Table> relNodeToTable) {
     try {
       // Set local thread variables
       COLUMN_ACCESS_INFO.set(columnAccessInfo);
-      VIEW_PROJECT_TO_TABLE_SCHEMA.set(viewToTableSchema);
+      REL_TO_TABLE.set(relNodeToTable);
       // Execute pruning
       return super.trim(relBuilder, root);
     } finally {
       // Always remove the local thread variables to avoid leaks
       COLUMN_ACCESS_INFO.remove();
-      VIEW_PROJECT_TO_TABLE_SCHEMA.remove();
+      REL_TO_TABLE.remove();
     }
   }
 
@@ -201,6 +199,30 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     }
 
     return dispatchTrimFields(input, fieldsUsedBuilder.build(), extraFields);
+  }
+
+  @Override
+  protected void preTrim(RelNode rel, ImmutableBitSet fieldsUsed) {
+    setColumnAccessInfoForViews(rel, fieldsUsed);
+  }
+
+  protected void setColumnAccessInfoForViews(RelNode rel, ImmutableBitSet fieldsUsed) {
+    final ColumnAccessInfo columnAccessInfo = COLUMN_ACCESS_INFO.get();
+    final Map<RelNode, Table> relToTable = REL_TO_TABLE.get();
+
+    // HiveTableScans are handled separately in HiveTableScan's trimFields method.
+    if (!(rel instanceof HiveTableScan) &&
+        columnAccessInfo != null &&
+        relToTable != null &&
+        relToTable.containsKey(rel)) {
+      Table table = relToTable.get(rel);
+      String tableName = table.getCompleteName();
+      List<FieldSchema> tableAllCols = table.getAllCols();
+      
+      for (int i : fieldsUsed) {
+        columnAccessInfo.add(tableName, tableAllCols.get(i).getName());
+      }
+    }
   }
 
   /**
@@ -367,10 +389,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
               true));
       nameList.add(extraField.getName());
     }
-
-    HiveProject hp = (HiveProject) relBuilder.push(dq).project(exprList, nameList).build();
-    hp.setSynthetic();
-    return hp;
+    return relBuilder.push(dq).project(exprList, nameList).build();
   }
 
   private boolean isRexLiteral(final RexNode rexNode) {
@@ -724,27 +743,6 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     relBuilder.aggregate(groupKey, newAggCallList);
 
     return result(relBuilder.build(), mapping);
-  }
-
-  /**
-   * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for
-   * {@link org.apache.calcite.rel.logical.LogicalProject}.
-   */
-  public TrimResult trimFields(Project project, ImmutableBitSet fieldsUsed,
-      Set<RelDataTypeField> extraFields) {
-    // set columnAccessInfo for ViewColumnAuthorization
-    final ColumnAccessInfo columnAccessInfo = COLUMN_ACCESS_INFO.get();
-    final Map<HiveProject, Table> viewProjectToTableSchema = VIEW_PROJECT_TO_TABLE_SCHEMA.get();
-    if (columnAccessInfo != null && viewProjectToTableSchema != null
-        && viewProjectToTableSchema.containsKey(project)) {
-      for (Ord<RexNode> ord : Ord.zip(project.getProjects())) {
-        if (fieldsUsed.get(ord.i)) {
-          Table tab = viewProjectToTableSchema.get(project);
-          columnAccessInfo.add(tab.getCompleteName(), tab.getAllCols().get(ord.i).getName());
-        }
-      }
-    }
-    return super.trimFields(project, fieldsUsed, extraFields);
   }
 
   public TrimResult trimFields(HiveTableScan tableAccessRel, ImmutableBitSet fieldsUsed,

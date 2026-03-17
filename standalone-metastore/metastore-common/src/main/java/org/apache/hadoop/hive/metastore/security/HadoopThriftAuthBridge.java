@@ -44,7 +44,6 @@ import javax.security.sasl.SaslServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.SecurityUtil;
@@ -113,6 +112,13 @@ public abstract class HadoopThriftAuthBridge {
 
   public Server createServer(String keytabFile, String principalConf, String clientConf) throws TTransportException {
     return new Server(keytabFile, principalConf, clientConf);
+  }
+
+  public Server createServer(String keytabFile, String principalConf, String clientConf,
+      CallbackHandler callbackHandler) throws TTransportException {
+    Server server = new Server(keytabFile, principalConf, clientConf);
+    server.setCallbackHandler(callbackHandler);
+    return server;
   }
 
 
@@ -324,6 +330,7 @@ public abstract class HadoopThriftAuthBridge {
     protected final UserGroupInformation realUgi;
     protected final UserGroupInformation clientValidationUGI;
     protected DelegationTokenSecretManager secretManager;
+    private CallbackHandler callbackHandler;
 
     public Server() throws TTransportException {
       try {
@@ -378,6 +385,10 @@ public abstract class HadoopThriftAuthBridge {
       this.secretManager = secretManager;
     }
 
+    public void setCallbackHandler(CallbackHandler callbackHandler) {
+      this.callbackHandler = callbackHandler;
+    }
+
     /**
      * Create a TTransportFactory that, upon connection of a client socket,
      * negotiates a Kerberized SASL transport. The resulting TTransportFactory
@@ -411,11 +422,14 @@ public abstract class HadoopThriftAuthBridge {
       }
 
       TSaslServerTransport.Factory transFactory = new TSaslServerTransport.Factory();
+      CallbackHandler kerberosCallbackHandler = this.callbackHandler != null
+        ? this.callbackHandler
+        : new SaslRpcServer.SaslGssCallbackHandler();
       transFactory.addServerDefinition(
           AuthMethod.KERBEROS.getMechanismName(),
           names[0], names[1],  // two parts of kerberos principal
           saslProps,
-          new SaslRpcServer.SaslGssCallbackHandler());
+          kerberosCallbackHandler);
       transFactory.addServerDefinition(AuthMethod.DIGEST.getMechanismName(),
           null, SaslRpcServer.SASL_DEFAULT_REALM,
           saslProps, new SaslDigestCallbackHandler(secretManager));
@@ -595,14 +609,17 @@ public abstract class HadoopThriftAuthBridge {
         this.useProxy = useProxy;
       }
 
-
       @Override
       public void process(final TProtocol inProt, final TProtocol outProt) throws TException {
        TTransport trans = inProt.getTransport();
+       if (inProt.getTransport() instanceof TUGIContainingTransport ugiTransport) {
+         assert useProxy;
+         trans = ugiTransport.getWrapped();
+       }
        if (!(trans instanceof TSaslServerTransport)) {
          throw new TException("Unexpected non-SASL transport " + trans.getClass());
        }
-       TSaslServerTransport saslTrans = (TSaslServerTransport)trans;
+       TSaslServerTransport saslTrans = (TSaslServerTransport) trans;
        SaslServer saslServer = saslTrans.getSaslServer();
        String authId = saslServer.getAuthorizationID();
        LOG.debug("Sasl Server AUTH ID: {}", authId);
@@ -631,11 +648,16 @@ public abstract class HadoopThriftAuthBridge {
          }
        }
 
-       UserGroupInformation clientUgi = null;
        try {
          if (useProxy) {
-           clientUgi = UserGroupInformation.createProxyUser(
-               endUser, UserGroupInformation.getLoginUser());
+           UserGroupInformation clientUgi =
+               UserGroupInformation.createProxyUser(endUser, UserGroupInformation.getLoginUser());
+           if (inProt.getTransport() instanceof TUGIContainingTransport ugiTransport) {
+             if (ugiTransport.getClientUGI() == null) {
+               ugiTransport.setClientUGI(clientUgi);
+             }
+             clientUgi = ugiTransport.getClientUGI();
+           }
            remoteUser.set(clientUgi.getShortUserName());
            LOG.debug("Set remoteUser: {}", remoteUser.get());
            clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
@@ -650,7 +672,6 @@ public abstract class HadoopThriftAuthBridge {
                }
              }
            });
-           return;
          } else {
            // use the short user name for the request
            UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
@@ -658,7 +679,6 @@ public abstract class HadoopThriftAuthBridge {
            LOG.debug("Set remoteUser: {}, from endUser: {}", remoteUser.get(),
                endUser);
            wrapped.process(inProt, outProt);
-           return;
          }
        } catch (RuntimeException rte) {
          if (rte.getCause() instanceof TException) {
@@ -669,15 +689,6 @@ public abstract class HadoopThriftAuthBridge {
          throw new RuntimeException(ie); // unexpected!
        } catch (IOException ioe) {
          throw new RuntimeException(ioe); // unexpected!
-       } finally {
-         if (clientUgi != null) {
-           try {
-             FileSystem.closeAllForUGI(clientUgi);
-           } catch (IOException exception) {
-             LOG.error("Could not clean up file-system handles for UGI: "
-                 + clientUgi, exception);
-           }
-         }
        }
       }
     }

@@ -57,7 +57,6 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.PathExistsException;
@@ -76,8 +75,6 @@ import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.security.auth.login.LoginException;
 
 /**
  * Collection of file manipulation utilities common across Hive.
@@ -520,7 +517,7 @@ public final class FileUtils {
     }
   }
 
-  public static UserGroupInformation getProxyUser(final String user) throws LoginException, IOException {
+  public static UserGroupInformation getProxyUser(final String user) throws IOException {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
     UserGroupInformation proxyUser = null;
@@ -963,41 +960,6 @@ public final class FileUtils {
       LOG.error("Can not copy using snapshot from source: {}, target: {}", srcPaths, dst);
     }
     return copied;
-  }
-
-  /**
-   * Move a particular file or directory to the trash.
-   * @param fs FileSystem to use
-   * @param f path of file or directory to move to trash.
-   * @param conf
-   * @return true if move successful
-   * @throws IOException
-   */
-  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean purge)
-      throws IOException {
-    LOG.debug("deleting  " + f);
-    boolean result = false;
-    try {
-      if(purge) {
-        LOG.debug("purge is set to true. Not moving to Trash " + f);
-      } else {
-        result = Trash.moveToAppropriateTrash(fs, f, conf);
-        if (result) {
-          LOG.trace("Moved to trash: " + f);
-          return true;
-        }
-      }
-    } catch (IOException ioe) {
-      // for whatever failure reason including that trash has lower encryption zone
-      // retry with force delete
-      LOG.warn(ioe.getMessage() + "; Force to delete it.");
-    }
-
-    result = fs.delete(f, true);
-    if (!result) {
-      LOG.error("Failed to delete " + f);
-    }
-    return result;
   }
 
   public static boolean rename(FileSystem fs, Path sourcePath,

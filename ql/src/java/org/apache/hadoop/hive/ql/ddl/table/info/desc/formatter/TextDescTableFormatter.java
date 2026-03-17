@@ -121,13 +121,7 @@ class TextDescTableFormatter extends DescTableFormatter {
         partitionTransformOutput += LINE_DELIM + "# Partition Transform Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.PARTITION_TRANSFORM_SPEC_SCHEMA.split("#")[0].split(","));
         for (TransformSpec spec : partSpecs) {
-          String[] row = new String[2];
-          row[0] = spec.getColumnName();
-          if (spec.getTransformType() != null) {
-            row[1] = spec.getTransformParam().isPresent() ?
-                spec.getTransformType().name() + "[" + spec.getTransformParam().get() + "]" :
-                spec.getTransformType().name();
-          }
+          String[] row = new String[]{spec.getColumnName(), spec.transformTypeString()};
           metaDataTable.addRow(row);
         }
         partitionTransformOutput += metaDataTable.renderTable(isOutputPadded);
@@ -177,7 +171,13 @@ class TextDescTableFormatter extends DescTableFormatter {
       boolean isFormatted, boolean isOutputPadded) throws IOException {
     String partitionData = "";
     if (columnPath == null) {
-      List<FieldSchema> partitionColumns = table.isPartitioned() ? table.getPartCols() : null;
+      List<FieldSchema> partitionColumns = null;
+      // TODO (HIVE-29413): Refactor to a generic getPartCols() implementation
+      if (table.isPartitioned()) {
+        partitionColumns = table.hasNonNativePartitionSupport() ?
+            table.getStorageHandler().getPartitionKeys(table) :
+            table.getPartCols();
+      }
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();

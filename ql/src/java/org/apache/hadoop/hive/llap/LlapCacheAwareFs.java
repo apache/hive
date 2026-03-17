@@ -283,7 +283,10 @@ public class LlapCacheAwareFs extends FileSystem {
               int chunkPartCount = largeBufCount + ((smallSize > 0) ? 1 : 0);
               DiskRange[] cacheRanges = new DiskRange[chunkPartCount];
               int extraOffsetInChunk = 0;
-              if (maxAlloc < chunkLength) {
+              newCacheData = new MemoryBuffer[chunkPartCount];
+              int index = 0;
+              
+              if (largeBufCount > 0) {
                 largeBuffers = new MemoryBuffer[largeBufCount];
                 // Note: we don't use StoppableAllocator here - this is not on an IO thread.
                 allocator.allocateMultiple(largeBuffers, maxAlloc, cache.getDataBufferFactory());
@@ -298,8 +301,10 @@ public class LlapCacheAwareFs extends FileSystem {
                   extraDiskDataOffset += remaining;
                   extraOffsetInChunk += remaining;
                 }
+                for (MemoryBuffer buf : largeBuffers) {
+                  newCacheData[index++] = buf;
+                }
               }
-              newCacheData = largeBuffers;
               largeBuffers = null;
               if (smallSize > 0) {
                 smallBuffer = new MemoryBuffer[1];
@@ -311,15 +316,7 @@ public class LlapCacheAwareFs extends FileSystem {
                     smallSize, bb, cacheRanges, largeBufCount, chunkFrom + extraOffsetInChunk);
                 extraDiskDataOffset += smallSize;
                 extraOffsetInChunk += smallSize; // Not strictly necessary, no one will look at it.
-                if (newCacheData == null) {
-                  newCacheData = smallBuffer;
-                } else {
-                  // TODO: add allocate overload with an offset and length
-                  MemoryBuffer[] combinedCacheData = new MemoryBuffer[largeBufCount + 1];
-                  System.arraycopy(newCacheData, 0, combinedCacheData, 0, largeBufCount);
-                  newCacheData = combinedCacheData;
-                  newCacheData[largeBufCount] = smallBuffer[0];
-                }
+                newCacheData[index] = smallBuffer[0];
                 smallBuffer = null;
               }
               cache.putFileData(fileKey, cacheRanges, newCacheData, 0, tag);

@@ -81,6 +81,10 @@ POSTHOOK: Input: default@test_truncate
 a                   	int                 	                    
 b                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -126,6 +130,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	avro                
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -184,6 +189,10 @@ POSTHOOK: Input: default@test_truncate
 a                   	int                 	                    
 b                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -229,6 +238,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	avro                
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

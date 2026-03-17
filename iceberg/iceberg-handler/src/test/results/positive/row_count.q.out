@@ -85,6 +85,11 @@ tradets             	timestamp
 p1                  	string              	                    
 p2                  	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 p1                  	IDENTITY            	 
@@ -124,6 +129,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -171,6 +177,11 @@ tradets             	timestamp
 p1                  	string              	                    
 p2                  	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 p1                  	IDENTITY            	 
@@ -210,6 +221,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

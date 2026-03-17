@@ -1546,6 +1546,244 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n3
 POSTHOOK: Input: default@view_n123456789
 #### A masked pattern was here ####
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "table1_n3"
+        ],
+        "table:alias": "table1_n3",
+        "inputs": [],
+        "rowCount": 1,
+        "avgRowSize": 0,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "emp_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "emp_id"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "emp_name",
+            "ndv": 1
+          },
+          {
+            "name": "emp_id",
+            "ndv": 1,
+            "minValue": -2147483648,
+            "maxValue": 2147483647
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT COUNT(*) AS `_c0`\nFROM `default`.`table1_n3`",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-1": {
+      "ROOT STAGE": "TRUE"
+    },
+    "Stage-0": {
+      "DEPENDENT STAGES": "Stage-1"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-1": {
+      "Tez": {
+#### A masked pattern was here ####
+        "Edges:": {
+          "Reducer 2": {
+            "parent": "Map 1",
+            "type": "CUSTOM_SIMPLE_EDGE"
+          }
+        },
+#### A masked pattern was here ####
+        "Vertices:": {
+          "Map 1": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "table1_n3",
+                  "database:": "default",
+                  "properties:": {
+                    "insideView": "TRUE"
+                  },
+                  "Statistics:": "Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE",
+                  "table:": "table1_n3",
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_0",
+                  "children": {
+                    "Select Operator": {
+                      "Statistics:": "Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE",
+                      "OperatorId:": "SEL_7",
+                      "children": {
+                        "Group By Operator": {
+                          "aggregations:": [
+                            "count()"
+                          ],
+                          "minReductionHashAggr:": "0.99",
+                          "mode:": "hash",
+                          "outputColumnNames:": [
+                            "_col0"
+                          ],
+                          "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                          "OperatorId:": "GBY_8",
+                          "children": {
+                            "Reduce Output Operator": {
+                              "columnExprMap:": {
+                                "VALUE._col0": "_col0"
+                              },
+                              "null sort order:": "",
+                              "sort order:": "",
+                              "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                              "value expressions:": "_col0 (type: bigint)",
+                              "OperatorId:": "RS_9",
+                              "outputname:": "Reducer 2",
+                              "outputOperator:": [
+                                "GBY_10"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs"
+          },
+          "Reducer 2": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Operator Tree:": {
+              "Group By Operator": {
+                "aggregations:": [
+                  "count(VALUE._col0)"
+                ],
+                "mode:": "mergepartial",
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                "OperatorId:": "GBY_10",
+                "children": {
+                  "File Output Operator": {
+                    "compressed:": "false",
+                    "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                    "table:": {
+                      "input format:": "org.apache.hadoop.mapred.SequenceFileInputFormat",
+                      "output format:": "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
+                      "serde:": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+                    },
+                    "OperatorId:": "FS_11"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "ListSink": {
+            "OperatorId:": "LIST_SINK_12"
+          }
+        }
+      }
+    }
+  }
+}
 PREHOOK: query: drop table table2_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_n1
@@ -1588,3 +1826,445 @@ POSTHOOK: Input: default@table1_n3
 POSTHOOK: Input: default@table2_n1
 POSTHOOK: Input: default@view_n123456789
 #### A masked pattern was here ####
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "table1_n3"
+        ],
+        "table:alias": "table1_n3",
+        "inputs": [],
+        "rowCount": 1,
+        "avgRowSize": 4,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "emp_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "emp_id"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "emp_id",
+            "ndv": 1,
+            "minValue": -2147483648,
+            "maxValue": 2147483647
+          },
+          {
+            "name": "emp_name",
+            "ndv": 1
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "emp_id"
+        ],
+        "exprs": [
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "table2_n1"
+        ],
+        "table:alias": "table2_n1",
+        "inputs": [],
+        "rowCount": 1,
+        "avgRowSize": 4,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "emp_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "emp_id"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "partitionColumns": [
+          "emp_id"
+        ],
+        "colStats": [
+          {
+            "name": "emp_id",
+            "ndv": 0,
+            "minValue": 9223372036854775807,
+            "maxValue": -9223372036854775808
+          },
+          {
+            "name": "emp_name",
+            "ndv": 0
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "emp_id"
+        ],
+        "exprs": [
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion",
+        "all": true,
+        "inputs": [
+          "1",
+          "3"
+        ],
+        "rowCount": 2
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "emp_id"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 2
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT COUNT(*) AS `_c0`\nFROM (SELECT `emp_id`\nFROM `default`.`table1_n3`\nUNION ALL\nSELECT `emp_id`\nFROM `default`.`table2_n1`) AS `t1`",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-1": {
+      "ROOT STAGE": "TRUE"
+    },
+    "Stage-0": {
+      "DEPENDENT STAGES": "Stage-1"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-1": {
+      "Tez": {
+#### A masked pattern was here ####
+        "Edges:": {
+          "Map 1": {
+            "parent": "Union 2",
+            "type": "CONTAINS"
+          },
+          "Map 4": {
+            "parent": "Union 2",
+            "type": "CONTAINS"
+          },
+          "Reducer 3": {
+            "parent": "Union 2",
+            "type": "CUSTOM_SIMPLE_EDGE"
+          }
+        },
+#### A masked pattern was here ####
+        "Vertices:": {
+          "Map 1": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "table1_n3",
+                  "database:": "default",
+                  "Statistics:": "Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE",
+                  "table:": "table1_n3",
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_12",
+                  "children": {
+                    "Select Operator": {
+                      "Statistics:": "Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE",
+                      "OperatorId:": "SEL_24",
+                      "children": {
+                        "Select Operator": {
+                          "Statistics:": "Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                          "OperatorId:": "SEL_25",
+                          "children": {
+                            "Group By Operator": {
+                              "aggregations:": [
+                                "count()"
+                              ],
+                              "minReductionHashAggr:": "0.99",
+                              "mode:": "hash",
+                              "outputColumnNames:": [
+                                "_col0"
+                              ],
+                              "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                              "OperatorId:": "GBY_26",
+                              "children": {
+                                "Reduce Output Operator": {
+                                  "columnExprMap:": {
+                                    "VALUE._col0": "_col0"
+                                  },
+                                  "null sort order:": "",
+                                  "sort order:": "",
+                                  "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                                  "value expressions:": "_col0 (type: bigint)",
+                                  "OperatorId:": "RS_27",
+                                  "outputname:": "Reducer 3",
+                                  "outputOperator:": [
+                                    "GBY_28"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs"
+          },
+          "Map 4": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "table2_n1",
+                  "database:": "default",
+                  "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                  "table:": "table2_n1",
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_18",
+                  "children": {
+                    "Select Operator": {
+                      "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                      "OperatorId:": "SEL_30",
+                      "children": {
+                        "Select Operator": {
+                          "Statistics:": "Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                          "OperatorId:": "SEL_31",
+                          "children": {
+                            "Group By Operator": {
+                              "aggregations:": [
+                                "count()"
+                              ],
+                              "minReductionHashAggr:": "0.99",
+                              "mode:": "hash",
+                              "outputColumnNames:": [
+                                "_col0"
+                              ],
+                              "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                              "OperatorId:": "GBY_32",
+                              "children": {
+                                "Reduce Output Operator": {
+                                  "columnExprMap:": {
+                                    "VALUE._col0": "_col0"
+                                  },
+                                  "null sort order:": "",
+                                  "sort order:": "",
+                                  "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                                  "value expressions:": "_col0 (type: bigint)",
+                                  "OperatorId:": "RS_33",
+                                  "outputname:": "Reducer 3",
+                                  "outputOperator:": [
+                                    "GBY_28"
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "unknown"
+          },
+          "Reducer 3": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Operator Tree:": {
+              "Group By Operator": {
+                "aggregations:": [
+                  "count(VALUE._col0)"
+                ],
+                "mode:": "mergepartial",
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                "OperatorId:": "GBY_28",
+                "children": {
+                  "File Output Operator": {
+                    "compressed:": "false",
+                    "Statistics:": "Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE",
+                    "table:": {
+                      "input format:": "org.apache.hadoop.mapred.SequenceFileInputFormat",
+                      "output format:": "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
+                      "serde:": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+                    },
+                    "OperatorId:": "FS_29"
+                  }
+                }
+              }
+            }
+          },
+          "Union 2": {
+            "Vertex:": "Union 2"
+          }
+        }
+      }
+    },
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "ListSink": {
+            "OperatorId:": "LIST_SINK_34"
+          }
+        }
+      }
+    }
+  }
+}

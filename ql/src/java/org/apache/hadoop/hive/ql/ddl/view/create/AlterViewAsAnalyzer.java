@@ -67,14 +67,16 @@ public class AlterViewAsAnalyzer extends AbstractCreateViewAnalyzer {
     String expandedText = ctx.getTokenRewriteStream().toString(select.getTokenStartIndex(), select.getTokenStopIndex());
 
     AlterViewAsDesc desc = new AlterViewAsDesc(fqViewName, schema, originalText, expandedText);
-    validateCreateView(desc, analyzer);
+    Table oldView = validateCreateView(desc, analyzer);
+    oldView.setDbName(viewName.getDb());
+    oldView.setTableName(viewName.getTable());
+    oldView.setTableType(TableType.VIRTUAL_VIEW);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    DDLUtils.addDbAndTableToOutputs(getDatabase(viewName.getDb()), viewName, TableType.VIRTUAL_VIEW, false,
-        null, outputs);
+    DDLUtils.addDbAndTableToOutputs(getDatabase(viewName.getDb()), oldView, outputs);
   }
 
-  private void validateCreateView(AlterViewAsDesc desc, SemanticAnalyzer analyzer) throws SemanticException {
+  private Table validateCreateView(AlterViewAsDesc desc, SemanticAnalyzer analyzer) throws SemanticException {
     validateTablesUsed(analyzer);
 
     Table oldView = null;
@@ -90,5 +92,6 @@ public class AlterViewAsAnalyzer extends AbstractCreateViewAnalyzer {
     }
 
     validateReplaceWithPartitions(desc.getViewName(), oldView, null);
+    return oldView;
   }
 }

@@ -21,6 +21,11 @@
 import os.path
 import sys
 
+try:
+    from functools import reduce
+except:
+    pass
+
 # Find the config file
 def findCfgFile():
     defaultConfDir = None

@@ -231,6 +231,14 @@ uniqueJoinTableSource
     -> ^(TOK_TABREF $tabname $ts? $alias?)
     ;
 
+databaseName
+@init { gParent.pushMsg("database name", state); }
+@after { gParent.popMsg(state); }
+    :
+    (catalog=identifier DOT)? db=identifier
+    -> ^(TOK_DBNAME $catalog? $db)
+    ;
+
 tableName
 @init { gParent.pushMsg("table name", state); }
 @after { gParent.popMsg(state); }

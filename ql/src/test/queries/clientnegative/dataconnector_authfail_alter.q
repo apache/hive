@@ -1,7 +1,8 @@
+--!qt:database:derby:qdb
 -- CREATE IF NOT EXISTS already
 CREATE CONNECTOR IF NOT EXISTS derby_auth
 TYPE 'derby'
-URL 'jdbc:derby:./target/tmp/junit_metastore_db;create=true'
+URL '${system:hive.test.database.qdb.jdbc.url}'
 COMMENT 'test derby connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="APP",

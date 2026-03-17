@@ -93,6 +93,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -115,6 +116,16 @@ hour_field          	timestamp
 truncate_field      	string              	                    
 bucket_field        	int                 	                    
 identity_field      	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+year_field          	date                	Transform: year     
+month_field         	date                	Transform: month    
+day_field           	date                	Transform: day      
+hour_field          	timestamp           	Transform: hour     
+truncate_field      	string              	Transform: truncate[2]
+bucket_field        	int                 	Transform: bucket[2]
+identity_field      	int                 	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -154,6 +165,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -177,6 +189,16 @@ hour_field          	timestamp
 truncate_field      	string              	                    
 bucket_field        	int                 	                    
 identity_field      	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+year_field          	date                	Transform: year     
+month_field         	date                	Transform: month    
+day_field           	date                	Transform: day      
+hour_field          	timestamp           	Transform: hour     
+truncate_field      	string              	Transform: truncate[2]
+bucket_field        	int                 	Transform: bucket[2]
+identity_field      	int                 	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -216,6 +238,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -233,6 +256,10 @@ POSTHOOK: Input: default@ice_t_identity_part
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -266,6 +293,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

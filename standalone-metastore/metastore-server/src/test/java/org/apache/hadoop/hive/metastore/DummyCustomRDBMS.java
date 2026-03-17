@@ -74,7 +74,7 @@ public class DummyCustomRDBMS extends DatabaseProduct {
     return "DummyIsWithin";
   }
   @Override
-  public String addForUpdateClause(String selectStatement) {
+  public String addForUpdateClause(String selectStatement, boolean noWait) {
     return selectStatement + " for update";
   }
   @Override

@@ -47,7 +47,7 @@ public class MockMetaStoreOwnerFilterHook implements MetaStoreFilterHook {
   }
 
   @Override
-  public List<String> filterDatabases(List<String> dbList) throws MetaException {
+  public List<String> filterDatabases(String catName, List<String> dbList) throws MetaException {
     LOG.debug("filterDatabases: Original list size: {}", dbList != null ? dbList.size() : 0);
     return dbList;
   }

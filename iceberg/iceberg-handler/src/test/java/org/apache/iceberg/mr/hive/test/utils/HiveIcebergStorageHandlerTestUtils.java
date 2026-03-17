@@ -1,0 +1,162 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.iceberg.mr.hive.test.utils;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
+import org.apache.hive.iceberg.org.apache.orc.OrcConf;
+import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.Schema;
+import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
+import org.apache.iceberg.mr.hive.test.TestTables;
+import org.apache.iceberg.types.Types;
+import org.junit.rules.TemporaryFolder;
+
+import static org.apache.iceberg.types.Types.NestedField.optional;
+
+public class HiveIcebergStorageHandlerTestUtils {
+  public static final FileFormat[] FILE_FORMATS =
+      new FileFormat[] {FileFormat.AVRO, FileFormat.ORC, FileFormat.PARQUET};
+
+  public static final Schema CUSTOMER_SCHEMA = new Schema(
+          optional(1, "customer_id", Types.LongType.get()),
+          optional(2, "first_name", Types.StringType.get(), "This is first name"),
+          optional(3, "last_name", Types.StringType.get(), "This is last name")
+  );
+
+  public static final Schema CUSTOMER_SCHEMA_WITH_UPPERCASE = new Schema(
+          optional(1, "CustomER_Id", Types.LongType.get()),
+          optional(2, "First_name", Types.StringType.get()),
+          optional(3, "Last_name", Types.StringType.get())
+  );
+
+  public static final Schema USER_CLICKS_SCHEMA = new Schema(
+          optional(1, "name", Types.StringType.get()),
+          optional(2, "age", Types.IntegerType.get()),
+          optional(3, "num_clicks", Types.IntegerType.get())
+  );
+
+  public static final List<Record> CUSTOMER_RECORDS = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+          .add(0L, "Alice", "Brown")
+          .add(1L, "Bob", "Green")
+          .add(2L, "Trudy", "Pink")
+          .build();
+
+  public static final List<Record> OTHER_CUSTOMER_RECORDS_1 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+          .add(3L, "Marci", "Barna")
+          .add(4L, "Laci", "Zold")
+          .add(5L, "Peti", "Rozsaszin")
+          .build();
+
+  public static final List<Record> OTHER_CUSTOMER_RECORDS_2 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+      .add(1L, "Joanna", "Pierce")
+      .add(1L, "Sharon", "Taylor")
+      .add(2L, "Joanna", "Silver")
+      .add(2L, "Bob", "Silver")
+      .add(2L, "Susan", "Morrison")
+      .add(2L, "Jake", "Donnel")
+      .add(3L, "Blake", "Burr")
+      .add(3L, "Trudy", "Johnson")
+      .add(3L, "Trudy", "Henderson")
+      .build();
+
+  public static final List<Record> USER_CLICKS_RECORDS_1 = TestHelper.RecordsBuilder
+          .newInstance(USER_CLICKS_SCHEMA)
+          .add("amy", 35, 12341234)
+          .add("bob", 66, 123471)
+          .add("cal", 21, 431)
+          .build();
+
+  public static final List<Record> USER_CLICKS_RECORDS_2 = TestHelper.RecordsBuilder
+          .newInstance(USER_CLICKS_SCHEMA)
+          .add("amy", 52, 22323)
+          .add("drake", 44, 34222)
+          .add("earl", 21, 12347)
+          .build();
+
+  private HiveIcebergStorageHandlerTestUtils() {
+    // Empty constructor for the utility class
+  }
+
+  public static TestHiveShell shell() {
+    return shell(Collections.emptyMap());
+  }
+
+  public static TestHiveShell shell(Map<String, String> configs) {
+    TestHiveShell shell = new TestHiveShell();
+    shell.setHiveConfValue("hive.notification.event.poll.interval", "-1");
+    shell.setHiveConfValue("hive.tez.exec.print.summary", "true");
+    shell.setHiveConfValue("tez.counters.max", "1024");
+    configs.forEach((k, v) -> shell.setHiveConfValue(k, v));
+    // We would like to make sure that ORC reading overrides this config, so reading Iceberg tables could work in
+    // systems (like Hive 3.2 and higher) where this value is set to true explicitly.
+    shell.setHiveConfValue(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), "true");
+    shell.start();
+    return shell;
+  }
+
+  public static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp)
+          throws IOException {
+    return testTables(shell, testTableType, temp, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
+  }
+
+  public static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp,
+                               String catalogName) throws IOException {
+    return testTableType.instance(shell.metastore().hiveConf(), temp, catalogName);
+  }
+
+  public static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp) {
+    init(shell, testTables, temp, "tez");
+  }
+
+  public static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp, String engine) {
+    shell.getSession();
+
+    for (Map.Entry<String, String> property : testTables.properties().entrySet()) {
+      shell.setHiveSessionValue(property.getKey(), property.getValue());
+    }
+
+    shell.setHiveSessionValue("hive.execution.engine", engine);
+    shell.setHiveSessionValue("hive.jar.directory", temp.getRoot().getAbsolutePath());
+    shell.setHiveSessionValue("tez.staging-dir", temp.getRoot().getAbsolutePath());
+
+    // Until HADOOP-16435 we have to manually remove the RpcMetrics for every run otherwise we might end up with OOM
+    // We have to initialize the metrics as TestMetrics, so shutdown will remove them
+    DefaultMetricsSystem.instance().init("TestMetrics");
+  }
+
+  public static void close(TestHiveShell shell) throws Exception {
+    shell.closeSession();
+    shell.metastore().reset();
+
+    // Until HADOOP-16435 we have to manually remove the RpcMetrics for every run otherwise we might end up with OOM
+    DefaultMetricsSystem.shutdown();
+
+    // HiveServer2 thread pools are using thread local Hive -> HMSClient objects. These are not cleaned up when the
+    // HiveServer2 is stopped. Only Finalizer closes the HMS connections.
+    System.gc();
+  }
+}

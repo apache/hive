@@ -33,7 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -75,6 +76,7 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -87,6 +89,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -263,10 +266,12 @@ public class Table implements Serializable {
   public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
     validateName(conf);
+
     if (getCols().isEmpty()) {
-      throw new HiveException(
-          "at least one column must be specified for the table");
+      throw new HiveException("at least one column must be specified for the table");
     }
+    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
+
     if (!isView()) {
       if (null == getDeserializer(false)) {
         throw new HiveException("must specify a non-null serDe");
@@ -286,8 +291,6 @@ public class Table implements Serializable {
       assert(getViewOriginalText() == null);
       assert(getViewExpandedText() == null);
     }
-
-    validateColumns(getCols(), getPartCols());
   }
 
   public void validateName(Configuration conf) throws HiveException {
@@ -566,10 +569,7 @@ public class Table implements Serializable {
    */
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((tTable == null) ? 0 : tTable.hashCode());
-    return result;
+    return Objects.hash(tTable, asOfTimestamp, asOfVersion, versionIntervalFrom, snapshotRef);
   }
 
   /* (non-Javadoc)
@@ -587,23 +587,11 @@ public class Table implements Serializable {
       return false;
     }
     Table other = (Table) obj;
-    if (tTable == null) {
-      if (other.tTable != null) {
-        return false;
-      }
-    } else if (!tTable.equals(other.tTable)) {
-      return false;
-    }
-    if (!Objects.equals(asOfTimestamp, other.asOfTimestamp)) {
-      return false;
-    }
-    if (!Objects.equals(asOfVersion, other.asOfVersion)) {
-      return false;
-    }
-    if (!Objects.equals(versionIntervalFrom, other.versionIntervalFrom)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(tTable, other.tTable)
+        && Objects.equals(asOfTimestamp, other.asOfTimestamp)
+        && Objects.equals(asOfVersion, other.asOfVersion)
+        && Objects.equals(versionIntervalFrom, other.versionIntervalFrom)
+        && Objects.equals(snapshotRef, other.snapshotRef);
   }
 
   public List<FieldSchema> getPartCols() {
@@ -1149,7 +1137,7 @@ public class Table implements Serializable {
     return deserializer.shouldStoreFieldsInMetastore(tableParams);
   }
 
-  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
+  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols, boolean icebergTable)
       throws HiveException {
     Set<String> colNames = new HashSet<>();
     for (FieldSchema col: columns) {
@@ -1157,6 +1145,11 @@ public class Table implements Serializable {
       if (colNames.contains(colName)) {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");
+      }
+      if (!icebergTable && isUnsupportedInNonIceberg(col.getType())) {
+        throw new HiveException(
+            "Column name " + colName + " cannot be of type '" + col.getType() + "' as it is not supported in "
+                + "non-Iceberg tables.");
       }
       colNames.add(colName);
     }
@@ -1190,6 +1183,10 @@ public class Table implements Serializable {
 
   public String getCatalogName() {
     return this.tTable.getCatName();
+  }
+
+  public void setCatalogName(String catalogName) {
+    this.tTable.setCatName(catalogName);
   }
 
   public void setOutdatedForRewriting(Boolean validForRewritingMaterializedView) {
@@ -1229,8 +1226,7 @@ public class Table implements Serializable {
 
     if (!isTableConstraintsFetched) {
       try {
-        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true,
-            this.getTTable() != null ? this.getTTable().getId() : -1);
+        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true);
         this.isTableConstraintsFetched = true;
       } catch (HiveException e) {
         LOG.warn("Cannot retrieve Table Constraints info for table : " + this.getTableName() + " ignoring exception: " + e);
@@ -1380,7 +1376,17 @@ public class Table implements Serializable {
         isBlank(getMetaTable())) {
       virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
     }
-    
+    if (isNonNative() && getStorageHandler().supportsRowLineage(getTTable().getParameters()) &&
+        isBlank(getMetaTable())) {
+      virtualColumns.add(VirtualColumn.ROW_LINEAGE_ID);
+      virtualColumns.add(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
+    }
     return virtualColumns;
+  }
+
+  private static boolean isUnsupportedInNonIceberg(String columnType) {
+    return VARIANT_TYPE_NAME.equalsIgnoreCase(columnType) ||
+        TypeInfoFactory.nanoTimestampTypeInfo.getQualifiedName().equalsIgnoreCase(columnType) ||
+        TypeInfoFactory.timestampNanoLocalTZTypeInfo.getQualifiedName().equalsIgnoreCase(columnType);
   }
 }

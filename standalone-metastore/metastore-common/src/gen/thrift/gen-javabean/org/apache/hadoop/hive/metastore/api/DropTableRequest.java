@@ -17,6 +17,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField DELETE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("deleteData", org.apache.thrift.protocol.TType.BOOL, (short)4);
   private static final org.apache.thrift.protocol.TField ENV_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("envContext", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField DROP_PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("dropPartitions", org.apache.thrift.protocol.TType.BOOL, (short)6);
+  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField ASYNC_DROP_FIELD_DESC = new org.apache.thrift.protocol.TField("asyncDrop", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField CANCEL_FIELD_DESC = new org.apache.thrift.protocol.TField("cancel", org.apache.thrift.protocol.TType.BOOL, (short)9);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DropTableRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DropTableRequestTupleSchemeFactory();
@@ -27,6 +30,9 @@ package org.apache.hadoop.hive.metastore.api;
   private boolean deleteData; // optional
   private @org.apache.thrift.annotation.Nullable EnvironmentContext envContext; // optional
   private boolean dropPartitions; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String id; // optional
+  private boolean asyncDrop; // optional
+  private boolean cancel; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -35,7 +41,10 @@ package org.apache.hadoop.hive.metastore.api;
     TABLE_NAME((short)3, "tableName"),
     DELETE_DATA((short)4, "deleteData"),
     ENV_CONTEXT((short)5, "envContext"),
-    DROP_PARTITIONS((short)6, "dropPartitions");
+    DROP_PARTITIONS((short)6, "dropPartitions"),
+    ID((short)7, "id"),
+    ASYNC_DROP((short)8, "asyncDrop"),
+    CANCEL((short)9, "cancel");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -63,6 +72,12 @@ package org.apache.hadoop.hive.metastore.api;
           return ENV_CONTEXT;
         case 6: // DROP_PARTITIONS
           return DROP_PARTITIONS;
+        case 7: // ID
+          return ID;
+        case 8: // ASYNC_DROP
+          return ASYNC_DROP;
+        case 9: // CANCEL
+          return CANCEL;
         default:
           return null;
       }
@@ -106,8 +121,10 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __DELETEDATA_ISSET_ID = 0;
   private static final int __DROPPARTITIONS_ISSET_ID = 1;
+  private static final int __ASYNCDROP_ISSET_ID = 2;
+  private static final int __CANCEL_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CATALOG_NAME,_Fields.DELETE_DATA,_Fields.ENV_CONTEXT,_Fields.DROP_PARTITIONS};
+  private static final _Fields optionals[] = {_Fields.CATALOG_NAME,_Fields.DELETE_DATA,_Fields.ENV_CONTEXT,_Fields.DROP_PARTITIONS,_Fields.ID,_Fields.ASYNC_DROP,_Fields.CANCEL};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -122,6 +139,12 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.ENV_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("envContext", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     tmpMap.put(_Fields.DROP_PARTITIONS, new org.apache.thrift.meta_data.FieldMetaData("dropPartitions", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ASYNC_DROP, new org.apache.thrift.meta_data.FieldMetaData("asyncDrop", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CANCEL, new org.apache.thrift.meta_data.FieldMetaData("cancel", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DropTableRequest.class, metaDataMap);
@@ -158,6 +181,11 @@ package org.apache.hadoop.hive.metastore.api;
       this.envContext = new EnvironmentContext(other.envContext);
     }
     this.dropPartitions = other.dropPartitions;
+    if (other.isSetId()) {
+      this.id = other.id;
+    }
+    this.asyncDrop = other.asyncDrop;
+    this.cancel = other.cancel;
   }
 
   public DropTableRequest deepCopy() {
@@ -174,6 +202,11 @@ package org.apache.hadoop.hive.metastore.api;
     this.envContext = null;
     setDropPartitionsIsSet(false);
     this.dropPartitions = false;
+    this.id = null;
+    setAsyncDropIsSet(false);
+    this.asyncDrop = false;
+    setCancelIsSet(false);
+    this.cancel = false;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -316,6 +349,74 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DROPPARTITIONS_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getId() {
+    return this.id;
+  }
+
+  public void setId(@org.apache.thrift.annotation.Nullable java.lang.String id) {
+    this.id = id;
+  }
+
+  public void unsetId() {
+    this.id = null;
+  }
+
+  /** Returns true if field id is set (has been assigned a value) and false otherwise */
+  public boolean isSetId() {
+    return this.id != null;
+  }
+
+  public void setIdIsSet(boolean value) {
+    if (!value) {
+      this.id = null;
+    }
+  }
+
+  public boolean isAsyncDrop() {
+    return this.asyncDrop;
+  }
+
+  public void setAsyncDrop(boolean asyncDrop) {
+    this.asyncDrop = asyncDrop;
+    setAsyncDropIsSet(true);
+  }
+
+  public void unsetAsyncDrop() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ASYNCDROP_ISSET_ID);
+  }
+
+  /** Returns true if field asyncDrop is set (has been assigned a value) and false otherwise */
+  public boolean isSetAsyncDrop() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ASYNCDROP_ISSET_ID);
+  }
+
+  public void setAsyncDropIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ASYNCDROP_ISSET_ID, value);
+  }
+
+  public boolean isCancel() {
+    return this.cancel;
+  }
+
+  public void setCancel(boolean cancel) {
+    this.cancel = cancel;
+    setCancelIsSet(true);
+  }
+
+  public void unsetCancel() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CANCEL_ISSET_ID);
+  }
+
+  /** Returns true if field cancel is set (has been assigned a value) and false otherwise */
+  public boolean isSetCancel() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CANCEL_ISSET_ID);
+  }
+
+  public void setCancelIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CANCEL_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CATALOG_NAME:
@@ -366,6 +467,30 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case ID:
+      if (value == null) {
+        unsetId();
+      } else {
+        setId((java.lang.String)value);
+      }
+      break;
+
+    case ASYNC_DROP:
+      if (value == null) {
+        unsetAsyncDrop();
+      } else {
+        setAsyncDrop((java.lang.Boolean)value);
+      }
+      break;
+
+    case CANCEL:
+      if (value == null) {
+        unsetCancel();
+      } else {
+        setCancel((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -390,6 +515,15 @@ package org.apache.hadoop.hive.metastore.api;
     case DROP_PARTITIONS:
       return isDropPartitions();
 
+    case ID:
+      return getId();
+
+    case ASYNC_DROP:
+      return isAsyncDrop();
+
+    case CANCEL:
+      return isCancel();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -413,6 +547,12 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetEnvContext();
     case DROP_PARTITIONS:
       return isSetDropPartitions();
+    case ID:
+      return isSetId();
+    case ASYNC_DROP:
+      return isSetAsyncDrop();
+    case CANCEL:
+      return isSetCancel();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -484,6 +624,33 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_id = true && this.isSetId();
+    boolean that_present_id = true && that.isSetId();
+    if (this_present_id || that_present_id) {
+      if (!(this_present_id && that_present_id))
+        return false;
+      if (!this.id.equals(that.id))
+        return false;
+    }
+
+    boolean this_present_asyncDrop = true && this.isSetAsyncDrop();
+    boolean that_present_asyncDrop = true && that.isSetAsyncDrop();
+    if (this_present_asyncDrop || that_present_asyncDrop) {
+      if (!(this_present_asyncDrop && that_present_asyncDrop))
+        return false;
+      if (this.asyncDrop != that.asyncDrop)
+        return false;
+    }
+
+    boolean this_present_cancel = true && this.isSetCancel();
+    boolean that_present_cancel = true && that.isSetCancel();
+    if (this_present_cancel || that_present_cancel) {
+      if (!(this_present_cancel && that_present_cancel))
+        return false;
+      if (this.cancel != that.cancel)
+        return false;
+    }
+
     return true;
   }
 
@@ -514,6 +681,18 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetDropPartitions()) ? 131071 : 524287);
     if (isSetDropPartitions())
       hashCode = hashCode * 8191 + ((dropPartitions) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetId()) ? 131071 : 524287);
+    if (isSetId())
+      hashCode = hashCode * 8191 + id.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetAsyncDrop()) ? 131071 : 524287);
+    if (isSetAsyncDrop())
+      hashCode = hashCode * 8191 + ((asyncDrop) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetCancel()) ? 131071 : 524287);
+    if (isSetCancel())
+      hashCode = hashCode * 8191 + ((cancel) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -586,6 +765,36 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetId(), other.isSetId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAsyncDrop(), other.isSetAsyncDrop());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAsyncDrop()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.asyncDrop, other.asyncDrop);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCancel(), other.isSetCancel());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCancel()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cancel, other.cancel);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -652,6 +861,28 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("dropPartitions:");
       sb.append(this.dropPartitions);
+      first = false;
+    }
+    if (isSetId()) {
+      if (!first) sb.append(", ");
+      sb.append("id:");
+      if (this.id == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.id);
+      }
+      first = false;
+    }
+    if (isSetAsyncDrop()) {
+      if (!first) sb.append(", ");
+      sb.append("asyncDrop:");
+      sb.append(this.asyncDrop);
+      first = false;
+    }
+    if (isSetCancel()) {
+      if (!first) sb.append(", ");
+      sb.append("cancel:");
+      sb.append(this.cancel);
       first = false;
     }
     sb.append(")");
@@ -759,6 +990,30 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.id = iprot.readString();
+              struct.setIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 8: // ASYNC_DROP
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.asyncDrop = iprot.readBool();
+              struct.setAsyncDropIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // CANCEL
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.cancel = iprot.readBool();
+              struct.setCancelIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -806,6 +1061,23 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeBool(struct.dropPartitions);
         oprot.writeFieldEnd();
       }
+      if (struct.id != null) {
+        if (struct.isSetId()) {
+          oprot.writeFieldBegin(ID_FIELD_DESC);
+          oprot.writeString(struct.id);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetAsyncDrop()) {
+        oprot.writeFieldBegin(ASYNC_DROP_FIELD_DESC);
+        oprot.writeBool(struct.asyncDrop);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetCancel()) {
+        oprot.writeFieldBegin(CANCEL_FIELD_DESC);
+        oprot.writeBool(struct.cancel);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -838,7 +1110,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetDropPartitions()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetId()) {
+        optionals.set(4);
+      }
+      if (struct.isSetAsyncDrop()) {
+        optionals.set(5);
+      }
+      if (struct.isSetCancel()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
       if (struct.isSetCatalogName()) {
         oprot.writeString(struct.catalogName);
       }
@@ -851,6 +1132,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetDropPartitions()) {
         oprot.writeBool(struct.dropPartitions);
       }
+      if (struct.isSetId()) {
+        oprot.writeString(struct.id);
+      }
+      if (struct.isSetAsyncDrop()) {
+        oprot.writeBool(struct.asyncDrop);
+      }
+      if (struct.isSetCancel()) {
+        oprot.writeBool(struct.cancel);
+      }
     }
 
     @Override
@@ -860,7 +1150,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(4);
+      java.util.BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
         struct.catalogName = iprot.readString();
         struct.setCatalogNameIsSet(true);
@@ -877,6 +1167,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(3)) {
         struct.dropPartitions = iprot.readBool();
         struct.setDropPartitionsIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.id = iprot.readString();
+        struct.setIdIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.asyncDrop = iprot.readBool();
+        struct.setAsyncDropIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.cancel = iprot.readBool();
+        struct.setCancelIsSet(true);
       }
     }
   }

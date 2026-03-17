@@ -48,8 +48,8 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
         HiveMaterializedViewsRegistry.get().createMaterializedView(context.getDb().getConf(), mvTable);
       } else if (desc.isDisableRewrite()) {
         // Disabling rewriting, removing from cache
-        String[] names = desc.getName().split("\\.");
-        HiveMaterializedViewsRegistry.get().dropMaterializedView(names[0], names[1]);
+        Table mvTable = context.getDb().getTable(desc.getName());
+        HiveMaterializedViewsRegistry.get().dropMaterializedView(mvTable.getFullTableName());
       } else if (desc.isUpdateCreationMetadata()) {
         // We need to update the status of the creation signature
         Table mvTable = context.getDb().getTable(desc.getName());

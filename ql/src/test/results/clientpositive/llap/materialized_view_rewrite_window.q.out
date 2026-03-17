@@ -84,15 +84,16 @@ POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{2}], agg#0=[max($1)])
-  HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(watches=[$2])
-      HiveFilter(condition=[IS NOT NULL($2)])
-        HiveTableScan(table=[[arc_view, wealth]], table:alias=[t2])
-    HiveProject(total_views=[$1], quartile=[$2], program=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveProject(program=[$0], total_views=[$1], _o__col7=[sum(CAST(1.5:DECIMAL(2, 1)):DECIMAL(9, 4)) OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST)])
-          HiveTableScan(table=[[arc_view, tv_view_data]], table:alias=[tv_view_data])
+HiveProject(t.quartile=[$0], total=[$1])
+  HiveAggregate(group=[{2}], agg#0=[max($1)])
+    HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(watches=[$2])
+        HiveFilter(condition=[IS NOT NULL($2)])
+          HiveTableScan(table=[[arc_view, wealth]], table:alias=[t2])
+      HiveProject(total_views=[$1], quartile=[$2], program=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveProject(program=[$0], total_views=[$1], _o__col7=[sum(CAST(1.5:DECIMAL(2, 1)):DECIMAL(9, 4)) OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST)])
+            HiveTableScan(table=[[arc_view, tv_view_data]], table:alias=[tv_view_data])
 
 PREHOOK: query: create materialized view mv_tv_view_data_av1 stored as orc TBLPROPERTIES ('transactional'='true') as
 select
@@ -128,7 +129,7 @@ POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: Output: database:arc_view
-POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: explain cbo
 select
@@ -168,7 +169,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[$0], total=[$1])
+  HiveProject(t.quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -438,7 +439,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
-POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: explain cbo
 select
@@ -478,7 +479,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[$0], total=[$1])
+  HiveProject(t.quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -749,7 +750,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
-POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: explain cbo
 select
@@ -789,7 +790,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[$0], total=[$1])
+  HiveProject(t.quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -859,7 +860,7 @@ POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: Output: database:arc_view
 POSTHOOK: Lineage: mv_tv_view_data_av2.program SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), ]
-POSTHOOK: Lineage: mv_tv_view_data_av2.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av2.total_views SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: insert into tv_view_data values ('scream3', 40000000)
 PREHOOK: type: QUERY
@@ -1044,7 +1045,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: Lineage: mv_tv_view_data_av2.program SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), ]
-POSTHOOK: Lineage: mv_tv_view_data_av2.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av2.total_views SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: select
   total_views `total_views`,

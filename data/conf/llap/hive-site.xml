@@ -104,7 +104,7 @@
 
 <property>
   <name>javax.jdo.option.ConnectionDriverName</name>
-  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
+  <value>org.apache.derby.iapi.jdbc.AutoloadedDriver</value>
 </property>
 
 <property>
@@ -294,7 +294,10 @@
   <name>hive.explain.user</name>
   <value>false</value>
 </property>
-
+<property>
+  <name>hive.explain.formatted.indent</name>
+  <value>true</value>
+</property>
 <property>
   <name>hive.join.inner.residual</name>
   <value>true</value>

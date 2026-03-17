@@ -50,7 +50,7 @@ alterStatement
     : KW_ALTER KW_TABLE tableName alterTableStatementSuffix -> ^(TOK_ALTERTABLE tableName alterTableStatementSuffix)
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
     | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
-    | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
+    | KW_ALTER (KW_DATABASE|KW_SCHEMA) databaseName alterDatabaseStatementSuffix -> ^(TOK_ALTERDATABASE databaseName alterDatabaseStatementSuffix)
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
     | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
     | KW_ALTER KW_CATALOG alterCatalogStatementSuffix -> alterCatalogStatementSuffix
@@ -85,6 +85,7 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameBranch
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
+    | alterStatementSuffixSetWriteOrder
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -161,6 +162,14 @@ alterCatalogStatementSuffix
 @init { gParent.pushMsg("alter catalog statement", state); }
 @after { gParent.popMsg(state); }
     : alterCatalogSuffixSetLocation
+    | alterCatalogSuffixProperties
+    ;
+
+alterCatalogSuffixProperties
+@init { gParent.pushMsg("alter catalog properties statement", state); }
+@after { gParent.popMsg(state); }
+    : name=identifier KW_SET KW_PROPERTIES properties
+    -> ^(TOK_ALTERCATALOG_PROPERTIES $name properties)
     ;
 
 alterCatalogSuffixSetLocation
@@ -181,31 +190,31 @@ alterDatabaseStatementSuffix
 alterDatabaseSuffixProperties
 @init { gParent.pushMsg("alter database properties statement", state); }
 @after { gParent.popMsg(state); }
-    : name=identifier KW_SET KW_DBPROPERTIES dbProperties
-    -> ^(TOK_ALTERDATABASE_PROPERTIES $name dbProperties)
+    : KW_SET KW_DBPROPERTIES properties
+    -> ^(TOK_ALTERDATABASE_PROPERTIES properties)
     ;
 
 alterDatabaseSuffixSetOwner
 @init { gParent.pushMsg("alter database set owner", state); }
 @after { gParent.popMsg(state); }
-    : dbName=identifier KW_SET KW_OWNER principalName
-    -> ^(TOK_ALTERDATABASE_OWNER $dbName principalName)
+    : KW_SET KW_OWNER principalName
+    -> ^(TOK_ALTERDATABASE_OWNER principalName)
     ;
 
 alterDatabaseSuffixSetLocation
 @init { gParent.pushMsg("alter database set location", state); }
 @after { gParent.popMsg(state); }
-    : dbName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
-    -> ^(TOK_ALTERDATABASE_LOCATION $dbName $newLocation)
-    | dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
-    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
+    : KW_SET KW_LOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_LOCATION $newLocation)
+    | KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $newLocation)
     ;
 
 alterDatabaseSuffixSetManagedLocation
 @init { gParent.pushMsg("alter database set managed location", state); }
 @after { gParent.popMsg(state); }
-    : dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
-    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
+    : KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $newLocation)
     ;
 
 alterStatementSuffixRename[boolean table]
@@ -678,6 +687,13 @@ alterStatementSuffixCreateOrReplaceTag
      -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
      ;
 
+alterStatementSuffixSetWriteOrder
+@init { gParent.pushMsg("alter table set write order", state); }
+@after { gParent.popMsg(state); }
+     : KW_SET tableWriteLocallyOrderedBy
+     -> ^(TOK_ALTERTABLE_SET_WRITE_ORDER tableWriteLocallyOrderedBy)
+     ;
+
 fileFormat
 @init { gParent.pushMsg("file format specification", state); }
 @after { gParent.popMsg(state); }
@@ -697,8 +713,8 @@ alterDataConnectorStatementSuffix
 alterDataConnectorSuffixProperties
 @init { gParent.pushMsg("alter connector set properties statement", state); }
 @after { gParent.popMsg(state); }
-    : name=identifier KW_SET KW_DCPROPERTIES dcProperties
-    -> ^(TOK_ALTERDATACONNECTOR_PROPERTIES $name dcProperties)
+    : name=identifier KW_SET KW_DCPROPERTIES properties
+    -> ^(TOK_ALTERDATACONNECTOR_PROPERTIES $name properties)
     ;
 
 alterDataConnectorSuffixSetOwner

@@ -28,7 +28,9 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -168,14 +171,16 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       // it is necessary to ensure projectedSchema equals to tableSchema,
       // or we cannot find selectOperator's column from inspector
       if (projectedSchema.columns().size() != distinctSelectedColumns.length) {
-        return tableSchema;
+        return RowLineageUtils.isRowLineageInsert(conf) ?
+            MetadataColumns.schemaWithRowLineage(tableSchema) :
+            tableSchema;
       } else {
         return projectedSchema;
       }
     }
     boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, conf::get);
     if (isCOW) {
-      return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+      return getSchemaWithRowLineage(IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns()), conf);
     }
     switch (operation) {
       case DELETE:
@@ -183,7 +188,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       case UPDATE:
         return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
       case OTHER:
-        return tableSchema;
+        return getSchemaWithRowLineage(tableSchema, conf);
       default:
         throw new IllegalArgumentException("Unsupported operation " + operation);
     }
@@ -273,5 +278,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   public Schema getTableSchema() {
     return tableSchema;
+  }
+
+  private static Schema getSchemaWithRowLineage(Schema schema, Configuration conf) {
+    boolean rowLineage = Boolean.parseBoolean(conf.get(SessionStateUtil.ROW_LINEAGE));
+    if (rowLineage) {
+      return MetadataColumns.schemaWithRowLineage(schema);
+    }
+    return schema;
   }
 }

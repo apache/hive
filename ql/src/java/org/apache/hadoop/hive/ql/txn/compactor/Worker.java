@@ -198,11 +198,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       findNextCompactRequest.setWorkerVersion(runtimeVersion);
       findNextCompactRequest.setPoolName(this.getPoolName());
       ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
-      LOG.info("Processing compaction request {}", ci);
-
       if (ci == null) {
         return false;
       }
+
+      LOG.info("Processing compaction request {}", ci);
       if ((runtimeVersion == null && ci.initiatorVersion != null) || (runtimeVersion != null && !runtimeVersion.equals(ci.initiatorVersion))) {
         LOG.warn("Worker and Initiator versions do not match. Worker: v{}, Initiator: v{}", runtimeVersion, ci.initiatorVersion);
       }

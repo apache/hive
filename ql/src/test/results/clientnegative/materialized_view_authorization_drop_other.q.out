@@ -29,4 +29,4 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvdo_mat_view
 POSTHOOK: Lineage: amvdo_mat_view.a SIMPLE [(amvdo_table)amvdo_table.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: amvdo_mat_view.c SIMPLE [(amvdo_table)amvdo_table.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
-FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROP_MATERIALIZED_VIEW [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.amvdo_mat_view], [OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.amvdo_mat_view]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROP_MATERIALIZED_VIEW [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=hive.default.amvdo_mat_view], [OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=hive.default.amvdo_mat_view]]

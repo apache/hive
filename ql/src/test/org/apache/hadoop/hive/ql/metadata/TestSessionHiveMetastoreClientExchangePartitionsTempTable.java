@@ -356,7 +356,7 @@ public class TestSessionHiveMetastoreClientExchangePartitionsTempTable extends T
   }
 
   private void cleanTempTableDir(Table table) throws MetaException {
-    wh.deleteDir(new Path(table.getSd().getLocation()), true, false, false);
+    wh.deleteDir(new Path(table.getSd().getLocation()), false, false);
   }
 
 }

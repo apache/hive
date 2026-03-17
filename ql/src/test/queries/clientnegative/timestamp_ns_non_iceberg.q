@@ -1,0 +1,1 @@
+CREATE EXTERNAL TABLE nano_timestamp_basic (id INT, t timestamp with local time zone(9));

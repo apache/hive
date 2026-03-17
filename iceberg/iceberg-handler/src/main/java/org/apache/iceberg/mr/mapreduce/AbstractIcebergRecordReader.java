@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
@@ -33,8 +34,9 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
+import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
+import org.apache.iceberg.mr.hive.IcebergTableUtil;
 
 public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, T> {
 
@@ -53,8 +55,7 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
     this.context = newContext;
     this.conf = newContext.getConfiguration();
-    this.table = HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER));
-    HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
+    this.table = HiveTableUtil.deserializeTable(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER));
     this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
     this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
     this.expectedSchema = readSchema(conf, table, caseSensitive);
@@ -75,12 +76,15 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     readSchema = table.schema();
 
     if (selectedColumns != null) {
-      readSchema =
-        caseSensitive ? readSchema.select(selectedColumns) : readSchema.caseInsensitiveSelect(selectedColumns);
+      readSchema = caseSensitive ?
+          readSchema.select(selectedColumns) : readSchema.caseInsensitiveSelect(selectedColumns);
     }
 
     if (InputFormatConfig.fetchVirtualColumns(conf)) {
-      return IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);
+      readSchema = IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);
+      if (IcebergTableUtil.supportsRowLineage(table.properties())) {
+        readSchema = MetadataColumns.schemaWithRowLineage(readSchema);
+      }
     }
 
     return readSchema;

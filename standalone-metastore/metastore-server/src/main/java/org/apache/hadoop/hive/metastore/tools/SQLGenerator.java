@@ -127,7 +127,11 @@ public final class SQLGenerator {
    * construct.  If the DB doesn't support, return original select.
    */
   public String addForUpdateClause(String selectStatement) throws MetaException {
-    return dbProduct.addForUpdateClause(selectStatement);
+    return dbProduct.addForUpdateClause(selectStatement, false);
+  }
+
+  public String addForUpdateNoWait(String selectStatement) throws MetaException {
+    return dbProduct.addForUpdateClause(selectStatement, true);
   }
 
   /**

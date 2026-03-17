@@ -59,6 +59,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
@@ -79,7 +80,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -258,6 +259,7 @@ public final class Utilities {
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
+  public static final String CREATE_TIME = "create_time";
   public static final String SNAPSHOT_REF = "snapshot_ref";
 
   @Deprecated
@@ -1052,10 +1054,25 @@ public final class Utilities {
   }
 
   public static Path toTempPath(Path orig) {
-    if (orig.getName().indexOf(tmpPrefix) == 0) {
+    return toTempPath(orig, tmpPrefix);
+  }
+
+  private static Path toTempPath(Path orig, String prefix) {
+    if (orig.getName().indexOf(prefix) == 0) {
       return orig;
     }
-    return new Path(orig.getParent(), tmpPrefix + orig.getName());
+    return new Path(orig.getParent(), prefix + orig.getName());
+  }
+
+  /**
+   * This method is to convert a path into a temporary path for the direct insert manifest files.
+   * It is important to use a prefix which starts with '_', like '_tmp.', so the content of this
+   * directory would be filtered out by the AcidUtils.acidHiddenFileFilter.
+   * @param orig
+   * @return
+   */
+  public static Path toManifestDirTempPath(String orig) {
+    return toTempPath(new Path(orig), hadoopTmpPrefix);
   }
 
   /**
@@ -3755,7 +3772,7 @@ public final class Utilities {
       Path hiveScratchDir, String alias)
           throws Exception {
 
-    TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
+    TableDesc tableDesc = work.getPartitionDesc(alias).getTableDesc();
     if (tableDesc.isNonNative()) {
       // if it does not need native storage, we can't create an empty file for it.
       return null;
@@ -3777,7 +3794,7 @@ public final class Utilities {
 
     work.setPathToAliases(pathToAliases);
 
-    PartitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
+    PartitionDesc pDesc = work.getPartitionDesc(alias).clone();
     work.addPathToPartitionInfo(newPath, pDesc);
 
     return newPath;
@@ -4564,7 +4581,7 @@ public final class Utilities {
     if (isDelete) {
       deltaDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
     }
-    Path manifestPath = new Path(manifestRoot, Utilities.toTempPath(deltaDir));
+    Path manifestPath = new Path(manifestRoot, Utilities.toManifestDirTempPath(deltaDir));
 
     if (isInsertOverwrite) {
       // When doing a multi-statement insert overwrite query with dynamic partitioning, the
@@ -5078,5 +5095,44 @@ public final class Utilities {
       }
     }
     return suffix;
+  }
+
+  /**
+   * Stores the creation time of the given table in the provided configuration.
+   * <p>
+   * The value is written under a composite key of the form:
+   * {@code &lt;dbName&gt;.&lt;tableName&gt;.&lt;CREATE_TIME&gt;}.
+   * </p>
+   *
+   * @param conf
+   *     configuration to store the table creation time; must not be {@code null}
+   * @param table
+   *     table whose database and name are used to construct the configuration key;
+   *     must not be {@code null}
+   */
+  public static void setTableCreateTime(Configuration conf, Table table) {
+    Objects.requireNonNull(table, "Cannot get table create time. Table object is expected to be non-null.");
+    String fullTableName = TableName.getDbTable(table.getDbName(), table.getTableName());
+    conf.setInt(String.format("%s.%s", fullTableName, CREATE_TIME), table.getCreateTime());
+  }
+
+  /**
+   * Retrieves the table creation time from the configuration.
+   * <p>
+   * The value is expected to be stored under the key
+   * {@code &lt;tableName&gt;.&lt;CREATE_TIME&gt;}. If the value is not present,
+   * this method returns {@code 0}.
+   * </p>
+   *
+   * @param conf
+   *     configuration containing the table creation time; must not be {@code null}
+   * @param tableName
+   *     fully qualified table name ({@code dbName.tableName})
+   *     used to construct the configuration key
+   * @return
+   *     the table creation time, or {@code 0} if not set
+   */
+  public static int getTableCreateTime(Configuration conf, String tableName) {
+    return conf.getInt(String.format("%s.%s", tableName, CREATE_TIME), 0);
   }
 }

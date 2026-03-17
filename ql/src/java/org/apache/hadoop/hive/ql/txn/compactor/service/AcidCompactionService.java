@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.service;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -105,7 +104,7 @@ public class AcidCompactionService extends CompactionService {
   public void cleanupResultDirs(CompactionInfo ci) {
     // result directory for compactor to write new files
     Path resultDir = QueryCompactor.Util.getCompactionResultDir(sd, tblValidWriteIds, conf,
-        ci.type == CompactionType.MAJOR, false, false, dir);
+        ci.type == CompactionType.MAJOR, false, dir);
     LOG.info("Deleting result directories created by the compactor:\n");
     try {
       FileSystem fs = resultDir.getFileSystem(conf);
@@ -114,7 +113,7 @@ public class AcidCompactionService extends CompactionService {
 
       if (ci.type == CompactionType.MINOR) {
         Path deleteDeltaDir = QueryCompactor.Util.getCompactionResultDir(sd, tblValidWriteIds, conf,
-            false, true, false, dir);
+            false, true, dir);
 
         LOG.info(deleteDeltaDir.toString());
         fs.delete(deleteDeltaDir, true);
@@ -195,9 +194,6 @@ public class AcidCompactionService extends CompactionService {
       final ValidTxnWriteIdList txnWriteIds = new ValidTxnWriteIdList(compactionTxn.getTxnId());
       txnWriteIds.addTableValidWriteIdList(tblValidWriteIds);
       conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
-
-      msc.addWriteIdsToMinHistory(compactionTxn.getTxnId(),
-          ImmutableMap.of(fullTableName, txnWriteIds.getMinOpenWriteId(fullTableName)));
 
       ci.highestWriteId = tblValidWriteIds.getHighWatermark();
       //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about

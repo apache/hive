@@ -2,7 +2,6 @@
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
-SET hive.metastore.partition.name.whitelist.pattern=[^9]*;
 set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.VerifyTableDirectoryIsEmptyHook;
 
 set hive.exec.dynamic.partition=true;
@@ -17,4 +16,5 @@ load data local inpath '../../data/files/bmj/000000_0' INTO TABLE source_table p
 -- If the directory is not empty the hook will throw an error, instead the error should come from the metastore
 -- This shows that no dynamic partitions were created and left behind or had directories created
 
+SET metaconf:metastore.partition.name.whitelist.pattern=[^9]*;
 insert overwrite table dest_table partition (ds, hr) select key, hr, ds, value from source_table where ds='2008-04-08' and value='val_129' order by value asc;

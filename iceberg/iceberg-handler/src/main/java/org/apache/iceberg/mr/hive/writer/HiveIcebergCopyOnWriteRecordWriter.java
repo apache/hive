@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
@@ -36,19 +37,17 @@ import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
-class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
-
-  private final int currentSpecId;
+class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter {
 
   private final GenericRecord rowDataTemplate;
   private final List<DataFile> replacedDataFiles;
 
   HiveIcebergCopyOnWriteRecordWriter(Table table, HiveFileWriterFactory writerFactory,
-      OutputFileFactory deleteFileFactory, Context context) {
-    super(table, newDataWriter(table, writerFactory, deleteFileFactory, context));
+      OutputFileFactory deleteFileFactory, boolean shouldAddRowLineage, Context context) {
+    super(table, writerFactory, deleteFileFactory, context);
 
-    this.currentSpecId = table.spec().specId();
-    this.rowDataTemplate = GenericRecord.create(table.schema());
+    this.rowDataTemplate = GenericRecord.create(
+        shouldAddRowLineage ? MetadataColumns.schemaWithRowLineage(table.schema()) : table.schema());
     this.replacedDataFiles = Lists.newArrayList();
   }
 
@@ -69,7 +68,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
             .build();
       replacedDataFiles.add(dataFile);
     } else {
-      writer.write(rowData, specs.get(currentSpecId), partition(rowData, currentSpecId));
+      write(rowData);
     }
   }
 

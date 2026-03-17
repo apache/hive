@@ -68,6 +68,10 @@ id                  	string
 key                 	int                 	                    
 value               	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+key                 	int                 	Transform: bucket[8]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 key                 	BUCKET[8]           	 
@@ -106,6 +110,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -181,6 +186,10 @@ id                  	string
 key                 	int                 	                    
 value               	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+key                 	int                 	Transform: bucket[8]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 key                 	BUCKET[8]           	 
@@ -219,6 +228,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

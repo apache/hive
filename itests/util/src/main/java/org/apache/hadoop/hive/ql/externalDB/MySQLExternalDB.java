@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 /**
  * Designed for MySQL external database connection
  */
-public class MySQLExternalDB extends AbstractExternalDB {
+public class MySQLExternalDB extends DockerizedDatabase {
 
     public MySQLExternalDB() {
     }
@@ -35,17 +35,22 @@ public class MySQLExternalDB extends AbstractExternalDB {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getContainerHostAddress() + ":3306/" + dbName;
+        return "jdbc:mysql://" + getContainerHostAddress() + ":" + getPort() + "/" + dbName;
     }
 
     public String getJdbcDriver() {
         return "com.mysql.jdbc.Driver";
     }
 
+    @Override
+    protected int getPort() {
+        return 3306;
+    }
+
     public String getDockerImageName() { return "mysql:8.4.3"; }
 
     public String[] getDockerAdditionalArgs() {
-        return new String[] {"-p", "3306:3306",
+        return new String[] { "-p", getPort() + ":3306",
                           "-e", "MYSQL_ROOT_PASSWORD=" + getRootPassword(),
                           "-e", "MYSQL_DATABASE=" + dbName,
                           "-d"

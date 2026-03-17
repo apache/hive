@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.queries;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
 import org.springframework.dao.DataAccessException;
@@ -48,8 +49,8 @@ public class MinUncommittedTxnIdHandler implements QueryHandler<Long> {
 
   private final boolean useMinHistoryLevel;
 
-  public MinUncommittedTxnIdHandler(boolean useMinHistoryLevel) {
-    this.useMinHistoryLevel = useMinHistoryLevel;
+  public MinUncommittedTxnIdHandler() {
+    this.useMinHistoryLevel = TxnHandler.ConfVars.useMinHistoryLevel();
   }
 
   @Override

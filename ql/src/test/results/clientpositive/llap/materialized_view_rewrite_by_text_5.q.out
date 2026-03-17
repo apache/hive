@@ -44,7 +44,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[CAST(1):INTEGER])
+HiveProject(t1.col0=[CAST(1):INTEGER])
   HiveFilter(condition=[=($0, 1)])
     HiveTableScan(table=[[db1, t1]], table:alias=[t1])
 
@@ -67,7 +67,8 @@ POSTHOOK: Input: db1@mat1
 POSTHOOK: Input: db1@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[db1, mat1]], table:alias=[db1.mat1])
+HiveProject(t1.col0=[$0])
+  HiveTableScan(table=[[db1, mat1]], table:alias=[db1.mat1])
 
 PREHOOK: query: drop materialized view db1.mat1
 PREHOOK: type: DROP_MATERIALIZED_VIEW

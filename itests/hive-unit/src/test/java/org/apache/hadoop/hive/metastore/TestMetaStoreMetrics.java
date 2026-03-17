@@ -118,14 +118,15 @@ public class TestMetaStoreMetrics {
 
     Assert.assertEquals(1, Metrics.getRegistry().getCounters().get(MetricsConstants.DELETE_TOTAL_DATABASES).getCount());
     Assert.assertEquals(3, Metrics.getRegistry().getCounters().get(MetricsConstants.DELETE_TOTAL_TABLES).getCount());
-    Assert.assertEquals(3, Metrics.getRegistry().getCounters().get(MetricsConstants.DELETE_TOTAL_PARTITIONS).getCount());
+    //skip counting the dropped partitions while dropping the database tempdb
+    Assert.assertEquals(1, Metrics.getRegistry().getCounters().get(MetricsConstants.DELETE_TOTAL_PARTITIONS).getCount());
 
     //to test initial metadata count metrics.
     Assert.assertEquals(initDbCount + 1,
         Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_DATABASES).getValue());
     Assert.assertEquals(initTblCount + 4,
         Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_TABLES).getValue());
-    Assert.assertEquals(initPartCount + 6,
+    Assert.assertEquals(initPartCount + 8,
         Metrics.getRegistry().getGauges().get(MetricsConstants.TOTAL_PARTITIONS).getValue());
 
   }

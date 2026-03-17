@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -51,24 +58,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import javax.annotation.Nullable;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
@@ -114,8 +115,6 @@ import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-
 /**
  * Utility methods used by Hive standalone metastore server.
  */
@@ -132,7 +131,7 @@ public class MetaStoreServerUtils {
       = new com.google.common.base.Function<String, String>() {
     @Override
     public String apply(@Nullable String string) {
-      return org.apache.commons.lang3.StringUtils.defaultString(string);
+      return StringUtils.defaultString(string);
     }
   };
 
@@ -255,31 +254,52 @@ public class MetaStoreServerUtils {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
   }
 
-  public static void validatePartitionNameCharacters(List<String> partVals,
-                                                     Pattern partitionValidationPattern) throws MetaException {
+  public static String decimalToString(Decimal val) {
+    if (val == null) {
+      return "";
+    }
 
+    HiveDecimal result = HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale());
+    return (result != null) ? result.toString() : "";
+  }
+
+  private static Pattern getPartitionValidationRegex(Configuration conf) {
+    return Optional.ofNullable(
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN))
+        .filter(StringUtils::isNotBlank)
+        .map(Pattern::compile)
+        .orElse(null);
+  }
+
+  public static void validatePartitionNameCharacters(List<String> partVals, Configuration conf)
+      throws MetaException {
+
+    Pattern partitionValidationPattern = getPartitionValidationRegex(conf);
     String invalidPartitionVal = getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+
     if (invalidPartitionVal != null) {
-      throw new MetaException("Partition value '" + invalidPartitionVal +
-          "' contains a character " + "not matched by whitelist pattern '" +
-          partitionValidationPattern.toString() + "'.  " + "(configure with " +
-          MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname() + ")");
+      String errorMsg =
+          ("Partition value '%s' contains a character not matched by whitelist pattern '%s'. Configure with %s")
+              .formatted(
+                  invalidPartitionVal,
+                  partitionValidationPattern.toString(),
+                  MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname());
+
+      throw new MetaException(errorMsg);
     }
   }
 
-  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
-                                                            Pattern partitionValidationPattern) {
-    if (partitionValidationPattern == null) {
-      return null;
+  private static String getPartitionValWithInvalidCharacter(
+      List<String> partVals, Pattern partitionValidationPattern) {
+    String result = null;
+    if (partitionValidationPattern != null) {
+      result =
+          partVals.stream()
+              .filter(partVal -> !partitionValidationPattern.matcher(partVal).matches())
+              .findFirst()
+              .orElse(null);
     }
-
-    for (String partVal : partVals) {
-      if (!partitionValidationPattern.matcher(partVal).matches()) {
-        return partVal;
-      }
-    }
-
-    return null;
+    return result;
   }
 
   /**
@@ -351,7 +371,7 @@ public class MetaStoreServerUtils {
         SortedSet<String> sortedOuterList = new TreeSet<>();
         for (List<String> innerList : skewed.getSkewedColValues()) {
           SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
-          sortedOuterList.add(org.apache.commons.lang3.StringUtils.join(sortedInnerList, "."));
+          sortedOuterList.add(StringUtils.join(sortedInnerList, "."));
         }
         for (String colval : sortedOuterList) {
           md.update(colval.getBytes(ENCODING));
@@ -361,7 +381,7 @@ public class MetaStoreServerUtils {
         SortedMap<String, String> sortedMap = new TreeMap<>();
         for (Map.Entry<List<String>, String> smap : skewed.getSkewedColValueLocationMaps().entrySet()) {
           SortedSet<String> sortedKey = new TreeSet<>(smap.getKey());
-          sortedMap.put(org.apache.commons.lang3.StringUtils.join(sortedKey, "."), smap.getValue());
+          sortedMap.put(StringUtils.join(sortedKey, "."), smap.getValue());
         }
         for (Map.Entry<String, String> e : sortedMap.entrySet()) {
           md.update(e.getKey().getBytes(ENCODING));
@@ -676,28 +696,25 @@ public class MetaStoreServerUtils {
     return true;
   }
 
-  /*
+  /**
      * This method is to check if the new column list includes all the old columns with same name and
      * type. The column comment does not count.
+     *
+     * @return A list of columns that not appear in the new column list
      */
-  public static boolean columnsIncludedByNameType(List<FieldSchema> oldCols,
-                                                  List<FieldSchema> newCols) {
-    if (oldCols.size() > newCols.size()) {
-      return false;
-    }
-
+  public static List<String> findStaleColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     Map<String, String> columnNameTypePairMap = new HashMap<>(newCols.size());
     for (FieldSchema newCol : newCols) {
       columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
     }
+    List<String> changedCols = new ArrayList<>();
     for (final FieldSchema oldCol : oldCols) {
       if (!columnNameTypePairMap.containsKey(oldCol.getName())
           || !columnNameTypePairMap.get(oldCol.getName()).equalsIgnoreCase(oldCol.getType())) {
-        return false;
+        changedCols.add(oldCol.getName());
       }
     }
-
-    return true;
+    return changedCols;
   }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
@@ -775,9 +792,8 @@ public class MetaStoreServerUtils {
     return copySkewedColNames.toString();
   }
 
-  public static boolean partitionNameHasValidCharacters(List<String> partVals,
-                                                        Pattern partitionValidationPattern) {
-    return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  public static boolean partitionNameHasValidCharacters(List<String> partVals, Configuration conf) {
+    return getPartitionValWithInvalidCharacter(partVals, getPartitionValidationRegex(conf)) == null;
   }
 
   public static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {
@@ -990,10 +1006,6 @@ public class MetaStoreServerUtils {
         socket2.close();
       }
     }
-  }
-
-  public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
-    return dbName + "__" + baseTblName + "_" + indexName + "__";
   }
 
   static public String validateTblColumns(List<FieldSchema> cols) {
@@ -1599,8 +1611,8 @@ public class MetaStoreServerUtils {
    * @return Partition name, for example partitiondate=2008-01-01
    */
   public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
-                                        Map<String, String> partitionColToTypeMap) {
-    String result = null;
+                                        Map<String, String> partitionColToTypeMap, Configuration conf) {
+    StringBuilder result = null;
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
 
@@ -1611,7 +1623,7 @@ public class MetaStoreServerUtils {
       if (parts.length > 0) {
         if (parts.length != 2) {
           LOG.warn(currPath.getName() + " is not a valid partition name");
-          return result;
+          return result.toString();
         }
 
         // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
@@ -1620,43 +1632,68 @@ public class MetaStoreServerUtils {
         // Do not convert the partitionValue to lowercase
         String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
+          String normalisedPartitionValue = getNormalisedPartitionValue(partitionValue,
+                  partitionColToTypeMap.get(partitionName), conf);
+          if (normalisedPartitionValue == null) {
+            return null;
+          }
           if (result == null) {
-            result = partitionName + "="
-                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName));
+            result = new StringBuilder(partitionName + "=" + normalisedPartitionValue);
           } else {
-            result = partitionName + "="
-                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName))
-                    + Path.SEPARATOR + result;
+            result.insert(0, partitionName + "=" + normalisedPartitionValue + Path.SEPARATOR);
           }
         }
       }
       currPath = currPath.getParent();
       LOG.debug("currPath=" + currPath);
     }
-    return result;
+    return (result == null) ? null : result.toString();
   }
 
-  public static String getNormalisedPartitionValue(String partitionValue, String type) {
-
-    if (!NumberUtils.isParsable(partitionValue)) {
+  public static String getNormalisedPartitionValue(String partitionValue, String type, Configuration conf) {
+    // 1. Handle simple exit cases first.
+    if (type == null) {
       return partitionValue;
     }
-
-    LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
-
-    if (type.equalsIgnoreCase("tinyint")
-    || type.equalsIgnoreCase("smallint")
-    || type.equalsIgnoreCase("int")){
-      return Integer.toString(Integer.parseInt(partitionValue));
-    } else if (type.equalsIgnoreCase("bigint")){
-      return Long.toString(Long.parseLong(partitionValue));
-    } else if (type.equalsIgnoreCase("float")){
-      return Float.toString(Float.parseFloat(partitionValue));
-    } else if (type.equalsIgnoreCase("double")){
-      return Double.toString(Double.parseDouble(partitionValue));
-    } else if (type.startsWith("decimal")){
-      // Decimal datatypes are stored like decimal(10,10)
-      return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+    if (Objects.equals(partitionValue, MetastoreConf.getVar(conf,
+            MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) {
+      // This is the special partition name for NULL values. It should never be parsed.
+      return partitionValue;
+    }
+    // 2. If the type is not numeric, no normalization is needed.
+    String colType = ColumnType.getTypeName(type);
+    if (!ColumnType.NumericTypes.contains(colType)) {
+      return partitionValue;
+    }
+    // 3. At this point, we have a numeric type that needs normalization.
+    LOG.debug("Normalizing partition value '{}' for type '{}'.", partitionValue, type);
+    try {
+      switch (colType) {
+        case ColumnType.TINYINT_TYPE_NAME:
+        case ColumnType.SMALLINT_TYPE_NAME:
+        case ColumnType.INT_TYPE_NAME:
+          return Integer.toString(Integer.parseInt(partitionValue));
+        case ColumnType.BIGINT_TYPE_NAME:
+          return Long.toString(Long.parseLong(partitionValue));
+        case ColumnType.FLOAT_TYPE_NAME:
+          return Float.toString(Float.parseFloat(partitionValue));
+        case ColumnType.DOUBLE_TYPE_NAME:
+          return Double.toString(Double.parseDouble(partitionValue));
+        case ColumnType.DECIMAL_TYPE_NAME:
+          return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+      }
+    } catch (NumberFormatException e) {
+      // 4. Handle cases where the value cannot be parsed as the expected number type.
+      String validationMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION);
+      if ("throw".equals(validationMode)) {
+        LOG.error("Invalid partition value: Cannot parse '{}' as type '{}'. Failing MSCK. "
+                + "Set hive.msck.path.validation=skip to ignore invalid partitions.", partitionValue, type);
+        throw e;
+      } else if ("skip".equals(validationMode)) {
+        LOG.warn("Skipping invalid partition value '{}' for type '{}' due to parsing error.", partitionValue, type);
+        // Signals the caller to skip this partition.
+        return null;
+      }
     }
     return partitionValue;
   }
@@ -1730,4 +1767,60 @@ public class MetaStoreServerUtils {
   public static boolean isCompactionTxn(TxnType txnType) {
     return TxnType.COMPACTION.equals(txnType) || TxnType.REBALANCE_COMPACTION.equals(txnType);
   }
+
+  public static boolean isDbReplicationTarget(Database db) {
+    String dbCkptStatus = (db.getParameters() == null) ? null : db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY);
+    return dbCkptStatus != null && !dbCkptStatus.trim().isEmpty();
+  }
+
+  public static boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+    if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
+      // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
+      return MetaStoreUtils.isExternalTablePurge(tbl);
+    }
+    return deleteData;
+  }
+
+  public static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
+    // Data needs deletion. Check if trash may be skipped.
+    // Trash may be skipped iff:
+    //  1. deleteData == true, obviously.
+    //  2. tbl is external.
+    //  3. Either
+    //    3.1. User has specified PURGE from the commandline, and if not,
+    //    3.2. User has set the table to auto-purge.
+    return (envContext != null && envContext.getProperties() != null
+        && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+        || MetaStoreUtils.isSkipTrash(tbl.getParameters());
+  }
+
+  public static long getWriteId(EnvironmentContext context){
+    return Optional.ofNullable(context)
+        .map(EnvironmentContext::getProperties)
+        .map(prop -> prop.get(hive_metastoreConstants.WRITE_ID))
+        .map(Long::parseLong)
+        .orElse(0L);
+  }
+
+  /**
+   * Verify if update stats while altering partition(s).
+   * For the following three cases HMS will not update partition stats
+   * 1) Table property 'DO_NOT_UPDATE_STATS' = True
+   * 2) HMS configuration property 'STATS_AUTO_GATHER' = False
+   * 3) Is View
+   */
+  public static boolean canUpdateStats(Configuration conf, Table tbl) {
+    Map<String, String> tblParams = tbl.getParameters();
+    boolean updateStatsTbl = true;
+    if ((tblParams != null) && tblParams.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)) {
+      updateStatsTbl = !Boolean.valueOf(tblParams.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
+    }
+    if (!MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_AUTO_GATHER) ||
+        MetaStoreUtils.isView(tbl) ||
+        !updateStatsTbl) {
+      return false;
+    }
+    return true;
+  }
+
 }

@@ -19,7 +19,7 @@
 package org.apache.hive.kafka;
 
 import kafka.server.KafkaConfig;
-import kafka.server.KafkaServerStartable;
+import kafka.server.KafkaServer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.service.AbstractService;
@@ -29,6 +29,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.apache.kafka.common.utils.Time;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Files;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.IntStream;
+import scala.Option;
 
 /**
  * This class has the hooks to start and stop single node kafka cluster.
@@ -54,7 +56,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
   private static final String LOCALHOST = "localhost";
 
 
-  private final KafkaServerStartable serverStartable;
+  private final KafkaServer server;
   private final int brokerPort;
   private final String kafkaServer;
 
@@ -81,8 +83,8 @@ public class SingleNodeKafkaCluster extends AbstractService {
 
     properties.setProperty("zookeeper.connect", zkString);
     properties.setProperty("broker.id", String.valueOf(1));
-    properties.setProperty("host.name", LOCALHOST);
-    properties.setProperty("port", Integer.toString(brokerPort));
+    properties.setProperty("listeners", "PLAINTEXT://" + LOCALHOST + ":" + Integer.toString(brokerPort));
+    properties.setProperty("advertised.listeners", "PLAINTEXT://" + LOCALHOST + ":" + Integer.toString(brokerPort));
     properties.setProperty("log.dir", logDir);
     // This property is very important, we are sending form records with a specific time
     // Thus need to make sure that they don't get DELETED
@@ -94,13 +96,13 @@ public class SingleNodeKafkaCluster extends AbstractService {
     properties.setProperty("transaction.state.log.min.isr", String.valueOf(1));
     properties.setProperty("log.cleaner.dedupe.buffer.size", "1048577");
 
-    this.serverStartable = new KafkaServerStartable(KafkaConfig.fromProps(properties));
+    this.server = new KafkaServer(KafkaConfig.fromProps(properties), Time.SYSTEM, Option.empty(), false);
   }
 
 
   @Override
   protected void serviceStart() throws Exception {
-    serverStartable.startup();
+    server.startup();
     log.info("Kafka Server Started on port {}", brokerPort);
 
   }
@@ -108,7 +110,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
   @Override
   protected void serviceStop() throws Exception {
     log.info("Stopping Kafka Server");
-    serverStartable.shutdown();
+    server.shutdown();
     log.info("Kafka Server Stopped");
   }
 

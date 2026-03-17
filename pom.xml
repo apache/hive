@@ -17,11 +17,11 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>35</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>4.2.0-SNAPSHOT</version>
+  <version>4.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive</name>
   <url>https://hive.apache.org</url>
@@ -63,8 +63,8 @@
     <module>iceberg</module>
   </modules>
   <properties>
-    <standalone-metastore.version>4.2.0-SNAPSHOT</standalone-metastore.version>
-    <hive.version.shortname>4.2.0</hive.version.shortname>
+    <standalone-metastore.version>4.3.0-SNAPSHOT</standalone-metastore.version>
+    <hive.version.shortname>4.3.0</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
@@ -93,43 +93,43 @@
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4 -Duser.country=US -Dio.netty.tryReflectionSetAccessible=true -Djava.locale.providers=COMPAT,CLDR --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED</maven.test.jvm.args>
-    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <maven.checkstyle.plugin.version>3.5.0</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
-    <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.4</accumulo.version>
-    <ant.version>1.10.13</ant.version>
+    <ant.version>1.10.15</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
     <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
-    <avatica.version>1.23.0</avatica.version>
     <avro.version>1.12.0</avro.version>
-    <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
+    <bcprov-jdk18on.version>1.82</bcprov-jdk18on.version>
     <calcite.version>1.33.0</calcite.version>
     <datanucleus-api-jdo.version>6.0.3</datanucleus-api-jdo.version>
     <datanucleus-core.version>6.0.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>6.0.10</datanucleus-rdbms.version>
+    <checkstyle.version>11.1.0</checkstyle.version>
     <commons-cli.version>1.5.0</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-collections4.version>4.1</commons-collections4.version>
+    <commons-collections4.version>4.4</commons-collections4.version>
     <commons-compress.version>1.26.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.16.1</commons-io.version>
-    <commons-lang3.version>3.12.0</commons-lang3.version>
+    <commons-lang3.version>3.17.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
-    <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
+    <commons-dbcp2.version>2.14.0</commons-dbcp2.version>
     <commons-text.version>1.10.0</commons-text.version>
-    <derby.version>10.14.2.0</derby.version>
+    <derby.version>10.17.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <druid.version>0.17.1</druid.version>
@@ -138,7 +138,7 @@
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
-    <hadoop.version>3.4.1</hadoop.version>
+    <hadoop.version>3.4.2</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
@@ -151,6 +151,8 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <immutables.version>2.9.2</immutables.version>
+    <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
+    <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.16.1</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
@@ -160,15 +162,16 @@
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
     <jersey.version>1.19.4</jersey.version>
-    <jline.version>2.14.6</jline.version>
+    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
+    <jline.version>3.25.0</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.11.2</junit.jupiter.version>
-    <junit.vintage.version>5.11.2</junit.vintage.version>
-    <kafka.version>2.5.0</kafka.version>
+    <junit.jupiter.version>5.13.3</junit.jupiter.version>
+    <junit.vintage.version>5.13.3</junit.vintage.version>
+    <kafka.version>3.9.1</kafka.version>
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.17.0</kudu.version>
@@ -187,26 +190,27 @@
     <mockito-core.version>5.17.0</mockito-core.version>
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.116.Final</netty.version>
+    <netty.version>4.1.127.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.15.2</parquet.version>
+    <parquet.version>1.16.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <rat.version>0.16.1</rat.version>
-    <roaringbit.version>1.2.1</roaringbit.version>
+    <roaringbit.version>1.3.0</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.2.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.3.0-SNAPSHOT</storage-api.version>
     <tez.version>0.10.5</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
     <snappy.version>1.1.10.4</snappy.version>
     <jersey-wadl-doclet.version>4.0.0-M2</jersey-wadl-doclet.version>
     <jaxb-runtime.version>4.0.0-M2</jaxb-runtime.version>
@@ -224,16 +228,19 @@
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.9.0</json-path.version>
     <janino.version>3.1.12</janino.version>
+    <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
     <datasketches.version>2.0.0</datasketches.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
-    <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
-    <aws-java-sdk.version>1.12.720</aws-java-sdk.version>
+    <aws-secretsmanager-caching.version>2.1.1</aws-secretsmanager-caching.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
+    <spring-boot.version>2.7.18</spring-boot.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
+    <keycloak.version>26.0.6</keycloak.version>
+    <nimbus-oauth.version>11.28</nimbus-oauth.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -265,26 +272,9 @@
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
       <dependency>
-        <groupId>com.amazonaws</groupId>
-        <artifactId>aws-java-sdk-bundle</artifactId>
-        <version>${aws-java-sdk.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>io.netty</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
         <groupId>com.amazonaws.secretsmanager</groupId>
         <artifactId>aws-secretsmanager-caching-java</artifactId>
         <version>${aws-secretsmanager-caching.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-secretsmanager</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.esotericsoftware.kryo</groupId>
@@ -321,6 +311,11 @@
         <groupId>com.thoughtworks.paranamer</groupId>
         <artifactId>paranamer</artifactId>
         <version>${paranamer.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.parquet</groupId>
@@ -440,6 +435,16 @@
         <version>${netty.version}</version>
       </dependency>
       <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
         <groupId>jakarta.jms</groupId>
         <artifactId>jakarta.jms-api</artifactId>
         <version>${jms.version}</version>
@@ -450,7 +455,7 @@
         <version>${javolution.version}</version>
       </dependency>
       <dependency>
-        <groupId>jline</groupId>
+        <groupId>org.jline</groupId>
         <artifactId>jline</artifactId>
         <version>${jline.version}</version>
       </dependency>
@@ -545,26 +550,6 @@
         <version>${accumulo.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica</artifactId>
-        <version>${avatica.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica-core</artifactId>
-        <version>${avatica.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica-metrics</artifactId>
-        <version>${avatica.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica-server</artifactId>
-        <version>${avatica.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.avro</groupId>
         <artifactId>avro</artifactId>
         <version>${avro.version}</version>
@@ -597,6 +582,21 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
         <version>${httpcomponents.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.client5</groupId>
+        <artifactId>httpclient5</artifactId>
+        <version>${httpcomponents5.client.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5</artifactId>
+        <version>${httpcomponents5.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5-h2</artifactId>
+        <version>${httpcomponents5.core.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.velocity</groupId>
@@ -952,6 +952,10 @@
         <artifactId>hadoop-auth</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
+          <exclusion>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+          </exclusion>
           <exclusion>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
@@ -1418,6 +1422,11 @@
         <artifactId>spring-core</artifactId>
         <version>${spring.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>${jansi.version}</version>
+      </dependency>
       <!-- JDBC drivers -->
       <dependency>
         <groupId>com.microsoft.sqlserver</groupId>
@@ -1454,6 +1463,36 @@
         <artifactId>postgresql</artifactId>
         <version>${postgres.version}</version>
         <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mariadb</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>oracle-xe</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mssqlserver</artifactId>
+        <version>${testcontainers.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -1498,6 +1537,13 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <proc>none</proc>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-eclipse-plugin</artifactId>
           <version>${maven.eclipse.plugin.version}</version>
           <configuration>
@@ -1512,6 +1558,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${checkstyle.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
@@ -1547,6 +1600,14 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <outputDirectory>${project.build.directory}/site</outputDirectory>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>com.github.os72</groupId>
@@ -1622,6 +1683,7 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+          <suppressionsLocation>${checkstyle.conf.dir}/suppressions.xml</suppressionsLocation>
           <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
@@ -1682,6 +1744,22 @@
                   </excludes>
                   <searchTransitive>true</searchTransitive>
                   <message>Banned log4j:log4j dependency/transitive dependency was found!</message>
+                </bannedDependencies>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>jline:jline</exclude>
+                  </excludes>
+                  <!--
+                    Allowing jline 1.0 because pig 0.16.0 depends upon it. Otherwise
+                    causing UT failure in hcatalog/hcatalog-pig-adapter module. The
+                    below includes tag can be removed once pig moves to jline 3.x or
+                    support for pig is dropped from hive.
+                  -->
+                  <includes>
+                    <include>jline:jline:1.0</include>
+                  </includes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>A banned jline2.x dependency/transitive dependency was found!</message>
                 </bannedDependencies>
               </rules>
               <fail>true</fail>
@@ -1775,6 +1853,7 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <derby.system.durability>test</derby.system.durability>
             <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
             <!-- required by Hadoop's JobHistory -->
             <hadoop.log.dir>${test.tmp.dir}</hadoop.log.dir>

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.externalDB;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MariaDB extends AbstractExternalDB {
+public class MariaDB extends DockerizedDatabase {
 
   @Override
   public String getRootUser() {
@@ -29,17 +29,22 @@ public class MariaDB extends AbstractExternalDB {
 
   @Override
   public String getJdbcUrl() {
-    return "jdbc:mariadb://" + getContainerHostAddress() + ":3309/" + dbName;
+    return "jdbc:mariadb://" + getContainerHostAddress() + ":" + getPort() + "/" + dbName;
   }
   
   public String getJdbcDriver() {
     return "org.mariadb.jdbc.Driver";
   }
 
+  @Override
+  protected int getPort() {
+    return 3309;
+  }
+
   public String getDockerImageName() { return "mariadb:11.4"; }
 
   public String[] getDockerAdditionalArgs() {
-    return new String[] {"-p", "3309:3306",
+    return new String[] { "-p", getPort() + ":3306",
         "-e", "MARIADB_ROOT_PASSWORD=" + getRootPassword(),
         "-e", "MARIADB_DATABASE=" + dbName,
         "-d"

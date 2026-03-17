@@ -55,13 +55,13 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
                                    long highWatermark, long minOpenWriteId) {
     // abortedBits should be all true as everything in exceptions are aborted txns
     super(tableName, abortedWriteIdList, abortedBits, highWatermark, minOpenWriteId);
-    if(this.exceptions.length <= 0) {
+    if (this.exceptions.length <= 0) {
       return;
     }
     //now that exceptions (aka abortedTxnList) is sorted
     int idx = Arrays.binarySearch(this.exceptions, highWatermark);
     int lastElementPos;
-    if(idx < 0) {
+    if (idx < 0) {
       int insertionPoint = -idx - 1 ;//see Arrays.binarySearch() JavaDoc
       lastElementPos = insertionPoint - 1;
     }

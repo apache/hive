@@ -6,4 +6,4 @@ POSTHOOK: query: create table t_show_parts(i int) partitioned by (j string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_show_parts
-FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation SHOWPARTITIONS [[SELECT] on Object [type=TABLE_OR_VIEW, name=default.t_show_parts]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation SHOWPARTITIONS [[SELECT] on Object [type=TABLE_OR_VIEW, name=hive.default.t_show_parts]]

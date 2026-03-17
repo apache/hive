@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -180,5 +181,12 @@ public final class DriverUtils {
       CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
       throw createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
     }
+  }
+  
+  public static boolean isOtelExportTezCountersEnabled(DriverContext driverContext) {
+    return driverContext.getRuntimeContext() != null && 
+        driverContext.getConf().getTimeVar(HiveConf.ConfVars.HIVE_OTEL_METRICS_FREQUENCY_SECONDS, 
+            TimeUnit.MILLISECONDS) > 0 && 
+        driverContext.getConf().getBoolVar(HiveConf.ConfVars.HIVE_OTEL_EXPORT_TEZ_COUNTERS);
   }
 }

@@ -32,7 +32,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1_n1
-OPTIMIZED SQL: SELECT `t6`.`key`, `t6`.`value`, `t4`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t6`.`key` AS `x.key`, `t6`.`value` AS `x.value`, `t4`.`value` AS `subq1.value`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`src`

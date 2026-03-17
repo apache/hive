@@ -241,7 +241,7 @@ public class HiveSplitGenerator extends InputInitializer {
         mrSplit.writeTo(out);
       }
       LOG.debug("Split #{} event to output path: {} written in {} ms", count, filePath,
-          fileWriteStarted - Time.monotonicNow());
+          Time.monotonicNow() - fileWriteStarted);
     }
 
     Path getSerializedFilePath(int index) {
@@ -341,7 +341,7 @@ public class HiveSplitGenerator extends InputInitializer {
             // if files exists in input path then it has to be 1 as this code path gets triggered only
             // of order by queries which is expected to write only one file (written by one reducer)
             Preconditions.checkState(paths.size() == 1 && fileStatuses.length == 1 &&
-                mapWork.getAliasToPartnInfo().size() == 1,
+                mapWork.getPartitionCount() == 1,
               "Requested to generate single split. Paths and fileStatuses are expected to be 1. " +
                 "Got paths: " + paths.size() + " fileStatuses: " + fileStatuses.length);
             splits = new InputSplit[1];
@@ -354,13 +354,13 @@ public class HiveSplitGenerator extends InputInitializer {
             String[] hosts = hostsSet.toArray(new String[0]);
             FileSplit fileSplit = new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), hosts);
             String alias = mapWork.getAliases().get(0);
-            PartitionDesc partDesc = mapWork.getAliasToPartnInfo().get(alias);
+            PartitionDesc partDesc = mapWork.getPartitionDesc(alias);
             String partIF = partDesc.getInputFileFormatClassName();
             splits[0] = new HiveInputFormat.HiveInputSplit(fileSplit, partIF);
           }
         } else {
           // Raw splits
-          splits = inputFormat.getSplits(jobConf, numSplits.orElse(Math.multiplyExact(availableSlots, (int)waves)));
+          splits = inputFormat.getSplits(jobConf, numSplits.orElse((int) (availableSlots * waves)));
         }
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());

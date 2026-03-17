@@ -46,10 +46,14 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -799,33 +803,13 @@ public class StatsUtils {
     if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
-      cs.setNumNulls(csd.getLongStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-      cs.setBitVectors(csd.getLongStats().getBitVectors());
-      cs.setHistogram(csd.getLongStats().getHistogram());
+      fillColStatisticsFromLongStatsData(cs, csd.getLongStats(), JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
-      cs.setNumNulls(csd.getLongStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-      cs.setBitVectors(csd.getLongStats().getBitVectors());
-      cs.setHistogram(csd.getLongStats().getHistogram());
+      fillColStatisticsFromLongStatsData(cs, csd.getLongStats(), JavaDataModel.get().primitive2());
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
-      cs.setNumNulls(csd.getDoubleStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
-      cs.setHistogram(csd.getDoubleStats().getHistogram());
+      fillColStatisticsFromDoubleStatsData(cs, csd.getDoubleStats(), JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
-      cs.setNumNulls(csd.getDoubleStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
-      cs.setHistogram(csd.getDoubleStats().getHistogram());
+      fillColStatisticsFromDoubleStatsData(cs, csd.getDoubleStats(), JavaDataModel.get().primitive2());
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
@@ -834,13 +818,20 @@ public class StatsUtils {
       cs.setAvgColLen(csd.getStringStats().getAvgColLen());
       cs.setBitVectors(csd.getStringStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
-      if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
-        cs.setCountDistint(2);
-      } else {
+      long numTrues = csd.getBooleanStats().getNumTrues();
+      long numFalses = csd.getBooleanStats().getNumFalses();
+      if (numTrues == 0 && numFalses == 0) {
+        // All NULL column - no non-null distinct values
+        cs.setCountDistint(0);
+      } else if (numTrues == 0 || numFalses == 0) {
+        // One value type confirmed absent (=0), other is present (>0) or unknown (<0)
         cs.setCountDistint(1);
+      } else {
+        // Both != 0: either both present (>0), both unknown (<0), or one present + one unknown
+        cs.setCountDistint(2);
       }
-      cs.setNumTrues(csd.getBooleanStats().getNumTrues());
-      cs.setNumFalses(csd.getBooleanStats().getNumFalses());
+      cs.setNumTrues(numTrues);
+      cs.setNumFalses(numFalses);
       cs.setNumNulls(csd.getBooleanStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
@@ -892,6 +883,40 @@ public class StatsUtils {
     }
 
     return cs;
+  }
+
+  public static void fillColumnStatisticsData(ColumnStatisticsData data, ColStatistics cs,
+      String colType) throws MetaException {
+    ColStatistics.Range r = cs.getRange();
+    Object lowValue = (r != null) ? r.minValue : null;
+    Object highValue = (r != null) ? r.maxValue : null;
+    StatObjectConverter.fillColumnStatisticsData(colType, data, lowValue, highValue,
+        cs.getNumNulls(), cs.getCountDistint(), cs.getBitVectors(), cs.getHistogram(),
+        cs.getAvgColLen(), cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
+  }
+
+  private static void fillColStatisticsFromLongStatsData(ColStatistics cs, LongColumnStatsData longStats,
+      double avgColLen) {
+    cs.setCountDistint(longStats.getNumDVs());
+    cs.setNumNulls(longStats.getNumNulls());
+    cs.setAvgColLen(avgColLen);
+    Long lowVal = longStats.isSetLowValue() ? longStats.getLowValue() : null;
+    Long highVal = longStats.isSetHighValue() ? longStats.getHighValue() : null;
+    cs.setRange(lowVal, highVal);
+    cs.setBitVectors(longStats.getBitVectors());
+    cs.setHistogram(longStats.getHistogram());
+  }
+
+  private static void fillColStatisticsFromDoubleStatsData(ColStatistics cs, DoubleColumnStatsData doubleStats,
+      double avgColLen) {
+    cs.setCountDistint(doubleStats.getNumDVs());
+    cs.setNumNulls(doubleStats.getNumNulls());
+    cs.setAvgColLen(avgColLen);
+    Double lowVal = doubleStats.isSetLowValue() ? doubleStats.getLowValue() : null;
+    Double highVal = doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null;
+    cs.setRange(lowVal, highVal);
+    cs.setBitVectors(doubleStats.getBitVectors());
+    cs.setHistogram(doubleStats.getHistogram());
   }
 
   private static ColStatistics estimateColStats(long numRows, String colName, HiveConf conf,
@@ -1950,6 +1975,10 @@ public class StatsUtils {
     return !table.isNonNative() || table.getStorageHandler().canProvidePartitionStatistics(table);
   }
 
+  public static boolean checkCanProvideColumnStats(Table table) {
+    return !table.isNonNative() || table.getStorageHandler().canProvideColStatistics(table);
+  }
+
   /**
    * Are the basic stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
@@ -2020,8 +2049,11 @@ public class StatsUtils {
         if (oldDV > newNumRows) {
           cs.setCountDistint(newNumRows);
         }
-        long newNumNulls = Math.round(ratio * cs.getNumNulls());
-        cs.setNumNulls(Math.min(newNumNulls, newNumRows));
+        // numNulls < 0 means "unknown" - preserve the sentinel value
+        if (cs.getNumNulls() >= 0) {
+          long newNumNulls = Math.round(ratio * cs.getNumNulls());
+          cs.setNumNulls(Math.min(newNumNulls, newNumRows));
+        }
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
@@ -2034,9 +2066,17 @@ public class StatsUtils {
 
   public static void scaleColStatistics(List<ColStatistics> colStats, double factor) {
     for (ColStatistics cs : colStats) {
-      cs.setNumFalses(StatsUtils.safeMult(cs.getNumFalses(), factor));
-      cs.setNumTrues(StatsUtils.safeMult(cs.getNumTrues(), factor));
-      cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
+      // numTrues/numFalses < 0 means "unknown" - preserve the sentinel value
+      if (cs.getNumFalses() >= 0) {
+        cs.setNumFalses(StatsUtils.safeMult(cs.getNumFalses(), factor));
+      }
+      if (cs.getNumTrues() >= 0) {
+        cs.setNumTrues(StatsUtils.safeMult(cs.getNumTrues(), factor));
+      }
+      // numNulls < 0 means "unknown" - preserve the sentinel value
+      if (cs.getNumNulls() >= 0) {
+        cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
+      }
       if (factor < 1.0) {
         final double newNDV = Math.ceil(cs.getCountDistint() * factor);
         cs.setCountDistint(newNDV > Long.MAX_VALUE ? Long.MAX_VALUE : (long) newNDV);

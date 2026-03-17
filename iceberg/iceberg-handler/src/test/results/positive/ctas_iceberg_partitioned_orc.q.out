@@ -277,6 +277,11 @@ a                   	int
 b                   	string              	                    
 c                   	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+a                   	int                 	Transform: bucket[16]
+b                   	string              	Transform: truncate[3]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 a                   	BUCKET[16]          	 
@@ -316,6 +321,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

@@ -1,0 +1,2134 @@
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "store_sales"
+        ],
+        "table:alias": "store_sales",
+        "inputs": [],
+        "rowCount": 82510879939,
+        "avgRowSize": 261,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_sold_time_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ss_item_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_customer_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_store_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_promo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ss_ticket_number"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "ss_quantity"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_discount_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_coupon_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_paid"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_paid_inc_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_profit"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_sold_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "partitionColumns": [
+          "ss_sold_date_sk"
+        ],
+        "colStats": [
+          {
+            "name": "ss_item_sk",
+            "ndv": 462000,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "ss_cdemo_sk",
+            "ndv": 1920801,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "ss_promo_sk",
+            "ndv": 2301,
+            "minValue": 1,
+            "maxValue": 2300
+          },
+          {
+            "name": "ss_quantity",
+            "ndv": 101,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ss_list_price",
+            "ndv": 20258,
+            "minValue": 1,
+            "maxValue": 200
+          },
+          {
+            "name": "ss_sales_price",
+            "ndv": 20315,
+            "minValue": 0,
+            "maxValue": 200
+          },
+          {
+            "name": "ss_coupon_amt",
+            "ndv": 1219691,
+            "minValue": 0,
+            "maxValue": 19778
+          },
+          {
+            "name": "ss_sold_date_sk",
+            "ndv": 1823,
+            "minValue": 2450816,
+            "maxValue": 2452642
+          },
+          {
+            "name": "ss_sold_time_sk",
+            "ndv": 45279,
+            "minValue": 28800,
+            "maxValue": 75599
+          },
+          {
+            "name": "ss_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "ss_hdemo_sk",
+            "ndv": 7201,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "ss_addr_sk",
+            "ndv": 40000001,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "ss_store_sk",
+            "ndv": 870,
+            "minValue": 1,
+            "maxValue": 1702
+          },
+          {
+            "name": "ss_ticket_number",
+            "ndv": 7200000000,
+            "minValue": 1,
+            "maxValue": 7200000000
+          },
+          {
+            "name": "ss_wholesale_cost",
+            "ndv": 9382,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ss_ext_discount_amt",
+            "ndv": 1219691,
+            "minValue": 0,
+            "maxValue": 19778
+          },
+          {
+            "name": "ss_ext_sales_price",
+            "ndv": 738605,
+            "minValue": 0,
+            "maxValue": 19972
+          },
+          {
+            "name": "ss_ext_wholesale_cost",
+            "ndv": 381232,
+            "minValue": 1,
+            "maxValue": 10000
+          },
+          {
+            "name": "ss_ext_list_price",
+            "ndv": 759913,
+            "minValue": 1,
+            "maxValue": 20000
+          },
+          {
+            "name": "ss_ext_tax",
+            "ndv": 158652,
+            "minValue": 0,
+            "maxValue": 1797.48
+          },
+          {
+            "name": "ss_net_paid",
+            "ndv": 1330581,
+            "minValue": 0,
+            "maxValue": 19972
+          },
+          {
+            "name": "ss_net_paid_inc_tax",
+            "ndv": 1755573,
+            "minValue": 0,
+            "maxValue": 21769.48
+          },
+          {
+            "name": "ss_net_profit",
+            "ndv": 1466906,
+            "minValue": -10000,
+            "maxValue": 9986
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 3,
+                  "name": "$3"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 7,
+                  "name": "$7"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 22,
+                  "name": "$22"
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 6.0150431475531006E10
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "ss_item_sk",
+          "ss_cdemo_sk",
+          "ss_promo_sk",
+          "ss_quantity",
+          "ss_list_price",
+          "ss_sales_price",
+          "ss_coupon_amt",
+          "ss_sold_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 11,
+            "name": "$11"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 18,
+            "name": "$18"
+          },
+          {
+            "input": 22,
+            "name": "$22"
+          }
+        ],
+        "rowCount": 6.0150431475531006E10
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "date_dim"
+        ],
+        "table:alias": "date_dim",
+        "inputs": [],
+        "rowCount": 73049,
+        "avgRowSize": 347,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "d_date_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "d_date_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "d_date"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_month_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_week_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dow"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_moy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_qoy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_week_seq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 9,
+              "name": "d_day_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 6,
+              "name": "d_quarter_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_holiday"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_weekend"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_following_holiday"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_first_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_last_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_ly"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_lq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_day"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_week"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_month"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_quarter"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_year"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "d_date_sk",
+            "ndv": 67850,
+            "minValue": 2415022,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_date_id",
+            "ndv": 71022
+          },
+          {
+            "name": "d_date",
+            "ndv": 0,
+            "minValue": -25566,
+            "maxValue": 47482
+          },
+          {
+            "name": "d_month_seq",
+            "ndv": 2439,
+            "minValue": 0,
+            "maxValue": 2400
+          },
+          {
+            "name": "d_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_dow",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "d_moy",
+            "ndv": 12,
+            "minValue": 1,
+            "maxValue": 12
+          },
+          {
+            "name": "d_dom",
+            "ndv": 31,
+            "minValue": 1,
+            "maxValue": 31
+          },
+          {
+            "name": "d_qoy",
+            "ndv": 4,
+            "minValue": 1,
+            "maxValue": 4
+          },
+          {
+            "name": "d_fy_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_fy_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_fy_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_day_name",
+            "ndv": 7
+          },
+          {
+            "name": "d_quarter_name",
+            "ndv": 800
+          },
+          {
+            "name": "d_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_weekend",
+            "ndv": 2
+          },
+          {
+            "name": "d_following_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_first_dom",
+            "ndv": 2332,
+            "minValue": 2415021,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_last_dom",
+            "ndv": 2401,
+            "minValue": 2415020,
+            "maxValue": 2488372
+          },
+          {
+            "name": "d_same_day_ly",
+            "ndv": 67791,
+            "minValue": 2414657,
+            "maxValue": 2487705
+          },
+          {
+            "name": "d_same_day_lq",
+            "ndv": 67904,
+            "minValue": 2414930,
+            "maxValue": 2487978
+          },
+          {
+            "name": "d_current_day",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_week",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_month",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_quarter",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_year",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 6,
+              "name": "$6"
+            },
+            {
+              "literal": 1998,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "rowCount": 10957.35
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 10957.35
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 7,
+              "name": "$7"
+            },
+            {
+              "input": 8,
+              "name": "$8"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "2",
+          "5"
+        ],
+        "rowCount": 9.886339954926145E13
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "customer_demographics"
+        ],
+        "table:alias": "customer_demographics",
+        "inputs": [],
+        "rowCount": 1920800,
+        "avgRowSize": 217,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "cd_demo_sk"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "cd_gender"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "cd_marital_status"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "cd_education_status"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cd_purchase_estimate"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "cd_credit_rating"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cd_dep_count"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cd_dep_employed_count"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cd_dep_college_count"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cd_demo_sk",
+            "ndv": 1993369,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "cd_gender",
+            "ndv": 2
+          },
+          {
+            "name": "cd_marital_status",
+            "ndv": 5
+          },
+          {
+            "name": "cd_education_status",
+            "ndv": 7
+          },
+          {
+            "name": "cd_purchase_estimate",
+            "ndv": 20,
+            "minValue": 500,
+            "maxValue": 10000
+          },
+          {
+            "name": "cd_credit_rating",
+            "ndv": 4
+          },
+          {
+            "name": "cd_dep_count",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "cd_dep_employed_count",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "cd_dep_college_count",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          }
+        ]
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 2,
+                  "name": "$2"
+                },
+                {
+                  "literal": "W",
+                  "type": {
+                    "type": "CHAR",
+                    "nullable": false,
+                    "precision": 1
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 1,
+                  "name": "$1"
+                },
+                {
+                  "literal": "F",
+                  "type": {
+                    "type": "CHAR",
+                    "nullable": false,
+                    "precision": 1
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 3,
+                  "name": "$3"
+                },
+                {
+                  "literal": "Primary             ",
+                  "type": {
+                    "type": "CHAR",
+                    "nullable": false,
+                    "precision": 20
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 6482.7
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cd_demo_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 6482.7
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 9,
+              "name": "$9"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "6",
+          "9"
+        ],
+        "rowCount": 96135264038699568
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "promotion"
+        ],
+        "table:alias": "promotion",
+        "inputs": [],
+        "rowCount": 2300,
+        "avgRowSize": 517,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "p_promo_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "p_promo_id"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "p_start_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "p_end_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "p_item_sk"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 15,
+              "scale": 2,
+              "name": "p_cost"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "p_response_target"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "p_promo_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_dmail"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_email"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_catalog"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_tv"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_radio"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_press"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_event"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_channel_demo"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 100,
+              "name": "p_channel_details"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 15,
+              "name": "p_purpose"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "p_discount_active"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "p_promo_sk",
+            "ndv": 2365,
+            "minValue": 1,
+            "maxValue": 2300
+          },
+          {
+            "name": "p_channel_email",
+            "ndv": 2
+          },
+          {
+            "name": "p_channel_event",
+            "ndv": 2
+          },
+          {
+            "name": "p_promo_id",
+            "ndv": 2307
+          },
+          {
+            "name": "p_start_date_sk",
+            "ndv": 761,
+            "minValue": 2450096,
+            "maxValue": 2450915
+          },
+          {
+            "name": "p_end_date_sk",
+            "ndv": 736,
+            "minValue": 2450102,
+            "maxValue": 2450970
+          },
+          {
+            "name": "p_item_sk",
+            "ndv": 2252,
+            "minValue": 614,
+            "maxValue": 461932
+          },
+          {
+            "name": "p_cost",
+            "ndv": 1,
+            "minValue": 1000,
+            "maxValue": 1000
+          },
+          {
+            "name": "p_response_target",
+            "ndv": 1,
+            "minValue": 1,
+            "maxValue": 1
+          },
+          {
+            "name": "p_promo_name",
+            "ndv": 11
+          },
+          {
+            "name": "p_channel_dmail",
+            "ndv": 3
+          },
+          {
+            "name": "p_channel_catalog",
+            "ndv": 2
+          },
+          {
+            "name": "p_channel_tv",
+            "ndv": 2
+          },
+          {
+            "name": "p_channel_radio",
+            "ndv": 2
+          },
+          {
+            "name": "p_channel_press",
+            "ndv": 2
+          },
+          {
+            "name": "p_channel_demo",
+            "ndv": 2
+          },
+          {
+            "name": "p_channel_details",
+            "ndv": 2242
+          },
+          {
+            "name": "p_purpose",
+            "ndv": 2
+          },
+          {
+            "name": "p_discount_active",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "12",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "OR",
+            "kind": "OR",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 9,
+                  "name": "$9"
+                },
+                {
+                  "literal": "N",
+                  "type": {
+                    "type": "CHAR",
+                    "nullable": false,
+                    "precision": 1
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 14,
+                  "name": "$14"
+                },
+                {
+                  "literal": "N",
+                  "type": {
+                    "type": "CHAR",
+                    "nullable": false,
+                    "precision": 1
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 575
+      },
+      {
+        "id": "13",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "p_promo_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 575
+      },
+      {
+        "id": "14",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 10,
+              "name": "$10"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "10",
+          "13"
+        ],
+        "rowCount": 8291666523337837568
+      },
+      {
+        "id": "15",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "item"
+        ],
+        "table:alias": "item",
+        "inputs": [],
+        "rowCount": 462000,
+        "avgRowSize": 1033,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "i_item_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "i_item_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "i_rec_start_date"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "i_rec_end_date"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 200,
+              "name": "i_item_desc"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "i_current_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "i_wholesale_cost"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_brand_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_brand"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_class_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_class"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_category_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_category"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_manufact_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_manufact"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "i_size"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "i_formulation"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "i_color"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "i_units"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "i_container"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_manager_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_product_name"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "i_item_sk",
+            "ndv": 464811,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "i_item_id",
+            "ndv": 247524
+          },
+          {
+            "name": "i_rec_start_date",
+            "ndv": 0,
+            "minValue": 10161,
+            "maxValue": 11622
+          },
+          {
+            "name": "i_rec_end_date",
+            "ndv": 0,
+            "minValue": 10891,
+            "maxValue": 11621
+          },
+          {
+            "name": "i_item_desc",
+            "ndv": 341846
+          },
+          {
+            "name": "i_current_price",
+            "ndv": 9391,
+            "minValue": 0.09,
+            "maxValue": 99.99
+          },
+          {
+            "name": "i_wholesale_cost",
+            "ndv": 7343,
+            "minValue": 0.02,
+            "maxValue": 89.74
+          },
+          {
+            "name": "i_brand_id",
+            "ndv": 962,
+            "minValue": 1001001,
+            "maxValue": 10016017
+          },
+          {
+            "name": "i_brand",
+            "ndv": 742
+          },
+          {
+            "name": "i_class_id",
+            "ndv": 16,
+            "minValue": 1,
+            "maxValue": 16
+          },
+          {
+            "name": "i_class",
+            "ndv": 99
+          },
+          {
+            "name": "i_category_id",
+            "ndv": 10,
+            "minValue": 1,
+            "maxValue": 10
+          },
+          {
+            "name": "i_category",
+            "ndv": 11
+          },
+          {
+            "name": "i_manufact_id",
+            "ndv": 987,
+            "minValue": 1,
+            "maxValue": 1000
+          },
+          {
+            "name": "i_manufact",
+            "ndv": 1004
+          },
+          {
+            "name": "i_size",
+            "ndv": 8
+          },
+          {
+            "name": "i_formulation",
+            "ndv": 344236
+          },
+          {
+            "name": "i_color",
+            "ndv": 95
+          },
+          {
+            "name": "i_units",
+            "ndv": 21
+          },
+          {
+            "name": "i_container",
+            "ndv": 2
+          },
+          {
+            "name": "i_manager_id",
+            "ndv": 104,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "i_product_name",
+            "ndv": 461487
+          }
+        ]
+      },
+      {
+        "id": "16",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "i_item_sk",
+          "i_item_id"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 462000
+      },
+      {
+        "id": "17",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 11,
+              "name": "$11"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "14",
+          "16"
+        ],
+        "rowCount": 5.746124900673121E23
+      },
+      {
+        "id": "18",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          12
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              3
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              3
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              4
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              4
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              6
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              6
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              5
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              5
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 5.746124900673121E22
+      },
+      {
+        "id": "19",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "i_item_id",
+          "agg1",
+          "agg2",
+          "agg3",
+          "agg4"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              },
+              {
+                "input": 2,
+                "name": "$2"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 3,
+                    "name": "$3"
+                  },
+                  {
+                    "input": 4,
+                    "name": "$4"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 5,
+                    "name": "$5"
+                  },
+                  {
+                    "input": 6,
+                    "name": "$6"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 7,
+                    "name": "$7"
+                  },
+                  {
+                    "input": 8,
+                    "name": "$8"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          }
+        ],
+        "rowCount": 5.746124900673121E22
+      },
+      {
+        "id": "20",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit",
+        "collation": [
+          {
+            "field": 0,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          }
+        ],
+        "fetch": {
+          "literal": 100,
+          "type": {
+            "type": "INTEGER",
+            "nullable": false
+          }
+        },
+        "rowCount": 100
+      }
+    ]
+  }
+}

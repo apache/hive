@@ -104,11 +104,13 @@ public class TestDummyTxnManager {
   @Test
   public void testSingleReadTable() throws Exception {
     // Setup
+    SessionState.get().setCurrentCatalog("hive");
     SessionState.get().setCurrentDatabase("db1");
 
     List<HiveLock> expectedLocks = new ArrayList<HiveLock>();
-    expectedLocks.add(new ZooKeeperHiveLock("default", new HiveLockObject(), HiveLockMode.SHARED));
-    expectedLocks.add(new ZooKeeperHiveLock("default.table1", new HiveLockObject(), HiveLockMode.SHARED));
+    expectedLocks.add(new ZooKeeperHiveLock("hive", new HiveLockObject(), HiveLockMode.SHARED));
+    expectedLocks.add(new ZooKeeperHiveLock("hive.default", new HiveLockObject(), HiveLockMode.SHARED));
+    expectedLocks.add(new ZooKeeperHiveLock("hive.default.table1", new HiveLockObject(), HiveLockMode.SHARED));
     DriverState driverState = new DriverState();
     DriverState driverInterrupted = new DriverState();
     driverInterrupted.abort();
@@ -136,10 +138,10 @@ public class TestDummyTxnManager {
 
     verify(mockLockManager).lock(lockObjsCaptor.capture(), eq(false), eq(driverState));
     List<HiveLockObj> lockObjs = lockObjsCaptor.getValue();
-    Assert.assertEquals(2, lockObjs.size());
-    Assert.assertEquals("default", lockObjs.get(0).getName());
-    Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(0).mode);
-    Assert.assertEquals("default/table1", lockObjs.get(1).getName());
+    Assert.assertEquals(3, lockObjs.size());
+    Assert.assertEquals("hive/default", lockObjs.get(2).getName());
+    Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(2).mode);
+    Assert.assertEquals("hive/default/table1", lockObjs.get(1).getName());
     Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(1).mode);
 
     // Execute
@@ -210,6 +212,7 @@ public class TestDummyTxnManager {
 
   private Table newTable(boolean isPartitioned) {
     Table t = new Table("default", "table" + Integer.toString(nextInput++));
+    t.setCatalogName("hive");
     if (isPartitioned) {
       FieldSchema fs = new FieldSchema();
       fs.setName("version");

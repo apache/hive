@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
-import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -43,8 +42,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideConfProps;
 
@@ -188,13 +185,12 @@ public abstract class QueryCompactor implements Compactor {
      * @param conf HiveConf
      * @param writingBase if true, we are creating a base directory, otherwise a delta
      * @param createDeleteDelta if true, the delta dir we are creating is a delete delta
-     * @param bucket0 whether to specify 0 as the bucketid
      * @param directory AcidUtils.Directory - only required for minor compaction result (delta) dirs
      *
      * @return Path of new base/delta/delete delta directory
      */
     public static Path getCompactionResultDir(StorageDescriptor sd, ValidWriteIdList writeIds, HiveConf conf,
-                                              boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
+                                              boolean writingBase, boolean createDeleteDelta, AcidDirectory directory) {
       long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
       long compactorTxnId = Compactor.getCompactorTxnId(conf);
@@ -202,9 +198,6 @@ public abstract class QueryCompactor implements Compactor {
           new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minWriteID)
               .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId)
               .writingBase(writingBase).writingDeleteDelta(createDeleteDelta);
-      if (bucket0) {
-        options = options.bucket(0);
-      }
       Path location = new Path(sd.getLocation());
       return AcidUtils.baseOrDeltaSubdirPath(location, options);
     }

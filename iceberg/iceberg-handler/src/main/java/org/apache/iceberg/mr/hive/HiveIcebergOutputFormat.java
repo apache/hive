@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -35,7 +35,6 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.mr.mapred.Container;
@@ -64,22 +63,19 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
   private static HiveIcebergWriter writer(JobConf jc) {
     TaskAttemptID taskAttemptID = TezUtil.taskAttemptWrapper(jc);
     // It gets the config from the FileSinkOperator which has its own config for every target table
-    Table table = HiveIcebergStorageHandler.table(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
-    String tableName = jc.get(Catalogs.NAME);
-
+    Table table = HiveTableUtil.deserializeTable(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
     setWriterLevelConfiguration(jc, table);
-    return WriterBuilder.builderFor(table)
+    boolean shouldAddRowLineageColumns = jc.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
+
+    return WriterBuilder.builderFor(table, jc::get)
         .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
-        .tableName(tableName)
         .attemptID(taskAttemptID)
-        .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc::get, tableName))
-        .hasOrdering(HiveCustomStorageHandlerUtils.getWriteOperationIsSorted(jc::get, tableName))
-        .isMergeTask(HiveCustomStorageHandlerUtils.isMergeTaskEnabled(jc::get, tableName))
+        .addRowLineageColumns(shouldAddRowLineageColumns)
         .build();
   }
 
   private static void setWriterLevelConfiguration(JobConf jc, Table table) {
-    final String writeFormat = table.properties().get("write.format.default");
+    final String writeFormat = table.properties().get(TableProperties.DEFAULT_FILE_FORMAT);
     if (writeFormat == null || "PARQUET".equalsIgnoreCase(writeFormat)) {
       if (table.properties().get(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES) == null &&
           jc.get(ParquetOutputFormat.BLOCK_SIZE) != null) {

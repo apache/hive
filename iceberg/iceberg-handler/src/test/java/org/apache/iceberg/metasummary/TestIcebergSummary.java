@@ -22,6 +22,7 @@ package org.apache.iceberg.metasummary;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +39,9 @@ import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -55,10 +55,10 @@ public class TestIcebergSummary {
           optional(3, "alist", Types.ListType.ofOptional(5, Types.StringType.get())),
           optional(4, "amap", Types.MapType.ofOptional(6, 7, Types.IntegerType.get(), Types.StringType.get())));
 
-  @Rule
-  public TemporaryFolder tableDir = new TemporaryFolder();
-  @Rule
-  public TemporaryFolder dataDir = new TemporaryFolder();
+  @TempDir
+  public Path tableDir;
+  @TempDir
+  public Path dataDir;
 
   private final Configuration conf = MetastoreConf.newMetastoreConf();
 
@@ -69,12 +69,12 @@ public class TestIcebergSummary {
     PartitionSpec spec = PartitionSpec.builderFor(SCHEMA).bucket("foo", 16).build();
     Map<String, String> props = Maps.newHashMap();
     props.put("history.expire.min-snapshots-to-keep", "7");
-    String location = tableDir.getRoot() + "/test_metadata_summary";
+    String location = tableDir.toAbsolutePath() + "/test_metadata_summary";
     TABLES.create(SCHEMA, spec, props, location);
     Table table = TABLES.load(location);
     AppendFiles append = table.newAppend();
-    String data1 = dataDir.getRoot() + "/data1.parquet";
-    String data2 = dataDir.getRoot() + "/data2.parquet";
+    String data1 = dataDir.toAbsolutePath() + "/data1.parquet";
+    String data2 = dataDir.toAbsolutePath() + "/data2.parquet";
     Files.write(Paths.get(data1), Lists.newArrayList(), StandardCharsets.UTF_8);
     Files.write(Paths.get(data2), Lists.newArrayList(), StandardCharsets.UTF_8);
     PartitionData data = new PartitionData(spec.partitionType());
@@ -105,27 +105,27 @@ public class TestIcebergSummary {
     MetadataTableSummary tableSummary = new MetadataTableSummary();
     summary.getMetaSummary(table, tableSummary);
 
-    Assert.assertEquals(1, tableSummary.getPartitionColumnCount());
-    Assert.assertEquals(2, tableSummary.getNumFiles());
-    Assert.assertEquals(2, tableSummary.getPartitionCount());
-    Assert.assertEquals(3, tableSummary.getNumRows());
-    Assert.assertEquals(4, tableSummary.getColCount());
-    Assert.assertEquals(1, tableSummary.getArrayColumnCount());
-    Assert.assertEquals(1, tableSummary.getMapColumnCount());
-    Assert.assertEquals(0, tableSummary.getStructColumnCount());
-    Assert.assertEquals(30, tableSummary.getTotalSize());
+    Assertions.assertEquals(1, tableSummary.getPartitionColumnCount());
+    Assertions.assertEquals(2, tableSummary.getNumFiles());
+    Assertions.assertEquals(2, tableSummary.getPartitionCount());
+    Assertions.assertEquals(3, tableSummary.getNumRows());
+    Assertions.assertEquals(4, tableSummary.getColCount());
+    Assertions.assertEquals(1, tableSummary.getArrayColumnCount());
+    Assertions.assertEquals(1, tableSummary.getMapColumnCount());
+    Assertions.assertEquals(0, tableSummary.getStructColumnCount());
+    Assertions.assertEquals(30, tableSummary.getTotalSize());
 
     Map<String, Object> extraSummary = tableSummary.getExtraSummary();
-    Assert.assertEquals(2, extraSummary.get(MetadataSummary.NUM_SNAPSHOTS));
-    Assert.assertEquals(2, extraSummary.get(MetadataSummary.NUM_TAGS));
-    Assert.assertEquals(2, extraSummary.get(MetadataSummary.NUM_BRANCHES));
-    Assert.assertEquals(-1L, extraSummary.get(MetadataSummary.SNAPSHOT_MAX_AGE));
-    Assert.assertEquals(7L, extraSummary.get(MetadataSummary.SNAPSHOT_MIN_KEEP));
+    Assertions.assertEquals(2, extraSummary.get(MetadataSummary.NUM_SNAPSHOTS));
+    Assertions.assertEquals(2, extraSummary.get(MetadataSummary.NUM_TAGS));
+    Assertions.assertEquals(2, extraSummary.get(MetadataSummary.NUM_BRANCHES));
+    Assertions.assertEquals(-1L, extraSummary.get(MetadataSummary.SNAPSHOT_MAX_AGE));
+    Assertions.assertEquals(7L, extraSummary.get(MetadataSummary.SNAPSHOT_MIN_KEEP));
 
     File directory = new File(table.location());
     List<File> manifestFiles = listManifestFiles(directory);
-    Assert.assertEquals(manifestFiles.size(), extraSummary.get(MetadataSummary.NUM_MANIFESTS));
-    Assert.assertEquals(manifestFiles.stream().mapToLong(File::length).sum(),
+    Assertions.assertEquals(manifestFiles.size(), extraSummary.get(MetadataSummary.NUM_MANIFESTS));
+    Assertions.assertEquals(manifestFiles.stream().mapToLong(File::length).sum(),
         extraSummary.get(MetadataSummary.MANIFESTS_SIZE));
   }
 
@@ -141,20 +141,20 @@ public class TestIcebergSummary {
     props.put("format-version", "2");
     props.put("write.delete.mode", "merge-on-read");
     props.put("write.update.mode", "copy-on-write");
-    String location = tableDir.getRoot() + "/test_tabprops_summary";
+    String location = tableDir.toAbsolutePath() + "/test_tabprops_summary";
     TABLES.create(SCHEMA, PartitionSpec.unpartitioned(), props, location);
     Table table = TABLES.load(location);
     MetadataTableSummary tableSummary = new MetadataTableSummary();
     summary.getMetaSummary(table, tableSummary);
 
     Map<String, Object> extraSummary = tableSummary.getExtraSummary();
-    Assert.assertEquals("orc", extraSummary.get("write.format.default"));
-    Assert.assertEquals("parquet", extraSummary.get("write.delete.format.default"));
-    Assert.assertEquals("hash", extraSummary.get("write.distribution-mode"));
-    Assert.assertEquals("true", extraSummary.get("write.wap.enabled"));
-    Assert.assertEquals("merge-on-read", extraSummary.get("write.delete.mode"));
-    Assert.assertEquals("copy-on-write", extraSummary.get("write.update.mode"));
-    Assert.assertEquals(2, extraSummary.get("version"));
+    Assertions.assertEquals("orc", extraSummary.get("write.format.default"));
+    Assertions.assertEquals("parquet", extraSummary.get("write.delete.format.default"));
+    Assertions.assertEquals("hash", extraSummary.get("write.distribution-mode"));
+    Assertions.assertEquals("true", extraSummary.get("write.wap.enabled"));
+    Assertions.assertEquals("merge-on-read", extraSummary.get("write.delete.mode"));
+    Assertions.assertEquals("copy-on-write", extraSummary.get("write.update.mode"));
+    Assertions.assertEquals(2, extraSummary.get("version"));
   }
 
   List<File> listManifestFiles(File tableDirToList) {

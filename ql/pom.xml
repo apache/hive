@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-exec</artifactId>
@@ -167,11 +167,6 @@
       <artifactId>hive-storage-api</artifactId>
     </dependency>
     <!-- inter-project -->
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-bundle</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>com.amazonaws.secretsmanager</groupId>
       <artifactId>aws-secretsmanager-caching-java</artifactId>
@@ -481,10 +476,6 @@
           <groupId>org.yaml</groupId>
           <artifactId>snakeyaml</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.apache.calcite.avatica</groupId>
-          <artifactId>avatica-core</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -492,41 +483,8 @@
       <artifactId>calcite-druid</artifactId>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.calcite.avatica</groupId>
-          <artifactId>avatica-core</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.yaml</groupId>
           <artifactId>snakeyaml</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite.avatica</groupId>
-      <artifactId>avatica</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.calcite.avatica</groupId>
-          <artifactId>avatica-core</artifactId>
-        </exclusion>
-        <!-- hsqldb interferes with the use of derby as the default db
-          in hive's use of datanucleus.
-        -->
-        <exclusion>
-          <groupId>org.hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -572,6 +530,31 @@
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${standalone-metastore.version}</version>
       <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mariadb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mysql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>oracle-xe</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mssqlserver</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- test inter-project -->
@@ -939,6 +922,20 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <proc combine.self="override">full</proc>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.apache.logging.log4j</groupId>
+              <artifactId>log4j-core</artifactId>
+              <version>${log4j2.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
@@ -1060,6 +1057,7 @@
                   <include>org.apache.hive:hive-llap-client</include>
                   <include>org.apache.hive:hive-metastore</include>
                   <include>org.apache.hive:hive-standalone-metastore-common</include>
+                  <include>org.apache.hive:hive-standalone-metastore-client</include>
                   <include>org.apache.hive:hive-standalone-metastore-server</include>
                   <include>org.apache.hive:hive-service-rpc</include>
                   <include>com.esotericsoftware.kryo:kryo5</include>
@@ -1086,7 +1084,7 @@
                   <include>com.fasterxml.jackson.core:jackson-databind</include>
                   <include>com.fasterxml.jackson.dataformat:jackson-dataformat-yaml</include>
                   <include>com.google.guava:guava</include>
-                  <include>net.sf.opencsv:opencsv</include>
+                  <include>com.opencsv:opencsv</include>
                   <include>org.apache.hive:hive-storage-api</include>
                   <include>org.threeten:threeten-extra</include>
                   <include>org.apache.orc:orc-core</include>
@@ -1101,7 +1099,7 @@
                   <include>com.zaxxer:HikariCP</include>
                   <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
-                  <include>org.apache.calcite.avatica:avatica</include>
+                  <include>org.apache.calcite.avatica:*</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>com.github.luben:zstd-jni</include>
@@ -1110,15 +1108,6 @@
                 </includes>
               </artifactSet>
               <filters>
-                <filter>
-                  <artifact>org.apache.calcite.avatica:avatica</artifact>
-                  <excludes>
-                    <!-- Exclude Avatica bundled SLF4J, because Hive manages its own SLF4J version. -->
-                    <exclude>org/slf4j/**</exclude>
-                    <exclude>META-INF/maven/org.slf4j/**</exclude>
-                    <exclude>META-INF/licenses/slf4j*/**</exclude>
-                  </excludes>
-                </filter>
                 <filter>
                   <artifact>*:*</artifact>
                   <excludes>

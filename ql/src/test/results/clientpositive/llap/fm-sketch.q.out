@@ -105,8 +105,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@n_n0
 col_name            	key                 
 data_type           	int                 
-min                 	0                   
-max                 	0                   
+min                 	                    
+max                 	                    
 num_nulls           	500                 
 distinct_count      	1                   
 avg_col_len         	                    

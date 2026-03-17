@@ -923,7 +923,7 @@ POSTHOOK: Input: default@srcpart_small_n4
 POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM (SELECT `key`
 FROM `default`.`srcpart_date_n9`
 WHERE `key` IS NOT NULL) AS `t0`

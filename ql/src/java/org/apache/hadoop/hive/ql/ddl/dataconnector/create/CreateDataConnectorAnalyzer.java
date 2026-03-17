@@ -58,7 +58,7 @@ public class CreateDataConnectorAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_DATACONNECTORCOMMENT:
         comment = unescapeSQLString(childNode.getChild(0).getText());
         break;
-      case HiveParser.TOK_DATACONNECTORPROPERTIES:
+      case HiveParser.TOK_PROPERTIES:
         props = getProps((ASTNode) childNode.getChild(0));
         break;
       case HiveParser.TOK_DATACONNECTORURL:

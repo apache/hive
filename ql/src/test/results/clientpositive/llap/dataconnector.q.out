@@ -50,7 +50,7 @@ POSTHOOK: type: SHOWDATACONNECTORS
 mysql_test
 PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_test
 TYPE 'derby'
-URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
+#### A masked pattern was here ####
 COMMENT 'test derby connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="APP",
@@ -59,7 +59,7 @@ PREHOOK: type: CREATEDATACONNECTOR
 PREHOOK: Output: connector:derby_test
 POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_test
 TYPE 'derby'
-URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
+#### A masked pattern was here ####
 COMMENT 'test derby connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="APP",
@@ -138,8 +138,8 @@ PREHOOK: Input: database:db_derby
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:db_derby
-TESTTABLE1
-TESTTABLE2
+AUTHOR
+BOOK
 PREHOOK: query: alter connector mysql_test set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2'
 PREHOOK: type: ALTERDATACONNECTOR_
 PREHOOK: Output: connector:mysql_test

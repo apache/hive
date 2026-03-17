@@ -55,24 +55,24 @@ def service_ctrl(
             msg = fb_status_string(status)
             if (len(status_details)):
                 msg += " - %s" % status_details
-            print msg
+            print(msg)
 
             if (status == fb_status.ALIVE):
                 return 2
             else:
                 return 3
         except:
-            print "Failed to get status"
+            print("Failed to get status")
             return 3
 
     # scalar commands
     if command in ["version","alive","name"]:
         try:
             result = fb303_wrapper(command,  port, trans_factory, prot_factory)
-            print result
+            print(result)
             return 0
         except:
-            print "failed to get ",command
+            print("failed to get " + str(command))
             return 3
 
     # counters
@@ -80,10 +80,10 @@ def service_ctrl(
         try:
             counters = fb303_wrapper('counters',  port, trans_factory, prot_factory)
             for counter in counters:
-                print "%s: %d" % (counter, counters[counter])
+                print("%s: %d" % (counter, counters[counter]))
             return 0
         except:
-            print "failed to get counters"
+            print("failed to get counters")
             return 3
 
 
@@ -95,19 +95,19 @@ def service_ctrl(
                 fb303_wrapper(command, port, trans_factory, prot_factory)
                 return 0
             except:
-                print "failed to tell the service to ", command
+                print("failed to tell the service to " + str(command))
                 return 3
     else:
         if command in ["stop","reload"]:
-            print "root privileges are required to stop or reload the service."
+            print("root privileges are required to stop or reload the service.")
             return 4
 
-    print "The following commands are available:"
+    print("The following commands are available:")
     for command in ["counters","name","version","alive","status"]:
-        print "\t%s" % command
-    print "The following commands are available for users with root privileges:"
+        print("\t%s" % command)
+    print("The following commands are available for users with root privileges:")
     for command in ["stop","reload"]:
-        print "\t%s" % command
+        print("\t%s" % command)
 
 
 

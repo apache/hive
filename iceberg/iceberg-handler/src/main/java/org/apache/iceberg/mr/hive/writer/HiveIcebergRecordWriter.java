@@ -31,21 +31,17 @@ import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 
-class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
-
-  private final int currentSpecId;
+class HiveIcebergRecordWriter extends HiveIcebergDefaultWriter {
 
   HiveIcebergRecordWriter(Table table, HiveFileWriterFactory fileWriterFactory,
       OutputFileFactory dataFileFactory, Context context) {
-    super(table, newDataWriter(table, fileWriterFactory, dataFileFactory, context));
-
-    this.currentSpecId = table.spec().specId();
+    super(table, fileWriterFactory, dataFileFactory, context);
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
+    write(record);
   }
 
   @Override

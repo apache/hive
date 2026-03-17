@@ -370,12 +370,53 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           dmd.setOptimizedBootstrapToDumpMetadataFile(conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L));
         }
       } else {
-        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf,  sourceDbNameOrPattern, null);
-        LOG.warn("No dump to load or the previous dump already loaded");
+        handleSkippedLoad(latestDumpPath);
       }
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
+    }
+  }
+
+  private void handleSkippedLoad(Path latestDumpPath) throws SemanticException {
+    Long executionId = extractExecutionIdFromDump(latestDumpPath);
+    reportSkippedLoadMetrics(executionId);
+    LOG.warn("No dump to load or the previous dump already loaded");
+  }
+
+  private Long extractExecutionIdFromDump(Path latestDumpPath) {
+    if (latestDumpPath == null) {
+      return null;
+    }
+
+    try {
+      Path metadataPath = new Path(latestDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+      FileSystem fs = metadataPath.getFileSystem(conf);
+
+      if (fs.exists(metadataPath) && !fs.exists(new Path(metadataPath, LOAD_ACKNOWLEDGEMENT.toString()))) {
+        DumpMetaData lastWrittenDmd = new DumpMetaData(metadataPath, conf);
+        Long executionId = lastWrittenDmd.getDumpExecutionId();
+        LOG.debug("Retrieved execution ID {} from latest dump path", executionId);
+        return executionId;
+      } else {
+        LOG.debug("Metadata path does not exist: {}", metadataPath);
+      }
+    } catch (Exception e) {
+      LOG.warn("Unable to retrieve execution ID from dump metadata at {}: {}",
+              latestDumpPath, e.getMessage());
+      LOG.debug("Full exception:", e);
+    }
+
+    return null;
+  }
+
+  private void reportSkippedLoadMetrics(Long executionId) throws SemanticException {
+    if (executionId != null) {
+      ReplUtils.reportStatusInReplicationMetricsWithLastExecutionId(
+              "REPL_LOAD", Status.SKIPPED, executionId, null, conf);
+    } else {
+      ReplUtils.reportStatusInReplicationMetrics(
+              "REPL_LOAD", Status.SKIPPED, null, conf, sourceDbNameOrPattern, null);
     }
   }
 

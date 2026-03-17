@@ -382,10 +382,10 @@ public enum ErrorMsg {
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
   NONACID_COMPACTION_NOT_SUPPORTED(10286, "Compaction is not allowed on non-ACID table {0}.{1}", true),
   MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
-      "Detected {0}.{1} has row masking/column filtering enabled, " +
+      "Detected {0}.{1}.{2} has row masking/column filtering enabled, " +
       "which is not supported for query involving ACID operations", true),
   MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
-      "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
+      "Querying directly materialized view contents is not supported since we detected {0}.{1}.{2} " +
           "used by materialized view has row masking/column filtering enabled", true),
   MASKING_COMPLEX_TYPE_NOT_SUPPORTED(10289,
       "Masking complex types is not supported, found a masking expression {0} over column {1}:{2}", true),
@@ -468,7 +468,7 @@ public enum ErrorMsg {
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
   INCOMPATIBLE_STRUCT(10419, "Incompatible structs.", true),
-  OBJECTNAME_CONTAINS_DOT(10420, "Table or database name may not contain dot(.) character", true),
+  OBJECTNAME_CONTAINS_DOT(10420, "Catalog, database or table names may not contain dot(.) character", true),
   WITHIN_GROUP_NOT_ALLOWED(10421,
           "Not an ordered-set aggregate function: {0}. WITHIN GROUP clause is not allowed.", true),
   WITHIN_GROUP_PARAMETER_MISMATCH(10422,
@@ -499,6 +499,7 @@ public enum ErrorMsg {
   CATALOG_ALREADY_EXISTS(10444, "Catalog {0} already exists", true),
   CATALOG_NOT_EXISTS(10445, "Catalog {0} does not exists:", true),
   INVALID_SCHEDULED_QUERY(10446, "Scheduled query {0} does not exist", true),
+  UNSUPPORTED_TIMESTAMP_PRECISION(10447, "Unsupported value for precision: {0}", true),
 
   //========================== 20000 range starts here ========================//
 

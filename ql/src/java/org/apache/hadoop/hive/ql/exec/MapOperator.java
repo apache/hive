@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -388,7 +389,9 @@ public class MapOperator extends AbstractMapOperator {
       }
     }
 
-    for (PartitionDesc pd: conf.getAliasToPartnInfo().values()) {
+    Iterator<PartitionDesc> partitionIterator = conf.getPartitionDescs();
+    while (partitionIterator.hasNext()) {
+      PartitionDesc pd = partitionIterator.next();
       if (!tableNameToConf.containsKey(pd.getTableName())) {
         tableNameToConf.put(pd.getTableName(), hconf);
       }
@@ -413,7 +416,7 @@ public class MapOperator extends AbstractMapOperator {
     for (Operator<?> child : children) {
       TableScanOperator tsOp = (TableScanOperator) child;
       StructObjectInspector soi = null;
-      PartitionDesc partDesc = conf.getAliasToPartnInfo().get(tsOp.getConf().getAlias());
+      PartitionDesc partDesc = conf.getPartitionDesc(tsOp.getConf().getAlias());
       Configuration newConf = tableNameToConf.get(partDesc.getTableDesc().getTableName());
       AbstractSerDe serde = partDesc.getTableDesc().getSerDe();
       partDesc.setProperties(partDesc.getProperties());
@@ -696,6 +699,20 @@ public class MapOperator extends AbstractMapOperator {
           break;
         case ROWISDELETED:
           vcValues[i] = new BooleanWritable(ctx.getIoCxt().isDeletedRecord());
+          break;
+        case ROW_LINEAGE_ID:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getRowLineageInfo() != null &&
+              ctx.getIoCxt().getRowLineageInfo().getBaseRowId() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getRowLineageInfo().getBaseRowId());
+          }
+          break;
+        case LAST_UPDATED_SEQUENCE_NUMBER:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getRowLineageInfo() != null &&
+              ctx.getIoCxt().getRowLineageInfo().getLastUpdatedSequenceNumber() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getRowLineageInfo().getLastUpdatedSequenceNumber());
+          }
           break;
       }
     }

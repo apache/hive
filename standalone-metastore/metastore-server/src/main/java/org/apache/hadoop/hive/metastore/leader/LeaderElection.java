@@ -44,49 +44,49 @@ public interface LeaderElection<T> extends Closeable {
    *              It can be a path in Zookeeper, or a table that going to be locked.
    * @throws LeaderException
    */
-  public void tryBeLeader(Configuration conf, T mutex)
+  void tryBeLeader(Configuration conf, T mutex)
       throws LeaderException;
 
   /**
    * Getting the result of election.
    * @return true if wins the election, false otherwise.
    */
-  public boolean isLeader();
+  boolean isLeader();
 
   /**
    * Register listeners to get notified when leadership changes.
    * @param listener The listener to be added
    */
-  public void addStateListener(LeadershipStateListener listener);
+  void addStateListener(LeadershipStateListener listener);
 
   /**
    * Set the name of this leader candidate
    * @param name the name
    */
-  public void setName(String name);
+  void setName(String name);
 
   /**
    * Get the name of this leader candidate
    */
-  public String getName();
+  String getName();
 
   default boolean enforceMutex() {
     return true;
   }
 
-  public interface LeadershipStateListener {
+  interface LeadershipStateListener {
 
     /**
      * Invoked when won the election.
      * @param election the election where happens.
      */
-    public void takeLeadership(LeaderElection election) throws Exception;
+    void takeLeadership(LeaderElection election) throws Exception;
 
     /**
      * Invoked when lost the election
      * @param election the election where happens.
      */
-    public void lossLeadership(LeaderElection election) throws Exception;
+    void lossLeadership(LeaderElection election) throws Exception;
 
   }
 

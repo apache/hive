@@ -80,14 +80,15 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveAggregate(group=[{1, 2}], agg#0=[sum($4)])
-  HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(a=[$0], b=[$1], c=[$2])
-      HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
-        HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
-    HiveProject(d=[$0], f=[$2])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, tbl_ice_v2]], table:alias=[tbl_ice_v2])
+HiveProject(tbl_ice.b=[$0], tbl_ice.c=[$1], _c2=[$2])
+  HiveAggregate(group=[{1, 2}], agg#0=[sum($4)])
+    HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(a=[$0], b=[$1], c=[$2])
+        HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
+      HiveProject(d=[$0], f=[$2])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, tbl_ice_v2]], table:alias=[tbl_ice_v2])
 
 PREHOOK: query: alter materialized view mat1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD

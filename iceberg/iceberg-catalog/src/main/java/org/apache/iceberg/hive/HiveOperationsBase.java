@@ -33,6 +33,8 @@ import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.exceptions.NoSuchIcebergTableException;
 import org.apache.iceberg.exceptions.NoSuchIcebergViewException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -42,12 +44,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** All the HMS operations like table,view,materialized_view should implement this. */
-public interface HiveOperationsBase {
+interface HiveOperationsBase {
 
   Logger LOG = LoggerFactory.getLogger(HiveOperationsBase.class);
-  String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
-
-  // The max size is based on HMS backend database. For Hive versions below 2.3, the max table parameter size is 4000
+  // The max size is based on HMS backend database. For Hive versions below 2.3, the max table
+  // parameter size is 4000
   // characters, see https://issues.apache.org/jira/browse/HIVE-12274
   // set to 0 to not expose Iceberg metadata in HMS Table properties.
   String HIVE_TABLE_PROPERTY_MAX_SIZE = "iceberg.hive.table-property-max-size";
@@ -55,8 +56,6 @@ public interface HiveOperationsBase {
   String NO_LOCK_EXPECTED_KEY = "expected_parameter_key";
   String NO_LOCK_EXPECTED_VALUE = "expected_parameter_value";
   String ICEBERG_VIEW_TYPE_VALUE = "iceberg-view";
-
-  TableType tableType();
 
   enum ContentType {
     TABLE("Table"),
@@ -72,6 +71,8 @@ public interface HiveOperationsBase {
       return value;
     }
   }
+
+  TableType tableType();
 
   ClientPool<IMetaStoreClient, TException> metaClients();
 
@@ -92,51 +93,74 @@ public interface HiveOperationsBase {
 
   default Map<String, String> hmsEnvContext(String metadataLocation) {
     return metadataLocation == null ? ImmutableMap.of() :
-      ImmutableMap.of(
-        NO_LOCK_EXPECTED_KEY,
-        BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
-        NO_LOCK_EXPECTED_VALUE,
-        metadataLocation);
+        ImmutableMap.of(
+            NO_LOCK_EXPECTED_KEY,
+            BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+            NO_LOCK_EXPECTED_VALUE,
+            metadataLocation);
+  }
+
+  private static boolean isValidIcebergView(Table table) {
+    String tableType = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
+    return TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(table.getTableType()) &&
+        ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableType);
+  }
+
+  private static boolean isValidIcebergTable(Table table) {
+    String tableType = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
+    return BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.equalsIgnoreCase(tableType);
   }
 
   static void validateTableIsIceberg(Table table, String fullName) {
     String tableType = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     NoSuchIcebergTableException.check(
-        tableType != null && tableType.equalsIgnoreCase(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE),
-        "Not an iceberg table: %s (type=%s)", fullName, tableType);
+        isValidIcebergTable(table), "Not an iceberg table: %s (type=%s)", fullName, tableType);
   }
 
   static void validateTableIsIcebergView(Table table, String fullName) {
     String tableTypeProp = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     NoSuchIcebergViewException.check(
-            TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(table.getTableType()) &&
-                    ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
-            "Not an iceberg view: %s (type=%s) (tableType=%s)",
-            fullName,
-            tableTypeProp,
-            table.getTableType());
+        isValidIcebergView(table),
+        "Not an iceberg view: %s (type=%s) (tableType=%s)",
+        fullName,
+        tableTypeProp,
+        table.getTableType());
+  }
+
+  static void validateIcebergTableNotLoadedAsIcebergView(Table table, String fullName) {
+    if (!isValidIcebergView(table) && isValidIcebergTable(table)) {
+      throw new NoSuchViewException("View does not exist: %s", fullName);
+    }
+  }
+
+  static void validateIcebergViewNotLoadedAsIcebergTable(Table table, String fullName) {
+    if (!isValidIcebergTable(table) && isValidIcebergView(table)) {
+      throw new NoSuchTableException("Table does not exist: %s", fullName);
+    }
   }
 
   default void persistTable(Table hmsTable, boolean updateHiveTable, String metadataLocation)
       throws TException, InterruptedException {
     if (updateHiveTable) {
-      metaClients().run(
-          client -> {
-            MetastoreUtil.alterTable(
-                client, database(), table(), hmsTable, hmsEnvContext(metadataLocation));
-            return null;
-          });
+      metaClients()
+          .run(
+              client -> {
+                MetastoreUtil.alterTable(
+                    client, database(), table(), hmsTable, hmsEnvContext(metadataLocation));
+                return null;
+              });
     } else {
-      metaClients().run(
-          client -> {
-            client.createTable(hmsTable);
-            return null;
-          });
+      metaClients()
+          .run(
+              client -> {
+                client.createTable(hmsTable);
+                return null;
+              });
     }
   }
 
   static StorageDescriptor storageDescriptor(
-          Schema schema, String location, boolean hiveEngineEnabled) {
+      Schema schema, String location, boolean hiveEngineEnabled) {
     final StorageDescriptor storageDescriptor = new StorageDescriptor();
     storageDescriptor.setCols(HiveSchemaUtil.convert(schema));
     storageDescriptor.setLocation(location);
@@ -169,10 +193,10 @@ public interface HiveOperationsBase {
   }
 
   static void cleanupMetadataAndUnlock(
-          FileIO io,
-          BaseMetastoreOperations.CommitStatus commitStatus,
-          String metadataLocation,
-          HiveLock lock) {
+      FileIO io,
+      BaseMetastoreOperations.CommitStatus commitStatus,
+      String metadataLocation,
+      HiveLock lock) {
     try {
       cleanupMetadata(io, commitStatus.name(), metadataLocation);
     } finally {
@@ -184,24 +208,27 @@ public interface HiveOperationsBase {
     Preconditions.checkNotNull(hmsTableOwner, "'hmsOwner' parameter can't be null");
     final long currentTimeMillis = System.currentTimeMillis();
 
-    Table newTable = new Table(table(),
-        database(),
-        hmsTableOwner,
-        (int) currentTimeMillis / 1000,
-        (int) currentTimeMillis / 1000,
-        Integer.MAX_VALUE,
-        null,
-        Collections.emptyList(),
-        Maps.newHashMap(),
-        null,
-        null,
-        tableType().name());
+    Table newTable =
+        new Table(
+            table(),
+            database(),
+            hmsTableOwner,
+            (int) currentTimeMillis / 1000,
+            (int) currentTimeMillis / 1000,
+            Integer.MAX_VALUE,
+            null,
+            Collections.emptyList(),
+            Maps.newHashMap(),
+            null,
+            null,
+            tableType().name());
 
     if (tableType().equals(TableType.EXTERNAL_TABLE)) {
       newTable
           .getParameters()
           .put("EXTERNAL", "TRUE"); // using the external table type also requires this
     }
+
     return newTable;
   }
 }

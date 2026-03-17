@@ -212,7 +212,7 @@ class CompactionTxnHandler extends TxnHandler {
   
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_TXNID), min(Aborted TXNS.txn_id)).
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -259,33 +259,10 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * This will take all entries assigned to workers
-   * on a host return them to INITIATED state.  The initiator should use this at start up to
-   * clean entries from any workers that were in the middle of compacting when the metastore
-   * shutdown.  It does not reset entries from worker threads on other hosts as those may still
-   * be working.
-   * @param hostname Name of this host.  It is assumed this prefixes the thread's worker id,
-   *                 so that like hostname% will match the worker id.
-   */
-  @Override
-  @RetrySemantics.Idempotent
-  public void revokeFromLocalWorkers(String hostname) throws MetaException {
-    jdbcResource.execute(
-        "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL," +
-            " \"CQ_STATE\" = :initiatedState WHERE \"CQ_STATE\" = :workingState AND \"CQ_WORKER_ID\" LIKE :hostname",
-        new MapSqlParameterSource()
-            .addValue("initiatedState", Character.toString(INITIATED_STATE), Types.CHAR)
-            .addValue("workingState", Character.toString(WORKING_STATE), Types.CHAR)
-            .addValue("hostname", hostname + "%"),
-        null);
-  }
-
-  /**
    * This call will return all compaction queue
    * entries assigned to a worker but over the timeout back to the initiated state.
    * This should be called by the initiator on start up and occasionally when running to clean up
-   * after dead threads.  At start up {@link #revokeFromLocalWorkers(String)} should be called
-   * first.
+   * after dead threads.
    * @param timeout number of milliseconds since start time that should elapse before a worker is
    *                declared dead.
    */
@@ -294,12 +271,17 @@ class CompactionTxnHandler extends TxnHandler {
   public void revokeTimedoutWorkers(long timeout) throws MetaException {
     long latestValidStart = getDbTime().getTime() - timeout;
     jdbcResource.execute(
-        "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, " +
-            "\"CQ_STATE\" = :initiatedState WHERE \"CQ_STATE\" = :workingState AND \"CQ_START\" < :timeout",
+        "UPDATE \"COMPACTION_QUEUE\" " +
+        "SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, \"CQ_STATE\" = :initiatedState " +
+        "WHERE \"CQ_STATE\" = :workingState AND \"CQ_START\" < :timeout AND (" +
+            "\"CQ_TXN_ID\" IS NULL OR " +
+            "\"CQ_TXN_ID\" NOT IN (SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :openState)" +
+        ")",
         new MapSqlParameterSource()
             .addValue("initiatedState", Character.toString(INITIATED_STATE), Types.CHAR)
             .addValue("workingState", Character.toString(WORKING_STATE), Types.CHAR)
-            .addValue("timeout", latestValidStart),
+            .addValue("timeout", latestValidStart)
+            .addValue("openState", TxnStatus.OPEN.getSqlConst(), Types.CHAR),
         null);
   }
 
@@ -397,7 +379,7 @@ class CompactionTxnHandler extends TxnHandler {
     String strState = CompactionState.fromSqlConst(ci.state).toString();
 
     LOG.debug("Marking as {}: CompactionInfo: {}", strState, ci);
-    CompactionInfo ciActual = jdbcResource.execute(new GetCompactionInfoHandler(ci.id, false)); 
+    CompactionInfo ciActual = jdbcResource.execute(new GetCompactionInfoHandler(ci.id, false));
 
     long endTime = getDbTime().getTime();
     if (ciActual != null) {
@@ -479,7 +461,8 @@ class CompactionTxnHandler extends TxnHandler {
                 .addValue("type", Character.toString(thriftCompactionType2DbType(info.type)))
                 .addValue("state", Character.toString(info.state))
                 .addValue("retention", info.retryRetention)
-                .addValue("msg", info.errorMessage), null);
+                .addValue("msg", info.errorMessage),
+            null);
         if (updCnt == 0) {
           LOG.error("Unable to update/insert compaction queue record: {}. updCnt={}", info, updCnt);
           throw new MetaException("Unable to insert abort retry entry into COMPACTION QUEUE: " +
@@ -528,7 +511,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.Idempotent
   @Deprecated
   public long findMinTxnIdSeenOpen() {
-    if (!ConfVars.useMinHistoryLevel() || ConfVars.useMinHistoryWriteId()) {
+    if (!ConfVars.useMinHistoryLevel()) {
       return Long.MAX_VALUE;
     }
     try {

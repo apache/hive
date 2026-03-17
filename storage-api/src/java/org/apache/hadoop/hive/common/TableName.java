@@ -169,11 +169,11 @@ public class TableName implements Serializable {
     }
     TableName tableName = (TableName) o;
     return Objects.equals(cat, tableName.cat) && Objects.equals(db, tableName.db) && Objects
-        .equals(table, tableName.table);
+        .equals(table, tableName.table) && Objects.equals(tableMetaRef, tableName.tableMetaRef);
   }
 
   @Override public int hashCode() {
-    return Objects.hash(cat, db, table);
+    return Objects.hash(cat, db, table, tableMetaRef);
   }
 
   @Override

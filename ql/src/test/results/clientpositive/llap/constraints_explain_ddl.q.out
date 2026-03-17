@@ -645,7 +645,7 @@ d_sellingseason order by d_datekey limit 10;
 
 EXPLAIN VECTORIZED SELECT count(d_datekey) from dates_removal_n0 where d_year IN (1985, 2004) group by d_id, d_daynuminmonth, d_datekey,
 d_sellingseason order by d_datekey limit 10;
-CBO PLAN:HiveProject(_o__c0=[$0])
+CBO PLAN:HiveProject(_c0=[$0])
   HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[10])
     HiveProject(_o__c0=[$2], (tok_table_or_col d_datekey)=[$0])
       HiveAggregate(group=[{0, 1}], agg#0=[count()])
@@ -1192,17 +1192,17 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: ++
                       keys: d_datekey (type: bigint), d_sellingseason (type: string)
                       null sort order: zz
-                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 10
                       Select Operator
                         expressions: d_datekey (type: bigint), d_sellingseason (type: string)
                         outputColumnNames: d_datekey, d_sellingseason
-                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: d_datekey (type: bigint), d_sellingseason (type: string)
                           minReductionHashAggr: 0.4
@@ -1347,7 +1347,7 @@ group by c_custkey, c_nation;
 
 EXPLAIN VECTORIZED SELECT count(c_custkey) from customer_removal_n0 where c_nation IN ('USA', 'INDIA')
 group by c_custkey, c_nation;
-CBO PLAN:HiveProject(_o__c0=[$1])
+CBO PLAN:HiveProject(_c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
     HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
       HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
@@ -1713,7 +1713,7 @@ EXPLAIN CBO select count(key1) from dest_g21 group by key1, value1;
 
 
 EXPLAIN VECTORIZED select count(key1) from dest_g21 group by key1, value1;
-CBO PLAN:HiveProject(_o__c0=[$1])
+CBO PLAN:HiveProject(_c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
     HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
 
@@ -1839,7 +1839,7 @@ EXPLAIN CBO select count(key1) from dest_g21 where value1 > 1 group by key1, val
 
 
 EXPLAIN VECTORIZED select count(key1) from dest_g21 where value1 > 1 group by key1, value1;
-CBO PLAN:HiveProject(_o__c0=[$1])
+CBO PLAN:HiveProject(_c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
     HiveFilter(condition=[>($1, 1E0)])
       HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
@@ -1973,7 +1973,7 @@ EXPLAIN CBO select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key
 
 
 EXPLAIN VECTORIZED select t1.key1 from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1;
-CBO PLAN:HiveProject(key1=[$0])
+CBO PLAN:HiveProject(t1.key1=[$0])
   HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key1=[$0], value1=[$1])
       HiveTableScan(table=[[default, dest_g21]], table:alias=[t1])
@@ -2120,7 +2120,7 @@ EXPLAIN CBO select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 =
 
 
 EXPLAIN VECTORIZED select count(t1.key1) from dest_g21 t1 join dest_g21 t2 on t1.key1 = t2.key1 where t2.value1 > 2 group by t1.key1, t1.value1;
-CBO PLAN:HiveProject(_o__c0=[$1])
+CBO PLAN:HiveProject(_c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
     HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(key1=[$0], value1=[$1])
@@ -2373,9 +2373,10 @@ EXPLAIN CBO select key1, sm from (select key1, count(key1), sum(key1) as sm from
 
 
 EXPLAIN VECTORIZED select key1, sm from (select key1, count(key1), sum(key1) as sm from dest_g21 where value1 < 4.5 group by key1, value1) sub;
-CBO PLAN:HiveAggregate(group=[{0}], agg#0=[sum($0)])
-  HiveFilter(condition=[<($1, 4.5E0)])
-    HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
+CBO PLAN:HiveProject(key1=[$0], sm=[$1])
+  HiveAggregate(group=[{0}], agg#0=[sum($0)])
+    HiveFilter(condition=[<($1, 4.5E0)])
+      HiveTableScan(table=[[default, dest_g21]], table:alias=[dest_g21])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -2922,7 +2923,7 @@ EXPLAIN CBO select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by
 
 
 EXPLAIN VECTORIZED select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.j group by t1.i, t1.d_year;
-CBO PLAN:HiveProject(_o__c0=[$2])
+CBO PLAN:HiveProject(_c0=[$2])
   HiveAggregate(group=[{0, 1}], agg#0=[sum($0)])
     HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(i=[$0], d_year=[$2])
@@ -3111,7 +3112,7 @@ EXPLAIN CBO select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by
 
 
 EXPLAIN VECTORIZED select sum(t1.i) from tconst t1 join tconst t2 on t1.i=t2.i group by t1.i, t1.d_year;
-CBO PLAN:HiveProject(_o__c0=[$2])
+CBO PLAN:HiveProject(_c0=[$2])
   HiveAggregate(group=[{0, 1}], agg#0=[sum($0)])
     HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(i=[$0], d_year=[$2])
@@ -3753,13 +3754,14 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address;
-CBO PLAN:HiveAggregate(group=[{1}])
-  HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
-      HiveTableScan(table=[[default, customer]], table:alias=[customer])
-    HiveProject(ss_customer_sk=[$3])
-      HiveFilter(condition=[IS NOT NULL($3)])
-        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+CBO PLAN:HiveProject(c_customer_id=[$0])
+  HiveAggregate(group=[{1}])
+    HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+      HiveProject(ss_customer_sk=[$3])
+        HiveFilter(condition=[IS NOT NULL($3)])
+          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -4037,13 +4039,14 @@ group by c_customer_id
 ,c_birth_country
 ,c_login
 ,c_email_address;
-CBO PLAN:HiveAggregate(group=[{2}])
-  HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(ss_customer_sk=[$3])
-      HiveFilter(condition=[IS NOT NULL($3)])
-        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
-    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
-      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+CBO PLAN:HiveProject(c_customer_id=[$0])
+  HiveAggregate(group=[{2}])
+    HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(ss_customer_sk=[$3])
+        HiveFilter(condition=[IS NOT NULL($3)])
+          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+      HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -4397,7 +4400,7 @@ where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100;
 CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject(customer_preferred_cust_flag=[$1])
+  HiveProject(t_s_secyear.customer_preferred_cust_flag=[$1])
     HiveAggregate(group=[{1, 4}])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
@@ -4795,7 +4798,7 @@ where t_s_secyear.sale_type = 's'
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100;
 CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject(customer_preferred_cust_flag=[$1])
+  HiveProject(t_s_secyear.customer_preferred_cust_flag=[$1])
     HiveAggregate(group=[{1, 4}])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
@@ -5345,7 +5348,7 @@ and t_s_firstyear.year_total > 0
 order by t_s_secyear.customer_preferred_cust_flag
 limit 100;
 CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject(customer_preferred_cust_flag=[$1])
+  HiveProject(t_s_secyear.customer_preferred_cust_flag=[$1])
     HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(c_customer_id=[$0], c_preferred_cust_flag=[$1])
         HiveAggregate(group=[{1, 4}])
@@ -5901,12 +5904,13 @@ C_CUSTOMER_SK
 ,	C_LOGIN
 ,	C_EMAIL_ADDRESS
 ;
-CBO PLAN:HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
-  HiveProject(c_customer_sk=[$0])
-    HiveTableScan(table=[[default, customer]], table:alias=[customer])
-  HiveProject(ss_customer_sk=[$3])
-    HiveFilter(condition=[IS NOT NULL($3)])
-      HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+CBO PLAN:HiveProject(c_customer_sk=[$0])
+  HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+    HiveProject(c_customer_sk=[$0])
+      HiveTableScan(table=[[default, customer]], table:alias=[customer])
+    HiveProject(ss_customer_sk=[$3])
+      HiveFilter(condition=[IS NOT NULL($3)])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -6841,13 +6845,14 @@ C_EMAIL_ADDRESS
 ,	C_BIRTH_COUNTRY
 ,	C_LOGIN
 ;
-CBO PLAN:HiveAggregate(group=[{1}])
-  HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
-      HiveTableScan(table=[[default, customer]], table:alias=[customer])
-    HiveProject(ss_customer_sk=[$3])
-      HiveFilter(condition=[IS NOT NULL($3)])
-        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+CBO PLAN:HiveProject(c_customer_id=[$0])
+  HiveAggregate(group=[{1}])
+    HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+      HiveProject(ss_customer_sk=[$3])
+        HiveFilter(condition=[IS NOT NULL($3)])
+          HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -7048,10 +7053,11 @@ EXPLAIN select count(distinct ws_order_number) from web_sales;
 EXPLAIN CBO select count(distinct ws_order_number) from web_sales;
 
 EXPLAIN VECTORIZED select count(distinct ws_order_number) from web_sales;
-CBO PLAN:HiveAggregate(group=[{}], agg#0=[count()])
-  HiveProject(ws_order_number=[$0])
-    HiveAggregate(group=[{0}])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
+CBO PLAN:HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveProject(ws_order_number=[$0])
+      HiveAggregate(group=[{0}])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -7387,7 +7393,7 @@ EXPLAIN CBO select * from table1_n13;
 
 
 EXPLAIN VECTORIZED select * from table1_n13;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table1_n13.a=[$0], table1_n13.b=[$1])
   HiveTableScan(table=[[default, table1_n13]], table:alias=[table1_n13])
 
 PLAN VECTORIZATION:
@@ -7441,7 +7447,7 @@ EXPLAIN select * from table2_n8;
 EXPLAIN CBO select * from table2_n8;
 
 EXPLAIN VECTORIZED select * from table2_n8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2_n8.a=[$0], table2_n8.b=[$1])
   HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
 
 PLAN VECTORIZATION:
@@ -7494,7 +7500,7 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
-CBO PLAN:HiveProject(x=[$0])
+CBO PLAN:HiveProject(table3_n1.x=[$0])
   HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
 
 PLAN VECTORIZATION:
@@ -7548,7 +7554,7 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table4_n0.x=[$0], table4_n0.y=[$1])
   HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
 
 PLAN VECTORIZATION:
@@ -7601,7 +7607,7 @@ EXPLAIN select * from table5_n4;
 EXPLAIN CBO select * from table5_n4;
 
 EXPLAIN VECTORIZED select * from table5_n4;
-CBO PLAN:HiveProject(x=[$0])
+CBO PLAN:HiveProject(table5_n4.x=[$0])
   HiveTableScan(table=[[default, table5_n4]], table:alias=[table5_n4])
 
 PLAN VECTORIZATION:
@@ -7655,7 +7661,7 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table6_n3.x=[$0], table6_n3.y=[$1])
   HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
 
 PLAN VECTORIZATION:
@@ -7710,7 +7716,7 @@ EXPLAIN select * from table7_n3;
 EXPLAIN CBO select * from table7_n3;
 
 EXPLAIN VECTORIZED select * from table7_n3;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table7_n3.a=[$0], table7_n3.b=[$1])
   HiveTableScan(table=[[default, table7_n3]], table:alias=[table7_n3])
 
 PLAN VECTORIZATION:
@@ -7764,7 +7770,7 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table8.a=[$0], table8.b=[$1])
   HiveTableScan(table=[[default, table8]], table:alias=[table8])
 
 PLAN VECTORIZATION:
@@ -7819,7 +7825,7 @@ EXPLAIN select * from table9;
 EXPLAIN CBO select * from table9;
 
 EXPLAIN VECTORIZED select * from table9;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table9.a=[$0], table9.b=[$1])
   HiveTableScan(table=[[default, table9]], table:alias=[table9])
 
 PLAN VECTORIZATION:
@@ -7873,7 +7879,7 @@ EXPLAIN select * from table10;
 EXPLAIN CBO select * from table10;
 
 EXPLAIN VECTORIZED select * from table10;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table10.a=[$0], table10.b=[$1])
   HiveTableScan(table=[[default, table10]], table:alias=[table10])
 
 PLAN VECTORIZATION:
@@ -7929,7 +7935,7 @@ EXPLAIN select * from table11;
 EXPLAIN CBO select * from table11;
 
 EXPLAIN VECTORIZED select * from table11;
-CBO PLAN:HiveProject(a=[$0], b=[$1], c=[$2])
+CBO PLAN:HiveProject(table11.a=[$0], table11.b=[$1], table11.c=[$2])
   HiveTableScan(table=[[default, table11]], table:alias=[table11])
 
 PLAN VECTORIZATION:
@@ -7983,7 +7989,7 @@ EXPLAIN select * from table12;
 EXPLAIN CBO select * from table12;
 
 EXPLAIN VECTORIZED select * from table12;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table12.a=[$0], table12.b=[$1])
   HiveTableScan(table=[[default, table12]], table:alias=[table12])
 
 PLAN VECTORIZATION:
@@ -8038,7 +8044,7 @@ EXPLAIN select * from table13;
 EXPLAIN CBO select * from table13;
 
 EXPLAIN VECTORIZED select * from table13;
-CBO PLAN:HiveProject(b=[$0], a=[$1])
+CBO PLAN:HiveProject(table13.b=[$0], table13.a=[$1])
   HiveTableScan(table=[[default, table13]], table:alias=[table13])
 
 PLAN VECTORIZATION:
@@ -8092,7 +8098,7 @@ EXPLAIN select * from table14;
 EXPLAIN CBO select * from table14;
 
 EXPLAIN VECTORIZED select * from table14;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table14.a=[$0], table14.b=[$1])
   HiveTableScan(table=[[default, table14]], table:alias=[table14])
 
 PLAN VECTORIZATION:
@@ -8146,7 +8152,7 @@ EXPLAIN select * from table15;
 EXPLAIN CBO select * from table15;
 
 EXPLAIN VECTORIZED select * from table15;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table15.a=[$0], table15.b=[$1])
   HiveTableScan(table=[[default, table15]], table:alias=[table15])
 
 PLAN VECTORIZATION:
@@ -8200,7 +8206,7 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table16.a=[$0], table16.b=[$1])
   HiveTableScan(table=[[default, table16]], table:alias=[table16])
 
 PLAN VECTORIZATION:
@@ -8254,7 +8260,7 @@ EXPLAIN select * from table17;
 EXPLAIN CBO select * from table17;
 
 EXPLAIN VECTORIZED select * from table17;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table17.a=[$0], table17.b=[$1])
   HiveTableScan(table=[[default, table17]], table:alias=[table17])
 
 PLAN VECTORIZATION:
@@ -8309,7 +8315,7 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table18.a=[$0], table18.b=[$1])
   HiveTableScan(table=[[default, table18]], table:alias=[table18])
 
 PLAN VECTORIZATION:
@@ -8364,7 +8370,7 @@ EXPLAIN select * from table19;
 EXPLAIN CBO select * from table19;
 
 EXPLAIN VECTORIZED select * from table19;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table19.a=[$0], table19.b=[$1])
   HiveTableScan(table=[[default, table19]], table:alias=[table19])
 
 PLAN VECTORIZATION:
@@ -8418,7 +8424,7 @@ EXPLAIN select * from table20;
 EXPLAIN CBO select * from table20;
 
 EXPLAIN VECTORIZED select * from table20;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table20.a=[$0], table20.b=[$1])
   HiveTableScan(table=[[default, table20]], table:alias=[table20])
 
 PLAN VECTORIZATION:
@@ -8473,7 +8479,7 @@ EXPLAIN select * from table21;
 EXPLAIN CBO select * from table21;
 
 EXPLAIN VECTORIZED select * from table21;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table21.a=[$0], table21.b=[$1])
   HiveTableScan(table=[[default, table21]], table:alias=[table21])
 
 PLAN VECTORIZATION:
@@ -8527,7 +8533,7 @@ EXPLAIN select * from table22;
 EXPLAIN CBO select * from table22;
 
 EXPLAIN VECTORIZED select * from table22;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table22.a=[$0], table22.b=[$1])
   HiveTableScan(table=[[default, table22]], table:alias=[table22])
 
 PLAN VECTORIZATION:
@@ -8584,7 +8590,7 @@ EXPLAIN CBO select * from table1_n13;
 
 
 EXPLAIN VECTORIZED select * from table1_n13;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table1_n13.a=[$0], table1_n13.b=[$1])
   HiveTableScan(table=[[default, table1_n13]], table:alias=[table1_n13])
 
 PLAN VECTORIZATION:
@@ -8638,7 +8644,7 @@ EXPLAIN select * from table2_n8;
 EXPLAIN CBO select * from table2_n8;
 
 EXPLAIN VECTORIZED select * from table2_n8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2_n8.a=[$0], table2_n8.b=[$1])
   HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
 
 PLAN VECTORIZATION:
@@ -8691,7 +8697,7 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
-CBO PLAN:HiveProject(x=[$0])
+CBO PLAN:HiveProject(table3_n1.x=[$0])
   HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
 
 PLAN VECTORIZATION:
@@ -8745,7 +8751,7 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table4_n0.x=[$0], table4_n0.y=[$1])
   HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
 
 PLAN VECTORIZATION:
@@ -8798,7 +8804,7 @@ EXPLAIN select * from table5_n4;
 EXPLAIN CBO select * from table5_n4;
 
 EXPLAIN VECTORIZED select * from table5_n4;
-CBO PLAN:HiveProject(x=[$0])
+CBO PLAN:HiveProject(table5_n4.x=[$0])
   HiveTableScan(table=[[default, table5_n4]], table:alias=[table5_n4])
 
 PLAN VECTORIZATION:
@@ -8852,7 +8858,7 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table6_n3.x=[$0], table6_n3.y=[$1])
   HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
 
 PLAN VECTORIZATION:
@@ -8907,7 +8913,7 @@ EXPLAIN select * from table7_n3;
 EXPLAIN CBO select * from table7_n3;
 
 EXPLAIN VECTORIZED select * from table7_n3;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table7_n3.a=[$0], table7_n3.b=[$1])
   HiveTableScan(table=[[default, table7_n3]], table:alias=[table7_n3])
 
 PLAN VECTORIZATION:
@@ -8961,7 +8967,7 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table8.a=[$0], table8.b=[$1])
   HiveTableScan(table=[[default, table8]], table:alias=[table8])
 
 PLAN VECTORIZATION:
@@ -9016,7 +9022,7 @@ EXPLAIN select * from table9;
 EXPLAIN CBO select * from table9;
 
 EXPLAIN VECTORIZED select * from table9;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table9.a=[$0], table9.b=[$1])
   HiveTableScan(table=[[default, table9]], table:alias=[table9])
 
 PLAN VECTORIZATION:
@@ -9070,7 +9076,7 @@ EXPLAIN select * from table10;
 EXPLAIN CBO select * from table10;
 
 EXPLAIN VECTORIZED select * from table10;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table10.a=[$0], table10.b=[$1])
   HiveTableScan(table=[[default, table10]], table:alias=[table10])
 
 PLAN VECTORIZATION:
@@ -9126,7 +9132,7 @@ EXPLAIN select * from table11;
 EXPLAIN CBO select * from table11;
 
 EXPLAIN VECTORIZED select * from table11;
-CBO PLAN:HiveProject(a=[$0], b=[$1], c=[$2])
+CBO PLAN:HiveProject(table11.a=[$0], table11.b=[$1], table11.c=[$2])
   HiveTableScan(table=[[default, table11]], table:alias=[table11])
 
 PLAN VECTORIZATION:
@@ -9180,7 +9186,7 @@ EXPLAIN select * from table12;
 EXPLAIN CBO select * from table12;
 
 EXPLAIN VECTORIZED select * from table12;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table12.a=[$0], table12.b=[$1])
   HiveTableScan(table=[[default, table12]], table:alias=[table12])
 
 PLAN VECTORIZATION:
@@ -9235,7 +9241,7 @@ EXPLAIN select * from table13;
 EXPLAIN CBO select * from table13;
 
 EXPLAIN VECTORIZED select * from table13;
-CBO PLAN:HiveProject(b=[$0], a=[$1])
+CBO PLAN:HiveProject(table13.b=[$0], table13.a=[$1])
   HiveTableScan(table=[[default, table13]], table:alias=[table13])
 
 PLAN VECTORIZATION:
@@ -9289,7 +9295,7 @@ EXPLAIN select * from table14;
 EXPLAIN CBO select * from table14;
 
 EXPLAIN VECTORIZED select * from table14;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table14.a=[$0], table14.b=[$1])
   HiveTableScan(table=[[default, table14]], table:alias=[table14])
 
 PLAN VECTORIZATION:
@@ -9343,7 +9349,7 @@ EXPLAIN select * from table15;
 EXPLAIN CBO select * from table15;
 
 EXPLAIN VECTORIZED select * from table15;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table15.a=[$0], table15.b=[$1])
   HiveTableScan(table=[[default, table15]], table:alias=[table15])
 
 PLAN VECTORIZATION:
@@ -9397,7 +9403,7 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table16.a=[$0], table16.b=[$1])
   HiveTableScan(table=[[default, table16]], table:alias=[table16])
 
 PLAN VECTORIZATION:
@@ -9451,7 +9457,7 @@ EXPLAIN select * from table17;
 EXPLAIN CBO select * from table17;
 
 EXPLAIN VECTORIZED select * from table17;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table17.a=[$0], table17.b=[$1])
   HiveTableScan(table=[[default, table17]], table:alias=[table17])
 
 PLAN VECTORIZATION:
@@ -9506,7 +9512,7 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table18.a=[$0], table18.b=[$1])
   HiveTableScan(table=[[default, table18]], table:alias=[table18])
 
 PLAN VECTORIZATION:
@@ -9561,7 +9567,7 @@ EXPLAIN select * from table19;
 EXPLAIN CBO select * from table19;
 
 EXPLAIN VECTORIZED select * from table19;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table19.a=[$0], table19.b=[$1])
   HiveTableScan(table=[[default, table19]], table:alias=[table19])
 
 PLAN VECTORIZATION:
@@ -9615,7 +9621,7 @@ EXPLAIN select * from table20;
 EXPLAIN CBO select * from table20;
 
 EXPLAIN VECTORIZED select * from table20;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table20.a=[$0], table20.b=[$1])
   HiveTableScan(table=[[default, table20]], table:alias=[table20])
 
 PLAN VECTORIZATION:
@@ -9670,7 +9676,7 @@ EXPLAIN select * from table21;
 EXPLAIN CBO select * from table21;
 
 EXPLAIN VECTORIZED select * from table21;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table21.a=[$0], table21.b=[$1])
   HiveTableScan(table=[[default, table21]], table:alias=[table21])
 
 PLAN VECTORIZATION:
@@ -9724,7 +9730,7 @@ EXPLAIN select * from table22;
 EXPLAIN CBO select * from table22;
 
 EXPLAIN VECTORIZED select * from table22;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table22.a=[$0], table22.b=[$1])
   HiveTableScan(table=[[default, table22]], table:alias=[table22])
 
 PLAN VECTORIZATION:
@@ -9837,7 +9843,7 @@ EXPLAIN CBO select * from table2_n8;
 
 
 EXPLAIN VECTORIZED select * from table2_n8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2_n8.a=[$0], table2_n8.b=[$1])
   HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
 
 PLAN VECTORIZATION:
@@ -9890,7 +9896,7 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
-CBO PLAN:HiveProject(x=[$0])
+CBO PLAN:HiveProject(table3_n1.x=[$0])
   HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
 
 PLAN VECTORIZATION:
@@ -9944,7 +9950,7 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table4_n0.x=[$0], table4_n0.y=[$1])
   HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
 
 PLAN VECTORIZATION:
@@ -9998,7 +10004,7 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table6_n3.x=[$0], table6_n3.y=[$1])
   HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
 
 PLAN VECTORIZATION:
@@ -10052,7 +10058,7 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table8.a=[$0], table8.b=[$1])
   HiveTableScan(table=[[default, table8]], table:alias=[table8])
 
 PLAN VECTORIZATION:
@@ -10106,7 +10112,7 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table16.a=[$0], table16.b=[$1])
   HiveTableScan(table=[[default, table16]], table:alias=[table16])
 
 PLAN VECTORIZATION:
@@ -10161,7 +10167,7 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table18.a=[$0], table18.b=[$1])
   HiveTableScan(table=[[default, table18]], table:alias=[table18])
 
 PLAN VECTORIZATION:
@@ -10218,7 +10224,7 @@ EXPLAIN CBO select * from table2_n8;
 
 
 EXPLAIN VECTORIZED select * from table2_n8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2_n8.a=[$0], table2_n8.b=[$1])
   HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
 
 PLAN VECTORIZATION:
@@ -10271,7 +10277,7 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
-CBO PLAN:HiveProject(x=[$0])
+CBO PLAN:HiveProject(table3_n1.x=[$0])
   HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
 
 PLAN VECTORIZATION:
@@ -10325,7 +10331,7 @@ EXPLAIN select * from table4_n0;
 EXPLAIN CBO select * from table4_n0;
 
 EXPLAIN VECTORIZED select * from table4_n0;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table4_n0.x=[$0], table4_n0.y=[$1])
   HiveTableScan(table=[[default, table4_n0]], table:alias=[table4_n0])
 
 PLAN VECTORIZATION:
@@ -10379,7 +10385,7 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table6_n3.x=[$0], table6_n3.y=[$1])
   HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
 
 PLAN VECTORIZATION:
@@ -10433,7 +10439,7 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table8.a=[$0], table8.b=[$1])
   HiveTableScan(table=[[default, table8]], table:alias=[table8])
 
 PLAN VECTORIZATION:
@@ -10487,7 +10493,7 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table16.a=[$0], table16.b=[$1])
   HiveTableScan(table=[[default, table16]], table:alias=[table16])
 
 PLAN VECTORIZATION:
@@ -10542,7 +10548,7 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table18.a=[$0], table18.b=[$1])
   HiveTableScan(table=[[default, table18]], table:alias=[table18])
 
 PLAN VECTORIZATION:
@@ -10647,7 +10653,7 @@ EXPLAIN CBO select * from table2_n8;
 
 
 EXPLAIN VECTORIZED select * from table2_n8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2_n8.a=[$0], table2_n8.b=[$1])
   HiveTableScan(table=[[default, table2_n8]], table:alias=[table2_n8])
 
 PLAN VECTORIZATION:
@@ -10700,7 +10706,7 @@ EXPLAIN select * from table3_n1;
 EXPLAIN CBO select * from table3_n1;
 
 EXPLAIN VECTORIZED select * from table3_n1;
-CBO PLAN:HiveProject(x=[$0])
+CBO PLAN:HiveProject(table3_n1.x=[$0])
   HiveTableScan(table=[[default, table3_n1]], table:alias=[table3_n1])
 
 PLAN VECTORIZATION:
@@ -10754,7 +10760,7 @@ EXPLAIN select * from table6_n3;
 EXPLAIN CBO select * from table6_n3;
 
 EXPLAIN VECTORIZED select * from table6_n3;
-CBO PLAN:HiveProject(x=[$0], y=[$1])
+CBO PLAN:HiveProject(table6_n3.x=[$0], table6_n3.y=[$1])
   HiveTableScan(table=[[default, table6_n3]], table:alias=[table6_n3])
 
 PLAN VECTORIZATION:
@@ -10809,7 +10815,7 @@ EXPLAIN select * from table8;
 EXPLAIN CBO select * from table8;
 
 EXPLAIN VECTORIZED select * from table8;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table8.a=[$0], table8.b=[$1])
   HiveTableScan(table=[[default, table8]], table:alias=[table8])
 
 PLAN VECTORIZATION:
@@ -10863,7 +10869,7 @@ EXPLAIN select * from table16;
 EXPLAIN CBO select * from table16;
 
 EXPLAIN VECTORIZED select * from table16;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table16.a=[$0], table16.b=[$1])
   HiveTableScan(table=[[default, table16]], table:alias=[table16])
 
 PLAN VECTORIZATION:
@@ -10918,7 +10924,7 @@ EXPLAIN select * from table18;
 EXPLAIN CBO select * from table18;
 
 EXPLAIN VECTORIZED select * from table18;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table18.a=[$0], table18.b=[$1])
   HiveTableScan(table=[[default, table18]], table:alias=[table18])
 
 PLAN VECTORIZATION:
@@ -10991,7 +10997,7 @@ EXPLAIN CBO select * from table12;
 
 
 EXPLAIN VECTORIZED select * from table12;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table12.a=[$0], table12.b=[$1])
   HiveTableScan(table=[[default, table12]], table:alias=[table12])
 
 PLAN VECTORIZATION:
@@ -11046,7 +11052,7 @@ EXPLAIN select * from table13;
 EXPLAIN CBO select * from table13;
 
 EXPLAIN VECTORIZED select * from table13;
-CBO PLAN:HiveProject(b=[$0], a=[$1])
+CBO PLAN:HiveProject(table13.b=[$0], table13.a=[$1])
   HiveTableScan(table=[[default, table13]], table:alias=[table13])
 
 PLAN VECTORIZATION:
@@ -11111,7 +11117,7 @@ EXPLAIN CBO select * from table12;
 
 
 EXPLAIN VECTORIZED select * from table12;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table12.a=[$0], table12.b=[$1])
   HiveTableScan(table=[[default, table12]], table:alias=[table12])
 
 PLAN VECTORIZATION:
@@ -11194,7 +11200,7 @@ EXPLAIN CBO select * from DbConstraint.Table2;
 
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2.a=[$0], table2.b=[$1])
   HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
 
 PLAN VECTORIZATION:
@@ -11248,7 +11254,7 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2.a=[$0], table2.b=[$1])
   HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
 
 PLAN VECTORIZATION:
@@ -11313,7 +11319,7 @@ EXPLAIN CBO select * from DbConstraint.Table2;
 
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2.a=[$0], table2.b=[$1])
   HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
 
 PLAN VECTORIZATION:
@@ -11367,7 +11373,7 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2.a=[$0], table2.b=[$1])
   HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
 
 PLAN VECTORIZATION:
@@ -11429,7 +11435,7 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2.a=[$0], table2.b=[$1])
   HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
 
 PLAN VECTORIZATION:
@@ -11491,7 +11497,7 @@ EXPLAIN select * from DbConstraint.Table2;
 EXPLAIN CBO select * from DbConstraint.Table2;
 
 EXPLAIN VECTORIZED select * from DbConstraint.Table2;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table2.a=[$0], table2.b=[$1])
   HiveTableScan(table=[[dbconstraint, table2]], table:alias=[table2])
 
 PLAN VECTORIZATION:
@@ -11574,7 +11580,7 @@ EXPLAIN CBO select * from table23;
 
 
 EXPLAIN VECTORIZED select * from table23;
-CBO PLAN:HiveProject(a=[$0], b=[$1])
+CBO PLAN:HiveProject(table23.a=[$0], table23.b=[$1])
   HiveTableScan(table=[[default, table23]], table:alias=[table23])
 
 PLAN VECTORIZATION:

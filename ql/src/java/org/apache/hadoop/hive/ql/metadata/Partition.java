@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -600,7 +601,7 @@ public class Partition implements Serializable {
 
   public void checkValidity() throws HiveException {
     if (!tPartition.getSd().equals(table.getSd())) {
-      Table.validateColumns(getCols(), table.getPartCols());
+      Table.validateColumns(getCols(), table.getPartCols(), DDLUtils.isIcebergTable(table));
     }
   }
 

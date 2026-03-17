@@ -30,6 +30,7 @@ import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -556,6 +557,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended")
     public MiniDFSShim(MiniDFSCluster cluster) {
       this.cluster = cluster;
+      Arrays.stream(cluster.getNameNodeInfos())
+          .forEach(info ->
+              LOG.info("Namenode {} (ns={}) address: {}",
+                  info.getNamenodeId(),
+                  info.getNameserviceId(),
+                  info.nameNode.getNameNodeAddress()));
     }
 
     @Override

@@ -365,7 +365,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_static_part_n4
 POSTHOOK: Input: default@list_bucketing_static_part_n4@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`, CAST('11' AS STRING) AS `$f3`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `list_bucketing_static_part_n4.key`, CAST('val_484' AS STRING) AS `list_bucketing_static_part_n4.value`, CAST('2008-04-08' AS STRING) AS `list_bucketing_static_part_n4.ds`, CAST('11' AS STRING) AS `list_bucketing_static_part_n4.hr`
 FROM `default`.`list_bucketing_static_part_n4`
 WHERE `key` = '484' AND `value` = 'val_484' AND `ds` = '2008-04-08' AND `hr` = '11'
 STAGE DEPENDENCIES:

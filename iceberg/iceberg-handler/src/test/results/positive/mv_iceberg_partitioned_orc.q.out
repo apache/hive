@@ -50,6 +50,10 @@ POSTHOOK: Input: default@mat1
 c                   	int                 	                    
 b                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -84,6 +88,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -137,6 +142,10 @@ POSTHOOK: Input: default@mat2
 c                   	int                 	                    
 b                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -173,6 +182,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

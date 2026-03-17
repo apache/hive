@@ -35,4 +35,4 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvrng_mat_view
 POSTHOOK: Lineage: amvrng_mat_view.a SIMPLE [(amvrng_table)amvrng_table.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: amvrng_mat_view.c SIMPLE [(amvrng_table)amvrng_table.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
-FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTER_MATERIALIZED_VIEW_REBUILD [[INSERT, DELETE] on Object [type=TABLE_OR_VIEW, name=default.amvrng_mat_view, action=INSERT_OVERWRITE]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTER_MATERIALIZED_VIEW_REBUILD [[INSERT, DELETE] on Object [type=TABLE_OR_VIEW, name=hive.default.amvrng_mat_view, action=INSERT_OVERWRITE]]

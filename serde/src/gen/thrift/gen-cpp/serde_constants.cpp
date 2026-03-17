@@ -95,6 +95,8 @@ serdeConstants::serdeConstants() {
 
   UNION_TYPE_NAME = "uniontype";
 
+  VARIANT_TYPE_NAME = "variant";
+
   LIST_COLUMNS = "columns";
 
   LIST_COLUMN_TYPES = "columns.types";

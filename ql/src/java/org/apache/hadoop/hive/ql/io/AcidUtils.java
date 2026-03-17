@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -483,7 +484,8 @@ public class AcidUtils {
    * @return true, if the tblProperties contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Properties tblProperties) {
-    return tblProperties != null && isCompactionTable(Maps.fromProperties(tblProperties));
+    return tblProperties != null &&
+        StringUtils.isNotBlank((String) tblProperties.get(COMPACTOR_TABLE_PROPERTY));
   }
 
   /**
@@ -1133,6 +1135,7 @@ public class AcidUtils {
      * overlapping writeId boundaries.  The sort order helps figure out the "best" set of files
      * to use to get data.
      * This sorts "wider" delta before "narrower" i.e. delta_5_20 sorts before delta_5_10 (and delta_11_20)
+     * In case of same min writeID, max writeID & statement ID, it sorts in the descending order of visibilityTxnID
      */
     @Override
     public int compareTo(ParsedDeltaLight parsedDelta) {
@@ -1162,6 +1165,9 @@ public class AcidUtils {
         else {
           return 1;
         }
+      }
+      else if (visibilityTxnId != parsedDelta.visibilityTxnId) {
+        return visibilityTxnId < parsedDelta.visibilityTxnId ? 1 : -1;
       }
       else {
         return path.compareTo(parsedDelta.path);
@@ -1376,7 +1382,7 @@ public class AcidUtils {
     // Filter out all delta directories that are shadowed by others
     findBestWorkingDeltas(writeIdList, directory);
 
-    if(directory.getOldestBase() != null && directory.getBase() == null &&
+    if (directory.getOldestBase() != null && directory.getBase() == null &&
         isCompactedBase(directory.getOldestBase(), fs, dirSnapshots)) {
       /*
        * If here, it means there was a base_x (> 1 perhaps) but none were suitable for given
@@ -1452,7 +1458,8 @@ public class AcidUtils {
       }
       else if (prev != null && next.maxWriteId == prev.maxWriteId
                   && next.minWriteId == prev.minWriteId
-                  && next.statementId == prev.statementId) {
+                  && next.statementId == prev.statementId
+                  && (next.isDeleteDelta || prev.isDeleteDelta)) {
         // The 'next' parsedDelta may have everything equal to the 'prev' parsedDelta, except
         // the path. This may happen when we have split update and we have two types of delta
         // directories- 'delta_x_y' and 'delete_delta_x_y' for the SAME txn range.
@@ -1943,7 +1950,11 @@ public class AcidUtils {
   }
 
   public static boolean isTablePropertyTransactional(Properties props) {
-    return isTablePropertyTransactional(Maps.fromProperties(props));
+    String resultStr = (String) props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if (resultStr == null) {
+      resultStr = (String) props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
+    return Boolean.parseBoolean(resultStr);
   }
 
   public static boolean isTablePropertyTransactional(Map<String, String> parameters) {
@@ -2200,7 +2211,8 @@ public class AcidUtils {
   }
 
   public static boolean isInsertOnlyTable(Properties params) {
-    return isInsertOnlyTable(Maps.fromProperties(params));
+    String transactionalProp = (String) params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp);
   }
 
    /**
@@ -2915,6 +2927,7 @@ public class AcidUtils {
 
     Set<Table> fullTableLock = getFullTableLock(readEntities, conf);
 
+    String currentCatalog = HiveUtils.getCurrentCatalogOrDefault(conf);
     // For each source to read, get a shared_read lock
     for (ReadEntity input : readEntities) {
       LockComponentBuilder compBuilder = new LockComponentBuilder();
@@ -2924,6 +2937,7 @@ public class AcidUtils {
       Table t = null;
       switch (input.getType()) {
         case DATABASE:
+          compBuilder.setCatName(Optional.ofNullable(input.getDatabase().getCatalogName()).orElse(currentCatalog));
           compBuilder.setDbName(input.getDatabase().getName());
           break;
 
@@ -2932,6 +2946,7 @@ public class AcidUtils {
           if (!fullTableLock.contains(t)) {
             continue;
           }
+          compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2943,6 +2958,7 @@ public class AcidUtils {
           if (fullTableLock.contains(t)) {
             continue;
           }
+          compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2985,12 +3001,14 @@ public class AcidUtils {
       HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, 0);
       switch (output.getType()) {
       case DATABASE:
+        compBuilder.setCatName(Optional.ofNullable(output.getDatabase().getCatalogName()).orElse(currentCatalog));
         compBuilder.setDbName(output.getDatabase().getName());
         break;
 
       case TABLE:
       case DUMMYPARTITION:   // in case of dynamic partitioning lock the table
         t = output.getTable();
+        compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
         break;
@@ -2998,6 +3016,7 @@ public class AcidUtils {
       case PARTITION:
         compBuilder.setPartitionName(output.getPartition().getName());
         t = output.getPartition().getTable();
+        compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
         break;
@@ -3312,13 +3331,23 @@ public class AcidUtils {
     //dbName + tableName + dir
     String key = writeIdList.getTableName() + "_" + candidateDirectory.toString();
     DirInfoValue value = dirCache.getIfPresent(key);
+    int tableCreateTimeInCache = value == null ? -1 : value.getTableCreateTime();
+    int tableCreateTime = Utilities.getTableCreateTime(conf, writeIdList.getTableName());
 
     // in case of open/aborted txns, recompute dirInfo
     long[] exceptions = writeIdList.getInvalidWriteIds();
     boolean recompute = (exceptions != null && exceptions.length > 0);
 
+    // Check whether the table was re-created after being stored in the cache.
+    // The value null check avoids a noisy log message during the initial lookup, when no cache entry exists.
+    if (value != null && tableCreateTimeInCache != tableCreateTime) {
+      LOG.info("Table {} was recreated (at: {}) since it was stored in acid cache (at: {}), invalidating entry",
+          writeIdList.getTableName(), tableCreateTime, tableCreateTimeInCache);
+      recompute = true;
+    }
+
     if (recompute) {
-      LOG.info("invalidating cache entry for key: {}", key);
+      LOG.info("Invalidating cache entry for key: {}", key);
       dirCache.invalidate(key);
       value = null;
     }
@@ -3338,7 +3367,7 @@ public class AcidUtils {
     if (recompute || (value == null)) {
       AcidDirectory dirInfo = getAcidState(fileSystem.get(), candidateDirectory, conf,
           writeIdList, useFileIds, ignoreEmptyFiles);
-      value = new DirInfoValue(writeIdList.writeToString(), dirInfo);
+      value = new DirInfoValue(writeIdList.writeToString(), dirInfo, tableCreateTime);
 
       if (value.dirInfo != null && value.dirInfo.getBaseDirectory() != null
           && value.dirInfo.getCurrentDirectories().isEmpty()) {
@@ -3400,12 +3429,14 @@ public class AcidUtils {
   }
 
   static class DirInfoValue {
-    private String txnString;
-    private AcidDirectory dirInfo;
+    private final String txnString;
+    private final AcidDirectory dirInfo;
+    private final int tableCreateTime;
 
-    DirInfoValue(String txnString, AcidDirectory dirInfo) {
+    DirInfoValue(String txnString, AcidDirectory dirInfo, int tableCreateTime) {
       this.txnString = txnString;
       this.dirInfo = dirInfo;
+      this.tableCreateTime = tableCreateTime;
     }
 
     String getTxnString() {
@@ -3414,6 +3445,10 @@ public class AcidUtils {
 
     AcidDirectory getDirInfo() {
       return dirInfo;
+    }
+
+    int getTableCreateTime() {
+      return tableCreateTime;
     }
   }
 

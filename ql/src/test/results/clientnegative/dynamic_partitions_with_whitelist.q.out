@@ -33,13 +33,13 @@ Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed,
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'.  (configure with hive.metastore.partition.name.whitelist.pattern)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'. Configure with metastore.partition.name.whitelist.pattern
 #### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'.  (configure with hive.metastore.partition.name.whitelist.pattern)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'. Configure with metastore.partition.name.whitelist.pattern
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
 [Masked Vertex killed due to OTHER_VERTEX_FAILURE]
@@ -48,12 +48,12 @@ FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.T
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'.  (configure with hive.metastore.partition.name.whitelist.pattern)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'. Configure with metastore.partition.name.whitelist.pattern
 #### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'.  (configure with hive.metastore.partition.name.whitelist.pattern)
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: Partition value 'val_129' contains a character not matched by whitelist pattern '[^9]*'. Configure with metastore.partition.name.whitelist.pattern
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:1

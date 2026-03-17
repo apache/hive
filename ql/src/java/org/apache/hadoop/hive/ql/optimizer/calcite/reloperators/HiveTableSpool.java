@@ -18,15 +18,27 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.prepare.RelOptTableImpl;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableSpool;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
+import java.util.List;
+
 public class HiveTableSpool extends TableSpool implements HiveRelNode {
   public HiveTableSpool(RelNode input, Type readType, Type writeType, RelOptTable table) {
     super(input.getCluster(), TraitsUtil.getDefaultTraitSet(input.getCluster()), input, readType, writeType, table);
+  }
+
+  public HiveTableSpool(RelInput relInput) {
+    this(
+        relInput.getInput(),
+        Type.LAZY,
+        Type.LAZY,
+        RelOptTableImpl.create(null, relInput.getInput().getRowType(), (List<String>) relInput.get("table"), null));
   }
 
   @Override

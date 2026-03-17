@@ -17,24 +17,25 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>35</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
-  <version>4.2.0-SNAPSHOT</version>
+  <version>4.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Standalone Metastore</name>
   <inceptionYear>2008</inceptionYear>
   <modules>
     <module>metastore-common</module>
+    <module>metastore-client</module>
     <module>metastore-server</module>
     <module>metastore-tools</module>
     <module>metastore-rest-catalog</module>
     <module>packaging</module>
   </modules>
   <properties>
-    <hive.version>4.2.0-SNAPSHOT</hive.version>
-    <hive.version.shortname>4.2.0</hive.version.shortname>
+    <hive.version>4.3.0-SNAPSHOT</hive.version>
+    <hive.version.shortname>4.3.0</hive.version.shortname>
     <standalone.metastore.path.to.root>.</standalone.metastore.path.to.root>
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,6 +43,7 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <java.version>21</java.version>
+    <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
@@ -58,21 +60,22 @@
     <test.groups>org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest</test.groups>
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <maven.checkstyle.plugin.version>3.5.0</maven.checkstyle.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
-    <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
     <!-- Dependency versions -->
     <antlr.version>4.9.3</antlr.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
-    <commons-lang3.version>3.12.0</commons-lang3.version>
-    <commons-logging.version>1.1.3</commons-logging.version>
-    <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
+    <checkstyle.version>11.1.0</checkstyle.version>
+    <commons-collections4.version>4.4</commons-collections4.version>
+    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <commons-dbcp2.version>2.14.0</commons-dbcp2.version>
     <datasketches.version>2.0.0</datasketches.version>
     <datanucleus-api-jdo.version>6.0.3</datanucleus-api-jdo.version>
     <datanucleus-core.version>6.0.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>6.0.10</datanucleus-rdbms.version>
-    <derby.version>10.14.2.0</derby.version>
+    <derby.version>10.17.1.0</derby.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
@@ -82,14 +85,15 @@
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>22.0</guava.version>
-    <hadoop.version>3.4.1</hadoop.version>
+    <hadoop.version>3.4.2</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <jackson.version>2.16.1</jackson.version>
     <jexl.version>3.3</jexl.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.11.2</junit.jupiter.version>
-    <junit.vintage.version>5.11.2</junit.vintage.version>
+    <junit.jupiter.version>5.13.3</junit.jupiter.version>
+    <junit.vintage.version>5.13.3</junit.vintage.version>
+    <junit.platform.version>1.13.3</junit.platform.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.24.3</log4j2.version>
@@ -98,11 +102,14 @@
     <protobuf.version>3.25.5</protobuf.version>
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
+    <reflections.version>0.10.2</reflections.version>
     <io.grpc.version>1.72.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
-    <jline.version>2.14.6</jline.version>
+    <netty.version>4.1.127.Final</netty.version>
+    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
+    <jline.version>3.25.0</jline.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.2.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.3.0-SNAPSHOT</storage-api.version>
     <beanutils.version>1.9.4</beanutils.version>
     <hamcrest.version>1.3</hamcrest.version>
     <curator.version>5.7.1</curator.version>
@@ -114,12 +121,15 @@
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <pac4j-core.version>4.5.8</pac4j-core.version>
-    <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
+    <nimbus-oauth.version>11.28</nimbus-oauth.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+    <keycloak.version>26.0.6</keycloak.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
+    <spring-boot.version>2.7.18</spring-boot.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
@@ -130,6 +140,27 @@
   </properties>
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <version>${netty.version}</version>
+        <classifier>linux-x86_64</classifier>
+      </dependency>
       <dependency>
         <groupId>org.apache.orc</groupId>
         <artifactId>orc-core</artifactId>
@@ -336,16 +367,17 @@
         <groupId>sqlline</groupId>
         <artifactId>sqlline</artifactId>
         <version>${sqlline.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jline</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
-        <groupId>jline</groupId>
+        <groupId>org.jline</groupId>
         <artifactId>jline</artifactId>
         <version>${jline.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>${commons-logging.version}</version>
       </dependency>
       <dependency>
         <groupId>com.cronutils</groupId>
@@ -455,6 +487,12 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-launcher</artifactId>
+        <version>${junit.platform.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.apache.directory.server</groupId>
         <artifactId>apacheds-server-integ</artifactId>
         <version>${apache-directory-server.version}</version>
@@ -507,6 +545,121 @@
         <version>${slf4j.version}</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-admin-client</artifactId>
+        <version>${keycloak.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mariadb</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>oracle-xe</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mssqlserver</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlets</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-continuation</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-xml</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-annotations</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-plus</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-client</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>websocket-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>websocket-common</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>websocket-client</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>websocket-servlet</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>javax-websocket-server-impl</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.websocket</groupId>
+        <artifactId>javax-websocket-client-impl</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-jetty</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -521,6 +674,13 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <proc>none</proc>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -541,6 +701,68 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${checkstyle.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>enforce-banned-dependencies</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <bannedDependencies>
+                    <excludes>
+                      <!--LGPL licenced library-->
+                      <exclude>com.google.code.findbugs:annotations</exclude>
+                    </excludes>
+                    <message>A banned license dependency was found!</message>
+                  </bannedDependencies>
+                  <bannedDependencies>
+                    <excludes>
+                      <!-- Move to SLF4J -->
+                      <exclude>commons-logging:commons-logging</exclude>
+                      <exclude>ch.qos.reload4j:reload4j</exclude>
+                    </excludes>
+                    <searchTransitive>false</searchTransitive>
+                    <message>A banned logging dependency was found!</message>
+                  </bannedDependencies>
+                  <bannedDependencies>
+                    <excludes>
+                      <exclude>log4j:log4j</exclude>
+                    </excludes>
+                    <searchTransitive>true</searchTransitive>
+                    <message>Banned log4j:log4j dependency/transitive dependency was found!</message>
+                  </bannedDependencies>
+                  <bannedDependencies>
+                    <excludes>
+                      <exclude>jline:jline</exclude>
+                    </excludes>
+                    <searchTransitive>true</searchTransitive>
+                    <message>A banned jline2.x dependency/transitive dependency was found!</message>
+                  </bannedDependencies>
+                </rules>
+                <fail>true</fail>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <outputDirectory>${project.build.directory}/site</outputDirectory>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -569,6 +791,7 @@
           <excludes>
             <exclude>*.patch</exclude>
             <exclude>DEV-README</exclude>
+            <exclude>checkstyle/**</exclude>
             <exclude>**/src/main/sql/**</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>

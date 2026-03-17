@@ -24,8 +24,8 @@ import java.util.Set;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metasummary.MetaSummarySchema;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TestIcebergSummaryHandler {
 
@@ -36,12 +36,12 @@ public class TestIcebergSummaryHandler {
       MetaSummarySchema schema = new MetaSummarySchema();
       handler.initialize("hive", true, schema);
       Set<String> fields = Sets.newHashSet(schema.getFields());
-      Assert.assertTrue(fields.containsAll(Arrays.asList("metadata", "stats",
+      Assertions.assertTrue(fields.containsAll(Arrays.asList("metadata", "stats",
           "CoW/MoR", "writeFormat", "distribution-mode")));
       schema = new MetaSummarySchema();
       handler.initialize("hive", false, schema);
       fields = Sets.newHashSet(schema.getFields());
-      Assert.assertTrue(fields.containsAll(Arrays.asList("puffin_enabled", "numSnapshots",
+      Assertions.assertTrue(fields.containsAll(Arrays.asList("puffin_enabled", "numSnapshots",
           "manifestsSize", "version", "write.distribution-mode", "write.format.default", "write.merge.mode")));
     }
   }

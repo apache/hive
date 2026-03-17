@@ -110,6 +110,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function drop_database($name, $deleteData, $cascade);
     /**
      * @param \metastore\DropDatabaseRequest $req
+     * @return \metastore\AsyncOperationResp
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\InvalidOperationException
      * @throws \metastore\MetaException
@@ -368,6 +369,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function drop_table_with_environment_context($dbname, $name, $deleteData, \metastore\EnvironmentContext $environment_context);
     /**
      * @param \metastore\DropTableRequest $dropTableReq
+     * @return \metastore\AsyncOperationResp
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\MetaException
      */
@@ -508,6 +510,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function alter_table_req(\metastore\AlterTableRequest $req);
+    /**
+     * @param \metastore\TableParamsUpdate[] $updates
+     * @throws \metastore\MetaException
+     */
+    public function update_table_params(array $updates);
     /**
      * @param \metastore\Partition $new_part
      * @return \metastore\Partition
@@ -1931,6 +1938,16 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return bool
      */
     public function heartbeat_lock_materialization_rebuild($dbName, $tableName, $txnId);
+    /**
+     * @param \metastore\LockMaterializationRebuildRequest $req
+     * @return \metastore\LockResponse
+     */
+    public function get_lock_materialization_rebuild_req(\metastore\LockMaterializationRebuildRequest $req);
+    /**
+     * @param \metastore\LockMaterializationRebuildRequest $req
+     * @return bool
+     */
+    public function heartbeat_lock_materialization_rebuild_req(\metastore\LockMaterializationRebuildRequest $req);
     /**
      * @param \metastore\RuntimeStat $stat
      * @throws \metastore\MetaException

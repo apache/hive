@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -96,7 +95,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -233,15 +231,39 @@ public abstract class BaseSemanticAnalyzer {
     return prepareQuery;
   }
 
-  static final class RowFormatParams {
-    String fieldDelim = null;
-    String fieldEscape = null;
-    String collItemDelim = null;
-    String mapKeyDelim = null;
-    String lineDelim = null;
-    String nullFormat = null;
+  public static final class RowFormatParams {
+    private String fieldDelim;
+    private String fieldEscape;
+    private String collItemDelim;
+    private String mapKeyDelim;
+    private String lineDelim;
+    private String nullFormat;
 
-    protected void analyzeRowFormat(ASTNode child) throws SemanticException {
+    public String getFieldDelim() {
+      return fieldDelim;
+    }
+
+    public String getFieldEscape() {
+      return fieldEscape;
+    }
+
+    public String getCollItemDelim() {
+      return collItemDelim;
+    }
+
+    public String getMapKeyDelim() {
+      return mapKeyDelim;
+    }
+
+    public String getNullFormat() {
+      return nullFormat;
+    }
+
+    public String getLineDelim() {
+      return lineDelim;
+    }
+
+    public void analyzeRowFormat(ASTNode child) throws SemanticException {
       child = (ASTNode) child.getChild(0);
       int numChildRowFormat = child.getChildCount();
       for (int numC = 0; numC < numChildRowFormat; numC++) {
@@ -842,7 +864,7 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode ast, boolean lowerCase, TokenRewriteStream tokenRewriteStream,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
+      List<ConstraintsUtils.ConstraintInfo> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
       Configuration conf) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<>();
     Tree parent = ast.getParent();
@@ -895,8 +917,6 @@ public abstract class BaseSemanticAnalyzer {
           ASTNode typeChild = (ASTNode) (child.getChild(1));
           col.setType(getTypeStringFromAST(typeChild));
 
-          // child 2 is the optional comment of the column
-          // child 3 is the optional constraint
           ASTNode constraintChild = null;
           if (child.getChildCount() == 4) {
             col.setComment(unescapeSQLString(child.getChild(2).getText()));
@@ -908,8 +928,9 @@ public abstract class BaseSemanticAnalyzer {
             constraintChild = (ASTNode) child.getChild(2);
           }
           if (constraintChild != null) {
-            final TableName tName =
-                getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
+            final TableName tName = constraintChild.getToken().getType() != HiveParser.TOK_DEFAULT_VALUE ?
+                getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf)) :
+                null;
             // TODO CAT - for now always use the default catalog.  Eventually will want to see if
             // the user specified a catalog
             // Process column constraint
@@ -919,8 +940,9 @@ public abstract class BaseSemanticAnalyzer {
                   checkConstraints, typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_DEFAULT_VALUE:
-              ConstraintsUtils.processDefaultConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
-                  defaultConstraints, typeChild, tokenRewriteStream);
+              defaultConstraints.addAll(
+                  ConstraintsUtils.processDefaultConstraints(constraintChild, ImmutableList.of(col.getName()),
+                      typeChild, tokenRewriteStream));
               break;
             case HiveParser.TOK_NOT_NULL:
               ConstraintsUtils.processNotNullConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
@@ -1023,6 +1045,7 @@ public abstract class BaseSemanticAnalyzer {
     TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_VARIANT, serdeConstants.VARIANT_TYPE_NAME);
   }
 
   private static String getTypeName(ASTNode node) throws SemanticException {
@@ -1044,14 +1067,23 @@ public abstract class BaseSemanticAnalyzer {
       typeName = varcharTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_TIMESTAMPLOCALTZ:
-      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo =
-          TypeInfoFactory.getTimestampTZTypeInfo(null);
+      int precision = 6;
+      if (node.getChildCount() > 0) {
+        precision = Integer.parseInt(node.getChild(0).getText());
+      }
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = TypeInfoFactory.getTimestampTZTypeInfo(null, precision);
       typeName = timestampLocalTZTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_DECIMAL:
       DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
       typeName = decTypeInfo.getQualifiedName();
       break;
+    case HiveParser.TOK_TIMESTAMP:
+      int prec = 6;
+      if (node.getChildCount() > 0) {
+        prec = Integer.parseInt(node.getChild(0).getText());
+      }
+      return TypeInfoFactory.getTimestampTypeInfo(prec).getQualifiedName();
     default:
       typeName = TOKEN_TO_TYPE.get(token);
     }
@@ -1716,23 +1748,6 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  /**
-   * Throws an UnsupportedOperationException in case the query has a partition clause but the table is never partitioned
-   * on the HMS-level. Even though table is not partitioned from the HMS's point of view, it might have some other
-   * notion of partitioning under the hood (e.g. Iceberg tables). In these cases, we might decide to proactively throw a
-   * more descriptive, unified error message instead of failing on some other semantic analysis validation step, which
-   * could provide a more counter-intuitive exception message.
-   *
-   * @param tbl The table object, should not be null.
-   * @param partitionClausePresent Whether a partition clause is present in the query (e.g. PARTITION(last_name='Don'))
-   */
-  protected static void validateUnsupportedPartitionClause(Table tbl, boolean partitionClausePresent) {
-    if (partitionClausePresent && tbl.hasNonNativePartitionSupport()) {
-      throw new UnsupportedOperationException("Using partition spec in query is unsupported for non-native table" +
-          " backed by: " + tbl.getStorageHandler().toString());
-    }
-  }
-
   public static void validatePartColumnType(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf) throws SemanticException {
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {
@@ -1890,10 +1905,21 @@ public abstract class BaseSemanticAnalyzer {
     return getDatabase(dbName, true);
   }
 
+  /**
+   * TODO catalog. this method still use by some method of table ddl.
+   *  Remove this method once we implement catalog change about table ddl, such as create cat.db.tbl. Depend on HIVE-29279
+   * @deprecated Replaced by
+   *     {@link BaseSemanticAnalyzer#getDatabase(String catalogName, String dbName, boolean throwException)}
+   * @return the database if existed.
+   */
   protected Database getDatabase(String dbName, boolean throwException) throws SemanticException {
+    return getDatabase(null, dbName, throwException);
+  }
+
+  protected Database getDatabase(String catalogName, String dbName, boolean throwException) throws SemanticException {
     Database database;
     try {
-      database = db.getDatabase(dbName);
+      database = db.getDatabase(catalogName, dbName);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }
@@ -2068,7 +2094,7 @@ public abstract class BaseSemanticAnalyzer {
   public void endAnalysis(ASTNode tree) {
     if (ctx != null){
       queryProperties.setUsedTables(
-          CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
+          TableHelper.getUniqueNames(ctx.getParsedTables()));
     }
     setQueryType(tree); // at this point we know the query type for sure
   }

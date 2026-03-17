@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprColumnCondExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCondExprCondExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringGroupColumn;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumn
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringGroupColumnVarCharScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampColumnColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprTimestampColumnScalar;
@@ -149,6 +151,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
@@ -1129,7 +1132,7 @@ public class TestVectorizationContext {
 
     // string NOT BETWEEN
     children1.set(0, new ExprNodeConstantDesc(Boolean.TRUE)); // has NOT keyword
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterStringColumnNotBetween);
 
     // CHAR tests
@@ -1145,16 +1148,14 @@ public class TestVectorizationContext {
     children1.add(col1Expr);
     children1.add(constDesc);
     children1.add(constDesc2);
-    exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
-        children1);
 
     vc = new VectorizationContext("name", columns);
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterCharColumnBetween);
 
     // CHAR NOT BETWEEN
     children1.set(0, new ExprNodeConstantDesc(Boolean.TRUE)); // has NOT keyword
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterCharColumnNotBetween);
 
     // VARCHAR tests
@@ -1170,16 +1171,14 @@ public class TestVectorizationContext {
     children1.add(col1Expr);
     children1.add(constDesc);
     children1.add(constDesc2);
-    exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
-        children1);
 
     vc = new VectorizationContext("name", columns);
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterVarCharColumnBetween);
 
     // VARCHAR NOT BETWEEN
     children1.set(0, new ExprNodeConstantDesc(Boolean.TRUE)); // has NOT keyword
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterVarCharColumnNotBetween);
 
     // long BETWEEN
@@ -1187,12 +1186,12 @@ public class TestVectorizationContext {
     children1.set(1, new ExprNodeColumnDesc(Long.class, "col1", "table", false));
     children1.set(2, new ExprNodeConstantDesc(10));
     children1.set(3, new ExprNodeConstantDesc(20));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterLongColumnBetween);
 
     // long NOT BETWEEN
     children1.set(0, new ExprNodeConstantDesc(Boolean.TRUE));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterLongColumnNotBetween);
 
     // double BETWEEN
@@ -1200,12 +1199,12 @@ public class TestVectorizationContext {
     children1.set(1, new ExprNodeColumnDesc(Double.class, "col1", "table", false));
     children1.set(2, new ExprNodeConstantDesc(10.0d));
     children1.set(3, new ExprNodeConstantDesc(20.0d));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterDoubleColumnBetween);
 
     // double NOT BETWEEN
     children1.set(0, new ExprNodeConstantDesc(Boolean.TRUE));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterDoubleColumnNotBetween);
 
     // timestamp BETWEEN
@@ -1213,12 +1212,12 @@ public class TestVectorizationContext {
     children1.set(1, new ExprNodeColumnDesc(Timestamp.class, "col1", "table", false));
     children1.set(2, new ExprNodeConstantDesc("2013-11-05 00:00:00.000"));
     children1.set(3, new ExprNodeConstantDesc("2013-11-06 00:00:00.000"));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertEquals(FilterTimestampColumnBetween.class, ve.getClass());
 
     // timestamp NOT BETWEEN
     children1.set(0, new ExprNodeConstantDesc(Boolean.TRUE));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertEquals(FilterTimestampColumnNotBetween.class, ve.getClass());
   }
 
@@ -1235,35 +1234,33 @@ public class TestVectorizationContext {
     children1.add(col1Expr);
     children1.add(constDesc);
     children1.add(constDesc2);
-    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-        udf, children1);
 
     List<String> columns = new ArrayList<String>();
     columns.add("col0");
     columns.add("col1");
     columns.add("col2");
     VectorizationContext vc = new VectorizationContext("name", columns);
-    VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    VectorExpression ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterStringColumnInList);
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.PROJECTION);
     assertTrue(ve instanceof StringColumnInList);
 
     // long IN
     children1.set(0, new ExprNodeColumnDesc(Long.class, "col1", "table", false));
     children1.set(1, new ExprNodeConstantDesc(10));
     children1.set(2, new ExprNodeConstantDesc(20));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterLongColumnInList);
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.PROJECTION);
     assertTrue(ve instanceof LongColumnInList);
 
     // double IN
     children1.set(0, new ExprNodeColumnDesc(Double.class, "col1", "table", false));
     children1.set(1, new ExprNodeConstantDesc(10d));
     children1.set(2, new ExprNodeConstantDesc(20d));
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterDoubleColumnInList);
-    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+    ve = createVectorExpression(vc, udf, children1, VectorExpressionDescriptor.Mode.PROJECTION);
     assertTrue(ve instanceof DoubleColumnInList);
   }
 
@@ -1292,8 +1289,6 @@ public class TestVectorizationContext {
     children1.add(col1Expr);
     children1.add(col2Expr);
     children1.add(col3Expr);
-    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
-        children1);
 
     List<String> columns = new ArrayList<String>();
     columns.add("col0");
@@ -1301,23 +1296,22 @@ public class TestVectorizationContext {
     columns.add("col2");
     columns.add("col3");
     VectorizationContext vc = new VectorizationContext("name", columns);
-    exprDesc.setTypeInfo(TypeInfoFactory.longTypeInfo);
-    VectorExpression ve = vc.getVectorExpression(exprDesc);
+    VectorExpression ve = createVectorExpression(vc, TypeInfoFactory.longTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongColumnLongColumn);
 
     // long column/scalar IF
     children1.set(2,  new ExprNodeConstantDesc(1L));
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.longTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongColumnLongScalar);
 
     // long scalar/scalar IF
     children1.set(1, new ExprNodeConstantDesc(1L));
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.longTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongScalarLongScalar);
 
     // long scalar/column IF
     children1.set(2, col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.longTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongScalarLongColumn);
 
     // test for double type
@@ -1327,28 +1321,27 @@ public class TestVectorizationContext {
     // double column/column IF
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
-    exprDesc.setTypeInfo(TypeInfoFactory.doubleTypeInfo);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.doubleTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprDoubleColumnDoubleColumn);
 
     // double column/scalar IF
     children1.set(2,  new ExprNodeConstantDesc(1D));
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.doubleTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprDoubleColumnDoubleScalar);
 
     // double scalar/scalar IF
     children1.set(1, new ExprNodeConstantDesc(1D));
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.doubleTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprDoubleScalarDoubleScalar);
 
     // double scalar/column IF
     children1.set(2, col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.doubleTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprDoubleScalarDoubleColumn);
 
     // double scalar/long column IF
     children1.set(2, new  ExprNodeColumnDesc(Long.class, "col3", "table", false));
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.doubleTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprColumnCondExpr);
 
     // Additional combinations of (long,double)X(column,scalar) for each of the second
@@ -1362,8 +1355,7 @@ public class TestVectorizationContext {
     // timestamp column/column IF
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
-    exprDesc.setTypeInfo(TypeInfoFactory.timestampTypeInfo);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.timestampTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprTimestampColumnColumn);
 
     // timestamp column/scalar IF where scalar is really a CAST of a constant to timestamp.
@@ -1371,21 +1363,21 @@ public class TestVectorizationContext {
     f.setGenericUDF(new GenericUDFTimestamp());
     f.setTypeInfo(TypeInfoFactory.timestampTypeInfo);
     List<ExprNodeDesc> children2 = new ArrayList<ExprNodeDesc>();
-    f.setChildren(children2);
     children2.add(new ExprNodeConstantDesc("2013-11-05 00:00:00.000"));
+    f.setChildren(children2);
     children1.set(2, f);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.timestampTypeInfo, udf, children1);
 
     assertTrue(ve instanceof IfExprTimestampColumnScalar);
 
     // timestamp scalar/scalar
     children1.set(1, f);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.timestampTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprTimestampScalarScalar);
 
     // timestamp scalar/column
     children1.set(2, col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.timestampTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprTimestampScalarColumn);
 
     // test for boolean type
@@ -1395,23 +1387,22 @@ public class TestVectorizationContext {
     // column/column
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
-    exprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.booleanTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongColumnLongColumn);
 
     // column/scalar IF
     children1.set(2,  new ExprNodeConstantDesc(true));
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.booleanTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongColumnLongScalar);
 
     // scalar/scalar IF
     children1.set(1, new ExprNodeConstantDesc(true));
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.booleanTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongScalarLongScalar);
 
     // scalar/column IF
     children1.set(2, col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.booleanTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprLongScalarLongColumn);
 
     // test for string type
@@ -1423,23 +1414,22 @@ public class TestVectorizationContext {
     // column/column
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
-    exprDesc.setTypeInfo(TypeInfoFactory.stringTypeInfo);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.stringTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprStringGroupColumnStringGroupColumn);
 
     // column/scalar
     children1.set(2,  constDesc3);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.stringTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprStringGroupColumnStringScalar);
 
     // scalar/scalar
     children1.set(1,  constDesc2);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.stringTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprStringScalarStringScalar);
 
     // scalar/column
     children1.set(2,  col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, TypeInfoFactory.stringTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprStringScalarStringGroupColumn);
 
     // test for CHAR type
@@ -1452,23 +1442,22 @@ public class TestVectorizationContext {
     // column/column
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
-    exprDesc.setTypeInfo(charTypeInfo);
+    ve = createVectorExpression(vc, TypeInfoFactory.stringTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprCondExprCondExpr);
 
     // column/scalar
     children1.set(2,  constDesc3);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, charTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprStringGroupColumnCharScalar);
 
     // scalar/scalar
     children1.set(1,  constDesc2);
-//    ve = vc.getVectorExpression(exprDesc);
-//    assertTrue(ve instanceof IfExprCharScalarCharScalar);
+    ve = createVectorExpression(vc, charTypeInfo, udf, children1);
+    assertTrue(ve instanceof IfExprCharScalarStringScalar);
 
     // scalar/column
     children1.set(2,  col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, charTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprCharScalarStringGroupColumn);
 
     // test for VARCHAR type
@@ -1481,23 +1470,22 @@ public class TestVectorizationContext {
     // column/column
     children1.set(1, col2Expr);
     children1.set(2, col3Expr);
-    exprDesc.setTypeInfo(varcharTypeInfo);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, varcharTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprStringGroupColumnStringGroupColumn);
 
     // column/scalar
     children1.set(2,  constDesc3);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, varcharTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprStringGroupColumnVarCharScalar);
 
     // scalar/scalar
     children1.set(1,  constDesc2);
-//    ve = vc.getVectorExpression(exprDesc);
-//    assertTrue(ve instanceof IfExprVarCharScalarVarCharScalar);
+    ve = createVectorExpression(vc, varcharTypeInfo, udf, children1);
+    assertTrue(ve instanceof IfExprVarCharScalarStringScalar);
 
     // scalar/column
     children1.set(2,  col3Expr);
-    ve = vc.getVectorExpression(exprDesc);
+    ve = createVectorExpression(vc, varcharTypeInfo, udf, children1);
     assertTrue(ve instanceof IfExprVarCharScalarStringGroupColumn);
   }
 
@@ -1623,4 +1611,30 @@ public class TestVectorizationContext {
     // Should be no need for child vector expressions, which would imply casting/conversion.
     Assert.assertNull(children);
   }
+
+  /**
+   * Creates a vector expression with mode PROJECTION.
+   * <p>
+   * similar to {@link VectorizationContext#getVectorExpression(ExprNodeDesc)}.
+   * </p>
+   */
+  private VectorExpression createVectorExpression(VectorizationContext vc, TypeInfo typeInfo, GenericUDFIf udf,
+      List<ExprNodeDesc> children) throws HiveException {
+    return createVectorExpression(vc, typeInfo, udf, children, VectorExpressionDescriptor.Mode.PROJECTION);
+  }
+
+  /**
+   * Creates a vector expression of a boolean type.
+   */
+  private VectorExpression createVectorExpression(VectorizationContext vc, GenericUDF udf, List<ExprNodeDesc> children,
+      VectorExpressionDescriptor.Mode mode) throws HiveException {
+    return createVectorExpression(vc, TypeInfoFactory.booleanTypeInfo, udf, children, mode);
+  }
+
+  private static VectorExpression createVectorExpression(VectorizationContext vc, TypeInfo typeInfo, GenericUDF udf,
+      List<ExprNodeDesc> children, VectorExpressionDescriptor.Mode mode) throws HiveException {
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc(typeInfo, udf, children);
+    return vc.getVectorExpression(exprDesc, mode);
+  }
+
 }

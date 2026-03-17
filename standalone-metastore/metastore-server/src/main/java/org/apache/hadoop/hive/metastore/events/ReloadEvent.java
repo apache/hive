@@ -43,6 +43,7 @@ import java.util.Map;
 @InterfaceStability.Stable
 public class ReloadEvent extends ListenerEvent {
     private final Table tableObj;
+    private final Partition ptnObj; // for backward compatibility
     private final List<Partition> ptns;
     private final boolean refreshEvent;
 
@@ -70,17 +71,25 @@ public class ReloadEvent extends ListenerEvent {
                 this.tableObj.getParameters().putAll(tblParams);
             }
             if (partVals != null) {
-                this.ptns = new ArrayList<>();
-                List<String> part_names = new ArrayList<>();
-                for(List<String> partVal : partVals) {
-                    part_names.add(Warehouse.makePartName(this.tableObj.getPartitionKeys(), partVal));
+                if (partVals.size() == 1) {
+                    this.ptnObj = handler.get_partition(MetaStoreUtils.prependNotNullCatToDbName(catName, db),
+                        table, partVals.get(0));
+                    this.ptns = null;
+                } else {
+                    this.ptnObj = null;
+                    this.ptns = new ArrayList<>();
+                    List<String> part_names = new ArrayList<>();
+                    for (List<String> partVal : partVals) {
+                        part_names.add(Warehouse.makePartName(this.tableObj.getPartitionKeys(), partVal));
+                    }
+                    GetPartitionsByNamesRequest partitionsReq = new GetPartitionsByNamesRequest(
+                        MetaStoreUtils.prependNotNullCatToDbName(catName, db), table);
+                    partitionsReq.setNames(part_names);
+                    partitionsReq.setGet_col_stats(false);
+                    this.ptns.addAll(handler.get_partitions_by_names_req(partitionsReq).getPartitions());
                 }
-                GetPartitionsByNamesRequest partitionsReq = new GetPartitionsByNamesRequest(
-                    MetaStoreUtils.prependNotNullCatToDbName(catName, db), table);
-                partitionsReq.setNames(part_names);
-                partitionsReq.setGet_col_stats(false);
-                this.ptns.addAll(handler.get_partitions_by_names_req(partitionsReq).getPartitions());
             } else {
+                this.ptnObj = null;
                 this.ptns = null;
             }
         } catch (NoSuchObjectException e) {
@@ -103,6 +112,13 @@ public class ReloadEvent extends ListenerEvent {
 
     /**
      * @return Partition object
+     */
+    public Partition getPartitionObj() {
+        return ptnObj;
+    }
+
+    /**
+     * @return List of Partition objects
      */
     public List<Partition> getPartitions() {
         return ptns;

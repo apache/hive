@@ -289,7 +289,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0])
+HiveProject(a.key=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -510,11 +510,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveUnion(all=[true])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+HiveProject(key=[$0], value=[$1])
+  HiveUnion(all=[true])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
 
 PREHOOK: query: CREATE TABLE src_no_stats AS SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -817,7 +818,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0])
+HiveProject(a.key=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -1038,11 +1039,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveUnion(all=[true])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+HiveProject(key=[$0], value=[$1])
+  HiveUnion(all=[true])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
 
 PREHOOK: query: CREATE TABLE src_partial_stats_key AS SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1357,7 +1359,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0])
+HiveProject(a.key=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -1578,11 +1580,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveUnion(all=[true])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+HiveProject(key=[$0], value=[$1])
+  HiveUnion(all=[true])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
 
 PREHOOK: query: CREATE TABLE src_partial_stats_value AS SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1897,7 +1900,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0])
+HiveProject(a.key=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -2118,9 +2121,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@materialized_cte2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveUnion(all=[true])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+HiveProject(key=[$0], value=[$1])
+  HiveUnion(all=[true])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, materialized_cte2]], table:alias=[materialized_cte2])
 

@@ -81,13 +81,13 @@ class ThriftHiveMetastore_get_all_stored_procedures_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1978 = 0;
-                        $_etype1981 = 0;
-                        $xfer += $input->readListBegin($_etype1981, $_size1978);
-                        for ($_i1982 = 0; $_i1982 < $_size1978; ++$_i1982) {
-                            $elem1983 = null;
-                            $xfer += $input->readString($elem1983);
-                            $this->success []= $elem1983;
+                        $_size2003 = 0;
+                        $_etype2006 = 0;
+                        $xfer += $input->readListBegin($_etype2006, $_size2003);
+                        for ($_i2007 = 0; $_i2007 < $_size2003; ++$_i2007) {
+                            $elem2008 = null;
+                            $xfer += $input->readString($elem2008);
+                            $this->success []= $elem2008;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -122,8 +122,8 @@ class ThriftHiveMetastore_get_all_stored_procedures_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRING, count($this->success));
-            foreach ($this->success as $iter1984) {
-                $xfer += $output->writeString($iter1984);
+            foreach ($this->success as $iter2009) {
+                $xfer += $output->writeString($iter2009);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

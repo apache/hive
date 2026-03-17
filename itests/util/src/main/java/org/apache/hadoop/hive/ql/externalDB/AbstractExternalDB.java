@@ -21,21 +21,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
+import java.util.function.Function;
 
 /**
- * The class is in charge of connecting and populating dockerized databases for qtest.
+ * The class is in charge of managing the lifecycle of databases for qtest.
  *
  * The database should have at least one root user (admin/superuser) able to modify every aspect of the system. The user
  * either exists by default when the database starts or must created right after startup.
@@ -43,112 +42,44 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractExternalDB {
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractExternalDB.class);
 
-    protected static final String dbName = "qtestDB";
+    /**
+     * A connection property that is accessible through system properties when a specific database is running.
+     */
+    public enum ConnectionProperty {
+        JDBC_URL("jdbc.url", AbstractExternalDB::getJdbcUrl),
+        JDBC_USERNAME("jdbc.username", AbstractExternalDB::getRootUser),
+        JDBC_PASSWORD("jdbc.password", AbstractExternalDB::getRootPassword),
+        HOST("host", AbstractExternalDB::getContainerHostAddress),
+        PORT("port", db -> String.valueOf(db.getPort()));
 
-    private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
-
-    protected static class ProcessResults {
-        final String stdout;
-        final String stderr;
-        final int rc;
-
-        public ProcessResults(String stdout, String stderr, int rc) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-            this.rc = rc;
+        private final String suffix;
+        private final Function<AbstractExternalDB, String> valueSupplier;
+        ConnectionProperty(String suffix, Function<AbstractExternalDB, String> valueSupplier) {
+            this.suffix = suffix;
+            this.valueSupplier = valueSupplier;
         }
-    }
 
-    private final String getDockerContainerName() {
-        return String.format("qtestExternalDB-%s", getClass().getSimpleName());
-    }
-
-    private String[] buildRunCmd() {
-        List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
-        cmd.add("docker");
-        cmd.add("run");
-        cmd.add("--rm");
-        cmd.add("--name");
-        cmd.add(getDockerContainerName());
-        cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
-        cmd.add(getDockerImageName());
-        return cmd.toArray(new String[cmd.size()]);
-    }
-
-    private String[] buildRmCmd() {
-        return new String[] { "docker", "rm", "-f", "-v", getDockerContainerName() };
-    }
-
-    private String[] buildLogCmd() {
-        return new String[] { "docker", "logs", getDockerContainerName() };
-    }
-
-    private ProcessResults runCmd(String[] cmd, long secondsToWait)
-            throws IOException, InterruptedException {
-        LOG.info("Going to run: " + String.join(" ", cmd));
-        Process proc = Runtime.getRuntime().exec(cmd);
-        if (!proc.waitFor(Math.abs(secondsToWait), TimeUnit.SECONDS)) {
-          throw new RuntimeException("Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
+        private String fullName(String dbName) {
+            return "hive.test.database." + dbName + "." + suffix;
         }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-        final StringBuilder lines = new StringBuilder();
-        reader.lines().forEach(s -> lines.append(s).append('\n'));
 
-        reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-        final StringBuilder errLines = new StringBuilder();
-        reader.lines().forEach(s -> errLines.append(s).append('\n'));
-        LOG.info("Result lines#: {}(stdout);{}(stderr)",lines.length(), errLines.length());
-        return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
-    }
-
-    private ProcessResults runCmdAndPrintStreams(String[] cmd, long secondsToWait)
-            throws InterruptedException, IOException {
-        ProcessResults results = runCmd(cmd, secondsToWait);
-        LOG.info("Stdout from proc: " + results.stdout);
-        LOG.info("Stderr from proc: " + results.stderr);
-        return results;
-    }
-
-
-    public void launchDockerContainer() throws Exception {
-        runCmdAndPrintStreams(buildRmCmd(), 600);
-        if (runCmdAndPrintStreams(buildRunCmd(), 600).rc != 0) {
-          printDockerEvents();
-          throw new RuntimeException("Unable to start docker container");
-        }
-        long startTime = System.currentTimeMillis();
-        ProcessResults pr;
-        do {
-            Thread.sleep(1000);
-            pr = runCmdAndPrintStreams(buildLogCmd(), 30);
-            if (pr.rc != 0) {
-              printDockerEvents();
-              throw new RuntimeException("Failed to get docker logs");
+        public void set(AbstractExternalDB db) {
+            String property = fullName(db.dbName);
+            String value = System.getProperty(property);
+            if (value == null) {
+                System.setProperty(property, valueSupplier.apply(db));
+            } else {
+                throw new IllegalStateException("Connection property " + property + " is already set.");
             }
-        } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
-        if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
-          printDockerEvents();
-          throw new RuntimeException(
-              String.format("Container initialization failed within %d seconds. Please check the hive logs.",
-                  MAX_STARTUP_WAIT / 1000));
         }
-      }
 
-    protected void printDockerEvents() {
-      try {
-        runCmdAndPrintStreams(new String[] { "docker", "events", "--since", "24h", "--until", "0s" }, 3);
-      } catch (Exception e) {
-        LOG.warn("A problem was encountered while attempting to retrieve Docker events (the system made an analytical"
-            + " best effort to list the events to reveal the root cause). No further actions are necessary.", e);
-      }
-    }
-
-    public void cleanupDockerContainer() throws IOException, InterruptedException {
-        if (runCmdAndPrintStreams(buildRmCmd(), 600).rc != 0) {
-            throw new RuntimeException("Unable to remove docker container");
+        public void clear(AbstractExternalDB db) {
+            System.clearProperty(fullName(db.dbName));
         }
     }
 
+    protected String dbName = "qtestDB";
+    private Path initScript;
 
     protected final String getContainerHostAddress() {
         String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
@@ -181,11 +112,7 @@ public abstract class AbstractExternalDB {
 
     protected abstract String getJdbcDriver();
 
-    protected abstract String getDockerImageName();
-
-    protected abstract String[] getDockerAdditionalArgs();
-
-    protected abstract boolean isContainerReady(ProcessResults pr);
+    protected abstract int getPort();
 
     private String[] SQLLineCmdBuild(String sqlScriptFile) {
         return new String[] {"-u", getJdbcUrl(),
@@ -197,9 +124,49 @@ public abstract class AbstractExternalDB {
 
     }
 
-    public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
+    /**
+     * Sets the name of the database. Must not be called after the database has been started.
+     * @param name the name of the database
+     */
+    public void setName(String name) {
+        this.dbName = Objects.requireNonNull(name);
+    }
+
+    /**
+     * Sets the path to the initialization script.
+     * @param initScript the path to the initialization script
+     * @throws IllegalArgumentException if the script does not exist on the filesystem
+     */
+    public void setInitScript(Path initScript) {
+        if (Files.exists(initScript)) {
+            this.initScript = initScript;
+        } else {
+            throw new IllegalArgumentException("Initialization script does not exist: " + initScript);
+        }
+    }
+
+    /**
+     * Starts the database and performs any initialization required.
+     */
+    public void start() throws Exception {
+        if (initScript != null) {
+            execute(initScript.toString());
+        }
+        Arrays.stream(ConnectionProperty.values()).forEach(p -> p.set(this));
+    }
+
+    /**
+     * Stops the database and cleans up any resources.
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws InterruptedException if the thread is interrupted while waiting for the process to finish
+     */
+    public void stop() throws IOException, InterruptedException {
+        Arrays.stream(ConnectionProperty.values()).forEach(p -> p.clear(this));
+    }
+
+    public void execute(String script) throws IOException, SQLException {
         // Test we can connect to database
-        Class.forName(getJdbcDriver());
         try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), getRootUser(), getRootPassword())) {
             LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), getRootUser(), getRootPassword());
         }

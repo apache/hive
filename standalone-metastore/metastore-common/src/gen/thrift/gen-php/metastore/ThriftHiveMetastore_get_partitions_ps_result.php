@@ -95,14 +95,14 @@ class ThriftHiveMetastore_get_partitions_ps_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1739 = 0;
-                        $_etype1742 = 0;
-                        $xfer += $input->readListBegin($_etype1742, $_size1739);
-                        for ($_i1743 = 0; $_i1743 < $_size1739; ++$_i1743) {
-                            $elem1744 = null;
-                            $elem1744 = new \metastore\Partition();
-                            $xfer += $elem1744->read($input);
-                            $this->success []= $elem1744;
+                        $_size1764 = 0;
+                        $_etype1767 = 0;
+                        $xfer += $input->readListBegin($_etype1767, $_size1764);
+                        for ($_i1768 = 0; $_i1768 < $_size1764; ++$_i1768) {
+                            $elem1769 = null;
+                            $elem1769 = new \metastore\Partition();
+                            $xfer += $elem1769->read($input);
+                            $this->success []= $elem1769;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -145,8 +145,8 @@ class ThriftHiveMetastore_get_partitions_ps_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRUCT, count($this->success));
-            foreach ($this->success as $iter1745) {
-                $xfer += $iter1745->write($output);
+            foreach ($this->success as $iter1770) {
+                $xfer += $iter1770->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -128,7 +128,7 @@ POSTHOOK: Input: default@cmv_mat_view_n6
 POSTHOOK: Output: default@cmv_mat_view_n6
 POSTHOOK: Output: default@cmv_mat_view_n6
 CBO PLAN:
-HiveProject(a0=[$5], c0=[$6], b0=[$7], $f3=[CASE(IS NULL($3), $8, +($8, $3))])
+HiveProject(cmv_basetable_n6.a=[$5], cmv_basetable_2_n3.c=[$6], cmv_basetable_2_n3.b=[$7], _c3=[CASE(IS NULL($3), $8, +($8, $3))])
   HiveFilter(condition=[OR(AND($4, OR(AND(IS NULL($3), =($8, 0)), AND(=(+($8, $3), 0), IS NOT NULL($3)))), AND(IS NULL($4), OR(AND(IS NULL($3), >($8, 0)), AND(>(+($8, $3), 0), IS NOT NULL($3)))), AND($4, OR(AND(IS NULL($3), >($8, 0)), AND(>(+($8, $3), 0), IS NOT NULL($3)))))])
     HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $5), IS NOT DISTINCT FROM($1, $6), IS NOT DISTINCT FROM($2, $7))], joinType=[right], algorithm=[none], cost=[not available])
       HiveProject(a=[$0], c=[$1], b=[$2], _c3=[$3], $f4=[true])

@@ -56,30 +56,42 @@ public final class PartitionUtils {
   }
 
   /**
-   * Certain partition values are are used by hive. e.g. the default partition in dynamic partitioning and the
+   * Certain partition values are used by hive. e.g. the default partition in dynamic partitioning and the
    * intermediate partition values used in the archiving process. Naturally, prohibit the user from creating partitions
    * with these reserved values. The check that this function is more restrictive than the actual limitation, but it's
    * simpler. Should be okay since the reserved names are fairly long and uncommon.
    */
-  public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) throws SemanticException {
-    Set<String> reservedPartitionValues = new HashSet<>();
+  public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) {
     // Partition can't have this name
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
-    // Partition value can't end in this suffix
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
+    Set<String> reservedPartitionValues =
+        new HashSet<String>() {{
+          add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
+          add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
+        }};
 
-    for (Entry<String, String> e : partitionSpec.entrySet()) {
-      for (String s : reservedPartitionValues) {
-        String value = e.getValue();
-        if (value != null && value.contains(s)) {
-          throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-              "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
-        }
+    // Partition value can't end in this suffix
+    Set<String> reservedPartitionSuffixes =
+        new HashSet<String>() {{
+          add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
+          add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
+          add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
+        }};
+
+    partitionSpec.forEach((key, value) -> {
+      if (value == null) {
+        return;
       }
-    }
+      reservedPartitionValues.stream().filter(value::equals).findAny()
+          .ifPresent(s -> {
+            throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                "(User value: " + value + " Reserved string: " + s + ")"));
+          });
+      reservedPartitionSuffixes.stream().filter(value::endsWith).findAny()
+          .ifPresent(s -> {
+            throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                "(User value: " + value + " Partition value cannot end with Reserved substring: " + s + ")"));
+          });
+    });
   }
 
   public static ExprNodeGenericFuncDesc makeBinaryPredicate(String fn, ExprNodeDesc left, ExprNodeDesc right)
