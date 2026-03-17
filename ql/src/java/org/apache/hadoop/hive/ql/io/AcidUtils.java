@@ -456,8 +456,14 @@ public class AcidUtils {
         return new BucketMetaData(bucketId, copyNumber);
       }
       else if (bucketFileName.startsWith(BUCKET_PREFIX)) {
-        return new BucketMetaData(Integer
-            .parseInt(bucketFileName.substring(bucketFileName.indexOf('_') + 1)), 0);
+        String rest = bucketFileName.substring(BUCKET_PREFIX.length());
+        int idxOfCopy = rest.indexOf(Utilities.COPY_KEYWORD);
+        int copyNumber = 0;
+        if (idxOfCopy >= 0) {
+          copyNumber = Integer.parseInt(rest.substring(idxOfCopy + Utilities.COPY_KEYWORD.length()));
+          rest = rest.substring(0, idxOfCopy);
+        }
+        return new BucketMetaData(Integer.parseInt(rest), copyNumber);
       }
       return INVALID;
     }
@@ -1443,7 +1449,7 @@ public class AcidUtils {
     //and we want to end up with the best set containing all relevant data: delta_5_20 delta_51_60,
     //subject to list of 'exceptions' in 'writeIdList' (not show in above example).
     List<ParsedDelta> deltas = new ArrayList<>();
-    long current = directory.getBase() == null ? 0 : directory.getBase().getWriteId();
+    long current = directory.getBase() == null ? -1 : directory.getBase().getWriteId();
     int lastStmtId = -1;
     ParsedDelta prev = null;
     for(ParsedDelta next: directory.getCurrentDirectories()) {
@@ -1943,6 +1949,9 @@ public class AcidUtils {
    * checks {@code visibilityTxnId} to see if {@code child} is committed in current snapshot
    */
   private static boolean isDirUsable(Path child, long visibilityTxnId, List<Path> aborted, ValidTxnList validTxnList) {
+    if (visibilityTxnId <= 0) {
+      return true;
+    }
     if (validTxnList == null) {
       throw new IllegalArgumentException("No ValidTxnList for " + child);
     }

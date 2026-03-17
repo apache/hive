@@ -1,29 +1,40 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
--- Test reproduction of HIVE-29481: NumberFormatException when querying insert_only tables with copy suffixes
-
--- Create a table with insert_only transactional property
+-- 1. Test Insert-Only Table (Reproduce HIVE-29481)
 CREATE TABLE hive_29481_io(id INT) STORED AS ORC 
 LOCATION '${system:test.tmp.dir}/hive_29481_io'
 TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only');
 
--- Insert some data to create a valid ACID delta directory
 INSERT INTO hive_29481_io VALUES (1);
+INSERT INTO hive_29481_io VALUES (4),(5),(6);
 
--- Show existing directories
-dfs -ls -R ${system:test.tmp.dir}/hive_29481_io;
+-- Manually create a directory with a _copy_ suffix (common during name collisions in moves)
+-- AcidUtils used to fail with NumberFormatException on the suffix or ignore it if writeId was 0.
+dfs -mkdir ${system:test.tmp.dir}/hive_29481_io/delta_0000000_0000000_copy_1;
+-- Create a dummy file inside to ensure it's processed
+dfs -touchz ${system:test.tmp.dir}/hive_29481_io/delta_0000000_0000000_copy_1/bucket_00000;
 
--- Manually create a directory with a _copy_ suffix to simulate the issue
--- AcidUtils.ParsedDeltaLight.parse will be called on any directory starting with delta_
--- We'll create it with writeId 2 (which is after the first insert's writeId 1)
-dfs -mkdir ${system:test.tmp.dir}/hive_29481_io/delta_0000002_0000002_0000_copy_1;
-
--- Verify it was created
-dfs -ls -R ${system:test.tmp.dir}/hive_29481_io;
-
--- This query should fail with NumberFormatException: For input string: "0000_copy_1"
 SELECT * FROM hive_29481_io;
+
+-- 2. Test Full ACID Table (CRUD)
+CREATE TABLE hive_29481_crud(id INT, val STRING) STORED AS ORC 
+LOCATION '${system:test.tmp.dir}/hive_29481_crud'
+TBLPROPERTIES('transactional'='true');
+
+INSERT INTO hive_29481_crud VALUES (1, 'a'), (2, 'b');
+
+-- Update a row (creates delta directory)
+UPDATE hive_29481_crud SET val = 'updated' WHERE id = 1;
+
+-- Delete a row (creates delete_delta directory)
+DELETE FROM hive_29481_crud WHERE id = 2;
+
+-- Simulate a _copy_ suffix on a delete_delta directory
+dfs -mkdir ${system:test.tmp.dir}/hive_29481_crud/delete_delta_0000004_0000004_0000_copy_1;
+
+SELECT * FROM hive_29481_crud;
 
 -- Clean up
 DROP TABLE hive_29481_io;
+DROP TABLE hive_29481_crud;
