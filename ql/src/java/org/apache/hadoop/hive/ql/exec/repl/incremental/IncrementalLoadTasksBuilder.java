@@ -100,6 +100,7 @@ public class IncrementalLoadTasksBuilder {
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getTotalEventsCount());
     metricMap.put(ReplUtils.MetricName.TABLES.name(), 0L);
+    metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), 0L);
     this.shouldFailover = shouldFailover;
     if (shouldFailover) {
       Database db = null;
