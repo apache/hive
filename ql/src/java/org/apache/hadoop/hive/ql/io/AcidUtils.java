@@ -936,6 +936,10 @@ public class AcidUtils {
       if (!filename.startsWith(BASE_PREFIX)) {
         throw new IllegalArgumentException(filename + " does not start with " + BASE_PREFIX);
       }
+      int idxOfCopy = filename.indexOf(Utilities.COPY_KEYWORD);
+      if (idxOfCopy >= 0) {
+        filename = filename.substring(0, idxOfCopy);
+      }
       int idxOfv = filename.indexOf(VISIBILITY_PREFIX);
       if (idxOfv < 0) {
         return new ParsedBaseLight(Long.parseLong(filename.substring(BASE_PREFIX.length())), path);
@@ -1063,6 +1067,10 @@ public class AcidUtils {
 
     public static ParsedDeltaLight parse(Path deltaDir) {
       String filename = deltaDir.getName();
+      int idxOfCopy = filename.indexOf(Utilities.COPY_KEYWORD);
+      if (idxOfCopy >= 0) {
+        filename = filename.substring(0, idxOfCopy);
+      }
       int idxOfVis = filename.indexOf(VISIBILITY_PREFIX);
       long visibilityTxnId = 0; // visibilityTxnId:0 is always visible
       if (idxOfVis >= 0) {

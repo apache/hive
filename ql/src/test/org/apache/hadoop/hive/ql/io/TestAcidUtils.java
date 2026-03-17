@@ -166,6 +166,20 @@ public class TestAcidUtils {
   }
 
   @Test
+  public void testParsingCopySuffix() throws Exception {
+    AcidUtils.ParsedDeltaLight p = AcidUtils.ParsedDeltaLight.parse(new Path("mock:/tmp/delta_0000001_0000001_0000_copy_1"));
+    assertEquals(1, p.getMinWriteId());
+    assertEquals(1, p.getMaxWriteId());
+    assertEquals(0, p.getStatementId());
+  }
+
+  @Test
+  public void testParsingBaseCopySuffix() throws Exception {
+    AcidUtils.ParsedBaseLight p = AcidUtils.ParsedBaseLight.parseBase(new Path("mock:/tmp/base_0000123_copy_1"));
+    assertEquals(123, p.getWriteId());
+  }
+
+  @Test
   public void testOriginal() throws Exception {
     Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,

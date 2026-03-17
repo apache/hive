@@ -1,0 +1,41 @@
+PREHOOK: query: CREATE TABLE hive_29481_io(id INT) STORED AS ORC 
+#### A masked pattern was here ####
+TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29481_io
+POSTHOOK: query: CREATE TABLE hive_29481_io(id INT) STORED AS ORC 
+#### A masked pattern was here ####
+TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29481_io
+PREHOOK: query: INSERT INTO hive_29481_io VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_29481_io
+POSTHOOK: query: INSERT INTO hive_29481_io VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_29481_io
+POSTHOOK: Lineage: hive_29481_io.id SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM hive_29481_io
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_29481_io
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_29481_io
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_29481_io
+#### A masked pattern was here ####
+1
+PREHOOK: query: DROP TABLE hive_29481_io
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive_29481_io
+PREHOOK: Output: default@hive_29481_io
+POSTHOOK: query: DROP TABLE hive_29481_io
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive_29481_io
+POSTHOOK: Output: default@hive_29481_io
