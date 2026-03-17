@@ -1702,12 +1702,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
 
       location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
-      objectType = map.get(hive_metastoreConstants.META_OBJECT_TYPE);
-
-      if (TableType.MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE)) ||
-          TableType.EXTERNAL_MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE))) {
-        objectType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
-      }
+      objectType = getObjectType(map);
 
       bytes = SerializationUtil.serializeToBase64(null);
 
@@ -1743,6 +1738,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
     map.remove("columns.comments");
+  }
+
+  private static String getObjectType(Map<String, String> map) {
+    String objectType;
+    objectType = map.get(hive_metastoreConstants.META_OBJECT_TYPE);
+
+    if (TableType.MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE)) ||
+        TableType.EXTERNAL_MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE))) {
+      objectType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
+    }
+    return objectType;
   }
 
   @Override
