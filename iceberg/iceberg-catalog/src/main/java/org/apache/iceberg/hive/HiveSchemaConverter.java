@@ -85,7 +85,9 @@ class HiveSchemaConverter {
       if (defaultValues.containsKey(columnName)) {
         if (type.isPrimitiveType()) {
           Object icebergDefaultValue = HiveSchemaUtil.getDefaultValue(defaultValues.get(columnName), type);
-          fieldBuilder.withWriteDefault(Expressions.lit(icebergDefaultValue));
+          if (icebergDefaultValue != null) {
+            fieldBuilder.withWriteDefault(Expressions.lit(icebergDefaultValue));
+          }
         } else if (!type.isStructType()) {
           throw new UnsupportedOperationException(
               "Default values for " + columnName + " of type " + type + " are not supported");
