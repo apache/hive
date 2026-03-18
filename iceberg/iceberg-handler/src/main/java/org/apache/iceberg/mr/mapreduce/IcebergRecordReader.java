@@ -52,6 +52,7 @@ import org.apache.iceberg.data.avro.PlannedDataReader;
 import org.apache.iceberg.data.orc.GenericOrcReader;
 import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.apache.iceberg.encryption.EncryptedFiles;
+import org.apache.iceberg.encryption.EncryptingFileIO;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
@@ -141,7 +142,8 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
         DeleteFilter<Record> deletes = new GenericDeleteFilter(table.io(), currentTask, table.schema(), readSchema) {
           @Override
           protected DeleteLoader newDeleteLoader() {
-              return new CachingDeleteLoader(this::loadInputFile, conf);
+            return new CachingDeleteLoader(
+                deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile), conf);
           }
         };
         Schema requiredSchema = deletes.requiredSchema();
