@@ -59,8 +59,12 @@ import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException
 import static org.apache.hadoop.hive.metastore.HMSHandler.getIPAddress;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
+/**
+ * Privilege and Role methods
+ */
 public abstract class PrivilegeHandler extends TransactionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PrivilegeHandler.class);
+
   protected PrivilegeHandler(String name, Configuration conf) {
     super(name, conf);
   }

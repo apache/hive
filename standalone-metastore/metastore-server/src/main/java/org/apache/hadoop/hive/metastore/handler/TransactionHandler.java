@@ -108,8 +108,10 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
-// Collect all Transaction and locking methods together
-public abstract class TransactionHandler extends BaseHandler {
+/**
+ *  Transaction and locking methods
+  */
+public abstract class TransactionHandler extends DeprecatedHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TransactionHandler.class);
 
   protected TransactionHandler(String name, Configuration conf) {

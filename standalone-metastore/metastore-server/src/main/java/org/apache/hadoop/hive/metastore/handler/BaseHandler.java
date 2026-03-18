@@ -126,7 +126,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
-// This class serves as the super class for all handlers that implement the IHMSHandler
+/**
+ * This class serves as the super class for all handlers that implement the IHMSHandler
+ */
 public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
   private static final Logger LOG = LoggerFactory.getLogger(BaseHandler.class);
   private static String currentUrl;
