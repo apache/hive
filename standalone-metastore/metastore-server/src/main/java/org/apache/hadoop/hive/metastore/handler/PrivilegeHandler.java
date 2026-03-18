@@ -18,13 +18,10 @@
 
 package org.apache.hadoop.hive.metastore.handler;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
@@ -54,9 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
-import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
-import static org.apache.hadoop.hive.metastore.HMSHandler.getIPAddress;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -689,183 +684,4 @@ public abstract class PrivilegeHandler extends TransactionHandler {
     }
   }
 
-  @Override
-  public void cancel_delegation_token(String token_str_form) throws TException {
-    startFunction("cancel_delegation_token");
-    boolean success = false;
-    Exception ex = null;
-    try {
-      HiveMetaStore.cancelDelegationToken(token_str_form);
-      success = true;
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("cancel_delegation_token", success, ex);
-    }
-  }
-
-  @Override
-  public long renew_delegation_token(String token_str_form) throws TException {
-    startFunction("renew_delegation_token");
-    Long ret = null;
-    Exception ex = null;
-    try {
-      ret = HiveMetaStore.renewDelegationToken(token_str_form);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("renew_delegation_token", ret != null, ex);
-    }
-    return ret;
-  }
-
-  @Override
-  public String get_delegation_token(String token_owner, String renewer_kerberos_principal_name)
-      throws TException {
-    startFunction("get_delegation_token");
-    String ret = null;
-    Exception ex = null;
-    try {
-      ret =
-          HiveMetaStore.getDelegationToken(token_owner,
-              renewer_kerberos_principal_name, getIPAddress());
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).convertIfInstance(IOException.class, MetaException.class)
-          .convertIfInstance(InterruptedException.class, MetaException.class)
-          .defaultMetaException();
-    } finally {
-      endFunction("get_delegation_token", ret != null, ex);
-    }
-    return ret;
-  }
-
-  @Override
-  public boolean add_token(String token_identifier, String delegation_token) throws TException {
-    startFunction("add_token", ": " + token_identifier);
-    boolean ret = false;
-    Exception ex = null;
-    try {
-      ret = getMS().addToken(token_identifier, delegation_token);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("add_token", ret == true, ex);
-    }
-    return ret;
-  }
-
-  @Override
-  public boolean remove_token(String token_identifier) throws TException {
-    startFunction("remove_token", ": " + token_identifier);
-    boolean ret = false;
-    Exception ex = null;
-    try {
-      ret = getMS().removeToken(token_identifier);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("remove_token", ret == true, ex);
-    }
-    return ret;
-  }
-
-  @Override
-  public String get_token(String token_identifier) throws TException {
-    startFunction("get_token for", ": " + token_identifier);
-    String ret = null;
-    Exception ex = null;
-    try {
-      ret = getMS().getToken(token_identifier);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_token", ret != null, ex);
-    }
-    //Thrift cannot return null result
-    return ret == null ? "" : ret;
-  }
-
-  @Override
-  public List<String> get_all_token_identifiers() throws TException {
-    startFunction("get_all_token_identifiers.");
-    List<String> ret;
-    Exception ex = null;
-    try {
-      ret = getMS().getAllTokenIdentifiers();
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_all_token_identifiers.", ex == null, ex);
-    }
-    return ret;
-  }
-
-  @Override
-  public int add_master_key(String key) throws TException {
-    startFunction("add_master_key.");
-    int ret;
-    Exception ex = null;
-    try {
-      ret = getMS().addMasterKey(key);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("add_master_key.", ex == null, ex);
-    }
-    return ret;
-  }
-
-  @Override
-  public void update_master_key(int seq_number, String key) throws TException {
-    startFunction("update_master_key.");
-    Exception ex = null;
-    try {
-      getMS().updateMasterKey(seq_number, key);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("update_master_key.", ex == null, ex);
-    }
-  }
-
-  @Override
-  public boolean remove_master_key(int key_seq) throws TException {
-    startFunction("remove_master_key.");
-    Exception ex = null;
-    boolean ret;
-    try {
-      ret = getMS().removeMasterKey(key_seq);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("remove_master_key.", ex == null, ex);
-    }
-    return ret;
-  }
-
-  @Override
-  public List<String> get_master_keys() throws TException {
-    startFunction("get_master_keys.");
-    Exception ex = null;
-    String [] ret = null;
-    try {
-      ret = getMS().getMasterKeys();
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_master_keys.", ret != null, ex);
-    }
-    return Arrays.asList(ret);
-  }
 }
