@@ -260,7 +260,7 @@ public class CreateDatabaseHandler
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "CreateDatabaseHandler [" + id + "] -  Create database " + name + ":";
   }
 

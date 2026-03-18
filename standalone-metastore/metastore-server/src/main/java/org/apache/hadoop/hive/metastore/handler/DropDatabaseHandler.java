@@ -344,14 +344,14 @@ public class DropDatabaseHandler
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "DropDatabaseHandler [" + id + "] -  Drop database " + name + ":";
   }
 
   @Override
   protected String getRequestProgress() {
     if (progress == null) {
-      return getMessagePrefix() + " hasn't started yet";
+      return this + " hasn't started yet";
     }
     return progress.get();
   }

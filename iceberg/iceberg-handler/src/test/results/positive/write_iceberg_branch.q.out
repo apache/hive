@@ -56,7 +56,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: ice01
+          alias: ice01.branch_test1
           Snapshot ref: branch_test1
           Select Operator
             expressions: a (type: int), b (type: string), c (type: int)
@@ -231,7 +231,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ice01
+                  alias: ice01.branch_test1
                   filterExpr: (a = 22) (type: boolean)
                   Snapshot ref: branch_test1
                   Statistics: Num rows: 5 Data size: 960 Basic stats: COMPLETE Column stats: NONE
@@ -313,7 +313,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ice01
+                  alias: ice01.branch_test1
                   filterExpr: (c = 66) (type: boolean)
                   Snapshot ref: branch_test1
                   Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: NONE
@@ -448,7 +448,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: ice01
+                  alias: ice01.branch_test1
                   filterExpr: a is not null (type: boolean)
                   Snapshot ref: branch_test1
                   Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: NONE
@@ -638,7 +638,7 @@ POSTHOOK: Input: default@source01
 POSTHOOK: Output: default@ice01@branch_test1
 POSTHOOK: Output: default@ice01@branch_test1
 POSTHOOK: Output: default@merge_tmp_table
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice01)ice01.null, ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice01)ice01.branch_test1.null, ]
 PREHOOK: query: select * from default.ice01.branch_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice01@branch_test1
@@ -793,7 +793,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ice01
+                  alias: ice01.branch_test1
                   Snapshot ref: branch_test1
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   Select Operator

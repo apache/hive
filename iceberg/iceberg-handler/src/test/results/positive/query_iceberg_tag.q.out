@@ -37,7 +37,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: ice01
+          alias: ice01.tag_test1
           Snapshot ref: tag_test1
           Select Operator
             expressions: a (type: int), b (type: string), c (type: int)
@@ -75,7 +75,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: ice01
+                  alias: ice01.tag_test1
                   Snapshot ref: tag_test1
                   Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
