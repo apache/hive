@@ -5679,7 +5679,9 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),
-
+    HIVE_QUERY_RESULTS_SAFE_CACHE_WRITE_ENABLED("hive.query.results.safe.cache.write.enabled", false,
+        "If the query results safe cache is enabled. This will safely write to cache directory by first evaluating " +
+            "the cache entry is not overspilling the the cache directory before writing it to cache directory "),
     HIVE_QUERY_RESULTS_CACHE_NONTRANSACTIONAL_TABLES_ENABLED("hive.query.results.cache.nontransactional.tables.enabled", false,
         "If the query results cache is enabled for queries involving non-transactional tables." +
         "Users who enable this setting should be willing to tolerate some amount of stale results in the cache."),

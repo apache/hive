@@ -50,6 +50,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -353,11 +354,13 @@ public final class QueryResultsCache {
   private Path cacheDirPath;
   private Path zeroRowsPath;
   private long cacheSize = 0;
+  private boolean isSafeCacheWriteEnabled;
   private long maxCacheSize;
   private long maxEntrySize;
   private long maxEntryLifetime;
   private ReadWriteLock rwLock = new ReentrantReadWriteLock();
   private ScheduledFuture<?> invalidationPollFuture;
+  private String safeDir;
 
   private QueryResultsCache(HiveConf configuration) throws IOException {
     this.conf = configuration;
@@ -377,6 +380,8 @@ public final class QueryResultsCache {
 
     // Results cache directory should be cleaned up at process termination.
     fs.deleteOnExit(cacheDirPath);
+
+    isSafeCacheWriteEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_SAFE_CACHE_WRITE_ENABLED);
 
     maxCacheSize = conf.getLongVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_MAX_SIZE);
     maxEntrySize = conf.getLongVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_SIZE);
@@ -413,6 +418,14 @@ public final class QueryResultsCache {
 
   public Path getCacheDirPath() {
     return cacheDirPath;
+  }
+
+  public void setSafeDir(String dirName) {
+    safeDir = dirName;
+  }
+
+  public String getSafeDir() {
+    return safeDir;
   }
 
   /**
@@ -513,6 +526,22 @@ public final class QueryResultsCache {
     return addedEntry;
   }
 
+  public void removeInvalidStaleFiles(FileSystem fs, Set<FileStatus> files) {
+    rwLock.writeLock().lock();
+    try {
+      for (FileStatus f : files) {
+        try {
+          fs.delete(f.getPath(), true);
+        } catch (IOException e) {
+          LOG.warn("Failed to clean up stale invalid file: {}",
+              f.getPath(), e);
+        }
+      }
+    } finally {
+      rwLock.writeLock().unlock();
+    }
+  }
+
   /**
    * Updates a pending cache entry with a FetchWork result from a finished query.
    * If successful the cache entry will be set to valid status and be usable for cached queries.
@@ -547,6 +576,39 @@ public final class QueryResultsCache {
 
       if (!shouldEntryBeAdded(cacheEntry, resultSize)) {
         return false;
+      }
+
+      if (isSafeCacheWriteEnabled) {
+        Path resultDir = new Path(cacheDirPath, UUID.randomUUID().toString());
+        FileSystem cacheFs = resultDir.getFileSystem(conf);
+        cacheFs.mkdirs(resultDir);
+
+        Set<FileStatus> cacheFilesToFetch = new HashSet<>();
+        rwLock.writeLock().lock();
+        boolean succeeded = true;
+        try {
+          for (FileStatus fs : fetchWork.getFilesToFetch()) {
+            FileSystem srcFs = fs.getPath().getFileSystem(conf);
+            Path srcFile = fs.getPath();
+            Path destFile = new Path(resultDir,
+                new Path(fs.getPath().toString().substring(safeDir.length() + 1)));
+            succeeded = FileUtil.copy(srcFs, srcFile, cacheFs, destFile, false, conf);
+            if (!succeeded) {
+              throw new IOException("File copy failed for " + srcFile + " -> " + destFile);
+            }
+            cacheFilesToFetch.add(cacheFs.getFileStatus(destFile));
+          }
+        } catch (IOException e) {
+          LOG.warn("Failed to write cache entry to {}", resultDir, e);
+        } finally {
+          rwLock.writeLock().unlock();
+        }
+        if (!succeeded) {
+          removeInvalidStaleFiles(cacheFs, cacheFilesToFetch);
+          return false;
+        }
+        fetchWork.setFilesToFetch(cacheFilesToFetch);
+        fetchWork.setTblDir(new Path(resultDir, fetchWork.getTblDir().toString().substring(safeDir.length() + 1)));
       }
 
       // Synchronize on the cache entry so that no one else can invalidate this entry
