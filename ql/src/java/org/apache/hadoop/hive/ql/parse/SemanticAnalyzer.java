@@ -7500,19 +7500,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Path getDestinationFilePath(QB qb, final String destinationFile, boolean isMmTable) {
+    Path defaultPath = new Path(destinationFile);
     if (this.isResultsCacheEnabled() && this.queryTypeCanUseCache(qb)) {
       assert (!isMmTable);
       QueryResultsCache instance = QueryResultsCache.getInstance();
       // QueryResultsCache should have been initialized by now
       if (instance != null) {
-        Path resultCacheTopDir = instance.getCacheDirPath();
-        String dirName = UUID.randomUUID().toString();
-        Path resultDir = new Path(resultCacheTopDir, dirName);
-        this.ctx.setFsResultCacheDirs(resultDir);
-        return resultDir;
+        if (!conf.getBoolVar(ConfVars.HIVE_QUERY_RESULTS_SAFE_CACHE_WRITE_ENABLED)) {
+          Path resultCacheTopDir = instance.getCacheDirPath();
+          String dirName = UUID.randomUUID().toString();
+          Path resultDir = new Path(resultCacheTopDir, dirName);
+          this.ctx.setFsResultCacheDirs(resultDir);
+          return resultDir;
+        } else {
+          instance.setSafeDir(defaultPath.toString());
+        }
       }
     }
-    return new Path(destinationFile);
+    return defaultPath;
   }
 
   @SuppressWarnings("nls")
