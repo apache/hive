@@ -26,8 +26,8 @@ import org.apache.thrift.TException;
 
 public class HiveTxnCoordinatorStub extends HiveTxnCoordinator {
 
-  public HiveTxnCoordinatorStub(Configuration conf, IMetaStoreClient msClient) {
-    super(conf, msClient);
+  public HiveTxnCoordinatorStub(Configuration conf, IMetaStoreClient msClient, boolean isExplicitTransaction) {
+    super(conf, msClient, isExplicitTransaction);
   }
 
   @Override

@@ -65,10 +65,12 @@ public class HiveTxnCoordinator implements TxnCoordinator {
   private final IMetaStoreClient msClient;
 
   private final Map<String, HiveTransaction> stagedUpdates = Maps.newConcurrentMap();
+  private final boolean isExplicitTransaction;
 
-  public HiveTxnCoordinator(Configuration conf, IMetaStoreClient msClient) {
+  public HiveTxnCoordinator(Configuration conf, IMetaStoreClient msClient, boolean isExplicitTransaction) {
     this.conf = conf;
     this.msClient = msClient;
+    this.isExplicitTransaction = isExplicitTransaction;
   }
 
   public Transaction getOrCreateTransaction(org.apache.iceberg.Table table) {
@@ -119,6 +121,10 @@ public class HiveTxnCoordinator implements TxnCoordinator {
           });
 
     } catch (ValidationException e) {
+      if (isExplicitTransaction) {
+        // In explicit transactions, let ValidationException propagate to the client; no retry will be attempted.
+        throw e;
+      }
       throw MetaStoreUtils.newMetaException(e);
 
     } finally {
