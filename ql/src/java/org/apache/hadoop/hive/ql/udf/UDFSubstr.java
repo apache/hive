@@ -261,5 +261,5 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       }
       return Optional.of(cs);
     }
- }
+  }
 }
