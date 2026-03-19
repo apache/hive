@@ -40,6 +40,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
   static final String HIKARI = "hikaricp";
+  static final long DEFAULT_CONNECTION_TIMEOUT_MS = 60000;
 
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
@@ -65,6 +66,9 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }
+
+    long connectionTimeout = hdpConfig.getLong(HIKARI + ".connectionTimeout", DEFAULT_CONNECTION_TIMEOUT_MS);
+    config.setConnectionTimeout(connectionTimeout);
 
     // It's kind of a waste to create a fixed size connection pool as same as the TxnHandler#connPool,
     // TxnHandler#connPoolMutex is mostly used for MutexAPI that is primarily designed to
