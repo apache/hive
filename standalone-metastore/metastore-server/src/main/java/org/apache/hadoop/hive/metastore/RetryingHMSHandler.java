@@ -55,7 +55,7 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
     try {
       //invoking init method of baseHandler this way since it adds the retry logic
       //in case of transient failures in init method
-      invoke(baseHandler, baseHandler.getClass().getDeclaredMethod("init", (Class<?>[]) null),
+      invoke(baseHandler, baseHandler.getClass().getMethod("init", (Class<?>[]) null),
           null);
     } catch (Throwable e) {
       LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(e));
