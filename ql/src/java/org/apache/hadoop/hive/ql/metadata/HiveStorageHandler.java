@@ -326,6 +326,16 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Resolves time-travel context (snapshot ref, version, timestamp) to a canonical snapshot ID.
+   * Used to build cache keys that are consistent regardless of how a particular version was referenced.
+   * @param table table object with time-travel attributes set
+   * @return a snapshot ID, or -1 if not applicable
+   */
+  default long getSnapshotId(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return -1;
+  }
+
+  /**
    * Check if the storage handler can provide column statistics.
    * @param table table object
    * @return true if the storage handler can supply the column statistics

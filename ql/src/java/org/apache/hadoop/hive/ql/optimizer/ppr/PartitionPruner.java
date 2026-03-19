@@ -184,8 +184,11 @@ public class PartitionPruner extends Transform {
     String key = tab.getFullyQualifiedName() + ";";
     if (tab.getMetaTable() != null) {
       key = tab.getFullyQualifiedName() + "." + tab.getMetaTable() + ";";
-    } else if (tab.getSnapshotRef() != null) {
-      key = tab.getFullyQualifiedName() + "." + tab.getSnapshotRef() + ";";
+    } else if (tab.isNonNative()) {
+      long snapshotId = tab.getStorageHandler().getSnapshotId(tab);
+      if (snapshotId > 0) {
+        key = tab.getFullyQualifiedName() + "." + snapshotId + ";";
+      }
     }
 
     if (!tab.isPartitioned()) {
@@ -441,7 +444,7 @@ public class PartitionPruner extends Transform {
     return false;
   }
 
-  private static PrunedPartitionList getPartitionsFromServer(Table tab, String key, ExprNodeDesc compactExpr, 
+  private static PrunedPartitionList getPartitionsFromServer(Table tab, String key, ExprNodeDesc compactExpr,
       HiveConf conf, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) 
       throws SemanticException {
     try {
