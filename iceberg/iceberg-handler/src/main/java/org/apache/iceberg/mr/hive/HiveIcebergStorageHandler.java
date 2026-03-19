@@ -708,6 +708,13 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public long getSnapshotId(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
+    return snapshot != null ? snapshot.snapshotId() : -1;
+  }
+
+  @Override
   public boolean canProvideColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
