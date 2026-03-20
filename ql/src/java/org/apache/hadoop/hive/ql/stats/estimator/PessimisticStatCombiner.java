@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.stats.estimator;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 /**
  * Combines {@link ColStatistics} objects to provide the most pessimistic estimate.
@@ -45,7 +46,7 @@ public class PessimisticStatCombiner {
     if (result.getCountDistint() == 0L || stat.getCountDistint() == 0L) {
       result.setCountDistint(0L);
     } else {
-      result.setCountDistint(result.getCountDistint() + stat.getCountDistint());
+      result.setCountDistint(StatsUtils.safeAdd(result.getCountDistint(), stat.getCountDistint()));
     }
     if (stat.getNumNulls() < 0 || result.getNumNulls() < 0) {
       result.setNumNulls(-1);
