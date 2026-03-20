@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-class DirectSqlBase {
+public class DirectSqlBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(DirectSqlBase.class.getName());
 
@@ -36,7 +37,7 @@ class DirectSqlBase {
   protected final DatabaseProduct dbType;
   protected final int maxBatchSize;
 
-  DirectSqlBase(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
+  public DirectSqlBase(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
     this.pm = pm;
     this.dbType = dbType;
     this.maxBatchSize = batchSize;

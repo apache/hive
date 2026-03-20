@@ -16,10 +16,19 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.DirectSqlBase;
+import org.apache.hadoop.hive.metastore.DirectSqlUpdateParams;
+import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -67,11 +76,11 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.executeWithArray;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlClob;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlInt;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlLong;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getModelIdentity;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.closeDbConn;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlClob;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlInt;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlLong;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.getModelIdentity;
 
 /**
  * This class contains the optimizations for MetaStore that rely on direct SQL access to
@@ -80,7 +89,7 @@ import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getModelI
  *
  * This class separates out the update part from MetaStoreDirectSql class.
  */
-class DirectSqlUpdatePart extends DirectSqlBase{
+class DirectSqlUpdatePart extends DirectSqlBase {
   private static final Logger LOG = LoggerFactory.getLogger(DirectSqlUpdatePart.class.getName());
 
   private final Configuration conf;
@@ -567,14 +576,14 @@ class DirectSqlUpdatePart extends DirectSqlBase{
             "from \"SKEWED_VALUES\" where \"SD_ID_OID\" in (" + idLists + ")";
         try (QueryWrapper query =
                  new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryFromSkewedValues))) {
-          List<Long> sqlResult = executeWithArray(query.getInnerQuery(), null, queryFromSkewedValues);
+          List<Long> sqlResult = MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), null, queryFromSkewedValues);
           result.addAll(sqlResult);
         }
         String queryFromValueLoc = "select \"STRING_LIST_ID_KID\" " +
             "from \"SKEWED_COL_VALUE_LOC_MAP\" where \"SD_ID\" in (" + idLists + ")";
         try (QueryWrapper query =
                  new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryFromValueLoc))) {
-          List<Long> sqlResult = executeWithArray(query.getInnerQuery(), null, queryFromValueLoc);
+          List<Long> sqlResult = MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), null, queryFromValueLoc);
           result.addAll(sqlResult);
         }
         return result;
@@ -601,7 +610,7 @@ class DirectSqlUpdatePart extends DirectSqlBase{
         String queryText = "select \"SD_ID\", \"CD_ID\", \"SERDE_ID\" from \"SDS\" " +
             "where \"SD_ID\" in (" + idLists + ")";
         try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-          List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+          List<Object[]> sqlResult = MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), null, queryText);
           for (Object[] row : sqlResult) {
             Long sdId = extractSqlLong(row[0]);
             Long cdId = extractSqlLong(row[1]);
@@ -663,7 +672,7 @@ class DirectSqlUpdatePart extends DirectSqlBase{
             String queryText = "select DISTINCT \"CD_ID\" from \"SDS\" where \"CD_ID\" in ( " + idLists + ")";
             List<Long> cdIds = new ArrayList<>();
             try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-              List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+              List<Object[]> sqlResult = MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), null, queryText);
               if (sqlResult != null) {
                 for (Object cdId : sqlResult) {
                   cdIds.add(MetastoreDirectSqlUtils.extractSqlLong(cdId));
@@ -984,7 +993,7 @@ class DirectSqlUpdatePart extends DirectSqlBase{
         String queryText = "select \"CD_ID\", \"COMMENT\", \"COLUMN_NAME\", \"TYPE_NAME\", " +
             "\"INTEGER_IDX\" from \"COLUMNS_V2\" where \"CD_ID\" in (" + idLists + ")";
         try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-          List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+          List<Object[]> sqlResult = MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), null, queryText);
           for (Object[] row : sqlResult) {
             Long id = extractSqlLong(row[0]);
             String comment = extractSqlClob(row[1]);

@@ -16,10 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.IExtrapolatePartStatus;
+import org.apache.hadoop.hive.metastore.LinearExtrapolatePartStatus;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -58,12 +66,11 @@ import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAgg
 import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.SUM_NDV_DECIMAL;
 import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.COUNT_ROWS;
 import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.SUM_NUM_DISTINCTS;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getFullyQualifiedName;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.makeParams;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.executeWithArray;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.prepareParams;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.getFullyQualifiedName;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.makeParams;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.prepareParams;
 
-class DirectSqlAggrStats {
+public class DirectSqlAggrStats {
   private static final int NO_BATCHING = -1;
   private static final int DETECT_BATCHING = 0;
 
@@ -146,7 +153,7 @@ class DirectSqlAggrStats {
         long start = doTrace ? System.nanoTime() : 0;
         Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
         try {
-          Object qResult = executeWithArray(query, params, queryText);
+          Object qResult = MetastoreDirectSqlUtils.executeWithArray(query, params, queryText);
           MetastoreDirectSqlUtils.timingTrace(doTrace, queryText0 + "...)", start,
               (doTrace ? System.nanoTime() : 0));
           if (qResult == null) {
@@ -479,7 +486,7 @@ class DirectSqlAggrStats {
             long start = doTrace ? System.nanoTime() : 0;
             Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
             try {
-              Object qResult = executeWithArray(query,
+              Object qResult = MetastoreDirectSqlUtils.executeWithArray(query,
                   prepareParams(catName, dbName, tableName, inputPartNames, inputColNames, engine), queryText);
               long end = doTrace ? System.nanoTime() : 0;
               MetastoreDirectSqlUtils.timingTrace(doTrace, queryText0, start, end);
@@ -518,7 +525,7 @@ class DirectSqlAggrStats {
     start = doTrace ? System.nanoTime() : 0;
     List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> colStatsForDB = new ArrayList<>();
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-      qResult = executeWithArray(query.getInnerQuery(), new Object[] { dbName, catName }, queryText);
+      qResult = MetastoreDirectSqlUtils.executeWithArray(query.getInnerQuery(), new Object[] { dbName, catName }, queryText);
       if (qResult == null) {
         return colStatsForDB;
       }

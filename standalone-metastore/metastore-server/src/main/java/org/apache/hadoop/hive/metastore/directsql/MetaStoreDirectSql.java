@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
@@ -29,12 +29,11 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getFullyQualifiedName;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.makeParams;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.prepareParams;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.getFullyQualifiedName;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.makeParams;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.prepareParams;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -59,14 +58,25 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.AggregateStatsCache;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
+import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.DirectSqlUpdateParams;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PartitionProjectionEvaluator;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -138,7 +148,7 @@ import com.google.common.collect.Lists;
  * JDOQL partition retrieval is still present so as not to limit the ORM solution we have
  * to SQL stores only. There's always a way to do without direct SQL.
  */
-class MetaStoreDirectSql {
+public class MetaStoreDirectSql {
   private static final int NO_BATCHING = -1, DETECT_BATCHING = 0;
   private static final Set<String> ALLOWED_TABLES_TO_LOCK = Set.of("NOTIFICATION_SEQUENCE");
 
@@ -352,6 +362,10 @@ class MetaStoreDirectSql {
 
   public boolean isCompatibleDatastore() {
     return isCompatibleDatastore;
+  }
+
+  public int getDirectSqlBatchSize() {
+    return batchSize;
   }
 
   private void executeNoResult(final String queryText) throws SQLException {
@@ -871,10 +885,10 @@ class MetaStoreDirectSql {
     private String tableName;
     // whether should compact null elements in joins when generating sql filter.
     private boolean compactJoins = true;
-    SqlFilterForPushdown() {
+    public SqlFilterForPushdown() {
 
     }
-    SqlFilterForPushdown(Table table, boolean compactJoins) {
+    public SqlFilterForPushdown(Table table, boolean compactJoins) {
       this.catName = table.getCatName();
       this.dbName = table.getDbName();
       this.tableName = table.getTableName();
@@ -945,7 +959,7 @@ class MetaStoreDirectSql {
    * @param max The maximum number of partitions to return.
    * @return List of partition objects.
    */
-  private List<Long> getPartitionIdsViaSqlFilter(
+   List<Long> getPartitionIdsViaSqlFilter(
       String catName, String dbName, String tblName, String sqlFilter,
       List<? extends Object> paramsForFilter, List<String> joinsForFilter, Integer max)
       throws MetaException {
@@ -2709,221 +2723,6 @@ class MetaStoreDirectSql {
     }
   }
 
-  public boolean deleteTableColumnStatistics(long tableId, List<String> colNames, String engine) {
-    String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = ?";
-    List<Object> params = new ArrayList<>(colNames == null ? 2 : colNames.size() + 2);
-    params.add(tableId);
-
-    if (colNames != null && !colNames.isEmpty()) {
-      deleteSql += " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")";
-      params.addAll(colNames);
-    }
-
-    if (engine != null) {
-      deleteSql += " and \"ENGINE\" = ?";
-      params.add(engine);
-    }
-
-    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", deleteSql))) {
-      executeWithArray(queryParams.getInnerQuery(), params.toArray(), deleteSql);
-    } catch (MetaException e) {
-      return false;
-    }
-
-    return true;
-  }
-
-  public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
-      List<String> partNames, List<String> colNames, String engine) throws MetaException {
-    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
-      @Override
-      public List<Void> run(List<String> input) throws Exception {
-        String sqlFilter = PARTITIONS + ".\"PART_NAME\" in  (" + makeParams(input.size()) + ")";
-        List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
-            input, Collections.emptyList(), -1);
-        if (!partitionIds.isEmpty()) {
-          String deleteSql = "delete from " + PART_COL_STATS + " where \"PART_ID\" in ( " + getIdListForIn(partitionIds) + ")";
-          List<Object> params = new ArrayList<>(colNames == null ? 1 : colNames.size() + 1);
-
-          if (colNames != null && !colNames.isEmpty()) {
-            deleteSql += " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")";
-            params.addAll(colNames);
-          }
-
-          if (engine != null) {
-            deleteSql += " and \"ENGINE\" = ?";
-            params.add(engine);
-          }
-
-          try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", deleteSql))) {
-            executeWithArray(queryParams.getInnerQuery(), params.toArray(), deleteSql);
-          }
-        }
-        return null;
-      }
-    });
-    return true;
-  }
-
-  /**
-      a helper function which will get the current COLUMN_STATS_ACCURATE parameter on table level
-      and update the COLUMN_STATS_ACCURATE parameter with the new value on table level using directSql
-   */
-  public long updateColumnStatsAccurateForTable(Table table, List<String> droppedCols) throws MetaException {
-    Map<String, String> params = table.getParameters();
-    // get the current COLUMN_STATS_ACCURATE
-    String currentValue = params.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
-    if (currentValue == null) {
-      return 0;
-    }
-    try {
-      // if the dropping columns is empty, that means we delete all the columns
-      if (droppedCols == null || droppedCols.isEmpty()) {
-        StatsSetupConst.clearColumnStatsState(params);
-      } else {
-        StatsSetupConst.removeColumnStatsState(params, droppedCols);
-      }
-
-      String updatedValue = params.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
-      // if the COL_STATS_ACCURATE has changed, then update it using directSql
-      if (currentValue.equals(updatedValue)) {
-        return 0;
-      }
-      return updateTableParam(table, StatsSetupConst.COLUMN_STATS_ACCURATE, currentValue, updatedValue);
-    } catch (Exception e) {
-      throw new MetaException("Failed to parse/update COLUMN_STATS_ACCURATE: " + e.getMessage());
-    }
-  }
-
-
-
-  public boolean updateColumnStatsAccurateForPartitions(String catName, String dbName, Table table,
-                                                     List<String> partNames, List<String> colNames) throws MetaException {
-    if (partNames == null || partNames.isEmpty()) {
-      return true;
-    }
-
-    ObjectMapper mapper = new ObjectMapper();
-
-    // If colNames is empty, then all the column stats of all columns should be deleted fetch all table column names
-    List<String> effectiveColNames;
-    if (colNames == null || colNames.isEmpty()) {
-      if (table.getSd().getCols() == null) {
-        effectiveColNames = new ArrayList<>();
-      } else {
-        effectiveColNames = table.getSd().getCols().stream()
-                .map(f -> f.getName().toLowerCase())
-                .collect(Collectors.toList());
-      }
-    } else {
-      effectiveColNames = colNames.stream().map(String::toLowerCase).collect(Collectors.toList());
-    }
-
-    try {
-      Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
-        @Override
-        public List<Void> run(List<String> input) throws Exception {
-          // 1. Construct SQL filter for partition names
-          String sqlFilter = PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
-
-          // 2. Fetch PART_IDs of the partitions which are need to be changed
-          List<Long> partitionIds = getPartitionIdsViaSqlFilter(
-                  catName, dbName, table.getTableName(), sqlFilter, input, Collections.emptyList(), -1);
-
-          if (partitionIds.isEmpty()) return null;
-
-          // 3. Get current COLUMN_STATS_ACCURATE values
-          Map<Long, String> partStatsAccurateMap = getColumnStatsAccurateByPartitionIds(partitionIds);
-
-          // 4. Iterate each partition to update COLUMN_STATS_ACCURATE
-          for (Long partId : partitionIds) {
-            String currentValue = partStatsAccurateMap.get(partId);
-            if (currentValue == null) continue;
-
-            try {
-              Map<String, Object> statsMap = mapper.readValue(
-                      currentValue, new TypeReference<Map<String, Object>>() {});
-              Object columnStatsObj = statsMap.get("COLUMN_STATS");
-
-              boolean changed = false;
-              if (columnStatsObj instanceof Map) {
-                Map<String, String> columnStats = (Map<String, String>) columnStatsObj;
-                for (String col : effectiveColNames) {
-                  if (columnStats.remove(col) != null) {
-                    changed = true;
-                  }
-                }
-
-                if (columnStats.isEmpty()) {
-                  statsMap.remove("COLUMN_STATS");
-                  changed = true;
-                }
-              }
-
-              if (!statsMap.containsKey("COLUMN_STATS")) {
-                if (statsMap.remove("BASIC_STATS") != null) {
-                  changed = true;
-                }
-              }
-
-              if (changed) {
-                String updatedValue = mapper.writeValueAsString(statsMap);
-                updatePartitionParam(partId,
-                        StatsSetupConst.COLUMN_STATS_ACCURATE, currentValue, updatedValue);
-              }
-
-            } catch (Exception e) {
-              throw new MetaException("Failed to update COLUMN_STATS_ACCURATE for PART_ID " + partId + ": " + e.getMessage());
-            }
-          }
-
-          return null;
-        }
-      });
-
-      return true; // All succeeded
-    } catch (Exception e) {
-      LOG.warn("Failed to update COLUMN_STATS_ACCURATE for some partitions", e);
-      return false; // Failed batch
-    }
-  }
-
-
-  private Map<Long, String> getColumnStatsAccurateByPartitionIds(List<Long> partIds) throws MetaException {
-    if (partIds == null || partIds.isEmpty()) {
-      return Collections.emptyMap();
-    }
-
-    StringBuilder queryText = new StringBuilder();
-    queryText.append("SELECT \"PART_ID\", \"PARAM_VALUE\" FROM ")
-            .append(PARTITION_PARAMS)
-            .append(" WHERE \"PARAM_KEY\" = ? AND \"PART_ID\" IN (")
-            .append(makeParams(partIds.size()))
-            .append(")");
-
-    // Create params: first COLUMN_STATS_ACCURATE, then all partIds
-    Object[] params = new Object[1 + partIds.size()];
-    params[0] = StatsSetupConst.COLUMN_STATS_ACCURATE;
-    for (int i = 0; i < partIds.size(); i++) {
-      params[i + 1] = partIds.get(i);
-    }
-
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText.toString()))) {
-      @SuppressWarnings("unchecked")
-      List<Object> sqlResult = executeWithArray(query.getInnerQuery(), params, queryText.toString());
-
-      Map<Long, String> result = new HashMap<>();
-      for (Object row : sqlResult) {
-        Object[] fields = (Object[]) row;
-        Long partId = MetastoreDirectSqlUtils.extractSqlLong(fields[0]);
-        String value = fields[1] == null ? null : fields[1].toString();
-        result.put(partId, value);
-      }
-
-      return result;
-    }
-  }
-
   public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
                                                       Map<String, ColumnStatistics> partColStatsMap,
                                                       Table tbl,
@@ -3036,23 +2835,13 @@ class MetaStoreDirectSql {
     }
   }
 
-  long updateTableParam(Table table, String key, String expectedValue, String newValue) {
+  public long updateTableParam(Table table, String key, String expectedValue, String newValue) {
     String statement = TxnUtils.createUpdatePreparedStmt(
         "\"TABLE_PARAMS\"",
         ImmutableList.of("\"PARAM_VALUE\""),
         ImmutableList.of("\"TBL_ID\"", "\"PARAM_KEY\"", dbType.toVarChar("\"PARAM_VALUE\"")));
     Query query = pm.newQuery("javax.jdo.query.SQL", statement);
     return (long) query.executeWithArray(newValue, table.getId(), key, expectedValue);
-  }
-
-  long updatePartitionParam(Long partitionID, String key, String expectedValue, String newValue) {
-    String statement = TxnUtils.createUpdatePreparedStmt(
-            "\"PARTITION_PARAMS\"",
-            ImmutableList.of("\"PARAM_VALUE\""),
-            ImmutableList.of("\"PART_ID\"", "\"PARAM_KEY\"", dbType.toVarChar("\"PARAM_VALUE\"")));
-
-    Query query = pm.newQuery("javax.jdo.query.SQL", statement);
-    return (long) query.executeWithArray(newValue, partitionID, key, expectedValue);
   }
 
   /**
