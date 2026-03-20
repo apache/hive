@@ -41,7 +41,12 @@ public class PessimisticStatCombiner {
       if (stat.getAvgColLen() > result.getAvgColLen()) {
         result.setAvgColLen(stat.getAvgColLen());
       }
-      result.setCountDistint(result.getCountDistint() + stat.getCountDistint());
+      // NDV=0 means "unknown" - if either stat has unknown NDV, preserve 0 to propagate uncertainty
+      if (result.getCountDistint() == 0L || stat.getCountDistint() == 0L) {
+        result.setCountDistint(0L);
+      } else {
+        result.setCountDistint(result.getCountDistint() + stat.getCountDistint());
+      }
       if (stat.getNumNulls() > result.getNumNulls()) {
         result.setNumNulls(stat.getNumNulls());
       }
