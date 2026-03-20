@@ -37,32 +37,36 @@ public class PessimisticStatCombiner {
       result.setRange(null);
       result.setIsEstimated(true);
       return;
-    } else {
-      if (stat.getAvgColLen() > result.getAvgColLen()) {
-        result.setAvgColLen(stat.getAvgColLen());
-      }
-      // NDV=0 means "unknown" - if either stat has unknown NDV, preserve 0 to propagate uncertainty
-      if (result.getCountDistint() == 0L || stat.getCountDistint() == 0L) {
-        result.setCountDistint(0L);
-      } else {
-        result.setCountDistint(result.getCountDistint() + stat.getCountDistint());
-      }
-      if (stat.getNumNulls() > result.getNumNulls()) {
-        result.setNumNulls(stat.getNumNulls());
-      }
-      if (stat.getNumTrues() > result.getNumTrues()) {
-        result.setNumTrues(stat.getNumTrues());
-      }
-      if (stat.getNumFalses() > result.getNumFalses()) {
-        result.setNumFalses(stat.getNumFalses());
-      }
-      if (stat.isFilteredColumn()) {
-        result.setFilterColumn();
-      }
-
     }
-
+    if (stat.getAvgColLen() > result.getAvgColLen()) {
+      result.setAvgColLen(stat.getAvgColLen());
+    }
+    // NDV=0 means "unknown" - if either stat has unknown NDV, preserve 0 to propagate uncertainty
+    if (result.getCountDistint() == 0L || stat.getCountDistint() == 0L) {
+      result.setCountDistint(0L);
+    } else {
+      result.setCountDistint(result.getCountDistint() + stat.getCountDistint());
+    }
+    if (stat.getNumNulls() < 0 || result.getNumNulls() < 0) {
+      result.setNumNulls(-1);
+    } else if (stat.getNumNulls() > result.getNumNulls()) {
+      result.setNumNulls(stat.getNumNulls());
+    }
+    if (stat.getNumTrues() < 0 || result.getNumTrues() < 0) {
+      result.setNumTrues(-1);
+    } else if (stat.getNumTrues() > result.getNumTrues()) {
+      result.setNumTrues(stat.getNumTrues());
+    }
+    if (stat.getNumFalses() < 0 || result.getNumFalses() < 0) {
+      result.setNumFalses(-1);
+    } else if (stat.getNumFalses() > result.getNumFalses()) {
+      result.setNumFalses(stat.getNumFalses());
+    }
+    if (stat.isFilteredColumn()) {
+      result.setFilterColumn();
+    }
   }
+
   public Optional<ColStatistics> getResult() {
     return Optional.of(result);
 

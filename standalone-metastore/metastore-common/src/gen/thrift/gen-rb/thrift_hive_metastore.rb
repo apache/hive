@@ -1132,6 +1132,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'alter_table_req failed: unknown result')
     end
 
+    def update_table_params(updates)
+      send_update_table_params(updates)
+      recv_update_table_params()
+    end
+
+    def send_update_table_params(updates)
+      send_message('update_table_params', Update_table_params_args, :updates => updates)
+    end
+
+    def recv_update_table_params()
+      result = receive_message(Update_table_params_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def add_partition(new_part)
       send_add_partition(new_part)
       return recv_add_partition()
@@ -4397,6 +4412,36 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
     end
 
+    def get_lock_materialization_rebuild_req(req)
+      send_get_lock_materialization_rebuild_req(req)
+      return recv_get_lock_materialization_rebuild_req()
+    end
+
+    def send_get_lock_materialization_rebuild_req(req)
+      send_message('get_lock_materialization_rebuild_req', Get_lock_materialization_rebuild_req_args, :req => req)
+    end
+
+    def recv_get_lock_materialization_rebuild_req()
+      result = receive_message(Get_lock_materialization_rebuild_req_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_lock_materialization_rebuild_req failed: unknown result')
+    end
+
+    def heartbeat_lock_materialization_rebuild_req(req)
+      send_heartbeat_lock_materialization_rebuild_req(req)
+      return recv_heartbeat_lock_materialization_rebuild_req()
+    end
+
+    def send_heartbeat_lock_materialization_rebuild_req(req)
+      send_message('heartbeat_lock_materialization_rebuild_req', Heartbeat_lock_materialization_rebuild_req_args, :req => req)
+    end
+
+    def recv_heartbeat_lock_materialization_rebuild_req()
+      result = receive_message(Heartbeat_lock_materialization_rebuild_req_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild_req failed: unknown result')
+    end
+
     def add_runtime_stats(stat)
       send_add_runtime_stats(stat)
       recv_add_runtime_stats()
@@ -5610,6 +5655,17 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_table_req', seqid)
+    end
+
+    def process_update_table_params(seqid, iprot, oprot)
+      args = read_args(iprot, Update_table_params_args)
+      result = Update_table_params_result.new()
+      begin
+        @handler.update_table_params(args.updates)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'update_table_params', seqid)
     end
 
     def process_add_partition(seqid, iprot, oprot)
@@ -8015,6 +8071,20 @@ module ThriftHiveMetastore
       result = Heartbeat_lock_materialization_rebuild_result.new()
       result.success = @handler.heartbeat_lock_materialization_rebuild(args.dbName, args.tableName, args.txnId)
       write_result(result, oprot, 'heartbeat_lock_materialization_rebuild', seqid)
+    end
+
+    def process_get_lock_materialization_rebuild_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_lock_materialization_rebuild_req_args)
+      result = Get_lock_materialization_rebuild_req_result.new()
+      result.success = @handler.get_lock_materialization_rebuild_req(args.req)
+      write_result(result, oprot, 'get_lock_materialization_rebuild_req', seqid)
+    end
+
+    def process_heartbeat_lock_materialization_rebuild_req(seqid, iprot, oprot)
+      args = read_args(iprot, Heartbeat_lock_materialization_rebuild_req_args)
+      result = Heartbeat_lock_materialization_rebuild_req_result.new()
+      result.success = @handler.heartbeat_lock_materialization_rebuild_req(args.req)
+      write_result(result, oprot, 'heartbeat_lock_materialization_rebuild_req', seqid)
     end
 
     def process_add_runtime_stats(seqid, iprot, oprot)
@@ -10699,6 +10769,38 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AlterTableResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidOperationException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_table_params_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    UPDATES = 1
+
+    FIELDS = {
+      UPDATES => {:type => ::Thrift::Types::LIST, :name => 'updates', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TableParamsUpdate}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_table_params_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
@@ -17909,6 +18011,70 @@ module ThriftHiveMetastore
   end
 
   class Heartbeat_lock_materialization_rebuild_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::LockMaterializationRebuildRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::LockResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::LockMaterializationRebuildRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
 

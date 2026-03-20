@@ -1,0 +1,51 @@
+PREHOOK: query: create external table ice_t (id int) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: create external table ice_t (id int) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: insert into ice_t  values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: insert into ice_t  values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: explain extended select * from default.ice_t.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain extended select * from default.ice_t.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+OPTIMIZED SQL: SELECT `committed_at` AS `ice_t.snapshots.committed_at`, `snapshot_id` AS `ice_t.snapshots.snapshot_id`, `parent_id` AS `ice_t.snapshots.parent_id`, `operation` AS `ice_t.snapshots.operation`, `manifest_list` AS `ice_t.snapshots.manifest_list`, `summary` AS `ice_t.snapshots.summary`
+FROM `default`.`ice_t`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: ice_t.snapshots
+          GatherStats: false
+          Select Operator
+            expressions: committed_at (type: timestamp with local time zone), snapshot_id (type: bigint), parent_id (type: bigint), operation (type: string), manifest_list (type: string), summary (type: map<string,string>)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            ListSink
+
+PREHOOK: query: select `ice_t.snapshots`.operation from default.ice_t.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `ice_t.snapshots`.operation from default.ice_t.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+append

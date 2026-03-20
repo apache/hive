@@ -645,6 +645,12 @@ public class SharedWorkOptimizer extends Transform {
       LOG.debug("opProps differ {} ~ {}", tsOp1.getConf().getOpProps(), tsOp2.getConf().getOpProps());
       return false;
     }
+
+    // HIVE-29509: Include snapshotRef to ensure different Iceberg branches/tags are treated as distinct tables
+    if (!Objects.equals(tsOp1.getConf().getSnapshotRef(), tsOp2.getConf().getSnapshotRef())) {
+      LOG.debug("Snapshot Ref differ {} ~ {}", tsOp1.getConf().getSnapshotRef(), tsOp2.getConf().getSnapshotRef());
+      return false;
+    }
     // If partitions do not match, we currently do not merge
     PrunedPartitionList prevTsOpPPList = pctx.getPrunedPartitions(tsOp1);
     PrunedPartitionList tsOpPPList = pctx.getPrunedPartitions(tsOp2);

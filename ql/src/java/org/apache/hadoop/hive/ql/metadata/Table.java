@@ -569,10 +569,7 @@ public class Table implements Serializable {
    */
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((tTable == null) ? 0 : tTable.hashCode());
-    return result;
+    return Objects.hash(tTable, asOfTimestamp, asOfVersion, versionIntervalFrom, snapshotRef);
   }
 
   /* (non-Javadoc)
@@ -590,23 +587,11 @@ public class Table implements Serializable {
       return false;
     }
     Table other = (Table) obj;
-    if (tTable == null) {
-      if (other.tTable != null) {
-        return false;
-      }
-    } else if (!tTable.equals(other.tTable)) {
-      return false;
-    }
-    if (!Objects.equals(asOfTimestamp, other.asOfTimestamp)) {
-      return false;
-    }
-    if (!Objects.equals(asOfVersion, other.asOfVersion)) {
-      return false;
-    }
-    if (!Objects.equals(versionIntervalFrom, other.versionIntervalFrom)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(tTable, other.tTable)
+        && Objects.equals(asOfTimestamp, other.asOfTimestamp)
+        && Objects.equals(asOfVersion, other.asOfVersion)
+        && Objects.equals(versionIntervalFrom, other.versionIntervalFrom)
+        && Objects.equals(snapshotRef, other.snapshotRef);
   }
 
   public List<FieldSchema> getPartCols() {

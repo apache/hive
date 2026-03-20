@@ -449,7 +449,7 @@ public class SetAggrStatsHandler
 
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "SetAggrStatsHandler [" + id + "] -  aggregating stats for " +
         TableName.getQualified(catName, dbName, tableName) + ":";
   }

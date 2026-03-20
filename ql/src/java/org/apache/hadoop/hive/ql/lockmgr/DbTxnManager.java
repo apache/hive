@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.TxnCoordinator;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
@@ -29,8 +30,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -40,11 +44,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -100,11 +102,12 @@ import java.util.stream.Collectors;
 @NotThreadSafe
 public final class DbTxnManager extends HiveTxnManagerImpl {
 
-  static final private String CLASS_NAME = DbTxnManager.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private static final String CLASS_NAME = DbTxnManager.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   public static final String GLOBAL_LOCKS = "__GLOBAL_LOCKS";
 
-  private volatile DbLockManager lockMgr = null;
+  private volatile TxnCoordinator txnCoordinator;
+  private volatile DbLockManager lockMgr;
   /**
    * The Metastore TXNS sequence is initialized to 1.
    * Thus is 1 is first transaction id.
@@ -114,7 +117,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   /**
    * The local cache of table write IDs allocated/created by the current transaction
    */
-  private Map<String, Long> tableWriteIds = new HashMap<>();
+  private final Map<String, Long> tableWriteIds = new HashMap<>();
   private boolean shouldReallocateWriteIds = false;
 
   /**
@@ -198,7 +201,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     try {
       return Hive.get(conf).getMSC();
     }
-    catch(HiveException|MetaException e) {
+    catch (HiveException|MetaException e) {
       String msg = "Unable to reach Hive Metastore: " + e.getMessage();
       LOG.error(msg, e);
       throw new LockException(e);
@@ -257,7 +260,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     try {
       replPolicy = ctx.getReplPolicy();
       if (replPolicy != null) {
-        txnId = getMS().replOpenTxn(replPolicy, null, user, txnType).get(0);
+        txnId = getMS().replOpenTxn(replPolicy, null, user, txnType).getFirst();
       } else {
         txnId = getMS().openTxn(user, txnType);
       }
@@ -377,17 +380,17 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (queryPlan.getOperation() == HiveOperation.LOAD && queryPlan.getOutputs() != null && queryPlan.getOutputs().size() == 1) {
       WriteEntity writeEntity = queryPlan.getOutputs().iterator().next();
       if (AcidUtils.isTransactionalTable(writeEntity.getTable())) {
-        switch (writeEntity.getWriteType()) {
-          case INSERT:
+        return switch (writeEntity.getWriteType()) {
+          case INSERT ->
             //allow operation in a txn
-            return true;
-          case INSERT_OVERWRITE:
+            true;
+          case INSERT_OVERWRITE ->
             //see HIVE-18154
-            return false;
-          default:
+            false;
+          default ->
             //not relevant for LOAD
-            return false;
-        }
+            false;
+        };
       }
     }
     //todo: handle Insert Overwrite as well: HIVE-18154
@@ -472,7 +475,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (StringUtils.isEmpty(lockNames)) {
       return Collections.emptyList();
     }
-    List<LockComponent> globalLocks = new ArrayList<LockComponent>();
+    List<LockComponent> globalLocks = new ArrayList<>();
+    String currentCatalog = HiveUtils.getCurrentCatalogOrDefault(conf);
     for (String lockName : lockNames.split(",")) {
       lockName = lockName.trim();
       if (StringUtils.isEmpty(lockName)) {
@@ -481,6 +485,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setExclusive();
       compBuilder.setOperationType(DataOperationType.NO_TXN);
+      compBuilder.setCatName(currentCatalog);
       compBuilder.setDbName(GLOBAL_LOCKS);
       compBuilder.setTableName(lockName);
 
@@ -512,18 +517,49 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   private void clearLocksAndHB() {
-    lockMgr.clearLocalLockRecords();
-    stopHeartbeat();
+    if (lockMgr != null) {
+      stopHeartbeat();
+      lockMgr.clearLocalLockRecords();
+    }
   }
 
   private void resetTxnInfo() {
+    if (txnId > 0) {
+      lockMgr = null;
+    }
     txnId = 0;
+    txnCoordinator = null;
     stmtId = -1;
     numStatements = 0;
     tableWriteIds.clear();
     shouldReallocateWriteIds = false;
     queryId = null;
     replPolicy = null;
+  }
+
+  @Override
+  public synchronized <T extends TxnCoordinator> T getOrSetTxnCoordinator(
+      Class<T> clazz, Function<IMetaStoreClient, T> creator) {
+    if (txnCoordinator == null && creator != null) {
+      try {
+        txnCoordinator = creator.apply(getMS());
+      } catch (LockException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return clazz.cast(txnCoordinator);
+  }
+
+  private TxnCoordinator getTxnCoordinator() throws LockException {
+    if (txnCoordinator == null) {
+      txnCoordinator = getDefaultCoordinator();
+    }
+    return txnCoordinator;
+  }
+
+  private TxnCoordinator getDefaultCoordinator() throws LockException {
+    return new AcidTxnCoordinator(
+        (HiveConf) getConf(), getMS(), replPolicy, txnId);
   }
 
   @Override
@@ -563,14 +599,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     try {
       // do all new clear in clearLocksAndHB method to make sure that same code is there for replCommitTxn flow.
       clearLocksAndHB();
-      LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
-      CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
-      commitTxnRequest.setExclWriteEnabled(conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
-      if (replPolicy != null) {
-        commitTxnRequest.setReplPolicy(replPolicy);
-        commitTxnRequest.setTxn_type(TxnType.DEFAULT);
-      }
-      getMS().commitTxn(commitTxnRequest);
+      getTxnCoordinator().commit();
+
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
@@ -579,13 +609,34 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.error(le.getMessage());
       throw le;
     } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
-          e);
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     } finally {
       // do all new reset in resetTxnInfo method to make sure that same code is there for replCommitTxn flow.
       resetTxnInfo();
     }
   }
+
+  @Override
+  public void rollbackTxn() throws LockException {
+    if (!isTxnOpen()) {
+      throw new RuntimeException("Attempt to rollback before opening a transaction");
+    }
+    try {
+      clearLocksAndHB();
+      getTxnCoordinator().rollback();
+
+    } catch (NoSuchTxnException e) {
+      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
+      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
+    } catch(TxnAbortedException e) {
+      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId));
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    } finally {
+      resetTxnInfo();
+    }
+  }
+
   @Override
   public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
     try {
@@ -609,36 +660,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       } catch (TException | LockException e) {
         throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
       }
-  }
-
-  @Override
-  public void rollbackTxn() throws LockException {
-    if (!isTxnOpen()) {
-      throw new RuntimeException("Attempt to rollback before opening a transaction");
-    }
-    try {
-      clearLocksAndHB();
-      LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
-      
-      if (replPolicy != null) {
-        getMS().replRollbackTxn(txnId, replPolicy, TxnType.DEFAULT);
-      } else {
-        AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
-        abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
-        getMS().rollbackTxn(abortTxnRequest);
-      }
-    } catch (NoSuchTxnException e) {
-      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
-      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
-    
-    } catch(TxnAbortedException e) {
-      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId));
-    
-    } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
-    } finally {
-      resetTxnInfo();
-    }
   }
 
   @Override
@@ -696,7 +717,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       } catch (TException e) {
         throw new LockException(
             ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg() + "(" + JavaUtils.txnIdToString(txnId)
-              + "," + lock.toString() + ")", e);
+              + "," + lock + ")", e);
       }
     }
   }
@@ -874,7 +895,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     else if (!isExplicitTransaction) {
       assert numStatements == 1 : "numStatements=" + numStatements + " in implicit txn";
       if (queryPlan.hasAcidResourcesInQuery()) {
-        //1st and only stmt in implicit txn and uses acid resource
+        // 1st and only stmt in implicit txn and uses acid resource
         return true;
       }
     }
@@ -894,7 +915,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     if (!isExplicitTransaction) {
       if (ctx == null || !ctx.isExplainSkipExecution()) {
-        assert numStatements == 1 : "numStatements=" + numStatements;
+        assert numStatements <= 1 : "numStatements=" + numStatements;
       }
       return true;
     }
@@ -922,7 +943,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (conf == null) {
       throw new RuntimeException("Must call setHiveConf before any other methods.");
     }
-    initHeartbeatExecutorService(conf.getIntVar(HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE));
+    initHeartbeatExecutorService(
+        conf.getIntVar(HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE));
   }
 
   private synchronized static void initHeartbeatExecutorService(int corePoolSize) {
@@ -961,17 +983,21 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public boolean isTxnOpen() {
-    return txnId > 0;
+    return txnId > 0 ||
+        txnCoordinator != null && txnCoordinator.hasPendingWork();
   }
+
   @Override
   public long getCurrentTxnId() {
     return txnId;
   }
+
   @Override
   public int getStmtIdAndIncrement() {
     assert isTxnOpen();
     return stmtId++;
   }
+
   @Override
   public int getCurrentStmtId() {
     assert isTxnOpen();
@@ -1024,11 +1050,18 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName,
+                                                        long txnId) throws LockException {
+    return acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(Warehouse.DEFAULT_CATALOG_NAME,
+        dbName, tableName, txnId));
+  }
+
+  @Override
+  public LockResponse acquireMaterializationRebuildLock(LockMaterializationRebuildRequest rqst) throws LockException {
     // Acquire lock
     LockResponse lockResponse;
     try {
-      lockResponse = getMS().lockMaterializationRebuild(dbName, tableName, txnId);
+      lockResponse = getMS().lockMaterializationRebuild(rqst);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1039,11 +1072,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       long heartbeatInterval = getHeartbeatInterval(conf);
       assert heartbeatInterval > 0;
       MaterializationRebuildLockHeartbeater heartbeater = new MaterializationRebuildLockHeartbeater(
-          this, dbName, tableName, queryId, txnId);
+          this, rqst.getCatName(), rqst.getDbName(), rqst.getTableName(), queryId, rqst.getTxnId());
       ScheduledFuture<?> task = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
       heartbeater.task.set(task);
       LOG.debug("Started heartbeat for materialization rebuild lock for {} with delay/interval = {}/{} {} for query: {}",
-          AcidUtils.getFullTableName(dbName, tableName), initialDelay, heartbeatInterval, TimeUnit.MILLISECONDS, queryId);
+          AcidUtils.getFullTableName(rqst.getDbName(), rqst.getTableName()), initialDelay, heartbeatInterval,
+          TimeUnit.MILLISECONDS, queryId);
     }
     return lockResponse;
   }
@@ -1057,9 +1091,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
-  private boolean heartbeatMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+  private boolean heartbeatMaterializationRebuildLock(LockMaterializationRebuildRequest rqst) throws LockException {
     try {
-      return getMS().heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
+      return getMS().heartbeatLockMaterializationRebuild(rqst);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1081,7 +1115,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     long interval =
         HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) / 2;
     if (interval == 0) {
-      throw new LockException(HiveConf.ConfVars.HIVE_TXN_TIMEOUT.toString() + " not set," +
+      throw new LockException(HiveConf.ConfVars.HIVE_TXN_TIMEOUT + " not set," +
           " heartbeats won't be sent");
     }
     return interval;
@@ -1091,9 +1125,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    * Heartbeater thread
    */
   public static class Heartbeater implements Runnable {
-    private HiveTxnManager txnMgr;
-    private HiveConf conf;
-    private UserGroupInformation currentUser;
+    private final HiveTxnManager txnMgr;
+    private final HiveConf conf;
+    private final UserGroupInformation currentUser;
     LockException lockException;
     private final String queryId;
 
@@ -1150,16 +1184,18 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static class MaterializationRebuildLockHeartbeater implements Runnable {
 
     private final DbTxnManager txnMgr;
+    private final String catName;
     private final String dbName;
     private final String tableName;
     private final String queryId;
     private final long txnId;
     private final AtomicReference<ScheduledFuture<?>> task;
 
-    MaterializationRebuildLockHeartbeater(DbTxnManager txnMgr, String dbName, String tableName,
+    MaterializationRebuildLockHeartbeater(DbTxnManager txnMgr, String catName, String dbName, String tableName,
         String queryId, long txnId) {
       this.txnMgr = txnMgr;
       this.queryId = queryId;
+      this.catName = catName;
       this.dbName = dbName;
       this.tableName = tableName;
       this.txnId = txnId;
@@ -1175,7 +1211,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           AcidUtils.getFullTableName(dbName, tableName), queryId);
       boolean refreshed;
       try {
-        refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
+        LockMaterializationRebuildRequest rqst = new LockMaterializationRebuildRequest(catName, dbName,
+            tableName, txnId);
+        refreshed = txnMgr.heartbeatMaterializationRebuildLock(rqst);
       } catch (LockException e) {
         LOG.error("Failed trying to acquire lock", e);
         throw new RuntimeException(e);

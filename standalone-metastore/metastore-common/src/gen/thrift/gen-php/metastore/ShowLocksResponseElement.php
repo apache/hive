@@ -103,6 +103,11 @@ class ShowLocksResponseElement
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        17 => array(
+            'var' => 'catname',
+            'isRequired' => true,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -169,6 +174,10 @@ class ShowLocksResponseElement
      * @var int
      */
     public $lockIdInternal = null;
+    /**
+     * @var string
+     */
+    public $catname = null;
 
     public function __construct($vals = null)
     {
@@ -220,6 +229,9 @@ class ShowLocksResponseElement
             }
             if (isset($vals['lockIdInternal'])) {
                 $this->lockIdInternal = $vals['lockIdInternal'];
+            }
+            if (isset($vals['catname'])) {
+                $this->catname = $vals['catname'];
             }
         }
     }
@@ -355,6 +367,13 @@ class ShowLocksResponseElement
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 17:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catname);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -447,6 +466,11 @@ class ShowLocksResponseElement
         if ($this->lockIdInternal !== null) {
             $xfer += $output->writeFieldBegin('lockIdInternal', TType::I64, 16);
             $xfer += $output->writeI64($this->lockIdInternal);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catname !== null) {
+            $xfer += $output->writeFieldBegin('catname', TType::STRING, 17);
+            $xfer += $output->writeString($this->catname);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -502,6 +502,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
+  public void updateTableParams(List<TableParamsUpdate> updates) throws TException {
+    client.update_table_params(updates);
+  }
+
+  @Override
   public void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
       Partition newPart, String validWriteIds, long txnId, boolean makeCopy) throws TException {
     RenamePartitionRequest req = new RenamePartitionRequest(dbname, tableName, part_vals, newPart);
@@ -3793,13 +3798,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
-    return client.get_lock_materialization_rebuild(dbName, tableName, txnId);
+  public LockResponse lockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws TException {
+    return client.get_lock_materialization_rebuild_req(rqst);
   }
 
   @Override
-  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
-    return client.heartbeat_lock_materialization_rebuild(dbName, tableName, txnId);
+  public boolean heartbeatLockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws TException {
+    return client.heartbeat_lock_materialization_rebuild_req(rqst);
   }
 
   @Override

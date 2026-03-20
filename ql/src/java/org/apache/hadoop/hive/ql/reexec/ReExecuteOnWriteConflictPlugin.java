@@ -34,21 +34,25 @@ public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
 
   private static final class LocalHook implements ExecuteWithHookContext {
     @Override
-    public void run(HookContext hookContext) throws Exception {
-      if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {
-        Throwable exception = hookContext.getException();
-        
-        if (exception != null && exception.getMessage() != null) {
-          Throwable cause = Throwables.getRootCause(exception);
+    public void run(HookContext hookContext) {
+      if (hookContext.getHookType() != HookContext.HookType.ON_FAILURE_HOOK) {
+        return;
+      }
+      Throwable exception = hookContext.getException();
+      if (exception == null) {
+        return;
+      }
+      Throwable rootCause = Throwables.getRootCause(exception);
 
-          if (cause.getClass().getName().equals(validationException)) {
-            retryPossible = true;
-            LOG.info("Retrying query due to write conflict.");
-          }
-          LOG.info("Got exception message: {} retryPossible: {}", exception.getMessage(), retryPossible);
-        }
+      if (isRetryable(rootCause)) {
+        LOG.info("Write conflict detected ({}), retrying query.", rootCause.getClass().getName());
+        retryPossible = true;
       }
     }
+  }
+
+  private static boolean isRetryable(Throwable t) {
+    return validationException.equals(t.getClass().getName());
   }
 
   @Override

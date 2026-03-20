@@ -321,15 +321,15 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // EXCLUDE_TXN_TYPES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1602 = iprot.readListBegin();
-                struct.excludeTxnTypes = new java.util.ArrayList<TxnType>(_list1602.size);
-                @org.apache.thrift.annotation.Nullable TxnType _elem1603;
-                for (int _i1604 = 0; _i1604 < _list1602.size; ++_i1604)
+                org.apache.thrift.protocol.TList _list1612 = iprot.readListBegin();
+                struct.excludeTxnTypes = new java.util.ArrayList<TxnType>(_list1612.size);
+                @org.apache.thrift.annotation.Nullable TxnType _elem1613;
+                for (int _i1614 = 0; _i1614 < _list1612.size; ++_i1614)
                 {
-                  _elem1603 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
-                  if (_elem1603 != null)
+                  _elem1613 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
+                  if (_elem1613 != null)
                   {
-                    struct.excludeTxnTypes.add(_elem1603);
+                    struct.excludeTxnTypes.add(_elem1613);
                   }
                 }
                 iprot.readListEnd();
@@ -357,9 +357,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(EXCLUDE_TXN_TYPES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.excludeTxnTypes.size()));
-            for (TxnType _iter1605 : struct.excludeTxnTypes)
+            for (TxnType _iter1615 : struct.excludeTxnTypes)
             {
-              oprot.writeI32(_iter1605.getValue());
+              oprot.writeI32(_iter1615.getValue());
             }
             oprot.writeListEnd();
           }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetExcludeTxnTypes()) {
         {
           oprot.writeI32(struct.excludeTxnTypes.size());
-          for (TxnType _iter1606 : struct.excludeTxnTypes)
+          for (TxnType _iter1616 : struct.excludeTxnTypes)
           {
-            oprot.writeI32(_iter1606.getValue());
+            oprot.writeI32(_iter1616.getValue());
           }
         }
       }
@@ -405,15 +405,15 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list1607 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-          struct.excludeTxnTypes = new java.util.ArrayList<TxnType>(_list1607.size);
-          @org.apache.thrift.annotation.Nullable TxnType _elem1608;
-          for (int _i1609 = 0; _i1609 < _list1607.size; ++_i1609)
+          org.apache.thrift.protocol.TList _list1617 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.excludeTxnTypes = new java.util.ArrayList<TxnType>(_list1617.size);
+          @org.apache.thrift.annotation.Nullable TxnType _elem1618;
+          for (int _i1619 = 0; _i1619 < _list1617.size; ++_i1619)
           {
-            _elem1608 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
-            if (_elem1608 != null)
+            _elem1618 = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
+            if (_elem1618 != null)
             {
-              struct.excludeTxnTypes.add(_elem1608);
+              struct.excludeTxnTypes.add(_elem1618);
             }
           }
         }

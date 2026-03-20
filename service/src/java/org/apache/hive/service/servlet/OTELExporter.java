@@ -30,7 +30,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.internal.AttributesMap;
+import io.opentelemetry.sdk.common.internal.AttributesMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,6 +214,9 @@ public class OTELExporter extends Thread {
     attributes.put(AttributeKey.stringKey("UserName"), query.getUserName());
     attributes.put(AttributeKey.stringKey("State"), query.getState());
     attributes.put(AttributeKey.stringKey("SessionId"), query.getSessionId());
+    for (Map.Entry<String, String> entry : query.getQueryDisplay().getCountersAsString().entrySet()) {
+      attributes.put(AttributeKey.stringKey(entry.getKey()), entry.getValue());
+    }
     return attributes;
   }
 

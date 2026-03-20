@@ -93,6 +93,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context) = 0;
   virtual void alter_table_with_cascade(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const bool cascade) = 0;
   virtual void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req) = 0;
+  virtual void update_table_params(const std::vector<TableParamsUpdate> & updates) = 0;
   virtual void add_partition(Partition& _return, const Partition& new_part) = 0;
   virtual void add_partition_with_environment_context(Partition& _return, const Partition& new_part, const EnvironmentContext& environment_context) = 0;
   virtual int32_t add_partitions(const std::vector<Partition> & new_parts) = 0;
@@ -290,6 +291,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst) = 0;
   virtual void get_lock_materialization_rebuild(LockResponse& _return, const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
   virtual bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
+  virtual void get_lock_materialization_rebuild_req(LockResponse& _return, const LockMaterializationRebuildRequest& req) = 0;
+  virtual bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req) = 0;
   virtual void add_runtime_stats(const RuntimeStat& stat) = 0;
   virtual void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) = 0;
   virtual void get_partitions_with_specs(GetPartitionsResponse& _return, const GetPartitionsRequest& request) = 0;
@@ -540,6 +543,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void alter_table_req(AlterTableResponse& /* _return */, const AlterTableRequest& /* req */) override {
+    return;
+  }
+  void update_table_params(const std::vector<TableParamsUpdate> & /* updates */) override {
     return;
   }
   void add_partition(Partition& /* _return */, const Partition& /* new_part */) override {
@@ -1162,6 +1168,13 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   bool heartbeat_lock_materialization_rebuild(const std::string& /* dbName */, const std::string& /* tableName */, const int64_t /* txnId */) override {
+    bool _return = false;
+    return _return;
+  }
+  void get_lock_materialization_rebuild_req(LockResponse& /* _return */, const LockMaterializationRebuildRequest& /* req */) override {
+    return;
+  }
+  bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& /* req */) override {
     bool _return = false;
     return _return;
   }
@@ -9417,6 +9430,110 @@ class ThriftHiveMetastore_alter_table_req_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_alter_table_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_table_params_args__isset {
+  _ThriftHiveMetastore_update_table_params_args__isset() : updates(false) {}
+  bool updates :1;
+} _ThriftHiveMetastore_update_table_params_args__isset;
+
+class ThriftHiveMetastore_update_table_params_args {
+ public:
+
+  ThriftHiveMetastore_update_table_params_args(const ThriftHiveMetastore_update_table_params_args&);
+  ThriftHiveMetastore_update_table_params_args& operator=(const ThriftHiveMetastore_update_table_params_args&);
+  ThriftHiveMetastore_update_table_params_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_update_table_params_args() noexcept;
+  std::vector<TableParamsUpdate>  updates;
+
+  _ThriftHiveMetastore_update_table_params_args__isset __isset;
+
+  void __set_updates(const std::vector<TableParamsUpdate> & val);
+
+  bool operator == (const ThriftHiveMetastore_update_table_params_args & rhs) const
+  {
+    if (!(updates == rhs.updates))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_table_params_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_table_params_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_table_params_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_table_params_pargs() noexcept;
+  const std::vector<TableParamsUpdate> * updates;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_table_params_result__isset {
+  _ThriftHiveMetastore_update_table_params_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_update_table_params_result__isset;
+
+class ThriftHiveMetastore_update_table_params_result {
+ public:
+
+  ThriftHiveMetastore_update_table_params_result(const ThriftHiveMetastore_update_table_params_result&);
+  ThriftHiveMetastore_update_table_params_result& operator=(const ThriftHiveMetastore_update_table_params_result&);
+  ThriftHiveMetastore_update_table_params_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_update_table_params_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_update_table_params_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_table_params_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_table_params_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_table_params_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_table_params_presult__isset {
+  _ThriftHiveMetastore_update_table_params_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_update_table_params_presult__isset;
+
+class ThriftHiveMetastore_update_table_params_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_table_params_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_update_table_params_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -33447,6 +33564,215 @@ class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_lock_materialization_rebuild_req_args__isset {
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_get_lock_materialization_rebuild_req_args__isset;
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_req_args {
+ public:
+
+  ThriftHiveMetastore_get_lock_materialization_rebuild_req_args(const ThriftHiveMetastore_get_lock_materialization_rebuild_req_args&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_req_args& operator=(const ThriftHiveMetastore_get_lock_materialization_rebuild_req_args&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_req_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_req_args() noexcept;
+  LockMaterializationRebuildRequest req;
+
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_req_args__isset __isset;
+
+  void __set_req(const LockMaterializationRebuildRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_lock_materialization_rebuild_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lock_materialization_rebuild_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lock_materialization_rebuild_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_req_pargs() noexcept;
+  const LockMaterializationRebuildRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lock_materialization_rebuild_req_result__isset {
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_req_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_lock_materialization_rebuild_req_result__isset;
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_req_result {
+ public:
+
+  ThriftHiveMetastore_get_lock_materialization_rebuild_req_result(const ThriftHiveMetastore_get_lock_materialization_rebuild_req_result&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_req_result& operator=(const ThriftHiveMetastore_get_lock_materialization_rebuild_req_result&);
+  ThriftHiveMetastore_get_lock_materialization_rebuild_req_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_req_result() noexcept;
+  LockResponse success;
+
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_req_result__isset __isset;
+
+  void __set_success(const LockResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_get_lock_materialization_rebuild_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lock_materialization_rebuild_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lock_materialization_rebuild_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lock_materialization_rebuild_req_presult__isset {
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_req_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_lock_materialization_rebuild_req_presult__isset;
+
+class ThriftHiveMetastore_get_lock_materialization_rebuild_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lock_materialization_rebuild_req_presult() noexcept;
+  LockResponse* success;
+
+  _ThriftHiveMetastore_get_lock_materialization_rebuild_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args__isset {
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args__isset;
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args {
+ public:
+
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args&);
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args& operator=(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args&);
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args() noexcept;
+  LockMaterializationRebuildRequest req;
+
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args__isset __isset;
+
+  void __set_req(const LockMaterializationRebuildRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_pargs() noexcept;
+  const LockMaterializationRebuildRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result__isset {
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result__isset;
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result {
+ public:
+
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result&) noexcept;
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result& operator=(const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result&) noexcept;
+  ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result() noexcept
+                                                                        : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result() noexcept;
+  bool success;
+
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_presult__isset {
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_presult__isset;
+
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_presult() noexcept;
+  bool* success;
+
+  _ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_add_runtime_stats_args__isset {
   _ThriftHiveMetastore_add_runtime_stats_args__isset() : stat(false) {}
   bool stat :1;
@@ -35892,6 +36218,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req) override;
   void send_alter_table_req(const AlterTableRequest& req);
   void recv_alter_table_req(AlterTableResponse& _return);
+  void update_table_params(const std::vector<TableParamsUpdate> & updates) override;
+  void send_update_table_params(const std::vector<TableParamsUpdate> & updates);
+  void recv_update_table_params();
   void add_partition(Partition& _return, const Partition& new_part) override;
   void send_add_partition(const Partition& new_part);
   void recv_add_partition(Partition& _return);
@@ -36483,6 +36812,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) override;
   void send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild();
+  void get_lock_materialization_rebuild_req(LockResponse& _return, const LockMaterializationRebuildRequest& req) override;
+  void send_get_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req);
+  void recv_get_lock_materialization_rebuild_req(LockResponse& _return);
+  bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req) override;
+  void send_heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req);
+  bool recv_heartbeat_lock_materialization_rebuild_req();
   void add_runtime_stats(const RuntimeStat& stat) override;
   void send_add_runtime_stats(const RuntimeStat& stat);
   void recv_add_runtime_stats();
@@ -36620,6 +36955,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_alter_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table_with_cascade(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_table_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_table_params(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partition_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -36817,6 +37153,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_serde(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_heartbeat_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_lock_materialization_rebuild_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_heartbeat_lock_materialization_rebuild_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_partitions_with_specs(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -36908,6 +37246,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["alter_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_environment_context;
     processMap_["alter_table_with_cascade"] = &ThriftHiveMetastoreProcessor::process_alter_table_with_cascade;
     processMap_["alter_table_req"] = &ThriftHiveMetastoreProcessor::process_alter_table_req;
+    processMap_["update_table_params"] = &ThriftHiveMetastoreProcessor::process_update_table_params;
     processMap_["add_partition"] = &ThriftHiveMetastoreProcessor::process_add_partition;
     processMap_["add_partition_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_add_partition_with_environment_context;
     processMap_["add_partitions"] = &ThriftHiveMetastoreProcessor::process_add_partitions;
@@ -37105,6 +37444,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_serde"] = &ThriftHiveMetastoreProcessor::process_get_serde;
     processMap_["get_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_get_lock_materialization_rebuild;
     processMap_["heartbeat_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_heartbeat_lock_materialization_rebuild;
+    processMap_["get_lock_materialization_rebuild_req"] = &ThriftHiveMetastoreProcessor::process_get_lock_materialization_rebuild_req;
+    processMap_["heartbeat_lock_materialization_rebuild_req"] = &ThriftHiveMetastoreProcessor::process_heartbeat_lock_materialization_rebuild_req;
     processMap_["add_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_add_runtime_stats;
     processMap_["get_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_get_runtime_stats;
     processMap_["get_partitions_with_specs"] = &ThriftHiveMetastoreProcessor::process_get_partitions_with_specs;
@@ -37794,6 +38135,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
     ifaces_[i]->alter_table_req(_return, req);
     return;
+  }
+
+  void update_table_params(const std::vector<TableParamsUpdate> & updates) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_table_params(updates);
+    }
+    ifaces_[i]->update_table_params(updates);
   }
 
   void add_partition(Partition& _return, const Partition& new_part) override {
@@ -39695,6 +40045,25 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return ifaces_[i]->heartbeat_lock_materialization_rebuild(dbName, tableName, txnId);
   }
 
+  void get_lock_materialization_rebuild_req(LockResponse& _return, const LockMaterializationRebuildRequest& req) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_lock_materialization_rebuild_req(_return, req);
+    }
+    ifaces_[i]->get_lock_materialization_rebuild_req(_return, req);
+    return;
+  }
+
+  bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->heartbeat_lock_materialization_rebuild_req(req);
+    }
+    return ifaces_[i]->heartbeat_lock_materialization_rebuild_req(req);
+  }
+
   void add_runtime_stats(const RuntimeStat& stat) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -40104,6 +40473,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void alter_table_req(AlterTableResponse& _return, const AlterTableRequest& req) override;
   int32_t send_alter_table_req(const AlterTableRequest& req);
   void recv_alter_table_req(AlterTableResponse& _return, const int32_t seqid);
+  void update_table_params(const std::vector<TableParamsUpdate> & updates) override;
+  int32_t send_update_table_params(const std::vector<TableParamsUpdate> & updates);
+  void recv_update_table_params(const int32_t seqid);
   void add_partition(Partition& _return, const Partition& new_part) override;
   int32_t send_add_partition(const Partition& new_part);
   void recv_add_partition(Partition& _return, const int32_t seqid);
@@ -40695,6 +41067,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) override;
   int32_t send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild(const int32_t seqid);
+  void get_lock_materialization_rebuild_req(LockResponse& _return, const LockMaterializationRebuildRequest& req) override;
+  int32_t send_get_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req);
+  void recv_get_lock_materialization_rebuild_req(LockResponse& _return, const int32_t seqid);
+  bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req) override;
+  int32_t send_heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req);
+  bool recv_heartbeat_lock_materialization_rebuild_req(const int32_t seqid);
   void add_runtime_stats(const RuntimeStat& stat) override;
   int32_t send_add_runtime_stats(const RuntimeStat& stat);
   void recv_add_runtime_stats(const int32_t seqid);

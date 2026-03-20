@@ -35,14 +35,24 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import static org.apache.hadoop.hive.ql.optimizer.stats.annotation.StatsRulesProcFactory.FilterStatsRule.extractFloatFromLiteralValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 public class TestStatsRulesProcFactory {
@@ -630,5 +640,116 @@ public class TestStatsRulesProcFactory {
     }
 
     return colStatistics;
+  }
+
+  /**
+   * Test that computeAggregateColumnMinMax properly handles numNulls=-1 (unknown).
+   * With the fix, numNulls=-1 should be treated as 0, giving valuesCount = numRows.
+   * Without the fix, valuesCount = numRows - (-1) = numRows + 1 (wrong).
+   */
+  @Test
+  public void testComputeAggregateColumnMinMaxWithUnknownNumNulls() throws SemanticException {
+    ColStatistics cs = new ColStatistics("_col0", "bigint");
+    HiveConf conf = new HiveConf();
+
+    // Create parent column stats with numNulls=-1 (unknown) and Range(1, 100)
+    ColStatistics parentColStats = new ColStatistics("val", "int");
+    parentColStats.setNumNulls(-1);  // unknown numNulls - this is what we're testing
+    parentColStats.setCountDistint(100);
+    parentColStats.setRange(1, 100);
+
+    Statistics parentStats = new Statistics(100, 400, 400, 400);
+    parentStats.addToColumnStats(Collections.singletonList(parentColStats));
+
+    ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(
+        TypeInfoFactory.intTypeInfo, "val", "t", false);
+
+    AggregationDesc agg = new AggregationDesc();
+    agg.setGenericUDAFName("count");
+    agg.setParameters(Collections.singletonList(colExpr));
+    agg.setDistinct(false);
+    agg.setMode(GenericUDAFEvaluator.Mode.COMPLETE);
+
+    StatsRulesProcFactory.GroupByStatsRule.computeAggregateColumnMinMax(
+        cs, conf, agg, "bigint", parentStats);
+
+    // Verify: With the fix, COUNT Range should be (0, 100)
+    // numNulls=-1 is treated as 0, so valuesCount = 100 - 0 = 100
+    // Without the fix, valuesCount = 100 - (-1) = 101 (WRONG)
+    assertNotNull("Range should be set on COUNT column", cs.getRange());
+    assertEquals("COUNT min should be 0", 0L, ((Number) cs.getRange().minValue).longValue());
+    assertEquals("COUNT max should be 100 (numRows), not 101",
+        100L, ((Number) cs.getRange().maxValue).longValue());
+  }
+
+  @Test
+  public void testComputeAggregateColumnMinMaxWithKnownNumNulls() throws SemanticException {
+    ColStatistics cs = new ColStatistics("_col0", "bigint");
+    HiveConf conf = new HiveConf();
+
+    // Create parent column stats with numNulls=20 (known) and Range
+    ColStatistics parentColStats = new ColStatistics("val", "int");
+    parentColStats.setNumNulls(20);  // known numNulls
+    parentColStats.setCountDistint(80);
+    parentColStats.setRange(1, 100);
+
+    Statistics parentStats = new Statistics(100, 400, 400, 400);
+    parentStats.addToColumnStats(Collections.singletonList(parentColStats));
+
+    ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(
+        TypeInfoFactory.intTypeInfo, "val", "t", false);
+    AggregationDesc agg = new AggregationDesc();
+    agg.setGenericUDAFName("count");
+    agg.setParameters(Collections.singletonList(colExpr));
+    agg.setDistinct(false);
+    agg.setMode(GenericUDAFEvaluator.Mode.COMPLETE);
+
+    StatsRulesProcFactory.GroupByStatsRule.computeAggregateColumnMinMax(
+        cs, conf, agg, "bigint", parentStats);
+
+    // With known numNulls=20, valuesCount = 100 - 20 = 80
+    assertNotNull("Range should be set", cs.getRange());
+    assertEquals(0L, ((Number) cs.getRange().minValue).longValue());
+    assertEquals("COUNT max should be 80 (numRows - numNulls)",
+        80L, ((Number) cs.getRange().maxValue).longValue());
+  }
+
+  /**
+   * Test that JoinStatsRule.updateNumNulls preserves unknown numNulls (-1).
+   * With the fix, when numNulls is -1 (unknown), the method returns early without modification.
+   * Without the fix, LEFT_OUTER_JOIN would calculate: newNumNulls = oldNumNulls + leftUnmatchedRows = -1 + 100 = 99
+   */
+  @Test
+  public void testUpdateNumNullsPreservesUnknownNumNulls() {
+    StatsRulesProcFactory.JoinStatsRule joinStatsRule = new StatsRulesProcFactory.JoinStatsRule();
+
+    // Create ColStatistics with numNulls = -1 (unknown)
+    ColStatistics colStats = new ColStatistics("non_join_col", "int");
+    colStats.setNumNulls(-1);
+    colStats.setCountDistint(100);
+
+    // Create a mock JoinOperator with LEFT_OUTER_JOIN
+    JoinCondDesc joinCond = mock(JoinCondDesc.class);
+    when(joinCond.getType()).thenReturn(JoinDesc.LEFT_OUTER_JOIN);
+    when(joinCond.getRight()).thenReturn(0);  // pos=0 will match getRight()
+
+    JoinDesc joinDesc = mock(JoinDesc.class);
+    when(joinDesc.getConds()).thenReturn(new JoinCondDesc[] {joinCond});
+    when(joinDesc.getJoinKeys()).thenReturn(new ExprNodeDesc[][] {});
+
+    @SuppressWarnings("unchecked")
+    CommonJoinOperator<JoinDesc> mockJop = mock(CommonJoinOperator.class);
+    when(mockJop.getConf()).thenReturn(joinDesc);
+
+    // Call updateNumNulls with:
+    // - leftUnmatchedRows=100 (without fix, this would be added to -1, giving 99)
+    // - pos=0 (matches joinCond.getRight())
+    // With the fix: should return early because numNulls is -1
+    // Without fix: numNulls would become Math.min(1000, -1 + 100) = 99
+    joinStatsRule.updateNumNulls(colStats, 100L, 100L, 1000L, 0L, mockJop);
+
+    // Assert that numNulls is still -1 (unchanged)
+    assertEquals("Unknown numNulls (-1) should be preserved after updateNumNulls",
+        -1L, colStats.getNumNulls());
   }
 }

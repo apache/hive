@@ -549,7 +549,7 @@ public final class HiveSchemaUtil {
   }
 
   public static Object getDefaultValue(String defaultValue, Type type) {
-    if (defaultValue == null) {
+    if (defaultValue == null || defaultValue.equalsIgnoreCase("NULL")) {
       return null;
     }
     return switch (type.typeId()) {

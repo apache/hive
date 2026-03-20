@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -178,6 +179,7 @@ public class TestAcidTxnCleanerService {
 
   private LockRequest getLockRequest() {
     LockComponent comp = new LockComponentBuilder()
+        .setCatName(Warehouse.DEFAULT_CATALOG_NAME)
         .setDbName("default")
         .setTableName("ceat")
         .setOperationType(DataOperationType.UPDATE)

@@ -355,6 +355,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_table_req\n");
   }
 
+  void update_table_params(const std::vector<TableParamsUpdate> & updates) {
+    // Your implementation goes here
+    printf("update_table_params\n");
+  }
+
   void add_partition(Partition& _return, const Partition& new_part) {
     // Your implementation goes here
     printf("add_partition\n");
@@ -1338,6 +1343,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) {
     // Your implementation goes here
     printf("heartbeat_lock_materialization_rebuild\n");
+  }
+
+  void get_lock_materialization_rebuild_req(LockResponse& _return, const LockMaterializationRebuildRequest& req) {
+    // Your implementation goes here
+    printf("get_lock_materialization_rebuild_req\n");
+  }
+
+  bool heartbeat_lock_materialization_rebuild_req(const LockMaterializationRebuildRequest& req) {
+    // Your implementation goes here
+    printf("heartbeat_lock_materialization_rebuild_req\n");
   }
 
   void add_runtime_stats(const RuntimeStat& stat) {

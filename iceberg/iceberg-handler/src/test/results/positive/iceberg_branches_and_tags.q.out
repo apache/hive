@@ -23,18 +23,18 @@ POSTHOOK: Input: default@ice01
 PREHOOK: query: insert into default.ice01.branch_branch1 values (5), (6)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01@branch_branch1
 POSTHOOK: query: insert into default.ice01.branch_branch1 values (5), (6)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01@branch_branch1
 PREHOOK: query: select * from default.ice01.branch_branch1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_branch1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_branch1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_branch1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
@@ -50,11 +50,11 @@ POSTHOOK: type: ALTERTABLE_CREATEBRANCH
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.branch_branch1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@branch_branch1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.branch_branch1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@branch_branch1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
@@ -76,11 +76,11 @@ POSTHOOK: type: ALTERTABLE_CREATETAG
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.tag_tag1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@tag_tag1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.tag_tag1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@tag_tag1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
@@ -102,11 +102,11 @@ POSTHOOK: type: ALTERTABLE_CREATETAG
 POSTHOOK: Input: default@ice01
 PREHOOK: query: select * from default.ice01.tag_tag1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice01
+PREHOOK: Input: default@ice01@tag_tag1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice01.tag_tag1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice01
+POSTHOOK: Input: default@ice01@tag_tag1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 3
