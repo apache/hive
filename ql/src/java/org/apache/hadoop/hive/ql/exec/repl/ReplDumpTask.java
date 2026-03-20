@@ -955,6 +955,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.EVENTS.name(), estimatedNumEvents);
       metricMap.put(ReplUtils.MetricName.TABLES.name(), 0L);
+      metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), 0L);
       int size = tablesForBootstrap.size();
       if (db != null && db.getParameters()!=null &&
         Boolean.parseBoolean(db.getParameters().get(REPL_RESUME_STARTED_AFTER_FAILOVER))) {
@@ -1299,6 +1300,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.EVENTS.name(), 1);
       if (eventHandler.dumpType() == DumpType.EVENT_CREATE_TABLE) {
         work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TABLES.name(), 1);
+      } else if (eventHandler.dumpType() == DumpType.EVENT_CREATE_FUNCTION) {
+        work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.FUNCTIONS.name(), 1);
       }
     }
     work.getReplLogger().eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());

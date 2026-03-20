@@ -153,6 +153,8 @@ public class ReplStateLogWork implements Serializable {
       metricCollector.reportStageProgress("REPL_LOAD", ReplUtils.MetricName.EVENTS.name(), 1);
       if ("EVENT_CREATE_TABLE".equals(eventType)) {
         metricCollector.reportStageProgress("REPL_LOAD", ReplUtils.MetricName.TABLES.name(), 1);
+      } else if ("EVENT_CREATE_FUNCTION".equals(eventType)) {
+        metricCollector.reportStageProgress("REPL_LOAD", ReplUtils.MetricName.FUNCTIONS.name(), 1);
       }
       break;
     case END:
