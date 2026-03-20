@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -55,8 +56,7 @@ public class TestMetastoreVersion {
 
   @Before
   public void setUp() throws Exception {
-
-    Field defDb = HMSHandler.class.getDeclaredField("currentUrl");
+    Field defDb = BaseHandler.class.getDeclaredField("currentUrl");
     defDb.setAccessible(true);
     defDb.set(null, null);
     // reset defaults

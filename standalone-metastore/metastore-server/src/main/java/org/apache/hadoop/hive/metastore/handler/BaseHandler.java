@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.metastore.AcidEventListener;
 import org.apache.hadoop.hive.metastore.AlterHandler;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.FileMetadataManager;
-import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.HMSMetricsListener;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
@@ -235,7 +234,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     }
     if (conf.getBoolean(MetastoreConf.ConfVars.METASTORE_CACHE_CAN_USE_EVENT.getVarname(), false) &&
         !canCachedStoreCanUseEvent) {
-      throw new MetaException("CahcedStore can not use events for invalidation as there is no " +
+      throw new MetaException("CachedStore can not use events for invalidation as there is no " +
           " TransactionalMetaStoreEventListener to add events to notification table");
     }
 
@@ -362,18 +361,6 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     return counters;
   }
 
-  /**
-   * Get a cached RawStore.
-   *
-   * @return the cached RawStore
-   * @throws MetaException
-   */
-  @Override
-  public RawStore getMS() throws MetaException {
-    Configuration conf = getConf();
-    return HMSHandler.getMSForConf(conf);
-  }
-
   @Override
   public TxnStore getTxnHandler() {
     return HMSHandlerContext.getTxnStore(conf);
@@ -390,7 +377,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
   }
 
   // This will return null if the metastore is not being accessed from a metastore Thrift server,
-  // or if the TTransport being used to connect is not an instance of TSocket, or if kereberos
+  // or if the TTransport being used to connect is not an instance of TSocket, or if kerberos
   // is used
   public static String getThreadLocalIpAddress() {
     return HMSHandlerContext.getIpAddress().orElse(null);
@@ -731,7 +718,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public String getCpuProfile(int i) throws TException {
-    throw new TException("Not yet implemented");
+    return "";
   }
 
   protected void throwUnsupportedExceptionIfRemoteDB(String dbName, String operationName) throws MetaException {
@@ -952,7 +939,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
           new ConfigChangeEvent(this, key, oldValue, value));
     }
     if (MetastoreConf.ConfVars.TRY_DIRECT_SQL == confVar) {
-      HMSHandler.LOG.info("Direct SQL optimization = {}",  value);
+      LOG.info("Direct SQL optimization = {}",  value);
     }
   }
 

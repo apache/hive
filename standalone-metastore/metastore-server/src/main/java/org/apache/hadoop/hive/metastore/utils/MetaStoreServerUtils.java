@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
@@ -1827,7 +1826,9 @@ public class MetaStoreServerUtils {
 
   public static List<String> getPartValsFromName(Table t, String partName)
       throws MetaException, InvalidObjectException {
-    Preconditions.checkArgument(t != null, "Table can not be null");
+    if (t == null) {
+      throw new MetaException("Table cannot be null");
+    }
     // Unescape the partition name
     LinkedHashMap<String, String> hm = Warehouse.makeSpecFromName(partName);
 

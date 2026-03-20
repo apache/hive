@@ -137,6 +137,24 @@ public class HMSHandler extends PrivilegeHandler {
     isInTest = MetastoreConf.getBoolVar(this.conf, HIVE_IN_TEST);
   }
 
+  @Override
+  public void init() throws MetaException {
+    super.init();
+    DataConnectorProviderFactory.getInstance(this);
+  }
+
+  /**
+   * Get a cached RawStore.
+   *
+   * @return the cached RawStore
+   * @throws MetaException
+   */
+  @Override
+  public RawStore getMS() throws MetaException {
+    Configuration conf = getConf();
+    return getMSForConf(conf);
+  }
+
   public static RawStore getMSForConf(Configuration conf) throws MetaException {
     RawStore ms = getRawStore();
     if (ms == null) {

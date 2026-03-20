@@ -521,7 +521,8 @@ public abstract class TransactionHandler extends DeprecatedHandler {
       ret = getTxnHandler().getReplayedTxnsForPolicy(policyName);
     } catch (Exception e) {
       ex = e;
-      throw new MetaException("Failed to get replayed txns details for policy " + e.getMessage());
+      throw new MetaException(
+          "Failed to get replayed txns details for policy '" + policyName + "': " + e.getMessage());
     } finally {
       endFunction("get_replayed_txns_for_policy", ret != null, ex);
     }
