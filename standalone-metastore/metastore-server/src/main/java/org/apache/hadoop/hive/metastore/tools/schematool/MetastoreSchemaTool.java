@@ -305,33 +305,22 @@ public class MetastoreSchemaTool {
     execSql(scriptDir + File.separatorChar + scriptFile);
   }
 
-  // Generate the beeline args per hive conf and execute the given script
+  /**
+   * Executes the given SQL script file against the metastore database via {@link IdempotentDDLExecutor}.
+   * Each statement in the script is executed individually over a direct JDBC connection with
+   * auto-commit enabled. Errors that indicate an object already exists or is already gone are
+   * silently ignored according to the per-database {@link DbErrorCodes}; all other SQL errors are
+   * rethrown as {@link IOException}.
+   */
   protected void execSql(String sqlScriptFile) throws IOException {
-    CommandBuilder builder =
-        new CommandBuilder(conf, url, driver, userName, passWord, sqlScriptFile)
-            .setVerbose(verbose);
-
-    // run the script using SqlLine
-    SqlLine sqlLine = new SqlLine();
-    ByteArrayOutputStream outputForLog = null;
-    if (!verbose) {
-      OutputStream out;
-      if (LOG.isDebugEnabled()) {
-        out = outputForLog = new ByteArrayOutputStream();
-      } else {
-        out = new NullOutputStream();
-      }
-      sqlLine.setOutputStream(new PrintStream(out));
-      System.setProperty("sqlline.silent", "true");
-    }
-    LOG.info("Going to run command <" + builder.buildToLog() + ">");
-    SqlLine.Status status = sqlLine.begin(builder.buildToRun(), null, false);
-    if (LOG.isDebugEnabled() && outputForLog != null) {
-      LOG.debug("Received following output from Sqlline:");
-      LOG.debug(outputForLog.toString("UTF-8"));
-    }
-    if (status != SqlLine.Status.OK) {
-      throw new IOException("Schema script failed, errorcode " + status);
+    LOG.info("Going to run script <{}> via Idempotent JDBC Executor", sqlScriptFile);
+    try (Connection conn = getConnectionToMetastore(true)) {
+      NestedScriptParser parser = getDbCommandParser(dbType, metaDbType);
+      IdempotentDDLExecutor idempotentExecutor = new IdempotentDDLExecutor(conn, dbType, parser, verbose);
+      idempotentExecutor.executeScript(sqlScriptFile);
+      LOG.info("Script executed successfully.");
+    } catch (Exception e) {
+      throw new IOException("Schema script failed, error: " + e.getMessage(), e);
     }
   }
 
