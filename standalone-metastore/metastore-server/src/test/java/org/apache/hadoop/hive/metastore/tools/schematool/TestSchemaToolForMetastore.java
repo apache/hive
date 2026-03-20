@@ -220,7 +220,7 @@ public class TestSchemaToolForMetastore {
 
     // Test invalid case
     String[] scripts = new String[] {
-        "update TBLS set SD_ID=null"
+        "update TBLS set SD_ID=null;"
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -308,7 +308,7 @@ public class TestSchemaToolForMetastore {
     boolean isValid = validator.validateSchemaVersions();
     // Test an invalid case with multiple versions
     String[] scripts = new String[] {
-        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0');"
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -316,7 +316,7 @@ public class TestSchemaToolForMetastore {
     Assert.assertFalse(isValid);
 
     scripts = new String[] {
-        "delete from VERSION where VER_ID = 100"
+        "delete from VERSION where VER_ID = 100;"
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -325,7 +325,7 @@ public class TestSchemaToolForMetastore {
 
     // Test an invalid case without version
     scripts = new String[] {
-        "delete from VERSION"
+        "delete from VERSION;"
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
