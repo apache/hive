@@ -266,12 +266,14 @@ public class HiveSchemaHelper {
     }
 
     @Override
-    public List<String> getExecutableCommands(String scriptDir, String scriptFile) throws IllegalFormatException, IOException {
+    public List<String> getExecutableCommands(String scriptDir, String scriptFile)
+        throws IllegalFormatException, IOException {
       return getExecutableCommands(scriptDir, scriptFile, false);
     }
 
     @Override
-    public List<String> getExecutableCommands(String scriptDir, String scriptFile, boolean fixQuotes) throws IllegalFormatException, IOException {
+    public List<String> getExecutableCommands(String scriptDir, String scriptFile, boolean fixQuotes) 
+        throws IllegalFormatException, IOException {
       List<String> commands = new java.util.ArrayList<>();
 
       try (BufferedReader bfReader = 
@@ -280,36 +282,26 @@ public class HiveSchemaHelper {
         String currentCommand = null;
 
         while ((currLine = bfReader.readLine()) != null) {
-          currLine = currLine.trim();
-
-          if (fixQuotes && !getQuoteCharacter().equals(DEFAULT_QUOTE)) {
-            currLine = currLine.replace("\\\"", getQuoteCharacter());
-          }
+          currLine = fixQuotesFromCurrentLine(fixQuotes, currLine.trim());
 
           if (currLine.isEmpty()) {
             continue;
           }
 
-          if (currentCommand == null) {
-            currentCommand = currLine;
-          } else {
-            currentCommand = currentCommand + " " + currLine;
-          }
+          currentCommand = currentCommand == null ? currLine : currentCommand + " " + currLine;
 
-          if (isPartialCommand(currLine)) {
-            continue;
-          }
-
-          if (!isNonExecCommand(currentCommand)) {
-            currentCommand = cleanseCommand(currentCommand);
-            if (isNestedScript(currentCommand)) {
-              String currScript = getScriptName(currentCommand);
-              commands.addAll(getExecutableCommands(scriptDir, currScript, fixQuotes));
-            } else {
-              commands.add(currentCommand.trim());
+          if (!isPartialCommand(currLine)) {
+            if (!isNonExecCommand(currentCommand)) {
+              currentCommand = cleanseCommand(currentCommand);
+              if (isNestedScript(currentCommand)) {
+                String currScript = getScriptName(currentCommand);
+                commands.addAll(getExecutableCommands(scriptDir, currScript, fixQuotes));
+              } else {
+                commands.add(currentCommand.trim());
+              }
             }
+            currentCommand = null;
           }
-          currentCommand = null;
         }
 
         if (currentCommand != null && !isNonExecCommand(currentCommand)) {
@@ -317,6 +309,13 @@ public class HiveSchemaHelper {
         }
       }
       return commands;
+    }
+
+    private String fixQuotesFromCurrentLine(boolean fixQuotes, String currLine) {
+      if (fixQuotes && !getQuoteCharacter().equals(DEFAULT_QUOTE)) {
+        currLine = currLine.replace("\\\"", getQuoteCharacter());
+      }
+      return currLine;
     }
 
     @Override

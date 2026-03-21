@@ -525,9 +525,9 @@ public class TestSchemaToolForMetastore {
   @Test
   public void testIdempotentAddColumnOperations() throws Exception {
     String addColumnStmt = switch (dbms.getDbType()) {
-      case "oracle" -> "alter table TEST_C add (NEW_COL integer);";
-      case "mssql"  -> "alter table TEST_C add NEW_COL int;";
-      default       -> "alter table TEST_C add column NEW_COL int;";
+    case "oracle" -> "alter table TEST_C add (NEW_COL integer);";
+    case "mssql" -> "alter table TEST_C add NEW_COL int;";
+    default -> "alter table TEST_C add column NEW_COL int;";
     };
     String[] addScripts = new String[]{
         "create table TEST_C (ID int);",
@@ -547,10 +547,9 @@ public class TestSchemaToolForMetastore {
         "create index TEST_IDX on TEST_D (ID);"
     };
     String dropIndexStmt = switch (dbms.getDbType()) {
-      case "derby"    -> "drop index \"APP\".\"TEST_IDX\";";
-      case "oracle",
-           "postgres" -> "drop index TEST_IDX;";
-      default         -> "drop index TEST_IDX on TEST_D;";
+    case "derby" -> "drop index \"APP\".\"TEST_IDX\";";
+    case "oracle", "postgres" -> "drop index TEST_IDX;";
+    default -> "drop index TEST_IDX on TEST_D;";
     };
     String[] dropScripts = new String[]{dropIndexStmt};
     executeWithIdempotencyCheck("IndexOperations-create", createScripts);
@@ -562,38 +561,38 @@ public class TestSchemaToolForMetastore {
     String[] createScripts;
     String[] dropScripts;
     switch (dbms.getDbType()) {
-      case "mysql" -> {
-        createScripts = new String[]{
-            "create table TEST_E (ID int primary key, FK_COL int, "
-                + "constraint TEST_E_FK foreign key (FK_COL) references TEST_E(ID));"
-        };
-        dropScripts = new String[]{
-            "alter table TEST_E drop foreign key TEST_E_FK;",
-            "alter table TEST_E drop key TEST_E_FK;",
-            "alter table TEST_E drop column FK_COL;"
-        };
-      }
-      case "mssql" -> {
-        createScripts = new String[]{
-            "create table TEST_E (ID int primary key, FK_COL int, VAL int);",
-            "alter table TEST_E add constraint TEST_E_UQ unique (VAL);",
-            "alter table TEST_E add constraint TEST_E_FK foreign key (FK_COL) references TEST_E(ID);"
-        };
-        dropScripts = new String[]{
-            "create procedure #DROP_FK_HELPER as begin alter table TEST_E drop constraint TEST_E_FK end;",
+    case "mysql" -> {
+      createScripts = new String[] {
+          "create table TEST_E (ID int primary key, FK_COL int, "
+              + "constraint TEST_E_FK foreign key (FK_COL) references TEST_E(ID));"
+      };
+      dropScripts = new String[] {
+          "alter table TEST_E drop foreign key TEST_E_FK;",
+          "alter table TEST_E drop key TEST_E_FK;",
+          "alter table TEST_E drop column FK_COL;"
+      };
+    }
+    case "mssql" -> {
+      createScripts = new String[] {
+          "create table TEST_E (ID int primary key, FK_COL int, VAL int);",
+          "alter table TEST_E add constraint TEST_E_UQ unique (VAL);",
+          "alter table TEST_E add constraint TEST_E_FK foreign key (FK_COL) references TEST_E(ID);"
+      };
+      dropScripts = new String[] {
+          "create procedure #DROP_FK_HELPER as begin alter table TEST_E drop constraint TEST_E_FK end;",
             "exec #DROP_FK_HELPER;",
-            "alter table TEST_E drop constraint TEST_E_UQ;"
-        };
-      }
-      default -> {
-        createScripts = new String[]{
-            "create table TEST_E (ID int, VAL int);",
-            "alter table TEST_E add constraint TEST_E_UQ unique (ID);"
-        };
-        dropScripts = new String[]{
-            "alter table TEST_E drop constraint TEST_E_UQ;"
-        };
-      }
+          "alter table TEST_E drop constraint TEST_E_UQ;"
+      };
+    }
+    default -> {
+      createScripts = new String[] {
+          "create table TEST_E (ID int, VAL int);",
+          "alter table TEST_E add constraint TEST_E_UQ unique (ID);"
+      };
+      dropScripts = new String[] {
+          "alter table TEST_E drop constraint TEST_E_UQ;"
+      };
+    }
     }
     executeWithIdempotencyCheck("ConstraintOperations-add", createScripts);
     executeWithIdempotencyCheck("ConstraintOperations-drop", dropScripts);
@@ -609,35 +608,35 @@ public class TestSchemaToolForMetastore {
     String[] alterScripts;
     String[] dropScripts = new String[]{"alter table TEST_F drop column COL_RENAMED;"};
     switch (dbms.getDbType()) {
-      case "derby" -> {
-        alterScripts = new String[]{
-            "create table \"TEST_F\" (\"ID\" int, \"COL_MOD\" varchar(10), \"COL_RENAME\" varchar(10));",
-            "alter table \"TEST_F\" alter \"COL_MOD\" set data type varchar(50);",
-            "rename column \"APP\".\"TEST_F\".\"COL_RENAME\" to \"COL_RENAMED\";"
+    case "derby" -> {
+      alterScripts = new String[] {
+          "create table \"TEST_F\" (\"ID\" int, \"COL_MOD\" varchar(10), \"COL_RENAME\" varchar(10));",
+          "alter table \"TEST_F\" alter \"COL_MOD\" set data type varchar(50);",
+          "rename column \"APP\".\"TEST_F\".\"COL_RENAME\" to \"COL_RENAMED\";"
+      };
+      dropScripts = new String[] {"alter table \"TEST_F\" drop column \"COL_RENAMED\";"};
+    }
+    case "mssql" -> alterScripts = new String[] {
+        "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
+        "alter table TEST_F alter column COL_MOD varchar(50) not null;",
+        "exec sp_rename 'TEST_F.COL_RENAME', 'COL_RENAMED', 'COLUMN';"
+    };
+    case "oracle" -> alterScripts = new String[] {
+        "create table TEST_F (ID integer, COL_MOD varchar(10), COL_RENAME varchar(10));",
+        "alter table TEST_F modify (COL_MOD varchar(50));",
+        "alter table TEST_F rename column COL_RENAME to COL_RENAMED;"
+    };
+    case "postgres" -> alterScripts = new String[] {
+        "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
+        "alter table TEST_F alter column COL_MOD type varchar(50);",
+        "alter table TEST_F rename column COL_RENAME to COL_RENAMED;"
+    };
+    default -> // mysql: CHANGE COLUMN renames and redefines in one statement
+        alterScripts = new String[] {
+            "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
+            "alter table TEST_F modify column COL_MOD varchar(50);",
+            "alter table TEST_F change column COL_RENAME COL_RENAMED varchar(10);"
         };
-        dropScripts = new String[]{"alter table \"TEST_F\" drop column \"COL_RENAMED\";"};
-      }
-      case "mssql" -> alterScripts = new String[]{
-          "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
-          "alter table TEST_F alter column COL_MOD varchar(50) not null;",
-          "exec sp_rename 'TEST_F.COL_RENAME', 'COL_RENAMED', 'COLUMN';"
-      };
-      case "oracle" -> alterScripts = new String[]{
-          "create table TEST_F (ID integer, COL_MOD varchar(10), COL_RENAME varchar(10));",
-          "alter table TEST_F modify (COL_MOD varchar(50));",
-          "alter table TEST_F rename column COL_RENAME to COL_RENAMED;"
-      };
-      case "postgres" -> alterScripts = new String[]{
-          "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
-          "alter table TEST_F alter column COL_MOD type varchar(50);",
-          "alter table TEST_F rename column COL_RENAME to COL_RENAMED;"
-      };
-      default -> // mysql: CHANGE COLUMN renames and redefines in one statement
-          alterScripts = new String[]{
-              "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
-              "alter table TEST_F modify column COL_MOD varchar(50);",
-              "alter table TEST_F change column COL_RENAME COL_RENAMED varchar(10);"
-          };
     }
     executeWithIdempotencyCheck("AlterColumnOperations-alter", alterScripts);
     executeWithIdempotencyCheck("AlterColumnOperations-drop", dropScripts);

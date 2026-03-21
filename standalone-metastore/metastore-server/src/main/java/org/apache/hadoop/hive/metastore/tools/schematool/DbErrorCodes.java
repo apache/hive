@@ -50,7 +50,7 @@ public interface DbErrorCodes {
     @Override
     public boolean isIgnorable(SQLException e) {
       String state = e.getSQLState();
-      String code  = String.valueOf(e.getErrorCode());
+      String code = String.valueOf(e.getErrorCode());
       return duplicateCodes.contains(state) || duplicateCodes.contains(code)
           || missingCodes.contains(state)   || missingCodes.contains(code);
     }
@@ -134,12 +134,12 @@ public interface DbErrorCodes {
       return NOOP;
     }
     return switch (dbType.toLowerCase()) {
-      case "postgres" -> POSTGRES;
-      case "derby", "derby.clean" -> DERBY;
-      case "mysql", "mariadb" -> MYSQL;
-      case "oracle" -> ORACLE;
-      case "mssql" -> MSSQL;
-      default -> NOOP;
+    case "postgres" -> POSTGRES;
+    case "derby", "derby.clean" -> DERBY;
+    case "mysql", "mariadb" -> MYSQL;
+    case "oracle" -> ORACLE;
+    case "mssql" -> MSSQL;
+    default -> NOOP;
     };
   }
 }

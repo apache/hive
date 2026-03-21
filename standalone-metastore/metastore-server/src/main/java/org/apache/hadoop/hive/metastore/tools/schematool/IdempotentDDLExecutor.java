@@ -67,7 +67,8 @@ public class IdempotentDDLExecutor {
   private void executeStatement(String sqlStmt) throws SQLException {
     if (verbose) {
       LOG.info("Executing: {}", sqlStmt);
-    } else if (LOG.isDebugEnabled()) {
+    } 
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Executing: {}", sqlStmt);
     }
 
