@@ -170,8 +170,6 @@ public class Driver implements IDriver {
 
       if (!alreadyCompiled) {
         compileInternal(command, true);
-      } else {
-        driverContext.recordQueryStartTime();
       }
 
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
@@ -273,14 +271,12 @@ public class Driver implements IDriver {
           driverContext.setRetrial(true);
 
           compileInternal(context.getCmd(), true);
+          driverContext.setRetrial(false);
 
           if (driverContext.getPlan().hasAcidResourcesInQuery()) {
             driverTxnHandler.recordValidWriteIds();
             driverTxnHandler.setWriteIdForAcidFileSinks();
           }
-          // Since we're reusing the compiled plan, we need to update its start time for current run
-          driverContext.recordQueryStartTime();
-          driverContext.setRetrial(false);
         }
         // Re-check snapshot only in case we had to release locks and open a new transaction,
         // otherwise exclusive locks should protect output tables/partitions in snapshot from concurrent writes.
