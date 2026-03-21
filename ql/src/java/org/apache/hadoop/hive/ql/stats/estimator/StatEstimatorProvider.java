@@ -19,11 +19,19 @@ package org.apache.hadoop.hive.ql.stats.estimator;
 
 /**
  * Marker interface for UDFs to communicate that the usage of StatEstimators is supported by the UDF.
+ *
+ * <p>The default implementation returns a {@link StatEstimator} that clones the first argument's
+ * statistics, which is suitable for most UDFs. Override {@link #getStatEstimator()} for UDFs
+ * that combine statistics from multiple inputs (like IF, WHEN, COALESCE).
  */
 public interface StatEstimatorProvider {
 
   /**
    * Returns the {@link StatEstimator} for the given UDF instance.
+   *
+   * <p>The default implementation returns an estimator that clones the first argument's statistics.
    */
-  public StatEstimator getStatEstimator();
+  default StatEstimator getStatEstimator() {
+    return new StatEstimator() {};
+  }
 }

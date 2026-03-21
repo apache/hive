@@ -1578,10 +1578,9 @@ public class StatsUtils {
             csList.add(cs);
           }
           if (csList.size() == engfd.getChildren().size()) {
-            Optional<ColStatistics> res = se.estimate(csList);
+            Optional<ColStatistics> res = se.estimate(csList, numRows);
             if (res.isPresent()) {
               ColStatistics newStats = res.get();
-              newStats.setCountDistint(Math.min(newStats.getCountDistint(), numRows));
               colType = colType.toLowerCase();
               newStats.setColumnType(colType);
               newStats.setColumnName(colName);
@@ -1644,6 +1643,7 @@ public class StatsUtils {
     colStats.setAvgColLen(avgColSize);
     colStats.setCountDistint(countDistincts);
     colStats.setNumNulls(numNulls);
+    colStats.setConst(true);
 
     Optional<Number> value = getConstValue(encd);
     value.ifPresent(number -> colStats.setRange(number, number));
@@ -2093,7 +2093,6 @@ public class StatsUtils {
       return 0L;
     }
     if (ndvValues.isEmpty()) {
-      // No grouping columns, one row
       return 1L;
     }
     if (expDecay) {

@@ -42,12 +42,14 @@ public class PessimisticStatCombiner {
     if (stat.getAvgColLen() > result.getAvgColLen()) {
       result.setAvgColLen(stat.getAvgColLen());
     }
-    // NDV=0 means "unknown" - if either stat has unknown NDV, preserve 0 to propagate uncertainty
-    if (result.getCountDistint() == 0L || stat.getCountDistint() == 0L) {
-      result.setCountDistint(0L);
+    // NDV=0 is "unknown" only if the stat is NOT a constant.
+    // Constants with NDV=0 (e.g., NULL) are "known zero", not unknown.
+    if ((result.getCountDistint() == 0 && !result.isConst()) || (stat.getCountDistint() == 0 && !stat.isConst())) {
+      result.setCountDistint(0);
     } else {
       result.setCountDistint(StatsUtils.safeAdd(result.getCountDistint(), stat.getCountDistint()));
     }
+    result.setConst(false);
     if (stat.getNumNulls() < 0 || result.getNumNulls() < 0) {
       result.setNumNulls(-1);
     } else if (stat.getNumNulls() > result.getNumNulls()) {
@@ -70,6 +72,5 @@ public class PessimisticStatCombiner {
 
   public Optional<ColStatistics> getResult() {
     return Optional.of(result);
-
   }
 }
