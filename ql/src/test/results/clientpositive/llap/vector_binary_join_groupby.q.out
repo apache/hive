@@ -137,7 +137,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: bin is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_30_container, bigKeyColName:bin, smallTablePos:1, keyRatio:0.0
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_30_container, bigKeyColName:bin, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 100 Data size: 34084 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -170,7 +170,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 10000 Data size: 6819968 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 110 Data size: 37492 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: hash(_col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21) (type: int)
                           outputColumnNames: _col0
@@ -179,7 +179,7 @@ STAGE PLANS:
                               native: true
                               projectedOutputColumnNums: [23]
                               selectExpressions: VectorUDFAdaptor(hash(_col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17,_col18,_col19,_col20,_col21)) -> 23:int
-                          Statistics: Num rows: 10000 Data size: 6819968 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 110 Data size: 37492 Basic stats: COMPLETE Column stats: NONE
                           Group By Operator
                             aggregations: sum(_col0)
                             Group By Vectorization:
@@ -192,7 +192,7 @@ STAGE PLANS:
                             minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               null sort order: 
                               sort order: 
@@ -200,7 +200,7 @@ STAGE PLANS:
                                   className: VectorReduceSinkEmptyKeyOperator
                                   native: true
                                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -278,13 +278,13 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
