@@ -26,13 +26,12 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Holder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildPlanner;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class TestHiveRelDecorrelator {
 
@@ -46,10 +45,11 @@ public class TestHiveRelDecorrelator {
 
 
   @Test
-  public void testDecorrelateCorrelateIsRemovedWhenPlanHasEmptyValues() {
-    RelBuilder relBuilder = fixture().createRelBuilder();
+  public void testCorrelateIsRemovedWhenPlanHasEmptyValues() {
+    TestRuleHelper.PlanFixture fixture = fixture();
+    RelBuilder relBuilder = fixture.createRelBuilder();
     Holder<RexCorrelVariable> v = Holder.empty();
-    RelNode base = relBuilder
+    RelNode basePlan = relBuilder
             .scan("t1")
             .empty()
             .scan("t1")
@@ -60,17 +60,30 @@ public class TestHiveRelDecorrelator {
             .union(false)
             .build();
 
-    Assert.assertTrue("Plan before decorrelation does not contain correlate: \n" + RelOptUtil.toString(base),
-            RelOptUtil.toString(base).contains("Correlate"));
-    Assert.assertTrue("Plan before decorrelation does not contain Values: \n" + RelOptUtil.toString(base),
-            RelOptUtil.toString(base).contains("Values"));
+    String expectedBasePlan = "HiveUnion(all=[true])\n" +
+        "  HiveValues(tuples=[[]])\n" +
+        "  LogicalCorrelate(correlation=[$cor0], joinType=[semi], requiredColumns=[{0}])\n" +
+        "    LogicalTableScan(table=[[t1]])\n" +
+        "    HiveFilter(condition=[=($cor0.t1id, 10)])\n" +
+        "      LogicalTableScan(table=[[t2]])\n";
 
-    RelNode decorrelatedPlan = HiveRelDecorrelator.decorrelateQuery(base);
+    assertEquals("Original plans do not match", expectedBasePlan, RelOptUtil.toString(basePlan));
 
-    Assert.assertFalse("Plan after decorrelation still has correlate: \n" + RelOptUtil.toString(decorrelatedPlan),
-            RelOptUtil.toString(decorrelatedPlan).contains("Correlate"));
-    Assert.assertTrue("Plan after decorrelation does not contain Values: \n" + RelOptUtil.toString(decorrelatedPlan),
-            RelOptUtil.toString(decorrelatedPlan).contains("Values"));
+    RelNode decorrelatedPlan = HiveRelDecorrelator.decorrelateQuery(basePlan);
+    String expectedDecorrelatedPlan = "HiveUnion(all=[true])\n" +
+        "  HiveValues(tuples=[[]])\n" +
+        "  HiveProject(t1id=[$0], t1AnyCol=[$1])\n" +
+        "    HiveSemiJoin(condition=[=($5, $2)], joinType=[semi])\n" +
+        "      HiveProject(t1id=[$0], t1AnyCol=[$1], $f2=[=($0, 10)])\n" +
+        "        LogicalTableScan(table=[[t1]])\n" +
+        "      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])\n" +
+        "        LogicalTableScan(table=[[t2]])\n" +
+        "        HiveFilter(condition=[$0])\n" +
+        "          HiveAggregate(group=[{0}])\n" +
+        "            HiveProject($f2=[=($0, 10)])\n" +
+        "              LogicalTableScan(table=[[t1]])\n";
+
+    assertEquals("Optimized plans do not match", expectedDecorrelatedPlan, RelOptUtil.toString(decorrelatedPlan));
   }
 
   static class T1Record {
