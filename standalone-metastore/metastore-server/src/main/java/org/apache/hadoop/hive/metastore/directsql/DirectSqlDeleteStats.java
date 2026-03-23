@@ -123,7 +123,8 @@ public class DirectSqlDeleteStats {
     // Get the list of params that need to be updated
     List<Pair<Long, String>> updates = getPartColAccuToUpdate(partIds, colNames);
     if (updates.isEmpty()) {
-      return false;
+      // Nothing to update: treat as successful completion
+      return true;
     }
     JDOConnection jdoConn = null;
     try {
@@ -141,12 +142,12 @@ public class DirectSqlDeleteStats {
           updated.add(accurate.getLeft());
           if (updated.size() == batchSize) {
             LOG.debug("Execute updates on part: {}", updated);
-            verifyUpdates(pst.executeBatch(), partIds);
+            verifyUpdates(pst.executeBatch(), updated);
             updated = new ArrayList<>();
           }
         }
         if (!updated.isEmpty()) {
-          verifyUpdates(pst.executeBatch(), partIds);
+          verifyUpdates(pst.executeBatch(), updated);
         }
       }
       return true;
@@ -158,7 +159,8 @@ public class DirectSqlDeleteStats {
   private void verifyUpdates(int[] numUpdates, List<Long> partIds) throws MetaException {
     for (int i = 0; i < numUpdates.length; i++) {
       if (numUpdates[i] != 1) {
-        throw new MetaException("Invalid state of PART_COL_STATS for PART_ID " + partIds.get(i));
+        throw new MetaException("Invalid state of PARTITION_PARAMS ("
+            + StatsSetupConst.COLUMN_STATS_ACCURATE + ") for PART_ID " + partIds.get(i));
       }
     }
   }
@@ -169,11 +171,11 @@ public class DirectSqlDeleteStats {
       public List<Pair<Long, String>> run(List<Long> input) throws Exception {
         // 3. Get current COLUMN_STATS_ACCURATE values
         String queryText = "SELECT \"PART_ID\", \"PARAM_VALUE\" FROM \"PARTITION_PARAMS\"" +
-            " WHERE \"PARAM_KEY\" = ? AND \"PART_ID\" IN (" + makeParams(partIds.size()) + ")";
-        Object[] params = new Object[1 + partIds.size()];
+            " WHERE \"PARAM_KEY\" = ? AND \"PART_ID\" IN (" + makeParams(input.size()) + ")";
+        Object[] params = new Object[1 + input.size()];
         params[0] = StatsSetupConst.COLUMN_STATS_ACCURATE;
-        for (int i = 0; i < partIds.size(); i++) {
-          params[i + 1] = partIds.get(i);
+        for (int i = 0; i < input.size(); i++) {
+          params[i + 1] = input.get(i);
         }
 
         List<Pair<Long, String>> result = new ArrayList<>();
@@ -207,7 +209,7 @@ public class DirectSqlDeleteStats {
   }
 
   public boolean deleteTableColumnStatistics(Table table, List<String> colNames, String engine) throws MetaException {
-    String deleteSql = "delete from \"TAB_COL_STATS \" where \"TBL_ID\" = ?";
+    String deleteSql = "delete from \"TAB_COL_STATS\" where \"TBL_ID\" = ?";
     List<Object> params = new ArrayList<>();
     params.add(table.getId());
 
@@ -222,6 +224,11 @@ public class DirectSqlDeleteStats {
     try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", deleteSql))) {
       executeWithArray(queryParams.getInnerQuery(), params.toArray(), deleteSql);
     }
-    return updateColumnStatsAccurateForTable(table, colNames) > 0;
+    long numUpdated = updateColumnStatsAccurateForTable(table, colNames);
+    if (numUpdated == 0 && LOG.isDebugEnabled()) {
+      LOG.debug("No COLUMN_STATS_ACCURATE rows updated for table {}", table.getTableName());
+    }
+    // Return true as long as the delete (and any required metadata updates) completed without exception.
+    return true;
   }
 }

@@ -1851,7 +1851,7 @@ public abstract class TestHiveMetaStore {
       assertTrue("stats are not empty: " + stats, stats.isEmpty());
       // test if all columns are deleted from parameter COLUMN_STATS_ACCURATE
       Map<String, String> tableParams = client.getTable(dbName, tblName).getParameters();
-      String table_column_stats_accurate = tableParams.get("COLUMN_STATS_ACCURATE");
+      String table_column_stats_accurate = tableParams.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
       assertTrue("parameter COLUMN_STATS_ACCURATE is not accurate in " + tblName, table_column_stats_accurate == null ||
               (!table_column_stats_accurate.contains(colName[0]) && !table_column_stats_accurate.contains(colName[1])));
 
@@ -1873,7 +1873,7 @@ public abstract class TestHiveMetaStore {
       assertTrue(client.deleteColumnStatistics(request));
       // test if the columns in colName array are deleted from parameter COLUMN_STATS_ACCURATE
       tableParams = client.getTable(dbName, tblName).getParameters();
-      table_column_stats_accurate = tableParams.get("COLUMN_STATS_ACCURATE");
+      table_column_stats_accurate = tableParams.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
       assertTrue("parameter COLUMN_STATS_ACCURATE is not accurate in " + tblName, table_column_stats_accurate == null ||
               (!table_column_stats_accurate.contains(colName[0]) && !table_column_stats_accurate.contains(colName[1])));
       colStats3 = client.getTableColumnStatistics(
@@ -1974,9 +1974,9 @@ public abstract class TestHiveMetaStore {
      // test if all columns are deleted from parameter COLUMN_STATS_ACCURATE
      Partition partition_0 = client.getPartition(dbName, tblName, partitions.get(0));
      Map<String, String> partitionParams = partition_0.getParameters();
-     String partition_column_stats_accurate = partitionParams.get("COLUMN_STATS_ACCURATE");
+     String partition_column_stats_accurate = partitionParams.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
      assertTrue("parameter COLUMN_STATS_ACCURATE is not accurate in " + partitions.get(0),partition_column_stats_accurate == null ||
-             (!table_column_stats_accurate.contains(colName[0]) && !table_column_stats_accurate.contains(colName[1])));
+             (!partition_column_stats_accurate.contains(colName[0]) && !partition_column_stats_accurate.contains(colName[1])));
 
      // no partition or column name is set
      request.unsetPart_names();

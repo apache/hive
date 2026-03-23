@@ -22,8 +22,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.DirectSqlBase;
-import org.apache.hadoop.hive.metastore.DirectSqlUpdateParams;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
@@ -76,7 +74,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
-import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.closeDbConn;
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlClob;
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlInt;
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlLong;

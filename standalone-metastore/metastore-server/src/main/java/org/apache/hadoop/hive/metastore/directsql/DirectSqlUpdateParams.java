@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,8 +27,10 @@ import java.util.Optional;
 import javax.jdo.PersistenceManager;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.executeWithArray;

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

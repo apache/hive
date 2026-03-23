@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
-import org.apache.hadoop.hive.metastore.DirectSqlUpdateParams;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.PartitionProjectionEvaluator;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;

@@ -137,7 +137,13 @@ public class VerifyingObjectStore extends ObjectStore {
       for (List<String> partVal : part_vals) {
         partNames.add(Warehouse.makePartName(partCols, partVal));
       }
-      List<Partition> oldParts = getPartitionsByNames(catName, dbName, tblName, partNames);
+      // We might have made some changes over the partition due to deleting the
+      // stale column statistics earlier, and they haven't been committed yet, the cached instances
+      // could be different from that in the datastore.
+      // We cannot verify the partitions by getPartitionsByNames now.
+      GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(partNames).build();
+      List<Partition> oldParts = getPartitionsByNamesInternal(
+          catName, dbName, tblName, true, true, args);
       if (oldParts.size() != partNames.size()) {
         throw new MetaException("Some partitions to be altered are missing");
       }

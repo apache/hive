@@ -76,10 +76,7 @@ import javax.jdo.identity.IntIdentity;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -10127,9 +10124,9 @@ public class ObjectStore implements RawStore, Configurable {
                 } else {
                   StatsSetupConst.removeColumnStatsState(partitionParams, colNames);
                 }
+                mPart.setParameters(partitionParams);
               }
             }
-            pm.makePersistentAll(mparts);
           }
           return Collections.emptyList();
         }
@@ -10234,6 +10231,7 @@ public class ObjectStore implements RawStore, Configurable {
           } else {
             StatsSetupConst.removeColumnStatsState(tableParams, colNames);
           }
+          mTable.setParameters(tableParams);
         }
       }
       ret = commitTransaction();
