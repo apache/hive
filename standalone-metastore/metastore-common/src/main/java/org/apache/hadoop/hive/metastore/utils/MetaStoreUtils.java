@@ -1028,7 +1028,7 @@ public class MetaStoreUtils {
   private static boolean hasCatalogName(String dbName) {
     return dbName != null && dbName.length() > 0 &&
         dbName.charAt(0) == CATALOG_DB_THRIFT_NAME_MARKER &&
-        dbName.contains(CATALOG_DB_SEPARATOR);
+        (dbName.contains(CATALOG_DB_SEPARATOR) || dbName.endsWith(DB_EMPTY_MARKER));
   }
 
   /**
@@ -1106,7 +1106,11 @@ public class MetaStoreUtils {
         return new String[] {dbName.substring(1, dbName.length() - 1), null};
       } else if (dbName.endsWith(DB_EMPTY_MARKER)) {
         // This means the DB name is empty
-        return new String[] {dbName.substring(1, dbName.length() - DB_EMPTY_MARKER.length() - 1), ""};
+        String catName = dbName.substring(1, dbName.length() - 1);
+        if (catName.endsWith(CATALOG_DB_SEPARATOR)) {
+          catName = catName.substring(0, catName.length() - 1);
+        }
+        return new String[] {catName, ""};
       }
       String[] names = dbName.substring(1).split(CATALOG_DB_SEPARATOR, 2);
       if (names.length != 2) {
