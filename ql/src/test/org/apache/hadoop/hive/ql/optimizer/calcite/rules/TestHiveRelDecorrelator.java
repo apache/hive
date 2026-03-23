@@ -55,7 +55,10 @@ public class TestHiveRelDecorrelator {
             .scan("t1")
             .variable(v)
             .scan("t2")
-            .filter(relBuilder.call(SqlStdOperatorTable.EQUALS, relBuilder.getRexBuilder().makeFieldAccess(v.get(), 0), relBuilder.literal(10)))
+            .filter(relBuilder.call(
+                SqlStdOperatorTable.EQUALS,
+                relBuilder.getRexBuilder().makeFieldAccess(v.get(), 0),
+                relBuilder.literal(10)))
             .correlate(JoinRelType.SEMI, v.get().id, relBuilder.field(2, 0, "t1id"))
             .union(false)
             .build();
