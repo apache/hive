@@ -111,7 +111,7 @@ public abstract class MultiInsertSqlGenerator {
    */
   public void appendPartitionCols(Table table) {
     // If the table is partitioned we have to put the partition() clause in
-    List<FieldSchema> partCols = table.getNativePartCols();
+    List<FieldSchema> partCols = table.getPartCols();
     if (partCols == null || partCols.isEmpty()) {
       return;
     }
@@ -148,11 +148,11 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendPartColsOfTargetTableWithComma(String alias) {
-    if (targetTable.getNativePartCols() == null || targetTable.getNativePartCols().isEmpty()) {
+    if (targetTable.getPartCols() == null || targetTable.getPartCols().isEmpty()) {
       return;
     }
     queryStr.append(',');
-    appendCols(targetTable.getNativePartCols(), alias, null, FieldSchema::getName);
+    appendCols(targetTable.getPartCols(), alias, null, FieldSchema::getName);
   }
 
   public void appendAllColsOfTargetTable(String prefix) {

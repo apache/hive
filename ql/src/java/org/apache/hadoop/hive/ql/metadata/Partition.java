@@ -125,7 +125,7 @@ public class Partition implements Serializable {
   public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
       Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
     List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : tbl.getNativePartCols()) {
+    for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
       if (val == null || val.isEmpty()) {
         throw new HiveException("partition spec is invalid; field "
@@ -174,7 +174,7 @@ public class Partition implements Serializable {
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
             Path partPath = new Path(table.getDataLocation(),
-                Warehouse.makePartName(table.getNativePartCols(), tPartition.getValues()));
+                Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
             tPartition.getSd().setLocation(partPath.toString());
           }
         }
@@ -201,7 +201,7 @@ public class Partition implements Serializable {
 
   public String getName() {
     try {
-      return Warehouse.makePartName(table.getSupportedPartCols(), tPartition.getValues());
+      return Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
@@ -544,7 +544,7 @@ public class Partition implements Serializable {
   public void setValues(Map<String, String> partSpec)
       throws HiveException {
     List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : table.getNativePartCols()) {
+    for (FieldSchema field : table.getPartCols()) {
       String val = partSpec.get(field.getName());
       if (val == null) {
         throw new HiveException(
@@ -602,7 +602,7 @@ public class Partition implements Serializable {
 
   public void checkValidity() throws HiveException {
     if (!tPartition.getSd().equals(table.getSd())) {
-      Table.validateColumns(getCols(), table.getNativePartCols(), DDLUtils.isIcebergTable(table));
+      Table.validateColumns(getCols(), table.getPartCols(), DDLUtils.isIcebergTable(table));
     }
   }
 

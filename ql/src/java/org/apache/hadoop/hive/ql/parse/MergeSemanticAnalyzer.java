@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.MergeStatement;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -432,7 +431,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
                      HiveConf conf, String onClauseAsString) {
       this.onClause = onClause;
       allTargetTableColumns.addAll(targetTable.getCols());
-      allTargetTableColumns.addAll(targetTable.getNativePartCols());
+      allTargetTableColumns.addAll(targetTable.getPartCols());
       this.targetTableNameInSourceQuery = unescapeIdentifier(targetTableNameInSourceQuery);
       this.conf = conf;
       this.onClauseAsString = onClauseAsString;

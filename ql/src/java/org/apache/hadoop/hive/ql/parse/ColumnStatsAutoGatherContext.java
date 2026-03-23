@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -83,7 +82,7 @@ public class ColumnStatsAutoGatherContext {
     this.isInsertInto = isInsertInto;
     this.origCtx = ctx;
     columns = tbl.getCols();
-    partitionColumns = tbl.getNativePartCols();
+    partitionColumns = tbl.getPartCols();
   }
 
   public List<LoadFileDesc> getLoadFileWork() {

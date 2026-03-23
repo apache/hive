@@ -193,7 +193,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
 
   private static String getColTypeOf(Table tbl, String partKey) {
-    for (FieldSchema fs : tbl.getNativePartCols()) {
+    for (FieldSchema fs : tbl.getSupportedPartCols()) {
       if (partKey.equalsIgnoreCase(fs.getName())) {
         return fs.getType().toLowerCase();
       }
@@ -277,7 +277,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
     if (isPartitionStats) {
       if (partTransformSpec == null) {
-        for (FieldSchema fs : tbl.getNativePartCols()) {
+        for (FieldSchema fs : tbl.getPartCols()) {
           String identifier = unparseIdentifier(fs.getName(), conf);
           rewrittenQueryBuilder.append(", ").append(identifier);
           columnNamesBuilder.append(", ").append(identifier);

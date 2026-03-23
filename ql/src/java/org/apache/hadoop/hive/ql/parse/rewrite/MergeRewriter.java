@@ -250,7 +250,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         }
       }
       
-      targetTable.getNativePartCols().forEach(fieldSchema -> values.add(
+      targetTable.getPartCols().forEach(fieldSchema -> values.add(
           formatter.apply(fieldSchema.getName())));
     }
     
