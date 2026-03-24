@@ -84,7 +84,7 @@ public class TimestampTZUtil {
     // Zone part
     builder.optionalStart().appendLiteral(" ").optionalEnd();
     builder.optionalStart().appendZoneOrOffsetId().optionalEnd();
-
+    // Hardcode Locale.US to ensure consistent parsing behavior regardless of the system's default locale.
     FORMATTER = builder.toFormatter(Locale.US);
   }
 
