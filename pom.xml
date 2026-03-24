@@ -154,7 +154,7 @@
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
-    <jackson.version>2.16.1</jackson.version>
+    <jackson.version>2.18.6</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
