@@ -1,0 +1,55 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.metastore.utils;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
+import static org.junit.Assert.assertArrayEquals;
+
+@Category(MetastoreUnitTest.class)
+public class TestMetastoreUtilsParseDbName {
+
+  @Test
+  public void testParseDbNameEdgeCases() throws MetaException {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, "hive");
+
+    assertArrayEquals(new String[]{"hive", "@"}, parseDbName("@", conf));
+    assertArrayEquals(new String[]{"hive", "@!"}, parseDbName("@!", conf));
+    assertArrayEquals(new String[]{"", null}, parseDbName("@#", conf));
+    assertArrayEquals(new String[]{"", "db1"}, parseDbName("@#db1", conf));
+    assertArrayEquals(new String[]{"hive", "@cat1"}, parseDbName("@cat1", conf));
+    assertArrayEquals(new String[]{"cat1", null}, parseDbName("@cat1#", conf));
+    assertArrayEquals(new String[]{"cat1", ""}, parseDbName("@cat1#!", conf));
+    assertArrayEquals(new String[]{"cat1", "@db1"}, parseDbName("@cat1#@db1", conf));
+    assertArrayEquals(new String[]{"cat1", "#db1"}, parseDbName("@cat1##db1", conf));
+    assertArrayEquals(new String[]{"cat1", "db1"}, parseDbName("@cat1#db1", conf));
+    assertArrayEquals(new String[]{"cat1", "db1!"}, parseDbName("@cat1#db1!", conf));
+    assertArrayEquals(new String[]{"hive", "@cat1!"}, parseDbName("@cat1!", conf));
+    assertArrayEquals(new String[]{"hive", "#db1"}, parseDbName("#db1", conf));
+    assertArrayEquals(new String[]{"hive", "#!"}, parseDbName("#!", conf));
+    assertArrayEquals(new String[]{"hive", "#"}, parseDbName("#", conf));
+  }
+}
