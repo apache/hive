@@ -1,4 +1,6 @@
 --! qt:dataset:srcpart
+-- this ensures consistent split file counts between localhost & CI runs
+set tez.grouping.split-count=1;
 set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
@@ -39,10 +41,10 @@ select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-
 
 -- check DML result
 show partitions list_bucketing_dynamic_part;
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');	
+desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');
 desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1');
 
-set hive.merge.mapfiles=true;	
+set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true; 
 -- list bucketing DML with merge. use bucketize to generate a few small files.
 explain extended
@@ -54,7 +56,7 @@ select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-
 
 -- check DML result
 show partitions list_bucketing_dynamic_part;
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');	
+desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');
 desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1');
 
 select count(1) from srcpart where ds = '2008-04-08';
@@ -65,6 +67,3 @@ explain extended
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
 select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
-
--- clean up
-drop table list_bucketing_dynamic_part;

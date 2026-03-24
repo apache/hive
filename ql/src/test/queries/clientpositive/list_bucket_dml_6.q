@@ -1,10 +1,19 @@
 --! qt:dataset:srcpart
+-- Debug: DELETEME: show merge settings
+set hive.merge.mapfiles;
+set hive.merge.mapredfiles;
+set hive.merge.tezfiles;
+set hive.merge.smallfiles.avgsize;
+-- Debug: DELETEME: end
+
+-- this ensures consistent split file counts between localhost & CI runs
+set tez.grouping.split-count=1;
 set hive.mapred.mode=nonstrict;
 set hive.exec.dynamic.partition=true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set hive.merge.smallfiles.avgsize=200;
 set mapred.input.dir.recursive=true;
-set hive.merge.mapfiles=false;	
+set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 
 -- list bucketing DML: dynamic partition. multiple skewed columns. merge.
@@ -43,13 +52,13 @@ set hive.merge.mapredfiles=false;
 -- 87 000000_0
 -- 87 000001_0
 -- with merge
--- 118 000002_0 
+-- 118 000002_0
 
 -- SORT_QUERY_RESULTS
 
 -- create a skewed table
-create table list_bucketing_dynamic_part_n3 (key String, value String) 
-    partitioned by (ds String, hr String) 
+create table list_bucketing_dynamic_part_n3 (key String, value String)
+    partitioned by (ds String, hr String)
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
     STORED AS RCFILE;
@@ -91,7 +100,4 @@ explain extended
 select * from list_bucketing_dynamic_part_n3 where key = '484' and value = 'val_484';
 select * from list_bucketing_dynamic_part_n3 where key = '484' and value = 'val_484';
 select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
-
--- clean up
-drop table list_bucketing_dynamic_part_n3;
 
