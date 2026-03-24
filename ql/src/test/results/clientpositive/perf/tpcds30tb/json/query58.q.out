@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 8' is a cross product
+Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
 {
   "CBOPlan": {
     "rels": [

@@ -1964,18 +1964,6 @@ public class StatsRulesProcFactory {
         }
       }
 
-      // NDV=0 means join key statistics are unavailable - fall back to joinFactor heuristic
-      if (allSatisfyPreCondition) {
-        for (int pos = 0; pos < parents.size(); pos++) {
-          ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
-          List<String> keyExprs = StatsUtils.getQualifedReducerKeyNames(parent.getConf().getOutputKeyColumnNames());
-          if (!satisfyPrecondition(parent.getStatistics(), keyExprs)) {
-            allSatisfyPreCondition = false;
-            break;
-          }
-        }
-      }
-
       if (allSatisfyPreCondition) {
 
         // statistics object that is combination of statistics from all
@@ -2023,6 +2011,11 @@ public class StatsRulesProcFactory {
           for (int pos = 0; pos < parents.size(); pos++) {
             inferredRowCount = StatsUtils.safeMult(joinStats.get(pos).getNumRows(), inferredRowCount);
           }
+        }
+
+        // If PK-FK inference failed, check for NDV=0 on join keys and use joinFactor heuristic
+        if (inferredRowCount == -1 && hasZeroNdvJoinKey(joinKeys, joinStats)) {
+          inferredRowCount = computeJoinFactorEstimate(conf, Collections.max(rowCounts), rowCounts.size());
         }
 
         List<Long> distinctVals = Lists.newArrayList();
@@ -2148,7 +2141,6 @@ public class StatsRulesProcFactory {
       } else {
 
         // worst case when there are no column statistics
-        float joinFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_JOIN_FACTOR);
         int numParents = parents.size();
         long crossRowCount = 1;
         long crossDataSize = 1;
@@ -2194,14 +2186,8 @@ public class StatsRulesProcFactory {
           newNumRows = crossRowCount;
           newDataSize = crossDataSize;
         } else {
-          if (numParents > 1) {
-            newNumRows = StatsUtils.safeMult(StatsUtils.safeMult(maxRowCount, (numParents - 1)), joinFactor);
-            newDataSize = StatsUtils.safeMult(StatsUtils.safeMult(maxDataSize, (numParents - 1)), joinFactor);
-          } else {
-            // MUX operator with 1 parent
-            newNumRows = StatsUtils.safeMult(maxRowCount, joinFactor);
-            newDataSize = StatsUtils.safeMult(maxDataSize, joinFactor);
-          }
+          newNumRows = computeJoinFactorEstimate(conf, maxRowCount, numParents);
+          newDataSize = computeJoinFactorEstimate(conf, maxDataSize, numParents);
         }
 
         Statistics wcStats = new Statistics(newNumRows, newDataSize, 0, 0);
@@ -2760,6 +2746,29 @@ public class StatsRulesProcFactory {
       return result;
     }
 
+    @VisibleForTesting
+    static long computeJoinFactorEstimate(HiveConf conf, long maxValue, int numParents) {
+      float joinFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_JOIN_FACTOR);
+      if (numParents > 1) {
+        return StatsUtils.safeMult(StatsUtils.safeMult(maxValue, (numParents - 1)), joinFactor);
+      }
+      return StatsUtils.safeMult(maxValue, joinFactor);
+    }
+
+    @VisibleForTesting
+    static boolean hasZeroNdvJoinKey(Map<Integer, List<String>> joinKeys,
+        Map<Integer, Statistics> joinStats) {
+      return joinKeys.entrySet().stream().anyMatch(entry -> {
+        Statistics posStats = joinStats.get(entry.getKey());
+        if (posStats.getNumRows() <= 1) {
+          return false;
+        }
+        return entry.getValue().stream()
+            .map(posStats::getColumnStatisticsFromColName)
+            .anyMatch(cs -> cs != null && cs.getCountDistint() == 0L);
+      });
+    }
+
     private void updateJoinColumnsNDV(Map<Integer, List<String>> joinKeys,
         Map<Integer, Statistics> joinStats, int numAttr) {
       int joinColIdx = 0;
@@ -3186,19 +3195,6 @@ public class StatsRulesProcFactory {
   static boolean satisfyPrecondition(Statistics stats) {
     return stats != null && stats.getBasicStatsState().equals(Statistics.State.COMPLETE)
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
-  }
-
-  static boolean satisfyPrecondition(Statistics stats, List<String> joinKeys) {
-    if (stats.getNumRows() <= 1) {
-      return true;
-    }
-    for (String col : joinKeys) {
-      ColStatistics cs = stats.getColumnStatisticsFromColName(col);
-      if (cs != null && cs.getCountDistint() == 0L) {
-        return false;
-      }
-    }
-    return true;
   }
 
   // check if all parent statistics are available
