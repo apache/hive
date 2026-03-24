@@ -25,12 +25,14 @@ insert into tbl_src values (1, 'EUR', 10), (2, 'EUR', 10), (3, 'USD', 11), (4, '
 insert into tbl_src values (10, 'EUR', 12), (20, 'EUR', 11), (30, 'USD', 100), (40, 'EUR', 10), (50, 'HUF', 30), (60, 'USD', 12), (70, 'USD', 20), (80, 'PLN', 100), (90, 'PLN', 18), (100, 'CZK', 12), (110, NULL, NULL);
 
 create external table tbl_target_identity (a int) partitioned by (ccy string) stored by iceberg stored as orc;
+-- threshold = 0 (default, cost-based): NDV of b (~5) < MAX_WRITERS -> no sort (FanoutWriter)
 explain insert overwrite table tbl_target_identity select a, b from tbl_src;
 insert overwrite table tbl_target_identity select a, b from tbl_src;
 select * from tbl_target_identity order by a, ccy;
 
 --bucketed case - should invoke GenericUDFIcebergBucket to calculate buckets before sorting
 create external table tbl_target_bucket (a int, ccy string) partitioned by spec (bucket (2, ccy)) stored by iceberg stored as orc;
+-- threshold = 0 (default, cost-based): NDV of b (~5) < MAX_WRITERS -> no sort (FanoutWriter)
 explain insert into table tbl_target_bucket select a, b from tbl_src;
 insert into table tbl_target_bucket select a, b from tbl_src;
 select * from tbl_target_bucket order by a, ccy;
@@ -152,3 +154,30 @@ tblproperties ('parquet.compression'='snappy','format-version'='2');
 explain insert into tbl_hour_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018);
 insert into tbl_hour_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018);
 select * from tbl_hour_timestamp order by id, date_time_timestamp;
+
+-- threshold = -1: never sort -> FanoutWriter
+set hive.optimize.sort.dynamic.partition.threshold=-1;
+explain insert into tbl_target_identity select a, b from tbl_src;
+explain insert into tbl_target_bucket select a, b from tbl_src;
+
+-- threshold = 1: always sort -> ClusteredWriter
+set hive.optimize.sort.dynamic.partition.threshold=1;
+explain insert into tbl_target_identity select a, b from tbl_src;
+explain insert into tbl_target_bucket select a, b from tbl_src;
+
+-- threshold = 2: NDV of b (~5) > 2 -> sort (ClusteredWriter)
+set hive.optimize.sort.dynamic.partition.threshold=2;
+explain insert into tbl_target_identity select a, b from tbl_src;
+explain insert into tbl_target_bucket select a, b from tbl_src;
+
+-- threshold = 100: NDV of b (~5) <= 100 -> no sort (FanoutWriter)
+set hive.optimize.sort.dynamic.partition.threshold=100;
+explain insert into tbl_target_identity select a, b from tbl_src;
+explain insert into tbl_target_bucket select a, b from tbl_src;
+
+-- write.fanout.enabled=false: SerDe forces threshold=1 -> always ClusteredWriter
+set hive.optimize.sort.dynamic.partition.threshold=0;
+drop table if exists tbl_target_nofanout;
+create external table tbl_target_nofanout (a int, ccy string) partitioned by spec (bucket (2, ccy)) stored by iceberg stored as orc
+  tblproperties ('write.fanout.enabled'='false');
+explain insert into tbl_target_nofanout select a, b from tbl_src;

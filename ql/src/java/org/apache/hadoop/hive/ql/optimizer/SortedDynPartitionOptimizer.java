@@ -210,8 +210,9 @@ public class SortedDynPartitionOptimizer extends Transform {
       LinkedList<Integer> customSortOrder = new LinkedList<>(dpCtx.getCustomSortOrder());
       LinkedList<Integer> customNullOrder = new LinkedList<>(dpCtx.getCustomSortNullOrder());
 
-      // If custom expressions (partition or sort) are present, there is an explicit requirement to do sorting
-      if (customPartitionExprs.isEmpty() && customSortExprs.isEmpty() && !shouldDo(partitionPositions, fsParent)) {
+      // If custom sort expressions are present, there is an explicit requirement to do sorting.
+      // Custom partition expressions are evaluated inside shouldDo based on column stats.
+      if (customSortExprs.isEmpty() && !shouldDo(partitionPositions, customPartitionExprs, fsParent, allRSCols)) {
         return null;
       }
       // if RS is inserted by enforce bucketing or sorting, we need to remove it
@@ -853,22 +854,25 @@ public class SortedDynPartitionOptimizer extends Transform {
     //  The way max number of writers allowed are computed based on
     //  (executor/container memory) * (percentage of memory taken by orc)
     //  and dividing that by max memory (stripe size) taken by a single writer.
-    private boolean shouldDo(List<Integer> partitionPos, Operator<? extends OperatorDesc> fsParent) {
+    private boolean shouldDo(List<Integer> partitionPos,
+        List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customPartitionExprs,
+        Operator<? extends OperatorDesc> fsParent,
+        ArrayList<ExprNodeDesc> allRSCols) {
 
       int threshold = HiveConf.getIntVar(this.parseCtx.getConf(),
           HiveConf.ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD);
       long MAX_WRITERS = -1;
 
       switch (threshold) {
-      case -1:
-        return false;
-      case 0:
-        break;
-      case 1:
-        return true;
-      default:
-        MAX_WRITERS = threshold;
-        break;
+        case -1:
+          return false;
+        case 0:
+          break;
+        case 1:
+          return true;
+        default:
+          MAX_WRITERS = threshold;
+          break;
       }
 
       Statistics tStats = fsParent.getStatistics();
@@ -880,34 +884,77 @@ public class SortedDynPartitionOptimizer extends Transform {
       if (colStats == null || colStats.isEmpty()) {
         return true;
       }
-      long partCardinality = 1;
-
-      // compute cardinality for partition columns
-      for (Integer idx : partitionPos) {
-        ColumnInfo ci = fsParent.getSchema().getSignature().get(idx);
-        ColStatistics partStats = fsParent.getStatistics().getColumnStatisticsFromColName(ci.getInternalName());
-        if (partStats == null) {
-          // statistics for this partition are for some reason not available
-          return true;
-        }
-        partCardinality = partCardinality * partStats.getCountDistint();
+      long partCardinality = computePartCardinality(
+          partitionPos, customPartitionExprs, tStats, fsParent, allRSCols);
+      if (partCardinality == 0) {
+        // no partition columns at all
+        return false;
+      }
+      if (partCardinality < 0) {
+        // stats unavailable, be conservative -> sort
+        return true;
       }
 
       if (MAX_WRITERS < 0) {
-        double orcMemPool = this.parseCtx.getConf().getDouble(OrcConf.MEMORY_POOL.getHiveConfName(),
-            (Double) OrcConf.MEMORY_POOL.getDefaultValue());
-        long orcStripSize = this.parseCtx.getConf().getLong(OrcConf.STRIPE_SIZE.getHiveConfName(),
-            (Long) OrcConf.STRIPE_SIZE.getDefaultValue());
-        MemoryInfo memoryInfo = new MemoryInfo(this.parseCtx.getConf());
-        LOG.debug("Memory info during SDPO opt: {}", memoryInfo);
-        long executorMem = memoryInfo.getMaxExecutorMemory();
-        MAX_WRITERS = (long) (executorMem * orcMemPool) / orcStripSize;
+        MAX_WRITERS = computeMaxWriters();
+      }
+      return partCardinality > MAX_WRITERS;
+    }
 
+    private long computeMaxWriters() {
+      double orcMemPool = this.parseCtx.getConf().getDouble(OrcConf.MEMORY_POOL.getHiveConfName(),
+          (Double) OrcConf.MEMORY_POOL.getDefaultValue());
+      long orcStripSize = this.parseCtx.getConf().getLong(OrcConf.STRIPE_SIZE.getHiveConfName(),
+          (Long) OrcConf.STRIPE_SIZE.getDefaultValue());
+      MemoryInfo memoryInfo = new MemoryInfo(this.parseCtx.getConf());
+      LOG.debug("Memory info during SDPO opt: {}", memoryInfo);
+      long executorMem = memoryInfo.getMaxExecutorMemory();
+      return (long) (executorMem * orcMemPool) / orcStripSize;
+    }
+
+    /**
+     * Computes the partition cardinality based on column NDV statistics.
+     * @return positive value = estimated cardinality, 0 = no partition columns, -1 = stats unavailable
+     */
+    private long computePartCardinality(List<Integer> partitionPos,
+        List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customPartitionExprs,
+        Statistics tStats, Operator<? extends OperatorDesc> fsParent,
+        ArrayList<ExprNodeDesc> allRSCols) {
+
+      if (!partitionPos.isEmpty()) {
+        long cardinality = 1;
+        for (Integer idx : partitionPos) {
+          ColumnInfo ci = fsParent.getSchema().getSignature().get(idx);
+          ColStatistics partStats = tStats.getColumnStatisticsFromColName(ci.getInternalName());
+          if (partStats == null) {
+            return -1;
+          }
+          cardinality *= partStats.getCountDistint();
+        }
+        return cardinality;
       }
-      if (partCardinality <= MAX_WRITERS) {
-        return false;
+
+      if (!customPartitionExprs.isEmpty()) {
+        // extract source column names from custom expressions (same approach as allStaticPartitions)
+        Set<String> partColNames = new HashSet<>();
+        for (Function<List<ExprNodeDesc>, ExprNodeDesc> expr : customPartitionExprs) {
+          ExprNodeDesc resolved = expr.apply(allRSCols);
+          for (ExprNodeColumnDesc colDesc : ExprNodeDescUtils.findAllColumnDescs(resolved)) {
+            partColNames.add(colDesc.getColumn());
+          }
+        }
+        long cardinality = 1;
+        for (String colName : partColNames) {
+          ColStatistics partStats = tStats.getColumnStatisticsFromColName(colName);
+          if (partStats == null) {
+            return -1;
+          }
+          cardinality *= partStats.getCountDistint();
+        }
+        return cardinality;
       }
-      return true;
+
+      return 0;
     }
   }
 }
