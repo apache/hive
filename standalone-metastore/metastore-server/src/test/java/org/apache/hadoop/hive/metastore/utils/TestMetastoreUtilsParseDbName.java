@@ -53,3 +53,4 @@ public class TestMetastoreUtilsParseDbName {
     assertArrayEquals(new String[]{"hive", "#"}, parseDbName("#", conf));
   }
 }
+
