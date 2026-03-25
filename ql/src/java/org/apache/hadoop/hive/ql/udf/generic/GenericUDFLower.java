@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -35,6 +37,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+import java.util.List;
+import java.util.Optional;
 
 /**
  * UDFLower.
@@ -109,4 +113,15 @@ public class GenericUDFLower extends GenericUDF implements StatEstimatorProvider
   public String getDisplayString(String[] children) {
     return getStandardDisplayString("lower", children);
   }
+
+  @Override
+  public StatEstimator getStatEstimator() {
+    return new StatEstimator() {
+      @Override
+      public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+        return Optional.of(argStats.get(0).clone());
+      }
+    };
+  }
+
 }

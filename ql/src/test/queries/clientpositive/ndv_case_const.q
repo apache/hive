@@ -1,3 +1,6 @@
+-- Tests for CASE expression NDV estimation in Group By Operator.
+-- Verifies that "Statistics: Num rows" reflects accurate NDV computation
+-- when CASE branches contain constants, NULLs, and column references.
 CREATE TABLE t (cond INT, c2 STRING, c100 STRING);
 ALTER TABLE t UPDATE STATISTICS SET('numRows'='10000','rawDataSize'='1000000');
 ALTER TABLE t UPDATE STATISTICS FOR COLUMN cond SET('numDVs'='10','numNulls'='0');
@@ -25,3 +28,13 @@ EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c2 WHEN cond=2 THEN c100 ELS
 EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' WHEN cond=3 THEN 'C' ELSE c2 END x FROM t) sub GROUP BY x;
 
 EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' ELSE c100 END x FROM t) sub GROUP BY x;
+
+-- Test NDV cap: sum of branch NDVs (100+100+100+1=301) exceeds numRows (200)
+CREATE TABLE t_small (cond INT, c100a STRING, c100b STRING, c100c STRING);
+ALTER TABLE t_small UPDATE STATISTICS SET('numRows'='200','rawDataSize'='20000');
+ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN cond SET('numDVs'='10','numNulls'='0');
+ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100a SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10');
+ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100b SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10');
+ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100c SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10');
+
+EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c100a WHEN cond=2 THEN c100b WHEN cond=3 THEN c100c ELSE 'A' END x FROM t_small) sub GROUP BY x;

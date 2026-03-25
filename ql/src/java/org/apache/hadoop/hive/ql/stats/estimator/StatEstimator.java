@@ -24,53 +24,20 @@ import java.util.Optional;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
 /**
- * Enables statistics related computation on UDFs.
- *
- * <p>This interface provides two default implementations:
- * <ul>
- *   <li>{@link #estimate(List)} - clones the first argument's statistics (suitable for most UDFs)</li>
- *   <li>{@link #estimate(List, long)} - calls estimate(List) and caps NDV at numRows</li>
- * </ul>
- *
- * <p>UDFs that simply pass through statistics (like LOWER, UPPER) can use the defaults.
- * UDFs that combine statistics (like IF, WHEN, COALESCE) should override {@link #estimate(List)}.
+ * Enables statistics related computation on UDFs
  */
 public interface StatEstimator {
 
   /**
    * Computes the output statistics of the actual UDF.
    *
-   * <p>The default implementation clones the first argument's statistics, which is suitable
-   * for most UDFs that don't significantly alter the statistical properties of their input.
+   * The estimator should return with a preferably overestimated {@link ColStatistics} object if possible.
+   * The actual estimation logic may decide to not give an estimation; it should return with {@link Optional#empty()}.
    *
-   * <p>Override this method for UDFs that combine multiple inputs (like IF, WHEN, COALESCE)
-   * or significantly transform the data.
-   *
-   * @param argStats the statistics for every argument of the UDF
-   * @return {@link ColStatistics} estimate for the actual UDF, or empty if estimation is not possible
-   */
-  default Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-    if (argStats.isEmpty()) {
-      return Optional.empty();
-    }
-    return Optional.of(argStats.get(0).clone());
-  }
-
-  /**
-   * Computes the output statistics of the actual UDF, ensuring NDV does not exceed numRows.
-   *
-   * <p>The default implementation calls {@link #estimate(List)} and caps the NDV at numRows.
-   * This ensures that estimators which combine statistics from multiple branches (producing
-   * potentially inflated NDV values) are automatically bounded by the number of rows.
+   * Note: at the time of the call there will be {@link ColStatistics} for all the arguments; if that is not available - the estimation is skipped.
    *
    * @param argStats the statistics for every argument of the UDF
-   * @param numRows the number of rows, used to cap the NDV
-   * @return {@link ColStatistics} estimate for the actual UDF with NDV capped at numRows
+   * @return {@link ColStatistics} estimate for the actual UDF.
    */
-  default Optional<ColStatistics> estimate(List<ColStatistics> argStats, long numRows) {
-    return estimate(argStats).map(cs -> {
-      cs.setCountDistint(Math.min(cs.getCountDistint(), numRows));
-      return cs;
-    });
-  }
+  public Optional<ColStatistics> estimate(List<ColStatistics> argStats);
 }

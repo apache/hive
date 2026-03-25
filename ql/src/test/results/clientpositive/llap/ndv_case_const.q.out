@@ -397,13 +397,13 @@ STAGE PLANS:
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -413,10 +413,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -742,6 +742,119 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 102 Data size: 9078 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: CREATE TABLE t_small (cond INT, c100a STRING, c100b STRING, c100c STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_small
+POSTHOOK: query: CREATE TABLE t_small (cond INT, c100a STRING, c100b STRING, c100c STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_small
+PREHOOK: query: ALTER TABLE t_small UPDATE STATISTICS SET('numRows'='200','rawDataSize'='20000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t_small
+PREHOOK: Output: default@t_small
+POSTHOOK: query: ALTER TABLE t_small UPDATE STATISTICS SET('numRows'='200','rawDataSize'='20000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t_small
+POSTHOOK: Output: default@t_small
+PREHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN cond SET('numDVs'='10','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t_small
+PREHOOK: Output: default@t_small
+POSTHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN cond SET('numDVs'='10','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t_small
+POSTHOOK: Output: default@t_small
+PREHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100a SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t_small
+PREHOOK: Output: default@t_small
+POSTHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100a SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t_small
+POSTHOOK: Output: default@t_small
+PREHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100b SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t_small
+PREHOOK: Output: default@t_small
+POSTHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100b SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t_small
+POSTHOOK: Output: default@t_small
+PREHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100c SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t_small
+PREHOOK: Output: default@t_small
+POSTHOOK: query: ALTER TABLE t_small UPDATE STATISTICS FOR COLUMN c100c SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t_small
+POSTHOOK: Output: default@t_small
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c100a WHEN cond=2 THEN c100b WHEN cond=3 THEN c100c ELSE 'A' END x FROM t_small) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_small
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c100a WHEN cond=2 THEN c100b WHEN cond=3 THEN c100c ELSE 'A' END x FROM t_small) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_small
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t_small
+                  Statistics: Num rows: 200 Data size: 54200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN (c100a) WHEN ((cond = 2)) THEN (c100b) WHEN ((cond = 3)) THEN (c100c) ELSE ('A') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 200 Data size: 54200 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 200 Data size: 17800 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 200 Data size: 17800 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 200 Data size: 17800 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 200 Data size: 17800 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

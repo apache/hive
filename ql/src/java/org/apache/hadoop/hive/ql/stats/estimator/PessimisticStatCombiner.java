@@ -42,14 +42,13 @@ public class PessimisticStatCombiner {
     if (stat.getAvgColLen() > result.getAvgColLen()) {
       result.setAvgColLen(stat.getAvgColLen());
     }
-    // NDV=0 is "unknown" only if the stat is NOT a constant.
-    // Constants with NDV=0 (e.g., NULL) are "known zero", not unknown.
-    if ((result.getCountDistint() == 0 && !result.isConst()) || (stat.getCountDistint() == 0 && !stat.isConst())) {
+    // If any branch has NDV=0 (unknown stats), propagate unknown to result.
+    // Summing would treat unknown as zero, causing cardinality underestimates.
+    if (result.getCountDistint() == 0 || stat.getCountDistint() == 0) {
       result.setCountDistint(0);
     } else {
       result.setCountDistint(StatsUtils.safeAdd(result.getCountDistint(), stat.getCountDistint()));
     }
-    result.setConst(false);
     if (stat.getNumNulls() < 0 || result.getNumNulls() < 0) {
       result.setNumNulls(-1);
     } else if (stat.getNumNulls() > result.getNumNulls()) {

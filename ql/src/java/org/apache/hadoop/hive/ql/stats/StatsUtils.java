@@ -1578,9 +1578,11 @@ public class StatsUtils {
             csList.add(cs);
           }
           if (csList.size() == engfd.getChildren().size()) {
-            Optional<ColStatistics> res = se.estimate(csList, numRows);
+            Optional<ColStatistics> res = se.estimate(csList);
             if (res.isPresent()) {
               ColStatistics newStats = res.get();
+              // NDV cannot exceed numRows
+              newStats.setCountDistint(Math.min(newStats.getCountDistint(), numRows));
               colType = colType.toLowerCase();
               newStats.setColumnType(colType);
               newStats.setColumnName(colName);
@@ -1626,14 +1628,10 @@ public class StatsUtils {
   }
 
   private static ColStatistics buildColStatForConstant(HiveConf conf, long numRows, ExprNodeConstantDesc encd) {
-
     long numNulls = 0;
-    long countDistincts = 0;
+    long countDistincts = 1;
     if (encd.getValue() == null) {
-      // null projection
       numNulls = numRows;
-    } else {
-      countDistincts = 1;
     }
     String colType = encd.getTypeString();
     colType = colType.toLowerCase();
@@ -1643,7 +1641,6 @@ public class StatsUtils {
     colStats.setAvgColLen(avgColSize);
     colStats.setCountDistint(countDistincts);
     colStats.setNumNulls(numNulls);
-    colStats.setConst(true);
 
     Optional<Number> value = getConstValue(encd);
     value.ifPresent(number -> colStats.setRange(number, number));
@@ -2093,6 +2090,7 @@ public class StatsUtils {
       return 0L;
     }
     if (ndvValues.isEmpty()) {
+      // No grouping columns, one row
       return 1L;
     }
     if (expDecay) {
@@ -2109,7 +2107,9 @@ public class StatsUtils {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         long ndv = cs.getCountDistint();
-        if (cs.getNumNulls() > 0) {
+        // +1 for NULL group: source columns with partial nulls and known NDV only.
+        // Computed expressions include NULL. Ordered: numNulls>0 first (often false).
+        if (!cs.isEstimated() && cs.getNumNulls() > 0 && ndv > 0 && cs.getNumNulls() < parentStats.getNumRows()) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }
         ndvValues.add(ndv);
