@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * DataSourceProvider for the HikariCP connection pool.
@@ -52,6 +53,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
 
     Properties properties = replacePrefix(DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
+    //  connectionTimeout is handled separately with getTimeDuration()
+    properties.remove("connectionTimeout");
 
     HikariConfig config;
     try {
@@ -67,7 +70,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
       config.setPoolName(poolName);
     }
 
-    long connectionTimeout = hdpConfig.getLong(HIKARI + ".connectionTimeout", DEFAULT_CONNECTION_TIMEOUT_MS);
+    long connectionTimeout = hdpConfig.getTimeDuration(HIKARI + ".connectionTimeout", 
+        DEFAULT_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     config.setConnectionTimeout(connectionTimeout);
 
     // It's kind of a waste to create a fixed size connection pool as same as the TxnHandler#connPool,
