@@ -27,7 +27,6 @@ export TEZ_HOME=${TEZ_HOME:-/opt/tez}
 # Allow external configuration directories to be mounted in for Hadoop/Tez.
 export HADOOP_CONF_DIR="${HADOOP_CONF_DIR:-$HADOOP_HOME/etc/hadoop}"
 export TEZ_CONF_DIR="${TEZ_CONF_DIR:-$HADOOP_CONF_DIR}"
-
 export HIVE_CONF_DIR="$HIVE_HOME/conf"
 
 # =========================================================================
@@ -52,8 +51,6 @@ export LLAP_DAEMON_TMP_DIR="${LLAP_DAEMON_TMP_DIR:-/tmp/llapDaemonTmp}"
 export LOCAL_DIRS="${LOCAL_DIRS:-/tmp/llap-local}"
 
 mkdir -p "${LLAP_DAEMON_LOG_DIR}" "${LLAP_DAEMON_TMP_DIR}" "${LOCAL_DIRS}"
-
-cd "${HIVE_HOME}"
 
 # runLlapDaemon.sh expects jars under ${LLAP_DAEMON_HOME}/lib.
 # In the Docker image, LLAP jars are under ${HIVE_HOME}/lib.

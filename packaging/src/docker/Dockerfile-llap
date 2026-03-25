@@ -59,16 +59,19 @@ RUN tar -xzv \
       --exclude="*/webapps" \
       -f /opt/hadoop-$HADOOP_VERSION.tar.gz \
       -C /opt/ && \
+      rm -f /opt/hadoop-$HADOOP_VERSION.tar.gz && \
     tar -xzv \
       --exclude="apache-hive-$HIVE_VERSION-bin/jdbc" \
       -f /opt/apache-hive-$HIVE_VERSION-bin.tar.gz \
       -C /opt/ && \
+      rm -f /opt/apache-hive-$HIVE_VERSION-bin.tar.gz && \
     tar -xzv \
       --exclude="apache-tez-$TEZ_VERSION-bin/share" \
       -f /opt/apache-tez-$TEZ_VERSION-bin.tar.gz \
-      -C /opt
+      -C /opt && \
+      rm -f /opt/apache-tez-$TEZ_VERSION-bin.tar.gz
 
-FROM eclipse-temurin:21.0.3_9-jdk-ubi9-minimal AS run
+FROM eclipse-temurin:21-jdk-ubi9-minimal AS run
 
 ARG UID=1000
 ARG HADOOP_VERSION

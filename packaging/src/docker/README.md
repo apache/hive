@@ -207,33 +207,10 @@ To stop/remove them all,
 docker compose down
 ```
 
-#### Running the LLAP Daemon container
-
-The LLAP image built from `Dockerfile-llap` (`apache/hive-llap:${HIVE_VERSION}`) can be started as a standalone LLAP Daemon. The container uses `llap-server/bin/runLlapDaemon.sh run` under the hood via `entrypoint-llap.sh`.
-
-LLAP uses several ports by default:
-- **15004**: management / RPC port
-- **15551**: shuffle port
-- **15002**: HTTP web UI port
-
-Basic example with these ports exposed on the host:
-
-```shell
-docker run --rm \
-  -p 15004:15004 \
-  -p 15551:15551 \
-  -p 15002:15002 \
-  -e HADOOP_CONF_DIR=/etc/hadoop \
-  -e HIVE_CONF_DIR=/etc/hive \
-  -e TEZ_CONF_DIR=/etc/hadoop \
-  apache/hive-llap:${HIVE_VERSION}
-```
-
-Additional JVM options for LLAP can be passed via `LLAP_DAEMON_OPTS` or `LLAP_EXTRA_OPTS`. Configuration such as `llap-daemon-site.xml` should be provided via mounted configuration directories and the corresponding `*_CONF_DIR` environment variables.
-
 #### Starting LLAP with Docker Compose
 
 A dedicated compose file is available at `packaging/src/docker/docker-compose-llap.yml` to start both ZooKeeper and an LLAP cluster with the required settings.
+
 Use the following workflow from `packaging/src/docker`:
 
 ```shell

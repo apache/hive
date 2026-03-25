@@ -13,9 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+name: llap-cluster
 services:
   zookeeper:
-    image: zookeeper:3.9
+    image: zookeeper:3.8.4
     container_name: zookeeper
     hostname: zookeeper
     restart: unless-stopped
@@ -152,9 +153,9 @@ services:
       HIVE_CONF_DIR: /etc/hive
       TEZ_CONF_DIR: /etc/hadoop
     ports:
-      - '15002:15002'
-      - '15004:15004'
-      - '15551:15551'
+      - '15002:15002' # HTTP web UI port
+      - '15004:15004' # management / RPC port
+      - '15551:15551' # shuffle port
     volumes:
       - warehouse:/opt/hive/data/warehouse
       - scratch:/opt/hive/scratch
