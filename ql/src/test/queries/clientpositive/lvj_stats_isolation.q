@@ -32,3 +32,32 @@ select id, count(*)
 from (select id, f1 from lvj_stats group by id, f1) sub
 lateral view posexplode(array(f1, f1)) t1 as pos1, val1
 group by id;
+
+-- Test 3: Verify stats isolation with UDTF scaling factor (2.0)
+-- Reset column stats first since test 2 modified them
+analyze table lvj_stats compute statistics for columns;
+set hive.stats.udtf.factor=2.0;
+
+explain
+select id, f1, count(*)
+from (select id, f1 from lvj_stats group by id, f1) sub
+lateral view posexplode(array(f1, f1)) t1 as pos1, val1
+group by id, f1;
+
+select id, f1, count(*)
+from (select id, f1 from lvj_stats group by id, f1) sub
+lateral view posexplode(array(f1, f1)) t1 as pos1, val1
+group by id, f1;
+
+-- Test 4: Verify stats resolution when UDTF output columns are used in SELECT/GROUP BY
+-- This tests okumin's concern about whether stats are properly resolved for pos1/val1
+explain
+select id, f1, pos1, count(*)
+from (select id, f1 from lvj_stats group by id, f1) sub
+lateral view posexplode(array(f1, f1)) t1 as pos1, val1
+group by id, f1, pos1;
+
+select id, f1, pos1, count(*)
+from (select id, f1 from lvj_stats group by id, f1) sub
+lateral view posexplode(array(f1, f1)) t1 as pos1, val1
+group by id, f1, pos1;

@@ -2971,31 +2971,45 @@ public class StatsRulesProcFactory {
 
   /**
    * UDTF operator changes the number of rows and thereby the data size.
+   * This rule creates column statistics for the UDTF's OUTPUT columns (e.g., pos1, val1),
+   * not the input columns (e.g., _col0), to prevent namespace collisions in LateralViewJoin.
    */
   public static class UDTFStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
+      HiveConf conf = aspCtx.getConf();
       UDTFOperator uop = (UDTFOperator) nd;
 
       Operator<? extends OperatorDesc> parent = uop.getParentOperators().get(0);
-
       Statistics parentStats = parent.getStatistics();
 
       if (parentStats != null) {
-        Statistics st = parentStats.clone();
-
-        float udtfFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
+        float udtfFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
         long numRows = Math.max(StatsUtils.safeMult(parentStats.getNumRows(), udtfFactor), 1);
         long dataSize = StatsUtils.safeMult(parentStats.getDataSize(), udtfFactor);
-        st.setNumRows(numRows);
-        st.setDataSize(dataSize);
 
-        List<ColStatistics> colStatsList = st.getColumnStats();
-        if(colStatsList != null) {
-          StatsUtils.scaleColStatistics(colStatsList, udtfFactor);
-          st.setColumnStats(colStatsList);
+        Statistics st = new Statistics(numRows, dataSize, 0, 0);
+
+        RowSchema outputSchema = uop.getSchema();
+        if (outputSchema != null && outputSchema.getSignature() != null) {
+          List<ColStatistics> outputColStats = new ArrayList<>();
+
+          for (ColumnInfo ci : outputSchema.getSignature()) {
+            String colName = ci.getInternalName();
+            String colType = ci.getTypeName();
+
+            ColStatistics cs = new ColStatistics(colName, colType);
+            cs.setCountDistint(0);
+            cs.setNumNulls(-1);
+            cs.setAvgColLen(StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), colType));
+            outputColStats.add(cs);
+          }
+
+          st.setColumnStats(outputColStats);
+          st.setColumnStatsState(parentStats.getColumnStatsState());
+          StatsUtils.updateStats(st, numRows, true, uop);
         }
 
         if (LOG.isDebugEnabled()) {
@@ -3057,42 +3071,17 @@ public class StatsRulesProcFactory {
 
       if (satisfyPrecondition(selectStats) && satisfyPrecondition(udtfStats)) {
         final Map<String, ExprNodeDesc> columnExprMap = lop.getColumnExprMap();
-        final List<ColumnInfo> signature = lop.getSchema().getSignature();
-        final int numSelColumns = lop.getConf().getNumSelColumns();
+        final RowSchema schema = lop.getSchema();
 
-        // Split schemas using subList
-        RowSchema selectSchema = new RowSchema(new ArrayList<>(signature.subList(0, numSelColumns)));
-        RowSchema udtfSchema = new RowSchema(new ArrayList<>(signature.subList(numSelColumns, signature.size())));
-
-        // Filter expression maps to avoid cross-contamination in getColStatisticsFromExprMap
-        Map<String, ExprNodeDesc> selectExprMap = Maps.newHashMapWithExpectedSize(numSelColumns);
-        Map<String, ExprNodeDesc> udtfExprMap = Maps.newHashMapWithExpectedSize(signature.size() - numSelColumns);
-        for (int i = 0; i < signature.size(); i++) {
-          String name = signature.get(i).getInternalName();
-          ExprNodeDesc expr = columnExprMap.get(name);
-
-          if (expr == null) {
-            continue;
-          }
-
-          if (i < numSelColumns) {
-            selectExprMap.put(name, expr);
-          } else {
-            udtfExprMap.put(name, expr);
-          }
-        }
-
-        // Select branch stats
         joinedStats.updateColumnStatsState(selectStats.getColumnStatsState());
         final List<ColStatistics> selectColStats = StatsUtils
-                .getColStatisticsFromExprMap(conf, selectStats, selectExprMap, selectSchema);
+                .getColStatisticsFromExprMap(conf, selectStats, columnExprMap, schema);
         StatsUtils.scaleColStatistics(selectColStats, factor);
         joinedStats.addToColumnStats(selectColStats);
 
-        // UDTF branch stats
         joinedStats.updateColumnStatsState(udtfStats.getColumnStatsState());
         final List<ColStatistics> udtfColStats = StatsUtils
-                .getColStatisticsFromExprMap(conf, udtfStats, udtfExprMap, udtfSchema);
+                .getColStatisticsFromExprMap(conf, udtfStats, columnExprMap, schema);
         joinedStats.addToColumnStats(udtfColStats);
       }
 
