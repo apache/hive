@@ -218,19 +218,19 @@ POSTHOOK: type: ALTERTABLE_CREATEBRANCH
 POSTHOOK: Input: default@ice_branch_metadata_delete
 PREHOOK: query: delete from default.ice_branch_metadata_delete.branch_test01 where a = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_branch_metadata_delete
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Input: default@ice_branch_metadata_delete@branch_test01
+PREHOOK: Output: default@ice_branch_metadata_delete@branch_test01
 POSTHOOK: query: delete from default.ice_branch_metadata_delete.branch_test01 where a = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_branch_metadata_delete
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Input: default@ice_branch_metadata_delete@branch_test01
+POSTHOOK: Output: default@ice_branch_metadata_delete@branch_test01
 PREHOOK: query: select * from default.ice_branch_metadata_delete.branch_test01
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ice_branch_metadata_delete
+PREHOOK: Input: default@ice_branch_metadata_delete@branch_test01
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from default.ice_branch_metadata_delete.branch_test01
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ice_branch_metadata_delete
+POSTHOOK: Input: default@ice_branch_metadata_delete@branch_test01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	DEF
 3	GHI

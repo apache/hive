@@ -1265,7 +1265,7 @@ inputFileFormat
 tabTypeExpr
 @init { pushMsg("specifying table types", state); }
 @after { popMsg(state); }
-   : identifier (DOT^ identifier)?
+   : identifier (DOT^ identifier (DOT^ identifier)?)?
    (identifier (DOT^
    (
    (KW_ELEM_TYPE) => KW_ELEM_TYPE
@@ -1346,7 +1346,7 @@ showStatement
     | KW_SHOW KW_TBLPROPERTIES tableName (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES tableName $prptyName?)
     | KW_SHOW KW_LOCKS
       (
-      (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=identifier) (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWDBLOCKS $dbName $isExtended?)
+      (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=databaseName) (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWDBLOCKS $dbName $isExtended?)
       |
       (parttype=partTypeExpr)? (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype? $isExtended?)
       )
@@ -2434,7 +2434,7 @@ primitiveType
     | KW_DOUBLE KW_PRECISION?       ->    TOK_DOUBLE
     | KW_DATE          ->    TOK_DATE
     | KW_DATETIME      ->    TOK_DATETIME
-    | KW_TIMESTAMPLOCALTZ   ->    TOK_TIMESTAMPLOCALTZ
+    | KW_TIMESTAMPLOCALTZ (LPAREN p=Number RPAREN)? -> ^(TOK_TIMESTAMPLOCALTZ $p?)
     | KW_TIMESTAMP
       (
         KW_WITH KW_LOCAL KW_TIME KW_ZONE

@@ -104,7 +104,7 @@
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.4</accumulo.version>
-    <ant.version>1.10.13</ant.version>
+    <ant.version>1.10.15</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
     <antlr4.version>4.9.3</antlr4.version>
@@ -125,9 +125,9 @@
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.16.1</commons-io.version>
-    <commons-lang3.version>3.14.0</commons-lang3.version>
+    <commons-lang3.version>3.17.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
-    <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
+    <commons-dbcp2.version>2.14.0</commons-dbcp2.version>
     <commons-text.version>1.10.0</commons-text.version>
     <derby.version>10.17.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
@@ -186,7 +186,7 @@
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
     <orc.version>2.1.2</orc.version>
-    <otel.version>1.42.0</otel.version>
+    <otel.version>1.60.1</otel.version>
     <mockito-core.version>5.17.0</mockito-core.version>
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -228,6 +228,7 @@
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.9.0</json-path.version>
     <janino.version>3.1.12</janino.version>
+    <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
     <datasketches.version>2.0.0</datasketches.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
@@ -235,6 +236,7 @@
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
+    <spring-boot.version>2.7.18</spring-boot.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
     <keycloak.version>26.0.6</keycloak.version>
@@ -309,6 +311,11 @@
         <groupId>com.thoughtworks.paranamer</groupId>
         <artifactId>paranamer</artifactId>
         <version>${paranamer.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.parquet</groupId>

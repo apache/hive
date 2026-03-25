@@ -1107,7 +1107,12 @@ public class HiveRelOptUtil extends RelOptUtil {
     Set<Integer> needed = new HashSet<>();
     for (RelFieldCollation fc : sortCollation.getFieldCollations()) {
       needed.add(fc.getFieldIndex());
-      final RexNode node = project.getProjects().get(map.getTarget(fc.getFieldIndex()));
+      int target = map.getTargetOpt(fc.getFieldIndex());
+      if (target == -1) {
+        // If there is no mapping for this field, we return null early.
+        return null;
+      }
+      final RexNode node = project.getProjects().get(target);
       if (node.isA(SqlKind.CAST)) {
         // Check whether it is a monotonic preserving cast, otherwise we cannot push
         final RexCall cast = (RexCall) node;

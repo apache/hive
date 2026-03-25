@@ -1393,6 +1393,14 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(scriptText, args(), "100.*Bob");
   }
 
+  @Test
+  public void testPrintMessageAfterExecuteSetHiveConfig() throws Throwable {
+    String scriptText =
+        "EXECUTE 'SET hive.query.results.cache.enabled=false';\n" +
+            "PRINT 'Should print this message!...';";
+    testScriptFile(scriptText, args(), "Should print this message!...", OutStream.ERR);
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", USER_NAME);

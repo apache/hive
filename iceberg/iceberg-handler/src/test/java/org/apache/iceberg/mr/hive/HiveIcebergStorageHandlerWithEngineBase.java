@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
@@ -40,7 +41,6 @@ import org.apache.iceberg.mr.TestHelper.RecordsBuilder;
 import org.apache.iceberg.mr.hive.test.TestHiveShell;
 import org.apache.iceberg.mr.hive.test.TestTables;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
-import org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerStub;
 import org.apache.iceberg.mr.hive.test.concurrent.TestUtilPhaser;
 import org.apache.iceberg.mr.hive.test.concurrent.WithMockedStorageHandler;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
@@ -243,10 +243,10 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   public void before() throws IOException {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+    HiveConf.setBoolVar(shell.getHiveConf(), ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
     // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
     // we turn it off explicitly to achieve better coverage.
-    HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION,
+    HiveConf.setVar(shell.getHiveConf(), ConfVars.HIVE_FETCH_TASK_CONVERSION,
         isVectorized ? "none" : "more");
   }
 
@@ -277,33 +277,54 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     }
   }
 
+  protected void executeConcurrentlyWithExtLocking(String[]... stmts) throws Exception {
+    executeConcurrently(true, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, stmts);
+  }
+
+  protected void executeConcurrentlyNoRetry(String[]... stmts) throws Exception {
+    executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, stmts);
+  }
+
+  protected void executeConcurrentlyWithRetry(String[]... stmts) throws Exception {
+    executeConcurrently(false, RETRY_STRATEGIES, stmts);
+  }
+
   /**
-   * Executes multiple SQL queries concurrently with controlled synchronization for testing.
+   * Executes multiple statement groups concurrently with controlled synchronization for testing.
+   *
+   * <p>Each {@code String[]} element represents a group of SQL statements executed sequentially
+   * by one thread. If a single group is provided, it is duplicated to run on two threads.
    *
    * <p>This method supports two synchronization modes:
    * <ul>
-   *   <li><b>Ext-locking mode</b> ({@code useExtLocking=true}): Queries execute in strict sequential
-   *       order (sql[0], then sql[1], then sql[2], ...) to verify that external table locking prevents
-   *       concurrent execution. Each query waits for its turn before starting.</li>
-   *   <li><b>Barrier synchronization mode</b> ({@code useExtLocking=false}): Queries execute concurrently,
-   *       then commit in order to test optimistic concurrency control and retry on write conflicts.</li>
+   *   <li><b>Ext-locking mode</b> ({@code useExtLocking=true}): Groups execute in strict sequential
+   *       order to verify that external table locking prevents concurrent execution.</li>
+   *   <li><b>Barrier synchronization mode</b> ({@code useExtLocking=false}): All threads execute
+   *       their statements concurrently. Commit ordering is controlled by the phaser in the
+   *       storage handler stub or transaction coordinator stub.</li>
    * </ul>
-   *
-   * <p>Uses {@link TestUtilPhaser} and {@link HiveIcebergStorageHandlerStub} to coordinate thread
-   * execution order deterministically.
    *
    * @param useExtLocking if true, enables external locking mode with sequential execution;
    *                      if false, enables concurrent execution with ordered commits
    * @param retryStrategies comma-separated list of Hive query retry strategies to enable
-   * @param sql array of SQL queries to execute. If single query provided, it's executed by all threads.
-   *            If multiple queries provided, each thread executes sql[i] where i is the thread index.
+   * @param sql array of statement groups. Each group is executed by one thread.
+   *              If a single group is provided, it is duplicated to two threads.
    * @throws Exception if any query execution fails
    */
   protected void executeConcurrently(
-      boolean useExtLocking, String retryStrategies, String... sql) throws Exception {
+      boolean useExtLocking, String retryStrategies, String[]... sql) throws Exception {
 
-    int nThreads = sql.length > 1 ? sql.length : 2;
+    String[][] stmts = (sql.length == 1) ?
+        new String[][] { sql[0], sql[0] } : sql;
+    int nThreads = stmts.length;
+
     TestUtilPhaser testUtilPhaser = TestUtilPhaser.getInstance();
+    if (!useExtLocking) {
+      // Barrier mode: pre-register all parties before launching threads
+      for (int t = 0; t < nThreads; t++) {
+        testUtilPhaser.register();
+      }
+    }
 
     try (ExecutorService executor =
              Executors.newVirtualThreadPerTaskExecutor()) {
@@ -311,35 +332,32 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
           .executeWith(executor)
           .run(i -> {
             LOG.debug("Thread {} started for query index {}", Thread.currentThread().getName(), i);
-
             TestUtilPhaser.ThreadContext.setQueryIndex(i);
+            HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
+
+            HiveConf.setBoolVar(shell.getHiveConf(), ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+            HiveConf.setBoolVar(shell.getHiveConf(), ConfVars.HIVE_IN_TEST, true);
+            HiveConf.setVar(shell.getHiveConf(), ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+            HiveConf.setBoolVar(shell.getHiveConf(), ConfVars.HIVE_OPTIMIZE_METADATA_DELETE, false);
+            HiveConf.setVar(shell.getHiveConf(), ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, retryStrategies);
 
             if (useExtLocking) {
               TestUtilPhaser.ThreadContext.setUseExtLocking(true);
-            } else {
-              testUtilPhaser.register();
-            }
-
-            HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
-            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_DELETE, false);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                retryStrategies);
-
-            if (useExtLocking) {
-              HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
+              HiveConf.setBoolVar(shell.getHiveConf(), ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
               shell.getHiveConf().setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
 
-              // Wait for turn: sql[0] waits for phase 0 -> 1, sql[1] for 1 -> 2, etc.
-              // Phase advances when previous query validates snapshot.
+              // Wait for turn: sql[1] waits for phase 0 -> 1, sql[2] for 1 -> 2, etc.
+              // Phase advances when a previous query validates the snapshot.
               LOG.debug("Thread {} (queryIndex={}) waiting for turn",
                   Thread.currentThread().getName(), i);
               testUtilPhaser.awaitTurn();
             }
 
             try {
-              shell.executeStatement(sql.length > 1 ? sql[i] : sql[0]);
+              for (String stmt : stmts[i]) {
+                shell.executeStatement(stmt);
+              }
+
               LOG.debug("Thread {} (queryIndex={}) completed statement execution",
                   Thread.currentThread().getName(), i);
             } finally {

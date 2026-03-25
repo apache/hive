@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.DagCredentialSupplier;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SecurityUtil;
@@ -40,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -56,22 +54,18 @@ public class KafkaDagCredentialSupplier implements DagCredentialSupplier {
     if(!(work instanceof MapWork)){
       return null;
     }
-    Map<String, PartitionDesc> partitions = ((MapWork) work).getAliasToPartnInfo();
-
-    // We don't need to iterate on all partitions, and check the same TableDesc.
-    PartitionDesc partition = partitions.values().stream().findFirst().orElse(null);
-    if (partition != null) {
-      TableDesc tableDesc = partition.getTableDesc();
+    TableDesc tableDesc = ((MapWork) work).getDistinctTableDescs().stream().findFirst().orElse(null);
+    if (tableDesc != null) {
       if (isTokenRequired(tableDesc)) {
         // don't collect delegation token again, if it was already successful
         return getKafkaDelegationTokenForBrokers(conf, tableDesc);
       }
     }
 
-    for (TableDesc tableDesc : fileSinkTableDescs) {
-      if (isTokenRequired(tableDesc)) {
+    for (TableDesc fileSinkTableDesc : fileSinkTableDescs) {
+      if (isTokenRequired(fileSinkTableDesc)) {
         // don't collect delegation token again, if it was already successful
-        return getKafkaDelegationTokenForBrokers(conf, tableDesc);
+        return getKafkaDelegationTokenForBrokers(conf, fileSinkTableDesc);
       }
     }
     return null;

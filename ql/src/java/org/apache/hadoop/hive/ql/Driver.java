@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.queryhistory.QueryHistoryService;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.util.StringUtils;
@@ -169,14 +170,15 @@ public class Driver implements IDriver {
 
       if (!alreadyCompiled) {
         compileInternal(command, true);
-      } else {
-        driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
       }
 
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
 
       lockAndRespond();
       validateCurrentSnapshot();
+
+      SessionStateUtil.setOutputTableCount(driverContext.getConf(),
+          context.getLoadTableOutputMap().size());
 
       // Reset the PerfLogger so that it doesn't retain any previous values.
       // Any value from compilation phase can be obtained through the map set in queryDisplay during compilation.
@@ -203,7 +205,9 @@ public class Driver implements IDriver {
 
       driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
       driverContext.getQueryDisplay().setPerfLogEnds(QueryDisplay.Phase.EXECUTION, perfLogger.getEndTimes());
-
+      if (DriverUtils.isOtelExportTezCountersEnabled(driverContext)) {
+        driverContext.getQueryDisplay().setTezCounters(driverContext.getRuntimeContext().getCounters());
+      }
       runPostDriverHooks(hookContext);
       isFinishedWithError = false;
     } finally {
@@ -267,15 +271,12 @@ public class Driver implements IDriver {
           driverContext.setRetrial(true);
 
           compileInternal(context.getCmd(), true);
+          driverContext.setRetrial(false);
 
           if (driverContext.getPlan().hasAcidResourcesInQuery()) {
             driverTxnHandler.recordValidWriteIds();
             driverTxnHandler.setWriteIdForAcidFileSinks();
           }
-          // Since we're reusing the compiled plan, we need to update its start time for current run
-          driverContext.getPlan().setQueryStartTime(
-              driverContext.getQueryDisplay().getQueryStartTime());
-          driverContext.setRetrial(false);
         }
         // Re-check snapshot only in case we had to release locks and open a new transaction,
         // otherwise exclusive locks should protect output tables/partitions in snapshot from concurrent writes.

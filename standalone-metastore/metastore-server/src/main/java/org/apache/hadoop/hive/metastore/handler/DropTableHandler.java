@@ -176,14 +176,14 @@ public class DropTableHandler
   }
 
   @Override
-  public String getMessagePrefix() {
+  public String toString() {
     return "DropTableHandler [" + id + "] -  Drop table " + tableName + ":";
   }
 
   @Override
   public String getRequestProgress() {
     if (progress == null) {
-      return getMessagePrefix() + " hasn't started yet";
+      return this + " hasn't started yet";
     }
     return progress.get();
   }

@@ -47,6 +47,7 @@ import org.apache.hadoop.mapred.JobConf;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Interner;
+import com.google.common.collect.Iterators;
 
 /**
  * MapWork represents all the information used to run a map task on the cluster.
@@ -92,7 +93,7 @@ public class MapWork extends BaseWork {
   private Map<String, Operator<? extends OperatorDesc>> aliasToWork =
       new LinkedHashMap<String, Operator<? extends OperatorDesc>>();
 
-  private Map<String, PartitionDesc> aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
+  private Map<String, PartitionDesc> aliasToPartnInfo = new LinkedHashMap<>();
 
   private Map<String, SplitSample> nameToSplitSample = new LinkedHashMap<String, SplitSample>();
 
@@ -364,20 +365,28 @@ public class MapWork extends BaseWork {
     }
   }
 
-  /**
-   * @return the aliasToPartnInfo
-   */
-  public Map<String, PartitionDesc> getAliasToPartnInfo() {
-    return aliasToPartnInfo;
+  public Iterator<PartitionDesc> getPartitionDescs() {
+    return Iterators.unmodifiableIterator(aliasToPartnInfo.values().iterator());
   }
 
-  /**
-   * @param aliasToPartnInfo
-   *          the aliasToPartnInfo to set
-   */
-  public void setAliasToPartnInfo(
-      LinkedHashMap<String, PartitionDesc> aliasToPartnInfo) {
-    this.aliasToPartnInfo = aliasToPartnInfo;
+  public PartitionDesc getPartitionDesc(String alias) {
+    return aliasToPartnInfo.get(alias);
+  }
+
+  public int getPartitionCount() {
+    return aliasToPartnInfo.size();
+  }
+
+  public boolean hasPartitionDesc(String alias) {
+    return aliasToPartnInfo.containsKey(alias);
+  }
+
+  public void putPartitionDesc(String alias, PartitionDesc partitionDesc) {
+    aliasToPartnInfo.put(alias, partitionDesc);
+  }
+
+  public void removeAlias(String alias) {
+    aliasToPartnInfo.remove(alias);
   }
 
   public Map<String, Operator<? extends OperatorDesc>> getAliasToWork() {
@@ -606,10 +615,6 @@ public class MapWork extends BaseWork {
     return new ArrayList<Path>(pathToAliases.keySet());
   }
 
-  public ArrayList<PartitionDesc> getPartitionDescs() {
-    return new ArrayList<PartitionDesc>(aliasToPartnInfo.values());
-  }
-
   public Path getTmpHDFSPath() {
     return tmpHDFSPath;
   }
@@ -655,11 +660,24 @@ public class MapWork extends BaseWork {
         samplingType == 2 ? "SAMPLING_ON_START" : null;
   }
 
+  public Collection<TableDesc> getDistinctTableDescs() {
+    Map<String, TableDesc> tables = new LinkedHashMap<>();
+    for (PartitionDesc partition : aliasToPartnInfo.values()) {
+      TableDesc tableDesc = partition.getTableDesc();
+      if (tableDesc != null) {
+        tables.putIfAbsent(tableDesc.getTableName(), tableDesc);
+      }
+    }
+    return Collections.unmodifiableCollection(tables.values());
+  }
+
   @Override
   public void configureJobConf(JobConf job) {
     super.configureJobConf(job);
-    for (PartitionDesc partition : aliasToPartnInfo.values()) {
-      PlanUtils.configureJobConf(partition.getTableDesc(), job);
+    // Configure each table only once, even if we read thousands of its partitions.
+    // This avoids repeating expensive work (like loading storage drivers) for every single partition.
+    for (TableDesc tableDesc : getDistinctTableDescs()) {
+      PlanUtils.configureJobConf(tableDesc, job);
     }
     Collection<Operator<?>> mappers = aliasToWork.values();
     for (IConfigureJobConf icjc : OperatorUtils.findOperators(mappers, IConfigureJobConf.class)) {

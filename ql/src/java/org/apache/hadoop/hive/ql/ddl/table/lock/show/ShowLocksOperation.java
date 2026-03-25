@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -161,9 +162,12 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
       throw new HiveException("New lock format only supported with db lock manager.");
     }
 
-    // TODO catalog. Need to add catalog into ShowLocksRequest. But ShowLocksRequest doesn't have catalog field.
-    //  Maybe we need to change hive_metastore.thrift to add catalog into ShowLocksRequest struct. Depend on HIVE-29242.
     ShowLocksRequest request = new ShowLocksRequest();
+    if (desc.getCatName() == null && (desc.getDbName() != null || desc.getTableName() != null)) {
+      request.setCatname(HiveUtils.getCurrentCatalogOrDefault(context.getConf()));
+    } else {
+      request.setCatname(desc.getCatName());
+    }
     if (desc.getDbName() == null && desc.getTableName() != null) {
       request.setDbname(SessionState.get().getCurrentDatabase());
     } else {
@@ -190,6 +194,8 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
     // Write a header for CliDriver
     if (!sessionState.isHiveServerQuery()) {
       os.writeBytes("Lock ID");
+      os.write(Utilities.tabCode);
+      os.writeBytes("Catalog");
       os.write(Utilities.tabCode);
       os.writeBytes("Database");
       os.write(Utilities.tabCode);
@@ -225,6 +231,8 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
         } else {
           os.writeBytes(Long.toString(lock.getLockid()));
         }
+        os.write(Utilities.tabCode);
+        os.writeBytes(lock.getCatname());
         os.write(Utilities.tabCode);
         os.writeBytes(lock.getDbname());
         os.write(Utilities.tabCode);

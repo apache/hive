@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -100,7 +101,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
 
     startCleaner();
 
-    // Check there are no compactions requests left.
+    // Validate that the cleanup attempt has failed.
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
     assertEquals(FAILED_RESPONSE, rsp.getCompacts().getFirst().getState());
@@ -117,6 +118,31 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
           SET "CQ_WORKER_ID" = NULL, "CQ_START" = NULL, "CQ_STATE" = '%c'
           WHERE "CQ_STATE" = '%c'
         """.formatted(INITIATED_STATE, WORKING_STATE));
+  }
+
+  @Test
+  public void cleanupAfterMajorCompactionWithQueryWaitingToLockTheSnapshot() throws Exception {
+    Table t = prepareTestTable();
+    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    long compactTxn = compactInTxn(rqst, CommitAction.MARK_COMPACTED);
+    addBaseFile(t, null, 25L, 25, compactTxn);
+
+    // Open a query during compaction,
+    // Do not register minOpenWriteId (i.e. simulate delay locking the snapshot)
+    openTxn();
+
+    txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
+    startCleaner();
+
+    // Validate that the cleanup attempt has failed.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(1, rsp.getCompactsSize());
+    assertEquals(FAILED_RESPONSE, rsp.getCompacts().getFirst().getState());
+    assertEquals("txnid:27 is open and <= hwm: 27", rsp.getCompacts().getFirst().getErrorMessage());
+
+    // Check that the files are not removed
+    List<Path> paths = getDirectories(conf, t, null);
+    assertEquals(5, paths.size());
   }
 
   private Table prepareTestTable() throws Exception {

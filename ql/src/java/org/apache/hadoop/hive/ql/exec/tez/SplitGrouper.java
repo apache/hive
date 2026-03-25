@@ -190,7 +190,7 @@ public class SplitGrouper {
         if ((aliases != null) && (aliases.size() == 1)) {
           Operator<? extends OperatorDesc> op = mapWork.getAliasToWork().get(aliases.getFirst());
           if (op instanceof TableScanOperator tableScan) {
-            PartitionDesc partitionDesc = mapWork.getAliasToPartnInfo().get(aliases.getFirst());
+            PartitionDesc partitionDesc = mapWork.getPartitionDesc(aliases.getFirst());
             isMinorCompaction &= AcidUtils.isCompactionTable(partitionDesc.getTableDesc().getProperties());
             if (!tableScan.getConf().isTranscationalTable() && !isMinorCompaction) {
               String splitPath = getFirstSplitPath(splits);

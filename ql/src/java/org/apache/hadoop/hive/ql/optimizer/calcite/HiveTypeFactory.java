@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.ConversionUtil;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 public class HiveTypeFactory extends JavaTypeFactoryImpl {
@@ -50,5 +52,10 @@ public class HiveTypeFactory extends JavaTypeFactoryImpl {
       return canonize(type);
     }
     return null;
+  }
+
+  @Override
+  public Charset getDefaultCharset() {
+    return Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
   }
 }

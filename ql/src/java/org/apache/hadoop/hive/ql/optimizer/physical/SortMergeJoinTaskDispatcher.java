@@ -73,13 +73,12 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   // plan are fixed. The operator tree will still contain the SMBJoinOperator
   private void genSMBJoinWork(MapWork currWork, SMBMapJoinOperator smbJoinOp) {
     // Remove the paths which are not part of aliasToPartitionInfo
-    Map<String, PartitionDesc> aliasToPartitionInfo = currWork.getAliasToPartnInfo();
     List<Path> removePaths = new ArrayList<>();
 
     for (Map.Entry<Path, List<String>> entry : currWork.getPathToAliases().entrySet()) {
       boolean keepPath = false;
       for (String alias : entry.getValue()) {
-        if (aliasToPartitionInfo.containsKey(alias)) {
+        if (currWork.hasPartitionDesc(alias)) {
           keepPath = true;
           break;
         }
@@ -99,7 +98,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     }
 
     for (String alias : removeAliases) {
-      currWork.getAliasToPartnInfo().remove(alias);
+      currWork.removeAlias(alias);
       currWork.getAliasToWork().remove(alias);
     }
 
@@ -115,7 +114,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
       // Add the entry in mapredwork
       currWork.getAliasToWork().put(alias, op);
 
-      PartitionDesc partitionInfo = currWork.getAliasToPartnInfo().get(alias);
+      PartitionDesc partitionInfo = currWork.getPartitionDesc(alias);
       if (fetchWork.getTblDir() != null) {
         currWork.mergeAliasedInput(alias, fetchWork.getTblDir(), partitionInfo);
       } else {

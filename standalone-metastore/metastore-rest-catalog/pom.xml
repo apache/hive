@@ -23,7 +23,7 @@
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
-    <iceberg.version>1.10.0</iceberg.version>
+    <iceberg.version>1.10.1</iceberg.version>
   </properties>
   <dependencies>
     <dependency>
@@ -41,6 +41,34 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-iceberg-catalog</artifactId>
       <version>${hive.version}</version>
+    </dependency>
+    <!-- Spring Boot dependencies - use Jetty instead of Tomcat for Java 21 compatibility -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jetty</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>1.9.17</version>
     </dependency>
     <!-- Test dependencies -->
     <dependency>
@@ -236,6 +264,13 @@
       <artifactId>keycloak-admin-client</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Required by keycloak-admin-client/Resteasy for jakarta.annotation.Priority -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>${jakarta.annotation.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
@@ -300,6 +335,22 @@
                 </systemProperty>
               </systemProperties>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <configuration>
+          <mainClass>org.apache.iceberg.rest.standalone.StandaloneRESTCatalogServer</mainClass>
+          <classifier>exec</classifier>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

@@ -113,7 +113,7 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   enum Route {
-    CONFIG(HTTPMethod.GET, "v1/config", null),
+    CONFIG(HTTPMethod.GET, ResourcePaths.config(), null),
     LIST_NAMESPACES(HTTPMethod.GET, ResourcePaths.V1_NAMESPACES, null),
     CREATE_NAMESPACE(HTTPMethod.POST, ResourcePaths.V1_NAMESPACES, CreateNamespaceRequest.class),
     NAMESPACE_EXISTS(HTTPMethod.HEAD, ResourcePaths.V1_NAMESPACE),

@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Project;
@@ -60,6 +61,14 @@ public class HiveProject extends Project implements HiveRelNode {
     super(cluster, traitSet, child, exps, rowType);
     this.correlationInfos = new CorrelationInfoSupplier(getProjects());
     assert traitSet.containsIfApplicable(HiveRelNode.CONVENTION);
+  }
+
+  public HiveProject(RelInput input) {
+    this(input.getCluster(),
+        TraitsUtil.getDefaultTraitSet(input.getCluster()),
+        input.getInput(),
+        input.getExpressionList("exprs"),
+        input.getRowType("exprs", "fields"));
   }
 
   /**

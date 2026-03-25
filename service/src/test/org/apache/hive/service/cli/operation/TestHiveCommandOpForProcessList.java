@@ -93,7 +93,8 @@ public class TestHiveCommandOpForProcessList {
 
     String query = "show processlist";
     setCurrentSession();
-    ShowProcessListOperation sqlOperation = new ShowProcessListOperation(session2, query, processor, ImmutableMap.of());
+    ShowProcessListOperation sqlOperation =
+        new ShowProcessListOperation(session2, query, processor, ImmutableMap.of(), false);
     sqlOperation.run();
     state.out.flush();
      String output = baos.toString();

@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -483,7 +484,8 @@ public class AcidUtils {
    * @return true, if the tblProperties contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Properties tblProperties) {
-    return tblProperties != null && isCompactionTable(Maps.fromProperties(tblProperties));
+    return tblProperties != null &&
+        StringUtils.isNotBlank((String) tblProperties.get(COMPACTOR_TABLE_PROPERTY));
   }
 
   /**
@@ -1948,7 +1950,11 @@ public class AcidUtils {
   }
 
   public static boolean isTablePropertyTransactional(Properties props) {
-    return isTablePropertyTransactional(Maps.fromProperties(props));
+    String resultStr = (String) props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if (resultStr == null) {
+      resultStr = (String) props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
+    return Boolean.parseBoolean(resultStr);
   }
 
   public static boolean isTablePropertyTransactional(Map<String, String> parameters) {
@@ -2205,7 +2211,8 @@ public class AcidUtils {
   }
 
   public static boolean isInsertOnlyTable(Properties params) {
-    return isInsertOnlyTable(Maps.fromProperties(params));
+    String transactionalProp = (String) params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp);
   }
 
    /**
@@ -2920,6 +2927,7 @@ public class AcidUtils {
 
     Set<Table> fullTableLock = getFullTableLock(readEntities, conf);
 
+    String currentCatalog = HiveUtils.getCurrentCatalogOrDefault(conf);
     // For each source to read, get a shared_read lock
     for (ReadEntity input : readEntities) {
       LockComponentBuilder compBuilder = new LockComponentBuilder();
@@ -2929,6 +2937,7 @@ public class AcidUtils {
       Table t = null;
       switch (input.getType()) {
         case DATABASE:
+          compBuilder.setCatName(Optional.ofNullable(input.getDatabase().getCatalogName()).orElse(currentCatalog));
           compBuilder.setDbName(input.getDatabase().getName());
           break;
 
@@ -2937,6 +2946,7 @@ public class AcidUtils {
           if (!fullTableLock.contains(t)) {
             continue;
           }
+          compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2948,6 +2958,7 @@ public class AcidUtils {
           if (fullTableLock.contains(t)) {
             continue;
           }
+          compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
           break;
@@ -2990,12 +3001,14 @@ public class AcidUtils {
       HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, 0);
       switch (output.getType()) {
       case DATABASE:
+        compBuilder.setCatName(Optional.ofNullable(output.getDatabase().getCatalogName()).orElse(currentCatalog));
         compBuilder.setDbName(output.getDatabase().getName());
         break;
 
       case TABLE:
       case DUMMYPARTITION:   // in case of dynamic partitioning lock the table
         t = output.getTable();
+        compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
         break;
@@ -3003,6 +3016,7 @@ public class AcidUtils {
       case PARTITION:
         compBuilder.setPartitionName(output.getPartition().getName());
         t = output.getPartition().getTable();
+        compBuilder.setCatName(Optional.ofNullable(t.getCatName()).orElse(currentCatalog));
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
         break;

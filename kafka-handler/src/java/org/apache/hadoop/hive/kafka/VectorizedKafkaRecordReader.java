@@ -179,13 +179,11 @@ class VectorizedKafkaRecordReader implements RecordReader<NullWritable, Vectoriz
   @SuppressWarnings("Duplicates") private static KafkaSerDe createAndInitializeSerde(Configuration jobConf) {
     KafkaSerDe serDe = new KafkaSerDe();
     MapWork mapWork = Preconditions.checkNotNull(Utilities.getMapWork(jobConf), "Map work is null");
-    Properties
-        properties =
-        mapWork.getPartitionDescs()
-            .stream()
-            .map(partitionDesc -> partitionDesc.getTableDesc().getProperties())
-            .findAny()
-            .orElseThrow(() -> new RuntimeException("Can not find table property at the map work"));
+    Iterator<org.apache.hadoop.hive.ql.plan.PartitionDesc> partitionIterator = mapWork.getPartitionDescs();
+    if (!partitionIterator.hasNext()) {
+      throw new RuntimeException("Can not find table property at the map work");
+    }
+    Properties properties = partitionIterator.next().getTableDesc().getProperties();
     try {
       serDe.initialize(jobConf, properties, null);
     } catch (SerDeException e) {

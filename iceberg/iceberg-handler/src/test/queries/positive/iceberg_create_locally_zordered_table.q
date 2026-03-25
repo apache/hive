@@ -109,3 +109,25 @@ INSERT INTO default.zorder_props VALUES (3, 'B'),(1, 'A'),(7, 'C'),(2, 'A'),(9, 
 DESCRIBE FORMATTED default.zorder_props;
 SELECT * FROM default.zorder_props;
 DROP TABLE default.zorder_props;
+
+-- Validates partition transform (bucket) + z-order sort together
+CREATE TABLE default.zorder_tsdl_test (
+    ts timestamp,
+    dd double,
+    ll int)
+PARTITIONED BY SPEC (bucket(4, ll))
+WRITE ORDERED BY zorder (ts, dd)
+STORED BY iceberg
+STORED As orc;
+
+DESCRIBE FORMATTED default.zorder_tsdl_test;
+EXPLAIN INSERT INTO default.zorder_tsdl_test VALUES (TIMESTAMP '2022-01-01 00:00:00', 0.0, 0);
+
+INSERT INTO default.zorder_tsdl_test VALUES
+  (TIMESTAMP '2022-01-01 00:00:00', 0.0, 0),
+  (TIMESTAMP '2030-12-31 23:59:59', 9999.99, 1),
+  (TIMESTAMP '2026-06-15 12:00:00', 5000.5, 2);
+
+SELECT * FROM default.zorder_tsdl_test;
+DROP TABLE default.zorder_tsdl_test;
+

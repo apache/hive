@@ -436,6 +436,48 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     }
   }
 
+  @Test
+  public void testClearDanglingTxnRunsOnlyAfterFinalIncrementalRound() throws Throwable {
+    List<String> withClauseList = Arrays.asList(
+            "'" + HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'");
+    String insertStmt = "insert into sales_transactional partition(country) values "
+            + "(102, 'Phone', 800.00, '2026-02-11 11:30:00', 'Canada'),"
+            + "(103, 'Tablet', 450.00, '2026-02-11 12:15:00', 'USA'),"
+            + "(104, 'Monitor', 300.00, '2026-02-11 14:00:00', 'UK')";
+
+    primary.run("use " + primaryDbName)
+            .run("create table sales_transactional (sale_id int, product_name string, amount decimal(10,2), "
+                    + "sale_date timestamp) partitioned by (country string) stored as orc "
+                    + "tblproperties (\"transactional\"=\"true\")")
+            .run(insertStmt)
+            .run(insertStmt);
+
+    primary.dump(primaryDbName, withClauseList);
+    replica.load(replicatedDbName, primaryDbName, withClauseList)
+            .run("use " + replicatedDbName)
+            .run("select count(*) from sales_transactional")
+            .verifyResult("6");
+
+    primary.run("use " + primaryDbName);
+    for (int i = 0; i < 12; i++) {
+      primary.run(insertStmt);
+    }
+    primary.run("truncate table sales_transactional");
+    for (int i = 0; i < 5; i++) {
+      primary.run(insertStmt);
+    }
+
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, withClauseList);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseList)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(incrementalDump.lastReplicationId)
+            .run("select count(*) from sales_transactional")
+            .verifyResult("15");
+  }
+
 
   private List<Long> getOpenTxnCountFromDump(FileSystem fs, Path openTxnDumpPath) throws IOException {
     List<Long> openTxnIds = new ArrayList<>();
@@ -524,7 +566,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInSecDb = new HashMap<>();
     tablesInSecDb.put("t1", (long) numTxnsForSecDb);
     tablesInSecDb.put("t2", (long) numTxnsForSecDb);
-    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName + "_extra",
             tablesInSecDb, txnHandler, txnsForSecDb, primaryConf);
 
     //Open 2 txns for Primary Db
@@ -536,7 +578,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInPrimaryDb = new HashMap<>();
     tablesInPrimaryDb.put("t1", (long) numTxnsForPrimaryDb + 1);
     tablesInPrimaryDb.put("t2", (long) numTxnsForPrimaryDb + 2);
-    List<Long> lockIdsForPrimaryDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName,
+    List<Long> lockIdsForPrimaryDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName,
             tablesInPrimaryDb, txnHandler, txnsForPrimaryDb, primaryConf);
 
     //Open 1 txn with no hive locks acquired
@@ -1508,7 +1550,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tables = new HashMap<>();
     tables.put("t1", numTxns + 1L);
     tables.put("t2", numTxns + 2L);
-    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName, tables, txnHandler, txns, primaryConf);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName, tables,
+        txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 1s.
     List<String> withConfigs = Arrays.asList(
@@ -1627,7 +1670,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInSecDb = new HashMap<>();
     tablesInSecDb.put("t1", (long) numTxns);
     tablesInSecDb.put("t2", (long) numTxns);
-    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName + "_extra",
       tablesInSecDb, txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 300s.
@@ -1723,7 +1766,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInSecDb = new HashMap<>();
     tablesInSecDb.put("t1", (long) numTxns);
     tablesInSecDb.put("t2", (long) numTxns);
-    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName + "_extra",
       tablesInSecDb, txnHandler, txns, primaryConf);
 
     WarehouseInstance.Tuple bootstrapDump  = primary
@@ -1789,14 +1832,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInSecDb = new HashMap<>();
     tablesInSecDb.put("t1", (long) numTxns);
     tablesInSecDb.put("t2", (long) numTxns);
-    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName + "_extra",
       tablesInSecDb, txnHandler, txns, primaryConf);
     // Allocate write ids for both tables of primary db for all txns
     // t1=5+1L and t2=5+2L inserts
     Map<String, Long> tablesInPrimDb = new HashMap<>();
     tablesInPrimDb.put("t1", (long) numTxns + 1L);
     tablesInPrimDb.put("t2", (long) numTxns + 2L);
-    lockIds.addAll(allocateWriteIdsForTablesAndAcquireLocks(primaryDbName,
+    lockIds.addAll(allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName,
       tablesInPrimDb, txnHandler, txnsSameDb, primaryConf));
 
     // Bootstrap dump with open txn timeout as 1s.
@@ -1864,7 +1907,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tables = new HashMap<>();
     tables.put("t1", numTxns + 1L);
     tables.put("t2", numTxns + 2L);
-    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName, tables, txnHandler, txns, primaryConf);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName, tables,
+        txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 1s.
     List<String> withConfigs = Arrays.asList(

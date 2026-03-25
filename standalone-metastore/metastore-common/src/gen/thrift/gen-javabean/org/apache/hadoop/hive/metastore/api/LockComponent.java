@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField OPERATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationType", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField IS_TRANSACTIONAL_FIELD_DESC = new org.apache.thrift.protocol.TField("isTransactional", org.apache.thrift.protocol.TType.BOOL, (short)7);
   private static final org.apache.thrift.protocol.TField IS_DYNAMIC_PARTITION_WRITE_FIELD_DESC = new org.apache.thrift.protocol.TField("isDynamicPartitionWrite", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LockComponentStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LockComponentTupleSchemeFactory();
@@ -31,6 +32,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable DataOperationType operationType; // optional
   private boolean isTransactional; // optional
   private boolean isDynamicPartitionWrite; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -53,7 +55,8 @@ package org.apache.hadoop.hive.metastore.api;
      */
     OPERATION_TYPE((short)6, "operationType"),
     IS_TRANSACTIONAL((short)7, "isTransactional"),
-    IS_DYNAMIC_PARTITION_WRITE((short)8, "isDynamicPartitionWrite");
+    IS_DYNAMIC_PARTITION_WRITE((short)8, "isDynamicPartitionWrite"),
+    CAT_NAME((short)9, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -85,6 +88,8 @@ package org.apache.hadoop.hive.metastore.api;
           return IS_TRANSACTIONAL;
         case 8: // IS_DYNAMIC_PARTITION_WRITE
           return IS_DYNAMIC_PARTITION_WRITE;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -129,7 +134,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ISTRANSACTIONAL_ISSET_ID = 0;
   private static final int __ISDYNAMICPARTITIONWRITE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_TRANSACTIONAL,_Fields.IS_DYNAMIC_PARTITION_WRITE};
+  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_TRANSACTIONAL,_Fields.IS_DYNAMIC_PARTITION_WRITE,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -149,6 +154,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.IS_DYNAMIC_PARTITION_WRITE, new org.apache.thrift.meta_data.FieldMetaData("isDynamicPartitionWrite", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockComponent.class, metaDataMap);
   }
@@ -159,6 +166,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.isTransactional = false;
 
     this.isDynamicPartitionWrite = false;
+
+    this.catName = "hive";
 
   }
 
@@ -198,6 +207,9 @@ package org.apache.hadoop.hive.metastore.api;
     }
     this.isTransactional = other.isTransactional;
     this.isDynamicPartitionWrite = other.isDynamicPartitionWrite;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public LockComponent deepCopy() {
@@ -216,6 +228,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.isTransactional = false;
 
     this.isDynamicPartitionWrite = false;
+
+    this.catName = "hive";
 
   }
 
@@ -431,6 +445,30 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ISDYNAMICPARTITIONWRITE_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TYPE:
@@ -497,6 +535,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -527,6 +573,9 @@ package org.apache.hadoop.hive.metastore.api;
     case IS_DYNAMIC_PARTITION_WRITE:
       return isIsDynamicPartitionWrite();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -554,6 +603,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetIsTransactional();
     case IS_DYNAMIC_PARTITION_WRITE:
       return isSetIsDynamicPartitionWrite();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -643,6 +694,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -681,6 +741,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetIsDynamicPartitionWrite()) ? 131071 : 524287);
     if (isSetIsDynamicPartitionWrite())
       hashCode = hashCode * 8191 + ((isDynamicPartitionWrite) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -773,6 +837,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -857,6 +931,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("isDynamicPartitionWrite:");
       sb.append(this.isDynamicPartitionWrite);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -980,6 +1064,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1039,6 +1131,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeBool(struct.isDynamicPartitionWrite);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1075,7 +1174,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetIsDynamicPartitionWrite()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetTablename()) {
         oprot.writeString(struct.tablename);
       }
@@ -1091,6 +1193,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetIsDynamicPartitionWrite()) {
         oprot.writeBool(struct.isDynamicPartitionWrite);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
@@ -1102,7 +1207,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setLevelIsSet(true);
       struct.dbname = iprot.readString();
       struct.setDbnameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.tablename = iprot.readString();
         struct.setTablenameIsSet(true);
@@ -1122,6 +1227,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(4)) {
         struct.isDynamicPartitionWrite = iprot.readBool();
         struct.setIsDynamicPartitionWriteIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

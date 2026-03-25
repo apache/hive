@@ -28,4 +28,10 @@ INSERT INTO t3 (id, name, age) VALUES (5, 'custom_name', 30);
 -- Case 5: Complex struct with nested nulls
 INSERT INTO t3 (id, point) VALUES (6, named_struct('x', CAST(null AS INT), 'y', CAST(null AS INT)));
 
+-- Case 6: ALTER AND SET NULL and 'null' string
+ALTER TABLE t3 CHANGE COLUMN age age int DEFAULT null;
+ALTER TABLE t3 CHANGE COLUMN name name string DEFAULT 'null';
+
+INSERT INTO t3 (id) VALUES (7);
+
 SELECT * FROM t3 ORDER BY id;

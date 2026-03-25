@@ -3772,7 +3772,7 @@ public final class Utilities {
       Path hiveScratchDir, String alias)
           throws Exception {
 
-    TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
+    TableDesc tableDesc = work.getPartitionDesc(alias).getTableDesc();
     if (tableDesc.isNonNative()) {
       // if it does not need native storage, we can't create an empty file for it.
       return null;
@@ -3794,7 +3794,7 @@ public final class Utilities {
 
     work.setPathToAliases(pathToAliases);
 
-    PartitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
+    PartitionDesc pDesc = work.getPartitionDesc(alias).clone();
     work.addPathToPartitionInfo(newPath, pDesc);
 
     return newPath;

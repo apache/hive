@@ -600,7 +600,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     for (String partName : partNames) {
       try {
         Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partName);
-        Expression partitionExpr = IcebergTableUtil.generateExprForIdentityPartition(
+        Expression partitionExpr = IcebergTableUtil.buildPartitionExpr(
             icebergTable, partitionSpec, partitionFields);
 
         predicate = Expressions.or(predicate, partitionExpr);
@@ -893,8 +893,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           Map<String, String> structDefaults = HiveSchemaUtil.getDefaultValuesMap(field.getValue());
           handleDefaultValues(structDefaults, renameMapping, fieldType.asStructType().fields(), qualifiedName + ".");
         } else {
-          updateSchema.updateColumnDefault(qualifiedName,
-              Expressions.lit(HiveSchemaUtil.getDefaultValue(field.getValue(), fieldType)));
+          Object defaultValue = HiveSchemaUtil.getDefaultValue(field.getValue(), fieldType);
+          updateSchema.updateColumnDefault(qualifiedName, defaultValue != null ?
+              Expressions.lit(HiveSchemaUtil.getDefaultValue(field.getValue(), fieldType)) :
+              null);
         }
       }
     }
