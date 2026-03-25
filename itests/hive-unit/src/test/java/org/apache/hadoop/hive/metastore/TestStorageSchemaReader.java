@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat;
 import org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -60,6 +61,8 @@ public class TestStorageSchemaReader {
   @Before public void setUp() throws Exception {
     dbName = "sampleDb";
     hiveConf = new HiveConf(this.getClass());
+    // Unset the deprecated HiveConf value so MetastoreConf uses its own default
+    hiveConf.unset(HiveConf.ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA.varname);
     new DatabaseBuilder().setName(dbName).create(new HiveMetaStoreClient(hiveConf), hiveConf);
     avroTableParams.put("avro.schema.literal",
         "{\"name\":\"nullable\", \"type\":\"record\", \"fields\":[{\"name\":\"id\", \"type\":\"int\"}, {\"name\":\"value\", \"type\":\"int\"}]}");
@@ -111,7 +114,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testAvroTableWithDefaultSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
     String tblName = "avroTable";
     Table tbl = createTable(tblName, AvroSerDe.class.getName(), AvroContainerInputFormat.class.getName(),
         AvroContainerOutputFormat.class.getName(), avroTableParams, new HashMap<>());
@@ -119,7 +122,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testAvroTableWithSerdeSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
     String tblName = "avroTable";
     Table tbl = createTable(tblName, AvroSerDe.class.getName(), AvroContainerInputFormat.class.getName(),
         AvroContainerOutputFormat.class.getName(), avroTableParams, new HashMap<>());
@@ -127,7 +130,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testHbaseTableWithDefaultSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
     String tblName = "hbaseTable";
 
     Table table = createTable(tblName, HBaseSerDe.class.getName(), null, null, hbaseTableParams, hbaseSerdeParams);
@@ -135,7 +138,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testHbaseTableWithSerdeSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
     String tblName = "hbaseTableSerde";
 
     Table table =
@@ -144,7 +147,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testJdbcTableWithDefaultSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
     String tblName = "jdbcTable";
 
     createTable(tblName, JdbcSerDe.class.getName(), null, null, jdbcTableParams, jdbcSerdeParams);
@@ -152,7 +155,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testJdbcTableWithSerdeSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
     String tblName = "jdbcTable";
 
     Table table = createTable(tblName, JdbcSerDe.class.getName(), null, null, jdbcTableParams, jdbcSerdeParams);
@@ -160,7 +163,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testOrcTableWithDefaultSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
     String tblName = "orcTable2";
     Table tbl =
         createTable(tblName, OrcSerde.class.getName(), OrcInputFormat.class.getName(), OrcOutputFormat.class.getName(),
@@ -169,7 +172,7 @@ public class TestStorageSchemaReader {
   }
 
   @Test public void testOrcTableWithSerdeSSR() throws Exception {
-    hiveConf.set("metastore.storage.schema.reader.impl", "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
     String tblName = "orcTable";
     Table tbl =
         createTable(tblName, OrcSerde.class.getName(), OrcInputFormat.class.getName(), OrcOutputFormat.class.getName(),
