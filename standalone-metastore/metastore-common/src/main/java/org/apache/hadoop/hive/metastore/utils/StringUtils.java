@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.metastore.api.MetaException;
+
 public class StringUtils {
 
   /**
@@ -92,6 +94,21 @@ public class StringUtils {
    */
   public static String normalizeIdentifier(String identifier) {
     return identifier.trim().toLowerCase();
+  }
+
+  public static List<String> normalizeIdentifiers(List<String> identifiers)
+      throws MetaException {
+    if (identifiers != null && !identifiers.isEmpty()) {
+      List<String> normalizedIdents = new ArrayList<>();
+      for (String ident : identifiers) {
+        if (StringUtils.isEmpty(ident)) {
+          throw new MetaException("An unexpected empty identifier found in the list");
+        }
+        normalizedIdents.add(normalizeIdentifier(ident));
+      }
+      return normalizedIdents;
+    }
+    return Collections.emptyList();
   }
 
   /**

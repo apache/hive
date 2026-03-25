@@ -87,14 +87,22 @@ public class DirectSqlDeleteStats {
     try {
       return updateColumnStatsAccurateForPartitions(partIds, colNames);
     } catch (SQLException e) {
-      LOG.error("Fail to update the partitions' column accurate status", e);
-      throw new MetaException("Updating partitions's column accurate throws: " + e.getMessage());
+      String errorMsg = String.format(
+          "Failed to update partitions' COLUMN_STATS_ACCURATE for catalog '%s', database '%s', table '%s' "
+              + "(partitionCount=%d, columnCount=%d)",
+          catName, dbName, tblName,
+          partIds == null ? 0 : partIds.size(),
+          colNames == null ? 0 : colNames.size());
+      LOG.error(errorMsg, e);
+      MetaException metaException = new MetaException(errorMsg + ": " + e.getMessage());
+      metaException.initCause(e);
+      throw metaException;
     }
   }
 
   /**
-   a helper function which will get the current COLUMN_STATS_ACCURATE parameter on table level
-   and update the COLUMN_STATS_ACCURATE parameter with the new value on table level using directSql
+   * A helper function which will get the current COLUMN_STATS_ACCURATE parameter on table level
+   * and update the COLUMN_STATS_ACCURATE parameter with the new value on table level using directSql
    */
   private long updateColumnStatsAccurateForTable(Table table, List<String> droppedCols) throws MetaException {
     Map<String, String> params = table.getParameters();

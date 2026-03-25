@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPA
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaException;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifiers;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -2137,14 +2138,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       catName = normalizeIdentifier(catName);
 
-      List<String> lowered_tbl_names = new ArrayList<>();
-      if(tbl_names != null) {
-        lowered_tbl_names = new ArrayList<>(tbl_names.size());
-        for (String t : tbl_names) {
-          lowered_tbl_names.add(normalizeIdentifier(t));
-        }
-      }
-
+      List<String> lowered_tbl_names = normalizeIdentifiers(tbl_names);
       StringBuilder filterBuilder = new StringBuilder();
       List<String> parameterVals = new ArrayList<>();
       appendPatternCondition(filterBuilder, "database.name", db, parameterVals);
@@ -10019,20 +10013,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
-    final List<String> cols;
-    if (colNames != null && !colNames.isEmpty()) {
-      List<String> normalizedColNames = new ArrayList<>();
-      for (String colName : colNames) {
-        if (StringUtils.isEmpty(colName)) {
-          continue;
-        }
-        // trim the extra spaces, and change to lowercase
-        normalizedColNames.add(normalizeIdentifier(colName));
-      }
-      cols = normalizedColNames;
-    } else {
-      cols = new ArrayList<>();
-    }
+    List<String> cols = normalizeIdentifiers(colNames);
     return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
       @Override
       protected String describeResult() {
@@ -10146,20 +10127,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
-    final List<String> cols;
-    if (colNames != null && !colNames.isEmpty()) {
-      List<String> normalizedColNames = new ArrayList<>();
-      for (String colName : colNames){
-        if (StringUtils.isEmpty(colName)) {
-          continue;
-        }
-        // trim the extra spaces, and change to lowercase
-        normalizedColNames.add(normalizeIdentifier(colName));
-      }
-      cols = normalizedColNames;
-    } else {
-      cols = new ArrayList<>();
-    }
+    List<String> cols = normalizeIdentifiers(colNames);
     return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
       @Override
       protected String describeResult() {
