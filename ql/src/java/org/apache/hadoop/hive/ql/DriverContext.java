@@ -275,8 +275,4 @@ public class DriverContext {
   public String getExplainPlan() {
     return explainPlan;
   }
-
-  public void recordQueryStartTime() {
-    plan.setQueryStartTime(queryDisplay.getQueryStartTime());
-  }
 }
