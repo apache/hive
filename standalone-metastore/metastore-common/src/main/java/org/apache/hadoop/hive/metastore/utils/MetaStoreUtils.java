@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -1093,10 +1093,8 @@ public class MetaStoreUtils {
    *            in the database name.
    * @return an array of two elements, the first being the catalog name, the second the database
    * name.
-   * @throws MetaException if the name is not either just a database name or a catalog plus
-   * database name with the proper delimiters.
    */
-  public static String[] parseDbName(String dbName, Configuration conf) throws MetaException {
+  public static String[] parseDbName(String dbName, Configuration conf) {
     if (dbName == null) {
       return Arrays.copyOf(nullCatalogAndDatabase, nullCatalogAndDatabase.length);
     }
