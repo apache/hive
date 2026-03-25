@@ -2176,7 +2176,8 @@ public class CachedStore implements RawStore, Configurable {
       return succ;
     }
     Table cachedTable = sharedCache.getTableFromCache(catName, dbName, tblName);
-    if (cachedTable != null) {
+    if (cachedTable != null &&
+        cachedTable.getParameters().containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE) && succ) {
       if (colNames == null || colNames.isEmpty()) {
         StatsSetupConst.clearColumnStatsState(cachedTable.getParameters());
       } else {

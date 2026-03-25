@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -88,9 +89,9 @@ public class DirectSqlDeleteStats {
       return updateColumnStatsAccurateForPartitions(partIds, colNames);
     } catch (SQLException e) {
       String errorMsg = String.format(
-          "Failed to update partitions' COLUMN_STATS_ACCURATE for catalog '%s', database '%s', table '%s' "
+          "Failed to update partitions' COLUMN_STATS_ACCURATE for table '%s' "
               + "(partitionCount=%d, columnCount=%d)",
-          catName, dbName, tblName,
+          new TableName(catName, dbName, tblName),
           partIds == null ? 0 : partIds.size(),
           colNames == null ? 0 : colNames.size());
       LOG.error(errorMsg, e);
@@ -196,16 +197,16 @@ public class DirectSqlDeleteStats {
             if (fields[1] == null) {
               continue;
             }
-            Map<String, String> accurateMap = new HashMap<>();
+            Map<String, String> parameters = new HashMap<>();
             String accurateBefore = extractSqlClob(fields[1]);
-            accurateMap.put(StatsSetupConst.COLUMN_STATS_ACCURATE, accurateBefore);
+            parameters.put(StatsSetupConst.COLUMN_STATS_ACCURATE, accurateBefore);
             if (colNames == null || colNames.isEmpty()) {
-              StatsSetupConst.clearColumnStatsState(accurateMap);
+              StatsSetupConst.clearColumnStatsState(parameters);
             } else {
-              StatsSetupConst.removeColumnStatsState(accurateMap, colNames);
+              StatsSetupConst.removeColumnStatsState(parameters, colNames);
             }
-            String accurateAfter = accurateMap.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
-            if (accurateAfter.equals(accurateBefore)) {
+            String accurateAfter = parameters.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+            if (accurateBefore.equals(accurateAfter)) {
               continue;
             }
             result.add(Pair.of(partId, accurateAfter));

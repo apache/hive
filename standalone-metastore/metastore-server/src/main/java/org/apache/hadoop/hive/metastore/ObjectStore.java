@@ -10029,7 +10029,7 @@ public class ObjectStore implements RawStore, Configurable {
               throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
         return deletePartitionColumnStatisticsViaJdo(catName, dbName, tableName, partNames, cols, engine);
       }
-    }.run(true);
+    }.run(false);
   }
 
   private boolean deletePartitionColumnStatisticsViaJdo(String catName, String dbName, String tableName,
@@ -10094,18 +10094,16 @@ public class ObjectStore implements RawStore, Configurable {
           try (QueryWrapper qw = new QueryWrapper(queryWithParams.getLeft())) {
             qw.setResultClass(MPartition.class);
             qw.setClass(MPartition.class);
-            qw.setOrdering("partitionName ascending");
             List<MPartition> mparts = (List<MPartition>) qw.executeWithMap(queryWithParams.getRight());
             for (MPartition mPart : mparts) {
-              Map<String, String> partitionParams = mPart.getParameters();
-              if (partitionParams != null) {
-                // In-place update the COLUMN_STATS_ACCURATE
+              Map<String, String> params = mPart.getParameters();
+              if (params != null && params.containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
                 if (colNames == null || colNames.isEmpty()) {
-                  StatsSetupConst.clearColumnStatsState(partitionParams);
+                  StatsSetupConst.clearColumnStatsState(params);
                 } else {
-                  StatsSetupConst.removeColumnStatsState(partitionParams, colNames);
+                  StatsSetupConst.removeColumnStatsState(params, colNames);
                 }
-                mPart.setParameters(partitionParams);
+                mPart.setParameters(params);
               }
             }
           }
@@ -10169,9 +10167,6 @@ public class ObjectStore implements RawStore, Configurable {
       query.setFilter(filter);
       query.declareParameters(parameters);
       List<Object> params = new ArrayList<>();
-      if (tableName == null || dbName == null) {
-        throw new InvalidInputException("tableName and dbName cannot be null");
-      }
       params.add(normalizeIdentifier(tableName));
       params.add(normalizeIdentifier(dbName));
       params.add(catName == null ? null : normalizeIdentifier(catName));
@@ -10185,15 +10180,12 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieveAll(mStatsObjColl);
       if (mStatsObjColl != null) {
         pm.deletePersistentAll(mStatsObjColl);
-      } else {
-        throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
-            + tableName + " col=" + String.join(", ", colNames));
       }
-        // get the persistent object MTable
+
       MTable mTable = getMTable(catName, dbName, tableName);
       if (mTable != null) {
         Map<String, String> tableParams = mTable.getParameters();
-        if (tableParams != null) {
+        if (tableParams != null && tableParams.containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
           if (colNames == null || colNames.isEmpty()) {
             StatsSetupConst.clearColumnStatsState(tableParams);
           } else {
