@@ -132,7 +132,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
 
   private final IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
 
-  //Even though we are using longs, substr can only deal with ints, so we use
+  // Even though we are using longs, substr can only deal with ints, so we use
   // the maximum int value as the maxValue
   private final LongWritable maxLongValue = new LongWritable(Integer.MAX_VALUE);
 
