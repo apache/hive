@@ -1,11 +1,4 @@
 --! qt:dataset:srcpart
--- Debug: DELETEME: show merge settings
-set hive.merge.mapfiles;
-set hive.merge.mapredfiles;
-set hive.merge.tezfiles;
-set hive.merge.smallfiles.avgsize;
--- Debug: DELETEME: end
-
 -- this ensures consistent split file counts between localhost & CI runs
 set tez.grouping.split-count=1;
 set hive.mapred.mode=nonstrict;
