@@ -29,7 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class DirectSqlBase {
+class DirectSqlBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(DirectSqlBase.class.getName());
 
@@ -37,7 +37,7 @@ public class DirectSqlBase {
   protected final DatabaseProduct dbType;
   protected final int maxBatchSize;
 
-  public DirectSqlBase(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
+  DirectSqlBase(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
     this.pm = pm;
     this.dbType = dbType;
     this.maxBatchSize = batchSize;

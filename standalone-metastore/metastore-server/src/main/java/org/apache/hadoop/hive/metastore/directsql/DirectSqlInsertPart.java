@@ -53,7 +53,7 @@ class DirectSqlInsertPart {
   private final DatabaseProduct dbType;
   private final int batchSize;
 
-  public DirectSqlInsertPart(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
+  DirectSqlInsertPart(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
     this.pm = pm;
     this.dbType = dbType;
     this.batchSize = batchSize;

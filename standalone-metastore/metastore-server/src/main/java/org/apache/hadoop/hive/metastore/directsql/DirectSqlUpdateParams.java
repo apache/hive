@@ -40,9 +40,9 @@ import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils
 /**
  * Shared helper to diff and apply parameter table changes (delete/update/insert) in batches.
  */
-public class DirectSqlUpdateParams extends DirectSqlBase {
+class DirectSqlUpdateParams extends DirectSqlBase {
 
-  public DirectSqlUpdateParams(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
+  DirectSqlUpdateParams(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
     super(pm, dbType, batchSize);
   }
 

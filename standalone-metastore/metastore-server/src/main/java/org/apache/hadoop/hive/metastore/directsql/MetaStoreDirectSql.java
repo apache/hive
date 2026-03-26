@@ -2256,7 +2256,6 @@ public class MetaStoreDirectSql {
    * @param dbName    Metastore db name.
    * @param tblName   Metastore table name.
    * @param partNames Partition names to get.
-   * @return List of partitions.
    */
   public void dropPartitionsViaSqlFilter(final String catName, final String dbName,
                                          final String tblName, List<String> partNames)
