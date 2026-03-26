@@ -32,4 +32,16 @@
     <name>hive.llap.daemon.num.executors</name>
     <value>${LLAP_EXECUTORS}</value>
   </property>
+  <property>
+    <name>hive.llap.daemon.web.port</name>
+    <value>${LLAP_WEB_PORT}</value>
+  </property>
+  <property>
+    <name>hive.llap.management.rpc.port</name>
+    <value>${LLAP_MANAGEMENT_RPC_PORT}</value>
+  </property>
+  <property>
+    <name>hive.llap.daemon.yarn.shuffle.port</name>
+    <value>${LLAP_SHUFFLE_PORT}</value>
+  </property>
 </configuration>

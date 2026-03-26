@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-name: llap-cluster
+name: hive-llap-cluster
 services:
   zookeeper:
     image: zookeeper:3.8.4
@@ -83,7 +83,6 @@ services:
     depends_on:
       - metastore
       - zookeeper
-      - llap
     restart: unless-stopped
     container_name: hiveserver2
     environment:
@@ -127,18 +126,19 @@ services:
     #     - tez-api 1.0.0-SNAPSHOT jar injected into HiveSever2 until Tez 1.0.0 is released
     #     - make HIVE-29477 happen to let HiveServer2 use Tez external sessions
     # 4. Define hadoop components here to be used by all the containers (working example can be found at TEZ-4682), currently a local volume
-  llap:
+
+  llapdaemon1:
     image: apache/hive-llap:${HIVE_VERSION}
-    container_name: llap
-    hostname: llap
+    container_name: llapdaemon1
+    hostname: llapdaemon1
     depends_on:
       - zookeeper
     restart: unless-stopped
     environment:
       USER: hive
       # Basic LLAP daemon configuration
-      LLAP_MEMORY_MB: '2048'
-      LLAP_EXECUTORS: '2'
+      LLAP_MEMORY_MB: '1024'
+      LLAP_EXECUTORS: '1'
       # LLAP daemon zookeeper registration
       HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
       LLAP_SERVICE_HOSTS: '@llap0'
@@ -149,13 +149,49 @@ services:
 
       # Runtime defaults expected by LLAP
       LOCAL_DIRS: /tmp/llap-local
-      HADOOP_CONF_DIR: /etc/hadoop
-      HIVE_CONF_DIR: /etc/hive
-      TEZ_CONF_DIR: /etc/hadoop
+
+      # Non-default LLAP daemon ports to avoid conflicts with another LLAP daemon on the same testing host
+      LLAP_WEB_PORT: '15001'
+    ports:
+      - '15001:15001' # HTTP web UI port
+      - '15004:15004' # management port
+      - '15551:15551' # shuffle port
+    volumes:
+      - warehouse:/opt/hive/data/warehouse
+      - scratch:/opt/hive/scratch
+    networks:
+      - hive
+  llapdaemon2:
+    image: apache/hive-llap:${HIVE_VERSION}
+    container_name: llapdaemon2
+    hostname: llapdaemon2
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+    environment:
+      USER: hive
+      # Basic LLAP daemon configuration
+      LLAP_MEMORY_MB: '1024'
+      LLAP_EXECUTORS: '1'
+      # LLAP daemon zookeeper registration
+      HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
+      LLAP_SERVICE_HOSTS: '@llap0'
+
+      # Directories shared between HiveServer2 and LLAP daemon
+      HIVE_SCRATCH_DIR: /opt/hive/scratch
+      HIVE_QUERY_RESULTS_CACHE_DIRECTORY: /opt/hive/scratch/_resultscache_
+
+      # Runtime defaults expected by LLAP
+      LOCAL_DIRS: /tmp/llap-local
+
+      # Non-default LLAP daemon ports to avoid conflicts with another LLAP daemon on the same testing host
+      LLAP_WEB_PORT: '15002'
+      LLAP_MANAGEMENT_RPC_PORT: '15005'
+      LLAP_SHUFFLE_PORT: '15552'
     ports:
       - '15002:15002' # HTTP web UI port
-      - '15004:15004' # management / RPC port
-      - '15551:15551' # shuffle port
+      - '15005:15005' # management port
+      - '15552:15552' # shuffle port
     volumes:
       - warehouse:/opt/hive/data/warehouse
       - scratch:/opt/hive/scratch
