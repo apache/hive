@@ -2169,15 +2169,24 @@ public class CachedStore implements RawStore, Configurable {
       throw new RuntimeException("CachedStore can only be enabled for Hive engine");
     }
     boolean succ = rawStore.deleteTableColumnStatistics(catName, dbName, tblName, colNames, engine);
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    if (!shouldCacheTable(catName, dbName, tblName)) {
+      return succ;
+    }
+    Table cachedTable = sharedCache.getTableFromCache(catName, dbName, tblName);
+    if (cachedTable != null &&
+        cachedTable.getParameters().containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE) && succ) {
+      if (colNames == null || colNames.isEmpty()) {
+        StatsSetupConst.clearColumnStatsState(cachedTable.getParameters());
+      } else {
+        StatsSetupConst.removeColumnStatsState(cachedTable.getParameters(), colNames);
+      }
+      sharedCache.alterTableInCache(catName, dbName, tblName, cachedTable);
+    }
     // in case of event based cache update, cache is updated during commit txn
     if (succ && !canUseEvents) {
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tblName = normalizeIdentifier(tblName);
-      if (!shouldCacheTable(catName, dbName, tblName)) {
-        return succ;
-      }
-
       if (colNames == null || colNames.isEmpty()) {
         colNames = getTable(catName, dbName, tblName)
             .getSd().getCols().stream().map(FieldSchema::getName)

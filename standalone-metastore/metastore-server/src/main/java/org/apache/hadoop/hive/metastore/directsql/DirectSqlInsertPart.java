@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
 import static org.apache.commons.lang3.StringUtils.repeat;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getModelIdentity;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.getModelIdentity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +32,8 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.identity.LongIdentity;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -51,7 +53,7 @@ class DirectSqlInsertPart {
   private final DatabaseProduct dbType;
   private final int batchSize;
 
-  public DirectSqlInsertPart(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
+  DirectSqlInsertPart(PersistenceManager pm, DatabaseProduct dbType, int batchSize) {
     this.pm = pm;
     this.dbType = dbType;
     this.batchSize = batchSize;

@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataI
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTable;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
@@ -29,9 +29,9 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getFullyQualifiedName;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.makeParams;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.prepareParams;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.getFullyQualifiedName;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.makeParams;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.prepareParams;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -63,7 +63,19 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.AggregateStatsCache;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
+import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PartitionProjectionEvaluator;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -135,7 +147,7 @@ import com.google.common.collect.Lists;
  * JDOQL partition retrieval is still present so as not to limit the ORM solution we have
  * to SQL stores only. There's always a way to do without direct SQL.
  */
-class MetaStoreDirectSql {
+public class MetaStoreDirectSql {
   private static final int NO_BATCHING = -1, DETECT_BATCHING = 0;
   private static final Set<String> ALLOWED_TABLES_TO_LOCK = Set.of("NOTIFICATION_SEQUENCE");
 
@@ -349,6 +361,10 @@ class MetaStoreDirectSql {
 
   public boolean isCompatibleDatastore() {
     return isCompatibleDatastore;
+  }
+
+  public int getDirectSqlBatchSize() {
+    return batchSize;
   }
 
   private void executeNoResult(final String queryText) throws SQLException {
@@ -868,10 +884,10 @@ class MetaStoreDirectSql {
     private String tableName;
     // whether should compact null elements in joins when generating sql filter.
     private boolean compactJoins = true;
-    SqlFilterForPushdown() {
+    public SqlFilterForPushdown() {
 
     }
-    SqlFilterForPushdown(Table table, boolean compactJoins) {
+    public SqlFilterForPushdown(Table table, boolean compactJoins) {
       this.catName = table.getCatName();
       this.dbName = table.getDbName();
       this.tableName = table.getTableName();
@@ -942,7 +958,7 @@ class MetaStoreDirectSql {
    * @param max The maximum number of partitions to return.
    * @return List of partition objects.
    */
-  private List<Long> getPartitionIdsViaSqlFilter(
+   List<Long> getPartitionIdsViaSqlFilter(
       String catName, String dbName, String tblName, String sqlFilter,
       List<? extends Object> paramsForFilter, List<String> joinsForFilter, Integer max)
       throws MetaException {
@@ -2240,7 +2256,6 @@ class MetaStoreDirectSql {
    * @param dbName    Metastore db name.
    * @param tblName   Metastore table name.
    * @param partNames Partition names to get.
-   * @return List of partitions.
    */
   public void dropPartitionsViaSqlFilter(final String catName, final String dbName,
                                          final String tblName, List<String> partNames)
@@ -2706,62 +2721,6 @@ class MetaStoreDirectSql {
     }
   }
 
-  public boolean deleteTableColumnStatistics(long tableId, List<String> colNames, String engine) {
-    String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = ?";
-    List<Object> params = new ArrayList<>(colNames == null ? 2 : colNames.size() + 2);
-    params.add(tableId);
-
-    if (colNames != null && !colNames.isEmpty()) {
-      deleteSql += " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")";
-      params.addAll(colNames);
-    }
-
-    if (engine != null) {
-      deleteSql += " and \"ENGINE\" = ?";
-      params.add(engine);
-    }
-
-    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", deleteSql))) {
-      executeWithArray(queryParams.getInnerQuery(), params.toArray(), deleteSql);
-    } catch (MetaException e) {
-      return false;
-    }
-
-    return true;
-  }
-
-  public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
-      List<String> partNames, List<String> colNames, String engine) throws MetaException {
-    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
-      @Override
-      public List<Void> run(List<String> input) throws Exception {
-        String sqlFilter = PARTITIONS + ".\"PART_NAME\" in  (" + makeParams(input.size()) + ")";
-        List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
-            input, Collections.emptyList(), -1);
-        if (!partitionIds.isEmpty()) {
-          String deleteSql = "delete from " + PART_COL_STATS + " where \"PART_ID\" in ( " + getIdListForIn(partitionIds) + ")";
-          List<Object> params = new ArrayList<>(colNames == null ? 1 : colNames.size() + 1);
-
-          if (colNames != null && !colNames.isEmpty()) {
-            deleteSql += " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")";
-            params.addAll(colNames);
-          }
-
-          if (engine != null) {
-            deleteSql += " and \"ENGINE\" = ?";
-            params.add(engine);
-          }
-
-          try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", deleteSql))) {
-            executeWithArray(queryParams.getInnerQuery(), params.toArray(), deleteSql);
-          }
-        }
-        return null;
-      }
-    });
-    return true;
-  }
-
   public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
                                                       Map<String, ColumnStatistics> partColStatsMap,
                                                       Table tbl,
@@ -2874,7 +2833,7 @@ class MetaStoreDirectSql {
     }
   }
 
-  long updateTableParam(Table table, String key, String expectedValue, String newValue) {
+  public long updateTableParam(Table table, String key, String expectedValue, String newValue) {
     String statement = TxnUtils.createUpdatePreparedStmt(
         "\"TABLE_PARAMS\"",
         ImmutableList.of("\"PARAM_VALUE\""),

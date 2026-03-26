@@ -282,14 +282,14 @@ public class DatabaseProduct implements Configurable {
   /**
    * Whether the RDBMS has restrictions on IN list size (explicit, or poor perf-based).
    */
-  protected boolean needsInBatching() {
+  public boolean needsInBatching() {
     return isORACLE() || isSQLSERVER();
   }
 
   /**
    * Whether the RDBMS has a bug in join and filter operation order described in DERBY-6358.
    */
-  protected boolean hasJoinOperationOrderBug() {
+  public boolean hasJoinOperationOrderBug() {
     return isDERBY() || isORACLE() || isPOSTGRES();
   }
 
@@ -314,7 +314,7 @@ public class DatabaseProduct implements Configurable {
     theDatabaseProduct = null;
   }
 
-  protected String toDate(String tableValue) {
+  public String toDate(String tableValue) {
     if (isORACLE()) {
       return "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
     } else {
@@ -322,7 +322,7 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
-  protected String toTimestamp(String tableValue) {
+  public String toTimestamp(String tableValue) {
     if (isORACLE()) {
       return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH24:mi:ss')";
     } else if (isSQLSERVER()) {

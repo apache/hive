@@ -54,7 +54,7 @@ public class DummyCustomRDBMS extends DatabaseProduct {
     return "DummyPostfix";
   }
   @Override
-  protected String toDate(String tableValue) {
+  public String toDate(String tableValue) {
     return "DummyDate";
   }
   @Override

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.directsql;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,12 +27,15 @@ import java.util.Optional;
 import javax.jdo.PersistenceManager;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.executeWithArray;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlClob;
-import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlLong;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.executeWithArray;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlClob;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlLong;
 
 /**
  * Shared helper to diff and apply parameter table changes (delete/update/insert) in batches.
@@ -43,7 +46,7 @@ class DirectSqlUpdateParams extends DirectSqlBase {
     super(pm, dbType, batchSize);
   }
 
-  void run(String paramTable, String idColumn, List<Long> ids, Map<Long, Optional<Map<String, String>>> newParamsOpt)
+  public void run(String paramTable, String idColumn, List<Long> ids, Map<Long, Optional<Map<String, String>>> newParamsOpt)
       throws MetaException {
     Map<Long, Map<String, String>> oldParams = getParams(paramTable, idColumn, ids);
 

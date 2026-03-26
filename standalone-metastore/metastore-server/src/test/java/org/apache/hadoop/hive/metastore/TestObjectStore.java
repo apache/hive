@@ -22,6 +22,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -73,6 +74,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -1947,6 +1949,106 @@ public class TestObjectStore {
     }
   }
 
+  @Test
+  public void testDeleteColumnStatsAccurate() throws Exception {
+    createPartitionedTable(false, true, new HashSet<>());
+    // add extra table column statistics
+    ColumnStatistics stats = new ColumnStatistics();
+    ColumnStatisticsDesc desc = new ColumnStatisticsDesc();
+    desc.setCatName(DEFAULT_CATALOG_NAME);
+    desc.setDbName(DB1);
+    desc.setTableName(TABLE1);
+    desc.setIsTblLevel(true);
+    stats.setStatsDesc(desc);
+    List<ColumnStatisticsObj> statsObjList = new ArrayList<>(1);
+    stats.setStatsObj(statsObjList);
+    stats.setEngine(ENGINE);
+    ColumnStatisticsData data = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
+        .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
+    statsObjList.add(new ColumnStatisticsObj("test_col1", "int", data));
+    statsObjList.add(new ColumnStatisticsObj("test_col' 2", "int", data));
+    objectStore.updateTableColumnStatistics(stats, null, -1);
+
+    Table table = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    Set<String> statsAccurate = Set.of("test_col1", "test_col' 2");
+    List<String> columns = StatsSetupConst.getColumnsHavingStats(table.getParameters());
+    Assert.assertTrue(statsAccurate.containsAll(columns) && columns.size() == 2);
+
+    try (AutoCloseable c = directsql(true)) {
+      objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, List.of("test_col1"), null);
+      table = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      columns = StatsSetupConst.getColumnsHavingStats(table.getParameters());
+      Assert.assertTrue(columns.size() == 1 && columns.getFirst().equals("test_col' 2"));
+    }
+     // reset again
+    objectStore.updateTableColumnStatistics(stats, null, -1);
+    table = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    columns = StatsSetupConst.getColumnsHavingStats(table.getParameters());
+    Assert.assertTrue(statsAccurate.containsAll(columns) && columns.size() == 2);
+
+    try (AutoCloseable c = directsql(false)) {
+      objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, List.of("test_col1"), null);
+      table = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      columns = StatsSetupConst.getColumnsHavingStats(table.getParameters());
+      Assert.assertTrue(columns.size() == 1 && columns.getFirst().equals("test_col' 2"));
+    }
+
+    try (AutoCloseable c = directsql(false)) {
+      objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, null, null);
+      table = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      columns = StatsSetupConst.getColumnsHavingStats(table.getParameters());
+      Assert.assertTrue(columns.isEmpty());
+    }
+
+    // test partition
+    desc.setIsTblLevel(false);
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, GetPartitionsArgs.getAllPartitions());
+    }
+    MTable mTable = objectStore.ensureGetMTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    for (Partition partition : partitions) {
+      desc.setPartName(Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()));
+      objectStore.updatePartitionColumnStatistics(table, mTable, stats, partition.getValues(), null, -1);
+      Partition newPart = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partition.getValues());
+      columns = StatsSetupConst.getColumnsHavingStats(newPart.getParameters());
+      Set<String> statsColumns = Set.of("test_col1", "test_col' 2", "test_part_col");
+      Assert.assertTrue(statsColumns.containsAll(columns) && columns.size() == 3);
+    }
+
+    try (AutoCloseable c = directsql(true)) {
+      objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          List.of("test_part_col=a0"), List.of("test_col1"), null);
+      Partition partition = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, List.of("a0"));
+      columns = StatsSetupConst.getColumnsHavingStats(partition.getParameters());
+      Assert.assertTrue(columns.contains("test_part_col") && columns.contains("test_col' 2"));
+    }
+
+    try (AutoCloseable c = directsql(false)) {
+      objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          List.of("test_part_col=a1"), List.of("test_col1"), null);
+      Partition partition = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, List.of("a1"));
+      columns = StatsSetupConst.getColumnsHavingStats(partition.getParameters());
+      Assert.assertTrue(columns.contains("test_part_col") && columns.contains("test_col' 2"));
+    }
+
+    try (AutoCloseable c = directsql(true)) {
+      objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          List.of("test_part_col=a1"), null, null);
+      Partition partition = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, List.of("a1"));
+      columns = StatsSetupConst.getColumnsHavingStats(partition.getParameters());
+      Assert.assertTrue(columns.isEmpty());
+    }
+
+    try (AutoCloseable c = directsql(false)) {
+      objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          List.of("test_part_col=a2"), null, null);
+      Partition partition = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, List.of("a2"));
+      columns = StatsSetupConst.getColumnsHavingStats(partition.getParameters());
+      Assert.assertTrue(columns.isEmpty());
+    }
+  }
+
   /**
    * Helper method to check whether the Java system properties were set correctly in {@link ObjectStore#configureSSL(Configuration)}
    * @param useSSL whether or not SSL is enabled
@@ -1978,6 +2080,14 @@ public class TestObjectStore {
       public void close() throws Exception {
         Deadline.stopTimer();
       }
+    };
+  }
+
+  AutoCloseable directsql(boolean tryDirectSql) {
+    boolean directsql = MetastoreConf.getBoolVar(objectStore.getConf(), ConfVars.TRY_DIRECT_SQL);
+    MetastoreConf.setBoolVar(objectStore.getConf(), ConfVars.TRY_DIRECT_SQL, tryDirectSql);
+    return () -> {
+      MetastoreConf.setBoolVar(objectStore.getConf(), ConfVars.TRY_DIRECT_SQL, directsql);
     };
   }
 }
