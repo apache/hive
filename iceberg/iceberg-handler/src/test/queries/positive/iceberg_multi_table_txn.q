@@ -2,6 +2,8 @@
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set iceberg.engine.hive.lock-enabled=false;
+set hive.txn.ext.locking.enabled=true;
 
 drop table if exists iceberg_txn_t1;
 drop table if exists iceberg_txn_t2;
