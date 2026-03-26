@@ -1,12 +1,12 @@
-2026-03-26T15:29:53-04:00	INFO	[vuln] Vulnerability scanning is enabled
-2026-03-26T15:29:53-04:00	INFO	[secret] Secret scanning is enabled
-2026-03-26T15:29:53-04:00	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
-2026-03-26T15:29:53-04:00	INFO	[secret] Please see also https://trivy.dev/dev/docs/scanner/secret#recommendation for faster secret detection
-2026-03-26T15:29:59-04:00	INFO	Detected OS	family="redhat" version="10.1"
-2026-03-26T15:29:59-04:00	INFO	[redhat] Detecting RHEL/CentOS vulnerabilities...	os_version="10" pkg_num=157
-2026-03-26T15:29:59-04:00	INFO	Number of language-specific files	num=1
-2026-03-26T15:29:59-04:00	INFO	[jar] Detecting vulnerabilities...
-2026-03-26T15:29:59-04:00	INFO	Table result includes only package filenames. Use '--format json' option to get the full path to the package file.
+2026-03-26T16:16:58-04:00	INFO	[vuln] Vulnerability scanning is enabled
+2026-03-26T16:16:58-04:00	INFO	[secret] Secret scanning is enabled
+2026-03-26T16:16:58-04:00	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-03-26T16:16:58-04:00	INFO	[secret] Please see also https://trivy.dev/dev/docs/scanner/secret#recommendation for faster secret detection
+2026-03-26T16:17:03-04:00	INFO	Detected OS	family="redhat" version="10.1"
+2026-03-26T16:17:03-04:00	INFO	[redhat] Detecting RHEL/CentOS vulnerabilities...	os_version="10" pkg_num=157
+2026-03-26T16:17:03-04:00	INFO	Number of language-specific files	num=1
+2026-03-26T16:17:03-04:00	INFO	[jar] Detecting vulnerabilities...
+2026-03-26T16:17:03-04:00	INFO	Table result includes only package filenames. Use '--format json' option to get the full path to the package file.
 
 Report Summary
 
@@ -1606,7 +1606,7 @@ Report Summary
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/hive/lib/spotbugs-annotations-4.9.8.jar                                      │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/hive/lib/spring-aop-5.3.31.jar                                               │  jar   │        0        │    -    │
+│ opt/hive/lib/spring-aop-5.3.39.jar                                               │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/hive/lib/spring-beans-5.3.39.jar                                             │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
@@ -1628,11 +1628,11 @@ Report Summary
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/hive/lib/spring-boot-starter-web-2.7.18.jar                                  │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/hive/lib/spring-context-5.3.31.jar                                           │  jar   │        2        │    -    │
+│ opt/hive/lib/spring-context-5.3.39.jar                                           │  jar   │        2        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/hive/lib/spring-core-5.3.39.jar                                              │  jar   │        1        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/hive/lib/spring-expression-5.3.31.jar                                        │  jar   │        1        │    -    │
+│ opt/hive/lib/spring-expression-5.3.39.jar                                        │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/hive/lib/spring-jcl-5.3.39.jar                                               │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
@@ -1642,9 +1642,9 @@ Report Summary
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/hive/lib/spring-tx-5.3.39.jar                                                │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/hive/lib/spring-web-5.3.31.jar                                               │  jar   │        6        │    -    │
+│ opt/hive/lib/spring-web-5.3.39.jar                                               │  jar   │        2        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/hive/lib/spring-webmvc-5.3.31.jar                                            │  jar   │        4        │    -    │
+│ opt/hive/lib/spring-webmvc-5.3.39.jar                                            │  jar   │        4        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/hive/lib/spymemcached-2.12.3.jar                                             │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
@@ -1850,25 +1850,27 @@ Report Summary
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/jettison-1.5.4.jar                                                   │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-client-9.4.57.v20241219.jar                                    │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-alpn-client-12.0.32.jar                                        │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-http-9.4.57.v20241219.jar                                      │  jar   │        2        │    -    │
+│ opt/tez/lib/jetty-client-12.0.32.jar                                             │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-io-9.4.57.v20241219.jar                                        │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-http-12.0.32.jar                                               │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-security-9.4.57.v20241219.jar                                  │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-io-12.0.32.jar                                                 │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-server-9.4.57.v20241219.jar                                    │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-security-9.4.53.v20231009.jar                                  │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-servlet-9.4.57.v20241219.jar                                   │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-server-12.0.32.jar                                             │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-util-9.4.57.v20241219.jar                                      │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-servlet-9.4.53.v20231009.jar                                   │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-util-ajax-9.4.57.v20241219.jar                                 │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-util-12.0.32.jar                                               │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-webapp-9.4.57.v20241219.jar                                    │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-util-ajax-9.4.53.v20231009.jar                                 │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/jetty-xml-9.4.57.v20241219.jar                                       │  jar   │        0        │    -    │
+│ opt/tez/lib/jetty-webapp-9.4.53.v20231009.jar                                    │  jar   │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
+│ opt/tez/lib/jetty-xml-12.0.32.jar                                                │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/jline-3.9.0.jar                                                      │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
@@ -1996,11 +1998,11 @@ Report Summary
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/txw2-2.3.1.jar                                                       │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/websocket-api-9.4.57.v20241219.jar                                   │  jar   │        0        │    -    │
+│ opt/tez/lib/websocket-api-9.4.53.v20231009.jar                                   │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/websocket-client-9.4.57.v20241219.jar                                │  jar   │        0        │    -    │
+│ opt/tez/lib/websocket-client-9.4.53.v20231009.jar                                │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/websocket-common-9.4.57.v20241219.jar                                │  jar   │        0        │    -    │
+│ opt/tez/lib/websocket-common-9.4.53.v20231009.jar                                │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/woodstox-core-5.4.0.jar                                              │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
@@ -2061,7 +2063,7 @@ Legend:
 
 Java (jar)
 ==========
-Total: 120 (UNKNOWN: 0, LOW: 6, MEDIUM: 39, HIGH: 55, CRITICAL: 20)
+Total: 113 (UNKNOWN: 0, LOW: 5, MEDIUM: 36, HIGH: 52, CRITICAL: 20)
 
 ┌──────────────────────────────────────────────────────────────┬─────────────────────┬──────────┬──────────┬───────────────────┬──────────────────────────────────────┬──────────────────────────────────────────────────────────────┐
 │                           Library                            │    Vulnerability    │ Severity │  Status  │ Installed Version │            Fixed Version             │                            Title                             │
@@ -2426,18 +2428,10 @@ Total: 120 (UNKNOWN: 0, LOW: 6, MEDIUM: 39, HIGH: 55, CRITICAL: 20)
 │ org.eclipse.jetty:jetty-http                                 │ CVE-2024-6763       │ MEDIUM   │          │ 9.4.57.v20241219  │ 12.0.12                              │ org.eclipse.jetty:jetty-http: jetty: Jetty URI parsing of    │
 │ (jetty-http-9.4.57.v20241219.jar)                            │                     │          │          │                   │                                      │ invalid authority                                            │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-6763                    │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
 │                                                              ├─────────────────────┼──────────┤          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
 │                                                              │ CVE-2025-11143      │ LOW      │          │                   │ 12.0.31, 12.1.5                      │ org.eclipse.jetty/jetty-http: org.eclipse.jetty: Security    │
 │                                                              │                     │          │          │                   │                                      │ bypass due to differential URI parsing                       │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2025-11143                   │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
 ├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┤          ├───────────────────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
 │ org.eclipse.jetty:jetty-http                                 │ CVE-2024-6763       │ MEDIUM   │          │ 9.4.58.v20250814  │ 12.0.12                              │ org.eclipse.jetty:jetty-http: jetty: Jetty URI parsing of    │
 │ (hadoop-client-runtime-3.4.3.jar)                            │                     │          │          │                   │                                      │ invalid authority                                            │
@@ -2480,44 +2474,27 @@ Total: 120 (UNKNOWN: 0, LOW: 6, MEDIUM: 39, HIGH: 55, CRITICAL: 20)
 │                                                              │                     │          │          │                   │                                      │ endpoint is not...                                           │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2025-22235                   │
 ├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┤          ├───────────────────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│ org.springframework:spring-context                           │ CVE-2024-38820      │ MEDIUM   │          │ 5.3.31            │ 6.1.14                               │ The fix for CVE-2022-22968 made disallowedFieldspatterns in  │
-│ (spring-context-5.3.31.jar)                                  │                     │          │          │                   │                                      │ DataBinder ...                                               │
+│ org.springframework:spring-context                           │ CVE-2024-38820      │ MEDIUM   │          │ 5.3.39            │ 6.1.14                               │ The fix for CVE-2022-22968 made disallowedFieldspatterns in  │
+│ (spring-context-5.3.39.jar)                                  │                     │          │          │                   │                                      │ DataBinder ...                                               │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-38820                   │
 │                                                              ├─────────────────────┼──────────┤          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
 │                                                              │ CVE-2025-22233      │ LOW      │          │                   │ 6.2.7, 6.1.20                        │ CVE-2024-38820 ensured Locale-independent, lowercase         │
 │                                                              │                     │          │          │                   │                                      │ conversion for bo ...                                        │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2025-22233                   │
-├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┤          ├───────────────────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│ org.springframework:spring-core (spring-core-5.3.39.jar)     │ CVE-2025-41249      │ HIGH     │          │ 5.3.39            │ 6.2.11                               │ org.springframework/spring-core: Spring Framework Annotation │
+├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┤          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
+│ org.springframework:spring-core (spring-core-5.3.39.jar)     │ CVE-2025-41249      │ HIGH     │          │                   │ 6.2.11                               │ org.springframework/spring-core: Spring Framework Annotation │
 │                                                              │                     │          │          │                   │                                      │ Detection Vulnerability                                      │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2025-41249                   │
-├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┤          ├───────────────────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│ org.springframework:spring-expression                        │ CVE-2024-38808      │ MEDIUM   │          │ 5.3.31            │ 5.3.39                               │ spring-expression: Denial of service when processing a       │
-│ (spring-expression-5.3.31.jar)                               │                     │          │          │                   │                                      │ specially crafted Spring Expression Language...              │
-│                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-38808                   │
 ├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┤          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│ org.springframework:spring-web (spring-web-5.3.31.jar)       │ CVE-2016-1000027    │ CRITICAL │          │                   │ 6.0.0                                │ spring: HttpInvokerServiceExporter readRemoteInvocation      │
+│ org.springframework:spring-web (spring-web-5.3.39.jar)       │ CVE-2016-1000027    │ CRITICAL │          │                   │ 6.0.0                                │ spring: HttpInvokerServiceExporter readRemoteInvocation      │
 │                                                              │                     │          │          │                   │                                      │ method untrusted java deserialization                        │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2016-1000027                 │
 │                                                              ├─────────────────────┼──────────┤          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│                                                              │ CVE-2024-22243      │ HIGH     │          │                   │ 6.1.4, 6.0.17, 5.3.32                │ springframework: URL Parsing with Host Validation            │
-│                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-22243                   │
-│                                                              ├─────────────────────┤          │          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│                                                              │ CVE-2024-22259      │          │          │                   │ 6.1.5, 6.0.18, 5.3.33                │ springframework: URL Parsing with Host Validation            │
-│                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-22259                   │
-│                                                              ├─────────────────────┤          │          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│                                                              │ CVE-2024-22262      │          │          │                   │ 5.3.34, 6.0.19, 6.1.6                │ springframework: URL Parsing with Host Validation            │
-│                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-22262                   │
-│                                                              ├─────────────────────┼──────────┤          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│                                                              │ CVE-2024-38809      │ MEDIUM   │          │                   │ 5.3.38, 6.0.23, 6.1.12               │ org.springframework:spring-web: Spring Framework DoS via     │
-│                                                              │                     │          │          │                   │                                      │ conditional HTTP request                                     │
-│                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-38809                   │
-│                                                              ├─────────────────────┤          │          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│                                                              │ CVE-2024-38820      │          │          │                   │ 6.1.14                               │ The fix for CVE-2022-22968 made disallowedFieldspatterns in  │
+│                                                              │ CVE-2024-38820      │ MEDIUM   │          │                   │ 6.1.14                               │ The fix for CVE-2022-22968 made disallowedFieldspatterns in  │
 │                                                              │                     │          │          │                   │                                      │ DataBinder ...                                               │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-38820                   │
 ├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┤          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│ org.springframework:spring-webmvc (spring-webmvc-5.3.31.jar) │ CVE-2024-38816      │ HIGH     │          │                   │ 6.1.13                               │ spring-webmvc: Path Traversal Vulnerability in Spring        │
+│ org.springframework:spring-webmvc (spring-webmvc-5.3.39.jar) │ CVE-2024-38816      │ HIGH     │          │                   │ 6.1.13                               │ spring-webmvc: Path Traversal Vulnerability in Spring        │
 │                                                              │                     │          │          │                   │                                      │ Applications Using RouterFunctions and FileSystemResource    │
 │                                                              │                     │          │          │                   │                                      │ https://avd.aquasec.com/nvd/cve-2024-38816                   │
 │                                                              ├─────────────────────┤          │          │                   ├──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
