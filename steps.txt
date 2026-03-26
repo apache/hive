@@ -1,0 +1,25 @@
+maven build (hive)
+mvn install -DskipTests
+
+rebuild the packaging tar (required to pick up dependency changes)
+mvn -f pom.xml clean package -pl packaging -DskipTests -Pdist
+
+(optional) if hadoop deps need updating, rebuild hadoop at /home/skool/my_code/hadoop-3.4.3
+then copy the rebuilt tar into hive's docker cache:
+cp /home/skool/my_code/hadoop-3.4.3/hadoop-dist/target/hadoop-3.4.3.tar.gz /home/skool/my_code/hive/packaging/cache/hadoop-3.4.3.tar.gz
+
+(optional) if tez deps need updating, rebuild tez at /home/skool/my_code/tez
+then repackage with the expected directory prefix and copy to cache:
+TMPDIR=$(mktemp -d) && mkdir "$TMPDIR/apache-tez-0.10.5-bin" && tar -xzf /home/skool/my_code/tez/tez-dist/target/tez-0.10.5.tar.gz -C "$TMPDIR/apache-tez-0.10.5-bin" && tar -czf /home/skool/my_code/hive/packaging/cache/apache-tez-0.10.5-bin.tar.gz -C "$TMPDIR" apache-tez-0.10.5-bin && rm -rf "$TMPDIR"
+
+Do a docker build
+TEZ_URL=file:///home/skool/my_code/tez/tez-dist/target/tez-0.10.5.tar.gz HADOOP_URL=file:///home/skool/my_code/hadoop-3.4.3/hadoop-dist/target/hadoop-3.4.3.tar.gz  ./packaging/src/docker/build.sh -hadoop 3.4.3
+
+scan the build
+trivy image apache/hive:4.3.0-SNAPSHOT > snap_1.txt
+
+analyze the results in snap_1.txt
+
+ensure the vuln/cve we are targeting is gone, otherwise iterate
+(note: jackson 1.9.2 vulns under /opt/hive/hcatalog/webhcat come from old webhcat bundled jars)
+(note: druid-handler and kudu-handler removed from packaging - not needed for metastore-only use)

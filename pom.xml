@@ -104,6 +104,7 @@
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.4</accumulo.version>
+    <aircompressor.version>2.0.3</aircompressor.version>
     <ant.version>1.10.15</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
@@ -125,7 +126,9 @@
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.16.1</commons-io.version>
-    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <commons-beanutils.version>1.9.4</commons-beanutils.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
+    <commons-vfs2.version>2.10.0</commons-vfs2.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.14.0</commons-dbcp2.version>
     <commons-text.version>1.10.0</commons-text.version>
@@ -154,7 +157,7 @@
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
-    <jackson.version>2.16.1</jackson.version>
+    <jackson.version>2.21.1</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
@@ -179,6 +182,7 @@
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.25.3</log4j2.version>
+    <lz4.version>1.8.1</lz4.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
@@ -217,7 +221,7 @@
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
     <xmlsec.version>2.3.4</xmlsec.version>
-    <zookeeper.version>3.8.4</zookeeper.version>
+    <zookeeper.version>3.9.5</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>5.7.1</curator.version>
@@ -313,9 +317,19 @@
         <version>${paranamer.version}</version>
       </dependency>
       <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>${commons-beanutils.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-vfs2</artifactId>
+        <version>${commons-vfs2.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.parquet</groupId>
@@ -415,6 +429,11 @@
         <version>${graalvm.version}</version>
       </dependency>
       <dependency>
+        <groupId>io.airlift</groupId>
+        <artifactId>aircompressor</artifactId>
+        <version>${aircompressor.version}</version>
+      </dependency>
+      <dependency>
         <groupId>io.jsonwebtoken</groupId>
         <artifactId>jjwt-api</artifactId>
         <version>${jjwt.version}</version>
@@ -483,6 +502,11 @@
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
         <version>${junit.vintage.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.lz4</groupId>
+        <artifactId>lz4-java</artifactId>
+        <version>${lz4.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
