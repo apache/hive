@@ -209,28 +209,28 @@ docker compose down
 
 #### Starting LLAP with Docker Compose
 
-A dedicated compose file is available at `packaging/src/docker/docker-compose-llap.yml` to start both ZooKeeper and an LLAP cluster with the required settings.
+The compose file `packaging/src/docker/docker-compose.yml` starts a cluster with LLAP daemons (discovered via Zookeeper) if the `llap` profile is activated.
 
 Use the following workflow from `packaging/src/docker`:
 
 ```shell
-docker-compose -f docker-compose-llap.yml down --rmi all # cleanup previous containers and images
+docker-compose --profile llap -f docker-compose.yml down --rmi local # cleanup previous containers and images
 
 export POSTGRES_LOCAL_PATH=... # set the path to the postgres driver jar on the host machine
 ./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 -llap # build LLAP image: already described earlier
-docker compose -f docker-compose-llap.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 To view LLAP logs:
 
 ```shell
-docker compose -f docker-compose-llap.yml logs -f llap
+docker compose --profile llap -f docker-compose.yml logs -f llap
 ```
 
 To stop and remove the LLAP stack:
 
 ```shell
-docker compose -f docker-compose-llap.yml down
+docker compose --profile llap -f docker-compose.yml down
 ```
 
 #### Usage
