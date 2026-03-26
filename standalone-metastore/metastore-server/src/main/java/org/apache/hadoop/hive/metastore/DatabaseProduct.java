@@ -856,6 +856,15 @@ public class DatabaseProduct implements Configurable {
     return batch;
   }
 
+  public String escapeClause() {
+    if (isMYSQL()) {
+      // MySQL does not support ESCAPE '\'
+      return " ESCAPE '\\\\' ";
+    } else {
+      return " ESCAPE '\\' ";
+    }
+  }
+
   // This class implements the Configurable interface for the benefit
   // of "plugin" instances created via reflection (see invocation of
   // ReflectionUtils.newInstance in method determineDatabaseProduct)
