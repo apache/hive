@@ -227,7 +227,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	9                   
 	numRows             	9                   
@@ -264,7 +264,7 @@ num_falses
 bit_vector          	                    
 histogram           	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: describe formatted test_stats b
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_stats
@@ -284,7 +284,7 @@ num_falses
 bit_vector          	                    
 histogram           	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: describe formatted test_stats c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_stats
@@ -304,4 +304,4 @@ num_falses
 bit_vector          	                    
 histogram           	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}

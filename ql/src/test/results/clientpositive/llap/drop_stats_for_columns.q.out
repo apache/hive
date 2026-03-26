@@ -158,7 +158,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	0                   
@@ -195,7 +195,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+COLUMN_STATS_ACCURATE	{}                  
 PREHOOK: query: describe formatted t1 j
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@t1
@@ -214,7 +214,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+COLUMN_STATS_ACCURATE	{}                  
 PREHOOK: query: describe formatted t1 k
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@t1
@@ -233,4 +233,4 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\",\"j\":\"true\",\"k\":\"true\"}}
+COLUMN_STATS_ACCURATE	{}                  
