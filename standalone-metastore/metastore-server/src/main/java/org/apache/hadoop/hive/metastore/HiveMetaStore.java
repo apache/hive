@@ -382,7 +382,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    final SslContextFactory.Server sslContextFactory = ServletSecurity.createSslContextFactory(conf);
     if (sslContextFactory != null) {
       connector = new ServerConnector(server, sslContextFactory, http);
     } else {

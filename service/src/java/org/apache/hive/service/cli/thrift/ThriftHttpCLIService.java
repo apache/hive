@@ -126,21 +126,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       conf.setResponseHeaderSize(responseHeaderSize);
       conf.setSendServerVersion(false);
       conf.setSendXPoweredBy(false);
-      final HttpConnectionFactory http = new HttpConnectionFactory(conf) {
-        public Connection newConnection(Connector connector, EndPoint endPoint) {
-          Connection connection = super.newConnection(connector, endPoint);
-          connection.addListener(new Connection.Listener() {
-            public void onOpened(Connection connection) {
-              openConnection();
-            }
-
-            public void onClosed(Connection connection) {
-              closeConnection();
-            }
-          });
-          return connection;
-        }
-      };
+      final HttpConnectionFactory http = new HttpConnectionFactory(conf);
 
       boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       String schemeName = useSsl ? "https" : "http";
@@ -163,7 +149,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         if (keyStoreAlgorithm.isEmpty()) {
           keyStoreAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
         }
-        SslContextFactory sslContextFactory = new SslContextFactory.Server();
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
         LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
         sslContextFactory.addExcludeProtocols(excludedProtocols);
@@ -187,6 +173,14 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         connector = new ServerConnector(server, http);
       }
 
+      connector.addBean(new Connection.Listener() {
+        public void onOpened(Connection connection) {
+          openConnection();
+        }
+        public void onClosed(Connection connection) {
+          closeConnection();
+        }
+      });
       connector.setPort(portNum);
       // Linux:yes, Windows:no
       connector.setReuseAddress(true);

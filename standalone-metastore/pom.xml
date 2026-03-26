@@ -122,7 +122,7 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <pac4j-core.version>4.5.8</pac4j-core.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
-    <jetty.version>9.4.57.v20241219</jetty.version>
+    <jetty.version>10.0.26</jetty.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <keycloak.version>26.0.6</keycloak.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
@@ -592,11 +592,6 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-continuation</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-xml</artifactId>
         <version>${jetty.version}</version>
       </dependency>
@@ -617,17 +612,17 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
-        <artifactId>websocket-server</artifactId>
+        <artifactId>websocket-jetty-server</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
-        <artifactId>websocket-common</artifactId>
+        <artifactId>websocket-jetty-common</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
-        <artifactId>websocket-client</artifactId>
+        <artifactId>websocket-jetty-client</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
@@ -637,12 +632,12 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
-        <artifactId>javax-websocket-server-impl</artifactId>
+        <artifactId>websocket-javax-server</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
-        <artifactId>javax-websocket-client-impl</artifactId>
+        <artifactId>websocket-javax-client</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>

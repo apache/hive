@@ -1,0 +1,1 @@
+- [CVE remediation project](project_vuln_remediation.md) — Hive Docker image CVE fixes, Jetty/Spring upgrade status

@@ -173,7 +173,7 @@ public class ServletServerBuilder {
    * @param port The port to bind the connector to
    * @return The created ServerConnector
    */
-  private ServerConnector createConnector(Server server, SslContextFactory sslContextFactory, int port) {
+  private ServerConnector createConnector(Server server, SslContextFactory.Server sslContextFactory, int port) {
     final ServerConnector connector;
     HttpConfiguration httpConf = new HttpConfiguration();
     // Do not leak information
@@ -236,7 +236,7 @@ public class ServletServerBuilder {
     }
     final Server server = createServer();
     // create the connectors
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(configuration);
+    final SslContextFactory.Server sslContextFactory = ServletSecurity.createSslContextFactory(configuration);
     final ServerConnector[] connectors = new ServerConnector[size];
     final ServletContextHandler[] handlers = new ServletContextHandler[size];
     Iterator<Map.Entry<Integer, ServletContextHandler>> it = handlersMap.entrySet().iterator();

@@ -204,8 +204,8 @@ public class Main {
     if (StringUtils.isEmpty(conf.jettyConfiguration())) {
       server = new Server(port);
     } else {
-        FileInputStream jettyConf = new FileInputStream(conf.jettyConfiguration());
-        XmlConfiguration configuration = new XmlConfiguration(jettyConf);
+        XmlConfiguration configuration = new XmlConfiguration(
+            org.eclipse.jetty.util.resource.Resource.newResource(conf.jettyConfiguration()));
         server = (Server)configuration.configure();
     }
 
@@ -289,7 +289,7 @@ public class Main {
 
     if (conf.getBoolean(AppConfig.USE_SSL, false)) {
       LOG.info("Using SSL for templeton.");
-      SslContextFactory sslContextFactory = new SslContextFactory.Server();
+      SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(conf.get(AppConfig.KEY_STORE_PATH, DEFAULT_KEY_STORE_PATH));
       sslContextFactory.setKeyStorePassword(conf.get(AppConfig.KEY_STORE_PASSWORD, DEFAULT_KEY_STORE_PASSWORD));
       Set<String> excludedSSLProtocols = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings()
