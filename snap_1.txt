@@ -1,12 +1,12 @@
-2026-03-26T16:16:58-04:00	INFO	[vuln] Vulnerability scanning is enabled
-2026-03-26T16:16:58-04:00	INFO	[secret] Secret scanning is enabled
-2026-03-26T16:16:58-04:00	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
-2026-03-26T16:16:58-04:00	INFO	[secret] Please see also https://trivy.dev/dev/docs/scanner/secret#recommendation for faster secret detection
-2026-03-26T16:17:03-04:00	INFO	Detected OS	family="redhat" version="10.1"
-2026-03-26T16:17:03-04:00	INFO	[redhat] Detecting RHEL/CentOS vulnerabilities...	os_version="10" pkg_num=157
-2026-03-26T16:17:03-04:00	INFO	Number of language-specific files	num=1
-2026-03-26T16:17:03-04:00	INFO	[jar] Detecting vulnerabilities...
-2026-03-26T16:17:03-04:00	INFO	Table result includes only package filenames. Use '--format json' option to get the full path to the package file.
+2026-03-26T17:32:48-04:00	INFO	[vuln] Vulnerability scanning is enabled
+2026-03-26T17:32:48-04:00	INFO	[secret] Secret scanning is enabled
+2026-03-26T17:32:48-04:00	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-03-26T17:32:48-04:00	INFO	[secret] Please see also https://trivy.dev/dev/docs/scanner/secret#recommendation for faster secret detection
+2026-03-26T17:32:53-04:00	INFO	Detected OS	family="redhat" version="10.1"
+2026-03-26T17:32:53-04:00	INFO	[redhat] Detecting RHEL/CentOS vulnerabilities...	os_version="10" pkg_num=157
+2026-03-26T17:32:53-04:00	INFO	Number of language-specific files	num=1
+2026-03-26T17:32:53-04:00	INFO	[jar] Detecting vulnerabilities...
+2026-03-26T17:32:53-04:00	INFO	Table result includes only package filenames. Use '--format json' option to get the full path to the package file.
 
 Report Summary
 
@@ -1730,8 +1730,6 @@ Report Summary
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/commons-io-2.16.0.jar                                                │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/commons-lang-2.6.jar                                                 │  jar   │        1        │    -    │
-├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/commons-lang3-3.18.0.jar                                             │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/commons-logging-1.2.jar                                              │  jar   │        0        │    -    │
@@ -1740,7 +1738,7 @@ Report Summary
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/commons-net-3.9.0.jar                                                │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ opt/tez/lib/commons-text-1.10.0.jar                                              │  jar   │        0        │    -    │
+│ opt/tez/lib/commons-text-1.13.0.jar                                              │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
 │ opt/tez/lib/curator-client-5.2.0.jar                                             │  jar   │        0        │    -    │
 ├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
@@ -2063,7 +2061,7 @@ Legend:
 
 Java (jar)
 ==========
-Total: 113 (UNKNOWN: 0, LOW: 5, MEDIUM: 36, HIGH: 52, CRITICAL: 20)
+Total: 112 (UNKNOWN: 0, LOW: 5, MEDIUM: 35, HIGH: 52, CRITICAL: 20)
 
 ┌──────────────────────────────────────────────────────────────┬─────────────────────┬──────────┬──────────┬───────────────────┬──────────────────────────────────────┬──────────────────────────────────────────────────────────────┐
 │                           Library                            │    Vulnerability    │ Severity │  Status  │ Installed Version │            Fixed Version             │                            Title                             │
@@ -2357,10 +2355,6 @@ Total: 113 (UNKNOWN: 0, LOW: 5, MEDIUM: 36, HIGH: 52, CRITICAL: 20)
 │                                                              │                     │          │          │                   │                                      │                                                              │
 ├──────────────────────────────────────────────────────────────┤                     │          │          │                   ├──────────────────────────────────────┤                                                              │
 │ commons-lang:commons-lang (hive-exec-4.3.0-SNAPSHOT.jar)     │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-│                                                              │                     │          │          │                   │                                      │                                                              │
-├──────────────────────────────────────────────────────────────┤                     │          │          │                   ├──────────────────────────────────────┤                                                              │
-│ commons-lang:commons-lang (commons-lang-2.6.jar)             │                     │          │          │                   │                                      │                                                              │
 │                                                              │                     │          │          │                   │                                      │                                                              │
 │                                                              │                     │          │          │                   │                                      │                                                              │
 ├──────────────────────────────────────────────────────────────┼─────────────────────┼──────────┼──────────┼───────────────────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
