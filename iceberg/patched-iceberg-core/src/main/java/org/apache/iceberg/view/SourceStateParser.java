@@ -57,7 +57,9 @@ public class SourceStateParser {
 
     switch (sourceState.type()) {
       case TABLE -> {
-        generator.writeNumberField(SNAPSHOT_ID, sourceState.snapshotId());
+        if (sourceState.snapshotId() != null) {
+          generator.writeNumberField(SNAPSHOT_ID, sourceState.snapshotId());
+        }
 
         if (!StringUtils.isEmpty(sourceState.ref())) {
           generator.writeStringField(REF, sourceState.ref());
@@ -82,7 +84,7 @@ public class SourceStateParser {
     String namespace = JsonUtil.getString(NAMESPACE, node);
     String catalog = JsonUtil.getStringOrNull(CATALOG, node);
     java.util.UUID uuid = java.util.UUID.fromString(JsonUtil.getString(UUID, node));
-    Long snapshotId = JsonUtil.getLong(SNAPSHOT_ID, node);
+    Long snapshotId = JsonUtil.getLongOrNull(SNAPSHOT_ID, node);
     String ref = JsonUtil.getStringOrNull(REF, node);
     Integer versionId = JsonUtil.getIntOrNull(VERSION_ID, node);
 

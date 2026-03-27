@@ -358,7 +358,7 @@ public final class Catalogs {
           snapshot = icebergTable.currentSnapshot();
 
           SourceState sourcestate = ImmutableSourceState.of(type, sourceTableName, sourceTableNamespace, catalogName,
-                  uuid, snapshot.snapshotId(), null, null);
+                  uuid, snapshot == null ? null : snapshot.snapshotId(), null, null);
           sourceStates.add(sourcestate);
         }
         case VIEW -> {
