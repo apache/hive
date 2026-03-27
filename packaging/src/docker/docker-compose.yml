@@ -175,7 +175,7 @@ services:
   llapdaemon1:
     profiles:
       - llap
-    image: apache/hive-llap:${HIVE_VERSION}
+    image: apache/hive:${HIVE_VERSION}
     container_name: llapdaemon1
     hostname: llapdaemon1
     depends_on:
@@ -183,6 +183,7 @@ services:
     restart: unless-stopped
     environment:
       USER: hive
+      SERVICE_NAME: 'llap'
       # Basic LLAP daemon configuration
       LLAP_MEMORY_MB: '1024'
       LLAP_EXECUTORS: '1'
@@ -208,10 +209,11 @@ services:
       - scratch:/opt/hive/scratch
     networks:
       - hive
+
   llapdaemon2:
     profiles:
       - llap
-    image: apache/hive-llap:${HIVE_VERSION}
+    image: apache/hive:${HIVE_VERSION}
     container_name: llapdaemon2
     hostname: llapdaemon2
     depends_on:
@@ -219,6 +221,7 @@ services:
     restart: unless-stopped
     environment:
       USER: hive
+      SERVICE_NAME: 'llap'
       # Basic LLAP daemon configuration
       LLAP_MEMORY_MB: '1024'
       LLAP_EXECUTORS: '1'

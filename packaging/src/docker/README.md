@@ -85,24 +85,6 @@ together with Hadoop 3.1.0 and Tez 0.10.1 to build the image,
 ```
 After building successfully, you get a Docker image named `apache/hive` by default, tagged by the provided Hive version.
 
-##### Build LLAP Daemon image
-
-To build a dedicated LLAP Daemon image (using `Dockerfile-llap` under the hood), invoke `build.sh` with the `-llap` flag. For example:
-
-```shell
-./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 -llap
-```
-
-or, relying on versions from `pom.xml`:
-
-```shell
-./build.sh -llap
-```
-
-When `-llap` is specified, an additional image is produced alongside `apache/hive:${HIVE_VERSION}`:
-
-- `apache/hive-llap:${HIVE_VERSION}` (or `${repo}/hive-llap:${HIVE_VERSION}` if `-repo` is used).
-
 #### Run services
 
 Before going further, we should define the environment variable `HIVE_VERSION` first.
@@ -207,9 +189,9 @@ To stop/remove them all,
 docker compose down
 ```
 
-#### Starting LLAP with Docker Compose
+#### Starting an LLAP cluster with Docker Compose
 
-The compose file `packaging/src/docker/docker-compose.yml` starts a cluster with LLAP daemons (discovered via Zookeeper) if the `llap` profile is activated.
+The compose file `packaging/src/docker/docker-compose.yml` can start a cluster with LLAP daemons (discovered via Zookeeper) if the `llap` profile is activated.
 
 Use the following workflow from `packaging/src/docker`:
 
@@ -217,14 +199,14 @@ Use the following workflow from `packaging/src/docker`:
 docker-compose --profile llap -f docker-compose.yml down --rmi local # cleanup previous containers and images
 
 export POSTGRES_LOCAL_PATH=... # set the path to the postgres driver jar on the host machine
-./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 -llap # build LLAP image: already described earlier
+./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 # build image from the common Dockerfile
 docker compose -f docker-compose.yml up -d
 ```
 
 To view LLAP logs:
 
 ```shell
-docker compose --profile llap -f docker-compose.yml logs -f llap
+docker compose --profile llap -f docker-compose.yml logs -f llapdaemon1 llapdaemon2
 ```
 
 To stop and remove the LLAP stack:

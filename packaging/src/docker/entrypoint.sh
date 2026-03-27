@@ -71,6 +71,62 @@ function initialize_hive {
   fi
 }
 
+function run_llap {
+  : "${HIVE_ZOOKEEPER_QUORUM:=zookeeper:2181}"
+  : "${LLAP_SERVICE_HOSTS:=@llap0}"
+  : "${LLAP_MEMORY_MB:=1024}"
+  : "${LLAP_EXECUTORS:=1}"
+  export HIVE_ZOOKEEPER_QUORUM
+  export LLAP_SERVICE_HOSTS
+  export LLAP_MEMORY_MB
+  export LLAP_EXECUTORS
+
+  envsubst < "$HIVE_HOME/conf/llap-daemon-site.xml.template" > "$HIVE_HOME/conf/llap-daemon-site.xml"
+
+  export LLAP_DAEMON_LOG_DIR="${LLAP_DAEMON_LOG_DIR:-/tmp/llapDaemonLogs}"
+  export LLAP_DAEMON_TMP_DIR="${LLAP_DAEMON_TMP_DIR:-/tmp/llapDaemonTmp}"
+  export LOCAL_DIRS="${LOCAL_DIRS:-/tmp/llap-local}"
+  mkdir -p "${LLAP_DAEMON_LOG_DIR}" "${LLAP_DAEMON_TMP_DIR}" "${LOCAL_DIRS}"
+
+  # runLlapDaemon.sh expects jars under ${LLAP_DAEMON_HOME}/lib.
+  # In this image, LLAP jars are under ${HIVE_HOME}/lib.
+  export LLAP_DAEMON_HOME="${LLAP_DAEMON_HOME:-$HIVE_HOME}"
+  export LLAP_DAEMON_CONF_DIR="${LLAP_DAEMON_CONF_DIR:-$HIVE_CONF_DIR}"
+  export LLAP_DAEMON_USER_CLASSPATH="${LLAP_DAEMON_USER_CLASSPATH:-$TEZ_HOME/*:$TEZ_HOME/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*}"
+
+  JAVA_ADD_OPENS=(
+    "--add-opens=java.base/java.lang=ALL-UNNAMED"
+    "--add-opens=java.base/java.util=ALL-UNNAMED"
+    "--add-opens=java.base/java.io=ALL-UNNAMED"
+    "--add-opens=java.base/java.net=ALL-UNNAMED"
+    "--add-opens=java.base/java.nio=ALL-UNNAMED"
+    "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED"
+    "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
+    "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
+    "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
+    "--add-opens=java.sql/java.sql=ALL-UNNAMED"
+    "--add-opens=java.base/java.text=ALL-UNNAMED"
+    "-Dnet.bytebuddy.experimental=true"
+  )
+  for opt in "${JAVA_ADD_OPENS[@]}"; do
+    if [[ " ${LLAP_DAEMON_OPTS:-} " != *" ${opt} "* ]]; then
+      LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS:-} ${opt}"
+    fi
+  done
+  export LLAP_DAEMON_OPTS
+
+  if [[ -n "${LLAP_EXTRA_OPTS:-}" ]]; then
+    export LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS:-} ${LLAP_EXTRA_OPTS}"
+  fi
+
+  LLAP_RUN_SCRIPT="${HIVE_HOME}/scripts/llap/bin/runLlapDaemon.sh"
+  if [ ! -x "${LLAP_RUN_SCRIPT}" ]; then
+    echo "LLAP daemon launcher script not found at ${LLAP_RUN_SCRIPT}."
+    exit 1
+  fi
+  exec "${LLAP_RUN_SCRIPT}" run "$@"
+}
+
 export HIVE_CONF_DIR=$HIVE_HOME/conf
 if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
   find "${HIVE_CUSTOM_CONF_DIR}" -type f -exec \
@@ -80,7 +136,7 @@ if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
 fi
 
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx1G $SERVICE_OPTS"
-if [[ "${SKIP_SCHEMA_INIT}" == "false" ]]; then
+if [[ "${SKIP_SCHEMA_INIT}" == "false" && ( "${SERVICE_NAME}" == "hiveserver2" || "${SERVICE_NAME}" == "metastore" ) ]]; then
   # handles schema initialization
   initialize_hive
 fi
@@ -95,4 +151,6 @@ elif [ "${SERVICE_NAME}" == "metastore" ]; then
   else
     exec "$HIVE_HOME/bin/hive" --skiphadoopversion --skiphbasecp --service "$SERVICE_NAME"
   fi
+elif [ "${SERVICE_NAME}" == "llap" ]; then
+  run_llap "$@"
 fi
