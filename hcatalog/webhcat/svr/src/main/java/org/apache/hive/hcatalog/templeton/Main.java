@@ -26,9 +26,11 @@ import com.sun.jersey.spi.container.servlet.ServletContainer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -57,24 +59,24 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.server.LowResourceMonitor;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.FilterHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * The main executable that starts up and runs the Server.
@@ -205,11 +207,12 @@ public class Main {
       server = new Server(port);
     } else {
         XmlConfiguration configuration = new XmlConfiguration(
-            org.eclipse.jetty.util.resource.Resource.newResource(conf.jettyConfiguration()));
+            ResourceFactory.root().newResource(Path.of(conf.jettyConfiguration())));
         server = (Server)configuration.configure();
     }
 
-    ServletContextHandler root = new ServletContextHandler(server, "/");
+    ServletContextHandler root = new ServletContextHandler();
+    root.setContextPath("/");
 
     // Add the Auth filter
     FilterHolder fHolder = makeAuthFilter();
@@ -242,8 +245,18 @@ public class Main {
     root.addFilter(makeFrameOptionFilter(), "/" + SERVLET_PATH + "/*", dispatches);
 
     // Connect Jersey
-    ServletHolder h = new ServletHolder(new ServletContainer(makeJerseyConfig()));
+    ServletHolder h = new ServletHolder();
+    h.setClassName(ServletContainer.class.getName());
+    h.setInitParameter("com.sun.jersey.config.property.resourceConfigClass",
+        "com.sun.jersey.api.core.PackagesResourceConfig");
+    PackagesResourceConfig jerseyConfig = makeJerseyConfig();
+    for (java.util.Map.Entry<String, Object> entry : jerseyConfig.getProperties().entrySet()) {
+      if (entry.getValue() != null) {
+        h.setInitParameter(entry.getKey(), entry.getValue().toString());
+      }
+    }
     root.addServlet(h, "/" + SERVLET_PATH + "/*");
+    server.setHandler(root);
     // Add any redirects
     addRedirects(server);
 
@@ -309,7 +322,8 @@ public class Main {
   // Configure the AuthFilter with the Kerberos params iff security
   // is enabled.
   public FilterHolder makeAuthFilter() throws IOException {
-    FilterHolder authFilter = new FilterHolder(AuthFilter.class);
+    FilterHolder authFilter = new FilterHolder();
+    authFilter.setClassName(AuthFilter.class.getName());
     UserNameHandler.allowAnonymous(authFilter);
   
     String confPrefix = "dfs.web.authentication";
@@ -384,19 +398,17 @@ public class Main {
     redirect.setLocation("/templeton/application.wadl");
     rewrite.addRule(redirect);
 
-    HandlerList handlerlist = new HandlerList();
-    ArrayList<Handler> handlers = new ArrayList<Handler>();
+    List<Handler> handlers = new ArrayList<>();
 
     // Any redirect handlers need to be added first
     handlers.add(rewrite);
 
-    // Now add all the default handlers
-    for (Handler handler : server.getHandlers()) {
-      handlers.add(handler);
+    // Now add the existing handler if present
+    Handler existing = server.getHandler();
+    if (existing != null) {
+      handlers.add(existing);
     }
-    Handler[] newlist = new Handler[handlers.size()];
-    handlerlist.setHandlers(handlers.toArray(newlist));
-    server.setHandler(handlerlist);
+    server.setHandler(new Handler.Sequence(handlers));
   }
 
   public static void main(String[] args) {

@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
-import static org.eclipse.jetty.util.URIUtil.HTTP;
-import static org.eclipse.jetty.util.URIUtil.HTTPS;
+// URIUtil.HTTP/HTTPS removed in Jetty 12
+
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PropertyServlet;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -91,7 +91,7 @@ public class HMSJsonClientSslTest extends HMSTestBase {
   }
 
   protected static String getScheme(Configuration conf) {
-    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL) ? HTTPS : HTTP;
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL) ? "https" : "http";
   }
 
   @Override

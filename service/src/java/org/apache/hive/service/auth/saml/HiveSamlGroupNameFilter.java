@@ -18,17 +18,17 @@
 
 package org.apache.hive.service.auth.saml;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.pac4j.saml.credentials.SAML2Credentials.SAMLAttribute;
+import org.opensaml.saml.saml2.core.Attribute;
+import org.opensaml.core.xml.XMLObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveSamlGroupNameFilter implements Predicate<SAMLAttribute> {
+public class HiveSamlGroupNameFilter {
 
   private static final Logger LOG = LoggerFactory
       .getLogger(HiveSamlGroupNameFilter.class);
@@ -48,11 +48,11 @@ public class HiveSamlGroupNameFilter implements Predicate<SAMLAttribute> {
     groupNames = builder.build();
   }
 
-  public boolean apply(List<SAMLAttribute> attributes) {
+  public boolean apply(List<Attribute> attributes) {
     if (attributeName.isEmpty() && attributes.size() == 0) {
       return true;
     }
-    for (SAMLAttribute attribute : attributes) {
+    for (Attribute attribute : attributes) {
       if (apply(attribute)) {
         return true;
       }
@@ -60,21 +60,19 @@ public class HiveSamlGroupNameFilter implements Predicate<SAMLAttribute> {
     return false;
   }
 
-  @Override
-  public boolean apply(SAMLAttribute attribute) {
-    if (attributeName.isEmpty()) {
-      // if attributeName is not configured, then it means groups based
-      // filtering is not enabled and we allow any authenticated user.
+  public boolean apply(Attribute attribute) {
+    if (groupNames.isEmpty()) {
+      LOG.debug("No groups configured for filtering. Allowing all.");
       return true;
     }
-    if (attribute == null || attribute.getName() == null) {
+    if (!attributeName.isEmpty() && !attributeName.equals(attribute.getName())) {
       return false;
     }
-    if (!attributeName.equals(attribute.getName())) {
-      return false;
-    }
-    for (String attrVal : attribute.getAttributeValues()) {
-      if (groupNames.contains(attrVal)) {
+    for (XMLObject value : attribute.getAttributeValues()) {
+      String textContent = value.getDOM() != null ? value.getDOM().getTextContent() : "";
+      if (groupNames.contains(textContent)) {
+        LOG.debug("Found matching group {} in attribute {}", textContent,
+            attribute.getName());
         return true;
       }
     }

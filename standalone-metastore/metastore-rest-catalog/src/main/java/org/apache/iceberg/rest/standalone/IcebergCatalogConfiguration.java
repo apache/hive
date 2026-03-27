@@ -17,7 +17,7 @@
  */
 package org.apache.iceberg.rest.standalone;
 
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServlet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletServerBuilder;

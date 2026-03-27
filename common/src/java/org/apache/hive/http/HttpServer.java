@@ -25,31 +25,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.KeyManagerFactory;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
 
@@ -79,29 +79,28 @@ import org.apache.logging.log4j.core.appender.FileManager;
 import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.LowResourceMonitor;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.FilterMapping;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.ee10.servlet.DefaultServlet;
+import org.eclipse.jetty.ee10.servlet.FilterHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -522,7 +521,7 @@ public class HttpServer {
     holder.setInitParameters(params);
     ServletHandler handler = ctx.getServletHandler();
     handler.addFilterWithMapping(
-      holder, "/*", FilterMapping.ALL);
+      holder, "/*", EnumSet.allOf(DispatcherType.class));
   }
 
   /**
@@ -540,7 +539,7 @@ public class HttpServer {
     holder.setInitParameters(params);
 
     ServletHandler handler = webAppContext.getServletHandler();
-    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
+    handler.addFilterWithMapping(holder, "/*", EnumSet.allOf(DispatcherType.class));
   }
 
   /**
@@ -632,8 +631,6 @@ public class HttpServer {
    */
   private RewriteHandler createRewriteHandler(Builder builder, WebAppContext webAppContext) {
     RewriteHandler rwHandler = new RewriteHandler();
-    rwHandler.setRewriteRequestURI(true);
-    rwHandler.setRewritePathInfo(false);
 
     RewriteRegexRule rootRule = new RewriteRegexRule();
     rootRule.setRegex("^/$");
@@ -701,7 +698,7 @@ public class HttpServer {
     LoginService loginService = new PamLoginService();
     webServer.addBean(loginService);
     ConstraintSecurityHandler security = new ConstraintSecurityHandler();
-    Constraint constraint = new PamConstraint();
+    Constraint constraint = PamConstraint.create();
     ConstraintMapping mapping = new PamConstraintMapping(constraint);
     security.setConstraintMappings(Collections.singletonList(mapping));
     security.setAuthenticator(b.pamAuthenticator);
@@ -713,7 +710,7 @@ public class HttpServer {
   /**
    * Set servlet context attributes that can be used in jsp.
    */
-  void setContextAttributes(Context ctx, Map<String, Object> contextAttrs) {
+  void setContextAttributes(ServletContext ctx, Map<String, Object> contextAttrs) {
     for (Map.Entry<String, Object> e: contextAttrs.entrySet()) {
       ctx.setAttribute(e.getKey(), e.getValue());
     }
@@ -763,38 +760,46 @@ public class HttpServer {
       if (Files.notExists(tmpDir)) {
         Files.createDirectories(tmpDir);
       }
-      ServletContextHandler genCtx = new ServletContextHandler(portHandler, "/prof-output");
+      ServletContextHandler genCtx = new ServletContextHandler();
+      genCtx.setContextPath("/prof-output");
+      portHandler.addHandler(genCtx);
       setContextAttributes(genCtx.getServletContext(), b.contextAttrs);
-      genCtx.addServlet(ProfileOutputServlet.class, "/*");
-      genCtx.setResourceBase(tmpDir.toAbsolutePath().toString());
+      genCtx.addServlet(new ServletHolder(new ProfileOutputServlet()), "/*");
+      genCtx.setBaseResourceAsString(tmpDir.toAbsolutePath().toString());
       genCtx.setDisplayName("prof-output");
     } else {
       LOG.info("ASYNC_PROFILER_HOME env or -Dasync.profiler.home not specified. Disabling /prof endpoint..");
     }
-    ServletContextHandler staticCtx = new ServletContextHandler(portHandler, "/static");
-    staticCtx.setResourceBase(getWebAppsPath(b.name) + "/static");
-    staticCtx.addServlet(DefaultServlet.class, "/*");
+    ServletContextHandler staticCtx = new ServletContextHandler();
+    staticCtx.setContextPath("/static");
+    portHandler.addHandler(staticCtx);
+    staticCtx.setBaseResourceAsString(getWebAppsPath(b.name) + "/static");
+    staticCtx.addServlet(new ServletHolder(new DefaultServlet()), "/*");
     staticCtx.setDisplayName("static");
     disableDirectoryListingOnServlet(staticCtx);
 
     String logDir = getLogDir(b.conf);
     if (logDir != null) {
-      ServletContextHandler logCtx = new ServletContextHandler(portHandler, "/logs");
+      ServletContextHandler logCtx = new ServletContextHandler();
+      logCtx.setContextPath("/logs");
+      portHandler.addHandler(logCtx);
       setContextAttributes(logCtx.getServletContext(), b.contextAttrs);
       if(b.useSPNEGO) {
         setupSpnegoFilter(b,logCtx);
       }
-      logCtx.addServlet(AdminAuthorizedServlet.class, "/*");
-      logCtx.setResourceBase(logDir);
+      logCtx.addServlet(new ServletHolder(new AdminAuthorizedServlet()), "/*");
+      logCtx.setBaseResourceAsString(logDir);
       logCtx.setDisplayName("logs");
     }
 
     // Define the global filers for each servlet context except the staticCtx(css style).
-    Optional<Handler[]> handlers = Optional.ofNullable(portHandler.getHandlers());
-    handlers.ifPresent(hs -> Arrays.stream(hs)
-        .filter(h -> h instanceof ServletContextHandler && !"static".equals(((ServletContextHandler) h).getDisplayName()))
-        .forEach(h -> b.globalFilters.forEach((k, v) ->
-            addFilter(k, v.getKey(), v.getValue(), ((ServletContextHandler) h).getServletHandler()))));
+    List<Handler> handlers = portHandler.getHandlers();
+    if (handlers != null) {
+      handlers.stream()
+          .filter(h -> h instanceof ServletContextHandler && !"static".equals(((ServletContextHandler) h).getDisplayName()))
+          .forEach(h -> b.globalFilters.forEach((k, v) ->
+              addFilter(k, v.getKey(), v.getValue(), ((ServletContextHandler) h).getServletHandler())));
+    }
   }
 
   private Map<String, String> setHeaders() {
@@ -828,7 +833,7 @@ public class HttpServer {
     holder.setInitParameters(params);
 
     ServletHandler handler = webAppContext.getServletHandler();
-    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
+    handler.addFilterWithMapping(holder, "/*", EnumSet.allOf(DispatcherType.class));
 
   }
 
@@ -925,7 +930,7 @@ public class HttpServer {
     if (name != null) {
       holder.setName(name);
     }
-    handler.addFilterWithMapping(holder, pathSpec, FilterMapping.ALL);
+    handler.addFilterWithMapping(holder, pathSpec, EnumSet.allOf(DispatcherType.class));
   }
 
   private static void disableDirectoryListingOnServlet(ServletContextHandler contextHandler) {
@@ -1108,8 +1113,7 @@ public class HttpServer {
      */
     private String inferMimeType(ServletRequest request) {
       String path = ((HttpServletRequest)request).getRequestURI();
-      ServletContextHandler.Context sContext =
-              (ServletContextHandler.Context)config.getServletContext();
+      ServletContext sContext = config.getServletContext();
       String mime = sContext.getMimeType(path);
       return (mime == null) ? null : mime;
     }
@@ -1137,50 +1141,55 @@ public class HttpServer {
    * select the appropriate handler based on the request's port and delegate the request to that handler.
    * </p>
    *
-   * <p>This class uses a map to associate each {@link ServerConnector} (which represents a port) to a 
-   * {@link HandlerCollection}. The {@link #addHandler(ServerConnector, HandlerCollection)} method allows handlers
-   * to be added for specific ports.</p>
+   * <p>This class uses a map to associate each {@link ServerConnector} (which represents a port) to a
+   * {@link ContextHandlerCollection}. The {@link #addHandler(ServerConnector, ContextHandlerCollection)} method
+   * allows handlers to be added for specific ports.</p>
    */
   static class PortHandlerWrapper extends ContextHandlerCollection {
 
     /** Map of server connectors (ports) to their corresponding handler collections. */
-    private final Map<ServerConnector, HandlerCollection> connectorToHandlerMap = new HashMap<>();
+    private final Map<ServerConnector, ContextHandlerCollection> connectorToHandlerMap = new HashMap<>();
 
     /**
      * Adds a handler collection to the {@link PortHandlerWrapper} for a specific server connector (port).
      *
      * @param connector the {@link ServerConnector} representing the port to which the handler should be associated
-     * @param handler the {@link HandlerCollection} that will handle requests on the specified port
+     * @param handler the {@link ContextHandlerCollection} that will handle requests on the specified port
      */
-    public void addHandler(ServerConnector connector, HandlerCollection handler) {
+    public void addHandler(ServerConnector connector, ContextHandlerCollection handler) {
       connectorToHandlerMap.put(connector, handler);
       addHandler(handler);
     }
 
     /**
-     * Handles the HTTP request by determining which port the request came through and routing it to the appropriate handler.
+     * Handles the HTTP request by determining which port the request came through and routing it to the
+     * appropriate handler.
      *
-     * @param target the target of the request
-     * @param baseRequest the base request object
-     * @param request the {@link HttpServletRequest} object containing the request details
-     * @param response the {@link HttpServletResponse} object to send the response
-     * @throws IOException if an input or output exception occurs during the handling of the request
-     * @throws ServletException if a servlet-specific exception occurs during the handling of the request
+     * @param request the Jetty {@link Request} object
+     * @param response the Jetty {@link Response} object to send the response
+     * @param callback the {@link Callback} to indicate completion
+     * @return true if the request was handled, false otherwise
+     * @throws Exception if an exception occurs during the handling of the request
      */
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public boolean handle(Request request, Response response, Callback callback) throws Exception {
       // Determine the connector (port) the request came through
-      int port = request.getServerPort();
+      int port = Request.getServerPort(request);
 
       // Find the handler for the corresponding port
       Handler handler = connectorToHandlerMap.entrySet().stream()
           .filter(entry -> entry.getKey().getPort() == port)
           .map(Map.Entry::getValue)
           .findFirst()
-          .orElseThrow(() -> new IllegalStateException("No handler found for port " + port));
+          .orElse(null);
+
+      if (handler == null) {
+        callback.failed(new IllegalStateException("No handler found for port " + port));
+        return true;
+      }
 
       // Delegate the request to the handler
-      handler.handle(target, baseRequest, request, response);
+      return handler.handle(request, response, callback);
     }
   }
 }

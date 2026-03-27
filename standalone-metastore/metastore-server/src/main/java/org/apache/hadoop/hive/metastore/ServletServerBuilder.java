@@ -18,9 +18,6 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import static org.eclipse.jetty.util.URIUtil.HTTP;
-import static org.eclipse.jetty.util.URIUtil.HTTPS;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -29,17 +26,16 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -180,14 +176,14 @@ public class ServletServerBuilder {
     httpConf.setSendServerVersion(false);
     httpConf.setSendXPoweredBy(false);
     if (sslContextFactory != null) {
-      httpConf.setSecureScheme(HTTPS);
+      httpConf.setSecureScheme("https");
       httpConf.setSecurePort(port);
       httpConf.addCustomizer(new SecureRequestCustomizer());
       connector = new ServerConnector(server, sslContextFactory, new HttpConnectionFactory(httpConf));
-      connector.setName(HTTPS);
+      connector.setName("https");
     } else {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConf));
-      connector.setName(HTTP);
+      connector.setName("http");
     }
     connector.setPort(port);
     connector.setReuseAddress(true);
@@ -209,7 +205,7 @@ public class ServletServerBuilder {
     ServletContextHandler handler = handlersMap.computeIfAbsent(key, p -> {
       ServletContextHandler servletHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
       servletHandler.setContextPath("/");
-      servletHandler.setGzipHandler(new GzipHandler());
+      servletHandler.insertHandler(new GzipHandler());
       return servletHandler;
     });
     ServletHolder servletHolder = new ServletHolder(servlet);
@@ -252,12 +248,12 @@ public class ServletServerBuilder {
       // make each servlet context be served only by its dedicated connector
       String host = "hms" + c;
       connector.setName(host);
-      handler.setVirtualHosts(new String[]{"@" + host});
+      handler.setVirtualHosts(List.of("@" + host));
     }
     // hook the connectors and the handlers
     server.setConnectors(connectors);
-    HandlerCollection portHandler = new ContextHandlerCollection();
-    portHandler.setHandlers(handlers);
+    ContextHandlerCollection portHandler = new ContextHandlerCollection();
+    portHandler.setHandlers(List.of(handlers));
     server.setHandler(portHandler);
     // start the server
     server.start();

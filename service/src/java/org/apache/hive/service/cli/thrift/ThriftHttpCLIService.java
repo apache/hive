@@ -28,8 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
 import javax.net.ssl.KeyManagerFactory;
-import javax.servlet.DispatcherType;
-import javax.ws.rs.HttpMethod;
+import jakarta.servlet.DispatcherType;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
@@ -57,18 +56,18 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.ee10.servlet.FilterHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
@@ -220,7 +219,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED)) {
         final GzipHandler gzipHandler = new GzipHandler();
         gzipHandler.setHandler(context);
-        gzipHandler.addIncludedMethods(HttpMethod.POST);
+        gzipHandler.addIncludedMethods("POST");
         gzipHandler.addIncludedMimeTypes(APPLICATION_THRIFT);
         server.setHandler(gzipHandler);
       } else {
@@ -319,8 +318,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   }
 
   public  void constrainHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
-    Constraint c = new Constraint();
-    c.setAuthenticate(true);
+    Constraint c = Constraint.FORBIDDEN;
 
     ConstraintMapping cmt = new ConstraintMapping();
     cmt.setConstraint(c);

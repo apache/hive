@@ -20,10 +20,10 @@ package org.apache.hive.service.servlet;
 import org.apache.hive.service.auth.ldap.LdapAuthService;
 import org.apache.hive.service.server.HiveServer2;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.util.Optional;
 
@@ -53,9 +53,9 @@ public class LoginServlet extends HttpServlet {
       if (out == null) {
         return;
       }
-      Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-      String servletName = Optional.ofNullable((String) request.getAttribute("javax.servlet.error.servlet_name")).orElse("Unknown");
-      String requestUri = Optional.ofNullable((String) request.getAttribute("javax.servlet.error.request_uri")).orElse("Unknown");
+      Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
+      String servletName = Optional.ofNullable((String) request.getAttribute("jakarta.servlet.error.servlet_name")).orElse("Unknown");
+      String requestUri = Optional.ofNullable((String) request.getAttribute("jakarta.servlet.error.request_uri")).orElse("Unknown");
 
       response.setContentType("text/html");
       out.write("<html><head><title>Exception/Error Details</title></head><body>");

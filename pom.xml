@@ -180,7 +180,7 @@
     <kudu.version>1.17.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.16.0</libthrift.version>
+    <libthrift.version>0.22.0</libthrift.version>
     <log4j2.version>2.25.3</log4j2.version>
     <lz4.version>1.10.4</lz4.version>
     <mariadb.version>2.5.0</mariadb.version>
@@ -197,7 +197,7 @@
     <netty.version>4.1.129.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
-    <pac4j-saml.version>4.5.8</pac4j-saml.version>
+    <pac4j.version>6.3.3</pac4j.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.17.0</parquet.version>
     <pig.version>0.16.0</pig.version>
@@ -239,9 +239,9 @@
     <aws-secretsmanager-caching.version>2.1.1</aws-secretsmanager-caching.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
-    <spring.version>5.3.39</spring.version>
-    <spring-boot.version>2.7.18</spring-boot.version>
-    <spring.ldap.version>2.4.4</spring.ldap.version>
+    <spring.version>6.2.17</spring.version>
+    <spring-boot.version>3.5.13</spring-boot.version>
+    <spring.ldap.version>3.2.14</spring.ldap.version>
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
     <keycloak.version>26.0.6</keycloak.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
@@ -942,8 +942,8 @@
       </dependency>
       <dependency>
         <groupId>org.pac4j</groupId>
-        <artifactId>pac4j-saml-opensamlv3</artifactId>
-        <version>${pac4j-saml.version}</version>
+        <artifactId>pac4j-saml</artifactId>
+        <version>${pac4j.version}</version>
         <exclusions>
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
@@ -1012,6 +1012,16 @@
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bcprov-jdk18on</artifactId>
+        <version>${bcprov-jdk18on.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk18on</artifactId>
+        <version>${bcprov-jdk18on.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcutil-jdk18on</artifactId>
         <version>${bcprov-jdk18on.version}</version>
       </dependency>
       <dependency>

@@ -33,16 +33,16 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.pac4j.core.context.JEEContext;
+import org.pac4j.jee.context.JEEContext;
 import org.pac4j.core.credentials.TokenCredentials;
 import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
@@ -306,9 +306,14 @@ public class ServletSecurity {
   private String extractBearerToken(HttpServletRequest request,
                                     HttpServletResponse response) {
     BearerAuthExtractor extractor = new BearerAuthExtractor();
-    Optional<TokenCredentials> tokenCredentials = extractor.extract(new JEEContext(
-        request, response));
-    return tokenCredentials.map(TokenCredentials::getToken).orElse(null);
+    JEEContext webContext = new JEEContext(request, response);
+    org.pac4j.core.context.CallContext callContext =
+        new org.pac4j.core.context.CallContext(webContext, new org.pac4j.jee.context.session.JEESessionStore());
+    Optional<org.pac4j.core.credentials.Credentials> credentials = extractor.extract(callContext);
+    return credentials
+        .filter(c -> c instanceof TokenCredentials)
+        .map(c -> ((TokenCredentials) c).getToken())
+        .orElse(null);
   }
 
   /**

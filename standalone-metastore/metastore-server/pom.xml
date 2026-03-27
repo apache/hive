@@ -422,7 +422,12 @@
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-core</artifactId>
-      <version>${pac4j-core.version}</version>
+      <version>${pac4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-jakartaee</artifactId>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>

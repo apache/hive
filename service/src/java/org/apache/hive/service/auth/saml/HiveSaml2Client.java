@@ -27,12 +27,14 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.opensaml.saml.common.xml.SAMLConstants;
-import org.pac4j.core.context.JEEContext;
+import org.pac4j.core.context.CallContext;
+import org.pac4j.jee.context.JEEContext;
+import org.pac4j.jee.context.session.JEESessionStore;
 import org.pac4j.core.exception.http.RedirectionAction;
 import org.pac4j.core.exception.http.WithLocationAction;
 import org.pac4j.saml.client.SAML2Client;
@@ -150,7 +152,7 @@ public class HiveSaml2Client extends SAML2Client {
     int responsePort = HiveSamlUtils.validateSamlResponsePort(request);
     LOG.debug("Request has response port set as {}", responsePort);
     Optional<RedirectionAction> redirect = getRedirectionAction(
-        new JEEContext(request, response));
+        new CallContext(new JEEContext(request, response), new JEESessionStore()));
     if (!redirect.isPresent()) {
       throw new HttpSamlAuthenticationException("Could not get the redirect response");
     }
@@ -178,21 +180,30 @@ public class HiveSaml2Client extends SAML2Client {
    */
   public String validate(HttpServletRequest request, HttpServletResponse response)
       throws HttpSamlAuthenticationException {
-    Optional<SAML2Credentials> credentials;
+    Optional<org.pac4j.core.credentials.Credentials> rawCredentials;
     try {
       SAML2CredentialsExtractor credentialsExtractor = new SAML2CredentialsExtractor(
-          this);
-      credentials = credentialsExtractor
-          .extract(new JEEContext(request, response));
+          this, this.getServiceProviderMetadataResolver(),
+          this.getIdentityProviderMetadataResolver(), null);
+      rawCredentials = credentialsExtractor
+          .extract(new CallContext(new JEEContext(request, response), new JEESessionStore()));
     } catch (Exception ex) {
       throw new HttpSamlAuthenticationException("Could not validate the SAML response",
           ex);
     }
-    if (!credentials.isPresent()) {
+    if (!rawCredentials.isPresent() || !(rawCredentials.get() instanceof SAML2Credentials)) {
       throw new HttpSamlAuthenticationException("Credentials could not be extracted");
     }
-    String nameId = credentials.get().getNameId().getValue();
-    if (!groupNameFilter.apply(credentials.get().getAttributes())) {
+    SAML2Credentials credentials = (SAML2Credentials) rawCredentials.get();
+    String nameId = credentials.getContext().getSAMLSubjectNameIdentifierContext()
+        .getSAML2SubjectNameID().getValue();
+    // In pac4j 6.x, attributes are accessed via the SAML2 profile after validation,
+    // not directly from credentials. For group filtering, extract from the assertion.
+    java.util.List<org.opensaml.saml.saml2.core.Attribute> samlAttrs = credentials.getContext()
+        .getSubjectAssertion().getAttributeStatements().stream()
+        .flatMap(s -> s.getAttributes().stream())
+        .collect(java.util.stream.Collectors.toList());
+    if (!groupNameFilter.apply(samlAttrs)) {
       LOG.warn("Could not match any groups for the nameid {}", nameId);
       throw new HttpSamlNoGroupsMatchedException(
           "None of the configured groups match for the user");

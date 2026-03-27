@@ -68,17 +68,15 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.server.HttpChannel;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
@@ -99,9 +97,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.servlet.Servlet;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
 /**
  * TODO:pc remove application logic to a separate interface.
  */
@@ -437,19 +435,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     context.addEventListener(new ServletRequestListener() {
       @Override
       public void requestDestroyed(ServletRequestEvent servletRequestEvent) {
-        Request baseRequest = Request.getBaseRequest(servletRequestEvent.getServletRequest());
-        HttpChannel channel = baseRequest.getHttpChannel();
         if (LOG.isDebugEnabled()) {
-          LOG.debug("request: " + baseRequest + " destroyed " + ", http channel: " + channel);
+          LOG.debug("request destroyed: " + servletRequestEvent.getServletRequest());
         }
         HMSHandler.cleanupHandlerContext();
       }
       @Override
       public void requestInitialized(ServletRequestEvent servletRequestEvent) {
-        Request baseRequest = Request.getBaseRequest(servletRequestEvent.getServletRequest());
-        HttpChannel channel = baseRequest.getHttpChannel();
         if (LOG.isDebugEnabled()) {
-          LOG.debug("request: " + baseRequest + " initialized " + ", http channel: " + channel);
+          LOG.debug("request initialized: " + servletRequestEvent.getServletRequest());
         }
       }
     });
@@ -648,8 +642,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   private static void constraintHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
-    Constraint c = new Constraint();
-    c.setAuthenticate(true);
+    Constraint c = Constraint.FORBIDDEN;
 
     ConstraintMapping cmt = new ConstraintMapping();
     cmt.setConstraint(c);

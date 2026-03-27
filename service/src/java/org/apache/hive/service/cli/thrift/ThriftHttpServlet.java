@@ -33,10 +33,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -81,7 +81,9 @@ import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
-import org.pac4j.core.context.JEEContext;
+import org.pac4j.core.context.CallContext;
+import org.pac4j.jee.context.JEEContext;
+import org.pac4j.jee.context.session.JEESessionStore;
 import org.pac4j.core.credentials.TokenCredentials;
 import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
 import org.slf4j.Logger;
@@ -400,9 +402,12 @@ public class ThriftHttpServlet extends TServlet {
   private String extractBearerToken(HttpServletRequest request,
       HttpServletResponse response) {
     BearerAuthExtractor extractor = new BearerAuthExtractor();
-    Optional<TokenCredentials> tokenCredentials = extractor.extract(new JEEContext(
-        request, response));
-    return tokenCredentials.map(TokenCredentials::getToken).orElse(null);
+    Optional<org.pac4j.core.credentials.Credentials> credentials = extractor.extract(new CallContext(
+        new JEEContext(request, response), new JEESessionStore()));
+    return credentials
+        .filter(c -> c instanceof TokenCredentials)
+        .map(c -> ((TokenCredentials) c).getToken())
+        .orElse(null);
   }
 
   /**
@@ -655,7 +660,17 @@ public class ThriftHttpServlet extends TServlet {
     if (queryString == null) {
       return null;
     }
-    Map<String, String[]> params = javax.servlet.http.HttpUtils.parseQueryString( queryString );
+    Map<String, String[]> params = new java.util.HashMap<>();
+    for (String param : queryString.split("&")) {
+      String[] pair = param.split("=", 2);
+      String key = java.net.URLDecoder.decode(pair[0], java.nio.charset.StandardCharsets.UTF_8);
+      String value = pair.length > 1 ? java.net.URLDecoder.decode(pair[1], java.nio.charset.StandardCharsets.UTF_8) : "";
+      params.merge(key, new String[]{value}, (a, b) -> {
+        String[] merged = java.util.Arrays.copyOf(a, a.length + b.length);
+        System.arraycopy(b, 0, merged, a.length, b.length);
+        return merged;
+      });
+    }
     Set<String> keySet = params.keySet();
     for (String key: keySet) {
       if (key.equalsIgnoreCase("doAs")) {

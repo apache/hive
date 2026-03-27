@@ -22,9 +22,8 @@ import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.NewCookie;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -258,9 +257,21 @@ public class HttpAuthService {
    * @return The httponly cookie
    */
   public static String getHttpOnlyCookieHeader(Cookie cookie) {
-    NewCookie newCookie = new NewCookie(cookie.getName(), cookie.getValue(),
-        cookie.getPath(), cookie.getDomain(), cookie.getVersion(),
-        cookie.getComment(), cookie.getMaxAge(), cookie.getSecure());
-    return newCookie + "; HttpOnly";
+    StringBuilder sb = new StringBuilder();
+    sb.append(cookie.getName()).append("=").append(cookie.getValue());
+    if (cookie.getPath() != null && !cookie.getPath().isEmpty()) {
+      sb.append("; Path=").append(cookie.getPath());
+    }
+    if (cookie.getDomain() != null && !cookie.getDomain().isEmpty()) {
+      sb.append("; Domain=").append(cookie.getDomain());
+    }
+    if (cookie.getMaxAge() >= 0) {
+      sb.append("; Max-Age=").append(cookie.getMaxAge());
+    }
+    if (cookie.getSecure()) {
+      sb.append("; Secure");
+    }
+    sb.append("; HttpOnly");
+    return sb.toString();
   }
 }
