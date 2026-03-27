@@ -6,39 +6,59 @@ type: project
 
 ## Current state (2026-03-26)
 
-Started at 208 vulns, now at ~112 total in the Docker image.
+Started at 208 vulns, now at 112 total. Branch: `vuln-fixes-2026-03-26` (4 commits).
 
-### Completed changes (committed on branch `vuln-fixes-2026-03-26`):
-- jackson 2.16.1 → 2.21.1
-- zookeeper 3.8.4 → 3.9.5
-- commons-lang3 3.17.0 → 3.18.0
-- aircompressor 2.0.2 → 2.0.3 (dependency management override)
-- lz4-java 1.8.0 → 1.8.1 (dependency management override)
-- commons-beanutils 1.9.2 → 1.9.4 (dependency management override)
-- commons-vfs2 2.3 → 2.10.0 (dependency management override)
-- Docker base image: ubi9 → ubi10 (eclipse-temurin:21.0.10_7-jre-ubi10-minimal)
-- Removed druid-handler from packaging (not needed for metastore-only)
-- Removed kudu-handler from packaging (not needed for metastore-only)
-- Aligned all Spring modules to 5.3.39 via dependency management
+### Completed changes (committed):
+1. **7dd72143e6** — Dependency bumps + Docker hardening
+   - jackson 2.16.1 → 2.21.1, zookeeper 3.8.4 → 3.9.5, commons-lang3 3.17.0 → 3.18.0
+   - aircompressor 2.0.3, lz4-java 1.8.1, commons-beanutils 1.9.4, commons-vfs2 2.10.0 (dep mgmt overrides)
+   - Docker base: eclipse-temurin:21.0.10_7-jre-ubi10-minimal
+   - Removed druid-handler and kudu-handler from packaging (metastore-only)
 
-### In progress (uncommitted):
-- Jetty 9.4.57 → 10.0.26 upgrade
-- Two compilation errors remain: `B64Code` removed, `ServerConnector` constructor changed to require `SslContextFactory.Server`
+2. **954b3faab4** — Aligned all Spring modules to 5.3.39
 
-### Next steps:
-1. Fix the 2 Jetty 10 compilation errors
-2. Build, test, scan, commit
-3. Then attempt Jetty 10 → 12 migration (much bigger - requires full jakarta.servlet migration)
-4. Spring 6 migration depends on Jetty 12 (Spring Boot 3.x requires jakarta.servlet)
+3. **4e4600ebb2** — Updated scan results
 
-### Architecture notes:
-- Hadoop 3.4.x uses javax.servlet + Jetty 9 internally — classpath conflict with jakarta.servlet
-- Jetty 12 has EE8 modules that support javax.servlet, but the core server API changed significantly
-- Spring is deeply integrated: metastore-server uses Spring JDBC/transactions (80+ files), metastore-rest-catalog is a full Spring Boot app
-- Hive's HttpServer.java, PamAuthenticator.java, PamLoginService.java have deep Jetty API usage
+4. **bf59e07836** — Jetty 9.4.57 → 10.0.26
+   - B64Code → java.util.Base64
+   - SslContextFactory → SslContextFactory.Server
+   - Connection.addListener → connector.addBean
+   - XmlConfiguration API update
+   - Websocket artifact renames, removed jetty-continuation
+
+### Attempted but reverted:
+- **Jetty 12 EE8**: Artifact coordinates updated but core API changes in HttpServer.java, PamAuthenticator, PamLoginService, PamConstraint, PamUserIdentity not completed. The Jetty 12 core server API changed fundamentally (Handler.handle signature, Constraint became a record, HandlerCollection removed, etc.)
+- **Jetty 12 EE10 + Spring 6**: Additionally hit Thrift 0.16 javax.servlet incompatibility — TServlet extends javax.servlet.http.HttpServlet
+
+### Remaining work for Jetty 12:
+Files needing rewrite for Jetty 12 core API (same work for EE8 or EE10):
+- `common/src/java/org/apache/hive/http/HttpServer.java` (~1186 lines, deepest Jetty integration)
+  - PortHandlerWrapper extends ContextHandlerCollection, overrides handle()
+  - Uses HandlerCollection, ContextHandler.Context, LowResourceMonitor, RewriteHandler APIs
+  - ServletContextHandler constructor with parent changed
+  - setResourceBase → setBaseResourceAsString
+  - getHandlers() returns List instead of Handler[]
+- `common/src/java/org/apache/hive/http/security/PamAuthenticator.java` — Authenticator interface changed completely
+- `common/src/java/org/apache/hive/http/security/PamLoginService.java` — LoginService interface changed
+- `common/src/java/org/apache/hive/http/security/PamUserIdentity.java` — DefaultUserIdentity moved
+- `common/src/java/org/apache/hive/http/security/PamConstraint.java` — Constraint became a record
+- `common/src/java/org/apache/hive/http/security/PamConstraintMapping.java` — ConstraintMapping moved
+
+### Additional work for EE10 + Spring 6:
+- javax→jakarta in ~68 Java files (already scripted, trivial)
+- Thrift 0.16 → 0.20+ (TServlet uses javax.servlet.http.HttpServlet)
+- Spring 5.3→6.2, Spring Boot 2.7→3.4, Spring LDAP 2.4→3.3
+- application.yml actuator property path change
 
 ### Build/deploy workflow:
-- Hadoop built locally at /home/skool/my_code/hadoop-3.4.3
-- Tez built locally at /home/skool/my_code/tez (needs repackaging with apache-tez-0.10.5-bin/ prefix)
-- Docker cache at hive/packaging/cache/ must be updated manually after rebuilding hadoop/tez
-- User only runs Hive Metastore (not HiveServer2, LLAP, etc.)
+- `mvn install -DskipTests` then `mvn clean package -pl packaging -DskipTests -Pdist`
+- Copy rebuilt hadoop tar: `cp .../hadoop-3.4.3.tar.gz hive/packaging/cache/`
+- Repackage tez: wrap in `apache-tez-0.10.5-bin/` prefix dir, copy to cache
+- Docker: `TEZ_URL=file:///...tez... HADOOP_URL=file:///...hadoop... ./packaging/src/docker/build.sh -hadoop 3.4.3`
+- Scan: `trivy image apache/hive:4.3.0-SNAPSHOT > snap_1.txt`
+- Use `-Drat.skip=true -Dmaven.javadoc.skip=true` to avoid non-code failures
+
+### User context:
+- Only uses Hive Metastore (not HiveServer2, LLAP, etc.)
+- Hadoop at /home/skool/my_code/hadoop-3.4.3, Tez at /home/skool/my_code/tez
+- Jetty 12 is a must (user requirement)
