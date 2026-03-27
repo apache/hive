@@ -1100,6 +1100,9 @@ public class MetaStoreUtils {
     }
     if (hasCatalogName(dbName)) {
       String[] names = dbName.substring(1).split(CATALOG_DB_SEPARATOR, 2);
+      if (names.length == 1) {
+        return new String[] {names[0], null};
+      }
       if (names[1].isEmpty()) {
         names[1] = null;
       } else if (names[1].equals(DB_EMPTY_MARKER)) {

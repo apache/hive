@@ -38,6 +38,17 @@ public class TestMetastoreUtilsParseDbName {
     assertArrayEquals(new String[]{"hive", "@!"}, parseDbName("@!", conf));
     assertArrayEquals(new String[]{"", null}, parseDbName("@#", conf));
     assertArrayEquals(new String[]{"", "db1"}, parseDbName("@#db1", conf));
+    assertArrayEquals(new String[]{"cat1", null}, parseDbName("@cat1", conf));
+    assertArrayEquals(new String[]{"cat1", null}, parseDbName("@cat1#", conf));
+    assertArrayEquals(new String[]{"cat1", ""}, parseDbName("@cat1#!", conf));
+    assertArrayEquals(new String[]{"cat1", "@db1"}, parseDbName("@cat1#@db1", conf));
+    assertArrayEquals(new String[]{"cat1", "#db1"}, parseDbName("@cat1##db1", conf));
+    assertArrayEquals(new String[]{"cat1", "db1"}, parseDbName("@cat1#db1", conf));
+    assertArrayEquals(new String[]{"cat1", "db1!"}, parseDbName("@cat1#db1!", conf));
+    assertArrayEquals(new String[]{"cat1!", null}, parseDbName("@cat1!", conf));
+    assertArrayEquals(new String[]{"hive", "#db1"}, parseDbName("#db1", conf));
+    assertArrayEquals(new String[]{"hive", "#!"}, parseDbName("#!", conf));
+    assertArrayEquals(new String[]{"hive", "#"}, parseDbName("#", conf));
     assertArrayEquals(new String[]{"hive", "@cat1"}, parseDbName("@cat1", conf));
     assertArrayEquals(new String[]{"cat1", null}, parseDbName("@cat1#", conf));
     assertArrayEquals(new String[]{"cat1", ""}, parseDbName("@cat1#!", conf));
