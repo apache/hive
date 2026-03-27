@@ -1628,11 +1628,23 @@ public class StatsUtils {
   }
 
   private static ColStatistics buildColStatForConstant(HiveConf conf, long numRows, ExprNodeConstantDesc encd) {
-    String colType = encd.getTypeString().toLowerCase();
+
+    long numNulls = 0;
+    long countDistincts = 0;
+    if (encd.getValue() == null) {
+      // null projection
+      numNulls = numRows;
+    } else {
+      countDistincts = 1;
+    }
+    String colType = encd.getTypeString();
+    colType = colType.toLowerCase();
+    ObjectInspector oi = encd.getWritableObjectInspector();
+    double avgColSize = getAvgColLenOf(conf, oi, colType);
     ColStatistics colStats = new ColStatistics(encd.getName(), colType);
-    colStats.setAvgColLen(getAvgColLenOf(conf, encd.getWritableObjectInspector(), colType));
-    colStats.setCountDistint(encd.getValue() == null ? 0 : 1);
-    colStats.setNumNulls(encd.getValue() == null ? numRows : 0);
+    colStats.setAvgColLen(avgColSize);
+    colStats.setCountDistint(countDistincts);
+    colStats.setNumNulls(numNulls);
 
     Optional<Number> value = getConstValue(encd);
     value.ifPresent(number -> colStats.setRange(number, number));
