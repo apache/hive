@@ -668,7 +668,7 @@ class TestStatsUtils {
   // Test for NDV cap after StatEstimator (NDV cannot exceed numRows)
 
   @Test
-  void testGetColStatisticsFromExpressionNdvCappedAtNumRows() throws Exception {
+  void testGetColStatisticsFromExpressionNdvCappedAtNumRows() {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATORS_ENABLE, true);
 

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 
 /**
  * Enables statistics related computation on UDFs
@@ -39,5 +40,19 @@ public interface StatEstimator {
    * @param argStats the statistics for every argument of the UDF
    * @return {@link ColStatistics} estimate for the actual UDF.
    */
-  public Optional<ColStatistics> estimate(List<ColStatistics> argStats);
+  default Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+    throw new UnsupportedOperationException("This estimator requires parentStats");
+  }
+
+  /**
+   * Computes the output statistics with access to parent statistics.
+   * Override this method when the estimator uses more info for accurate estimation.
+   *
+   * @param argStats the statistics for every argument of the UDF
+   * @param parentStats statistics from the parent operator
+   * @return {@link ColStatistics} estimate for the actual UDF.
+   */
+  default Optional<ColStatistics> estimate(List<ColStatistics> argStats, Statistics parentStats) {
+    return estimate(argStats);
+  }
 }

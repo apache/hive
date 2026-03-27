@@ -1578,7 +1578,7 @@ public class StatsUtils {
             csList.add(cs);
           }
           if (csList.size() == engfd.getChildren().size()) {
-            Optional<ColStatistics> res = se.estimate(csList);
+            Optional<ColStatistics> res = se.estimate(csList, parentStats);
             if (res.isPresent()) {
               ColStatistics newStats = res.get();
               // NDV cannot exceed numRows
@@ -1631,7 +1631,7 @@ public class StatsUtils {
     String colType = encd.getTypeString().toLowerCase();
     ColStatistics colStats = new ColStatistics(encd.getName(), colType);
     colStats.setAvgColLen(getAvgColLenOf(conf, encd.getWritableObjectInspector(), colType));
-    colStats.setCountDistint(1);
+    colStats.setCountDistint(encd.getValue() == null ? 0 : 1);
     colStats.setNumNulls(encd.getValue() == null ? numRows : 0);
 
     Optional<Number> value = getConstValue(encd);
@@ -2099,9 +2099,7 @@ public class StatsUtils {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         long ndv = cs.getCountDistint();
-        // +1 for NULL group: source columns with partial nulls and known NDV only.
-        // Computed expressions include NULL. Ordered: numNulls>0 first (often false).
-        if (!cs.isEstimated() && cs.getNumNulls() > 0 && ndv > 0 && cs.getNumNulls() < parentStats.getNumRows()) {
+        if (cs.getNumNulls() > 0) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }
         ndvValues.add(ndv);

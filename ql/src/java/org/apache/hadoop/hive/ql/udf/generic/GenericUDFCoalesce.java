@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
@@ -89,8 +90,8 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
   static class CoalesceStatEstimator implements StatEstimator {
 
     @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats, Statistics parentStats) {
+      PessimisticStatCombiner combiner = new PessimisticStatCombiner(parentStats.getNumRows());
       for (int i = 0; i < argStats.size(); i++) {
         combiner.add(argStats.get(i));
       }

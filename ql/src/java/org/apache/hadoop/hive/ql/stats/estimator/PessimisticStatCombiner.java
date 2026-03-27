@@ -28,10 +28,19 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
  */
 public class PessimisticStatCombiner {
 
+  private final long numRows;
   private boolean inited;
+  private boolean hasUnknownNDV;
   private ColStatistics result;
 
+  public PessimisticStatCombiner(long numRows) {
+    this.numRows = numRows;
+  }
+
   public void add(ColStatistics stat) {
+    // NDV==0 means unknown, unless it's a NULL constant (numNulls == numRows)
+    hasUnknownNDV = hasUnknownNDV || (stat.getCountDistint() == 0 && stat.getNumNulls() != numRows);
+
     if (!inited) {
       inited = true;
       result = stat.clone();
@@ -42,9 +51,7 @@ public class PessimisticStatCombiner {
     if (stat.getAvgColLen() > result.getAvgColLen()) {
       result.setAvgColLen(stat.getAvgColLen());
     }
-    // If any branch has NDV=0 (unknown stats), propagate unknown to result.
-    // Summing would treat unknown as zero, causing cardinality underestimates.
-    if (result.getCountDistint() == 0 || stat.getCountDistint() == 0) {
+    if (hasUnknownNDV) {
       result.setCountDistint(0);
     } else {
       result.setCountDistint(StatsUtils.safeAdd(result.getCountDistint(), stat.getCountDistint()));

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
@@ -187,8 +188,8 @@ public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
   static class IfStatEstimator implements StatEstimator {
 
     @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats, Statistics parentStats) {
+      PessimisticStatCombiner combiner = new PessimisticStatCombiner(parentStats.getNumRows());
       combiner.add(argStats.get(1));
       combiner.add(argStats.get(2));
       return combiner.getResult();
