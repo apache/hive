@@ -2937,30 +2937,6 @@ public class HMSHandler extends PrivilegeHandler {
     return new SetPartitionsStatsResponse(ret);
   }
 
-<<<<<<< HEAD
-  @Deprecated
-  @Override
-  public boolean delete_partition_column_statistics(String dbName, String tableName,
-                                                    String partName, String colName, String engine) throws TException {
-    dbName = dbName.toLowerCase();
-    String[] parsedDbName = parseDbName(dbName, conf);
-    tableName = tableName.toLowerCase();
-    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
-    if (colName != null) {
-      colName = colName.toLowerCase();
-      request.addToCol_names(colName);
-    }
-
-    request.setEngine(engine);
-    request.setCat_name(parsedDbName[CAT_NAME]);
-    if (partName != null) {
-      request.addToPart_names(partName);
-    }
-    return delete_column_statistics_req(request);
-  }
-
-=======
->>>>>>> e98893fc601 (deprecated methods)
   @Override
   public boolean delete_column_statistics_req(DeleteColumnStatisticsRequest req) throws TException {
     String dbName = normalizeIdentifier(req.getDb_name());
@@ -3043,40 +3019,6 @@ public class HMSHandler extends PrivilegeHandler {
     return ret;
   }
 
-<<<<<<< HEAD
-  @Deprecated
-  @Override
-  public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
-      throws TException {
-    dbName = dbName.toLowerCase();
-    tableName = tableName.toLowerCase();
-    String[] parsedDbName = parseDbName(dbName, conf);
-    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
-    if (colName != null) {
-      colName = colName.toLowerCase();
-      request.addToCol_names(colName);
-    }
-    request.setEngine(engine);
-    request.setCat_name(parsedDbName[CAT_NAME]);
-    request.setTableLevel(true);
-    return delete_column_statistics_req(request);
-  }
-
-  @Override
-  @Deprecated
-  public List<Partition> get_partitions_by_filter(final String dbName, final String tblName,
-                                                  final String filter, final short maxParts)
-      throws TException {
-    String[] parsedDbName = parseDbName(dbName, conf);
-    GetPartitionsByFilterRequest gfr =
-        new GetPartitionsByFilterRequest(parsedDbName[DB_NAME], tblName, filter);
-    gfr.setMaxParts(maxParts);
-    gfr.setCatName(parsedDbName[CAT_NAME]);
-    return get_partitions_by_filter_req(gfr);
-  }
-
-=======
->>>>>>> e98893fc601 (deprecated methods)
   @Override
   public List<Partition> get_partitions_by_filter_req(GetPartitionsByFilterRequest req) throws TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);

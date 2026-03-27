@@ -917,14 +917,16 @@ public abstract class DeprecatedHandler extends BaseHandler {
     dbName = dbName.toLowerCase();
     String[] parsedDbName = parseDbName(dbName, conf);
     tableName = tableName.toLowerCase();
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
     if (colName != null) {
       colName = colName.toLowerCase();
+      request.addToCol_names(colName);
     }
-    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
     request.setEngine(engine);
     request.setCat_name(parsedDbName[CAT_NAME]);
-    request.addToCol_names(colName);
-    request.addToPart_names(partName);
+    if (partName != null) {
+      request.addToPart_names(partName);
+    }
     return delete_column_statistics_req(request);
   }
 
@@ -936,15 +938,13 @@ public abstract class DeprecatedHandler extends BaseHandler {
     tableName = tableName.toLowerCase();
 
     String[] parsedDbName = parseDbName(dbName, conf);
-
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
     if (colName != null) {
       colName = colName.toLowerCase();
+      request.addToCol_names(colName);
     }
-
-    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
     request.setEngine(engine);
     request.setCat_name(parsedDbName[CAT_NAME]);
-    request.addToCol_names(colName);
     request.setTableLevel(true);
     return delete_column_statistics_req(request);
   }
