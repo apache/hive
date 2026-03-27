@@ -569,6 +569,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
             hmsTable.setViewOriginalText(mv.getView().properties().get(Catalogs.MATERIALIZED_VIEW_ORIGINAL_TEXT));
             hmsTable.setViewExpandedText(mv.getView().sqlFor("hive").sql());
+            hmsTable.getCreationMetadata().setMaterializationTime(
+                mv.getView().currentVersion().refreshState().refreshStartTimestampMs()
+            );
             break;
 
           default:
