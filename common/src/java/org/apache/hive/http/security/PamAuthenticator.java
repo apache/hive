@@ -18,21 +18,17 @@ package org.apache.hive.http.security;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.security.AuthenticationState;
 import org.eclipse.jetty.security.ServerAuthException;
-import org.eclipse.jetty.security.UserAuthentication;
-import org.eclipse.jetty.security.authentication.DeferredAuthentication;
+import org.eclipse.jetty.security.UserIdentity;
 import org.eclipse.jetty.security.authentication.LoginAuthenticator;
-import org.eclipse.jetty.server.Authentication;
-import org.eclipse.jetty.server.UserIdentity;
-import java.util.Base64;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Callback;
 
 import javax.security.sasl.AuthenticationException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import net.sf.jpam.Pam;
 
@@ -58,21 +54,16 @@ public class PamAuthenticator extends LoginAuthenticator {
   }
 
   @Override
-  public String getAuthMethod() {
+  public String getAuthenticationType() {
     return "pam";
   }
 
   @Override
-  public Authentication validateRequest(ServletRequest req, ServletResponse res, boolean mandatory)
+  public AuthenticationState validateRequest(Request request, Response response, Callback callback)
       throws ServerAuthException {
-    HttpServletRequest request = (HttpServletRequest) req;
-    HttpServletResponse response = (HttpServletResponse) res;
-    String credentials = request.getHeader(HttpHeader.AUTHORIZATION.asString());
+    String credentials = request.getHeaders().get(HttpHeader.AUTHORIZATION);
 
     try {
-      if (!mandatory)
-        return new DeferredAuthentication(this);
-
       if (credentials != null) {
         int space = credentials.indexOf(' ');
         if (space > 0) {
@@ -85,32 +76,30 @@ public class PamAuthenticator extends LoginAuthenticator {
               String username = credentials.substring(0, i);
               String password = credentials.substring(i + 1);
 
-              UserIdentity user = login(username, password);
+              UserIdentity user = login(username, password, request, response);
               if (user != null) {
-                return new UserAuthentication(getAuthMethod(), user);
+                return new UserAuthenticationSucceeded(getAuthenticationType(), user);
               }
             }
           }
         }
       }
 
-      if (DeferredAuthentication.isDeferred(response))
-        return Authentication.UNAUTHENTICATED;
-
-      response.setHeader(HttpHeader.WWW_AUTHENTICATE.asString(), "basic realm=\"" + _loginService.getName() + '"');
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-      return Authentication.SEND_CONTINUE;
-    } catch (IOException e) {
+      response.getHeaders().put(HttpHeader.WWW_AUTHENTICATE,
+          "basic realm=\"" + getLoginService().getName() + '"');
+      Response.writeError(request, response, callback, 401);
+      return AuthenticationState.CHALLENGE;
+    } catch (Exception e) {
       throw new ServerAuthException(e);
     }
   }
 
-  protected UserIdentity login(String username, String password) throws AuthenticationException {
-    UserIdentity user = null;
+  protected UserIdentity login(String username, String password, Request request, Response response)
+      throws AuthenticationException {
     if (authenticate(username, password)) {
-      user = new PamUserIdentity(username);
+      return new PamUserIdentity(username);
     }
-    return user;
+    return null;
   }
 
   private boolean authenticate(String user, String password) throws AuthenticationException {
@@ -129,12 +118,6 @@ public class PamAuthenticator extends LoginAuthenticator {
         throw new AuthenticationException(errorMsg + pamService, e);
       }
     }
-    return true;
-  }
-
-  @Override
-  public boolean secureResponse(ServletRequest servletRequest, ServletResponse servletResponse, boolean b,
-      Authentication.User user) throws ServerAuthException {
     return true;
   }
 }

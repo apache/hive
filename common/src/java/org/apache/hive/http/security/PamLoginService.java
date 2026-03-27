@@ -19,21 +19,23 @@ package org.apache.hive.http.security;
 import org.eclipse.jetty.security.DefaultIdentityService;
 import org.eclipse.jetty.security.IdentityService;
 import org.eclipse.jetty.security.LoginService;
-import org.eclipse.jetty.server.UserIdentity;
+import org.eclipse.jetty.security.UserIdentity;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Session;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
-import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletRequest;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 public class PamLoginService extends AbstractLifeCycle implements LoginService {
   private final ConcurrentMap<String, UserIdentity> users = new ConcurrentHashMap<>();
 
   private IdentityService identityService = new DefaultIdentityService();
 
-  private static final Logger LOG = Log.getLogger(PamLoginService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PamLoginService.class);
 
   @Override
   public String getName() {
@@ -41,7 +43,8 @@ public class PamLoginService extends AbstractLifeCycle implements LoginService {
   }
 
   @Override
-  public UserIdentity login(String username, Object credentials, ServletRequest request) {
+  public UserIdentity login(String username, Object credentials, Request request,
+      Function<Boolean, Session> sessionCreator) {
     UserIdentity user = users.get(username);
 
     if (user != null) {

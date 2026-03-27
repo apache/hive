@@ -16,8 +16,8 @@
  */
 package org.apache.hive.http.security;
 
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.security.Constraint;
 
 public class PamConstraintMapping extends ConstraintMapping {
   public PamConstraintMapping(Constraint constraint) {

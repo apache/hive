@@ -16,21 +16,22 @@
  */
 package org.apache.hive.http.security;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.security.Constraint;
 
-public class PamConstraint extends Constraint {
-  private static final String[] roles = { "pam" };
+/**
+ * Utility class that creates a Jetty 12 Constraint for PAM authentication.
+ */
+public final class PamConstraint {
+  private static final String PAM_ROLE = "pam";
 
-  @Override
-  public boolean getAuthenticate() {
-    return true;
+  private PamConstraint() {
+    // utility class
   }
 
-  @Override
-  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Ref external obj for efficiency")
-  public String[] getRoles() {
-    return roles;
+  /**
+   * Creates a Constraint configured for PAM authentication with the "pam" role.
+   */
+  public static Constraint create() {
+    return Constraint.from("pam", Constraint.Authorization.SPECIFIC_ROLE, PAM_ROLE);
   }
 }
-

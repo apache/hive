@@ -17,17 +17,36 @@
 package org.apache.hive.http.security;
 
 import com.sun.security.auth.UserPrincipal;
-import org.eclipse.jetty.security.DefaultUserIdentity;
+import org.eclipse.jetty.security.UserIdentity;
 
 import javax.security.auth.Subject;
+import java.security.Principal;
 
-public class PamUserIdentity extends DefaultUserIdentity {
+/**
+ * A UserIdentity implementation for PAM-authenticated users.
+ * Delegates to the Jetty 12 {@link UserIdentity#from} factory and
+ * overrides {@link #isUserInRole} to always return true.
+ */
+public class PamUserIdentity implements UserIdentity {
+  private final UserIdentity delegate;
+
   public PamUserIdentity(String username) {
-    super(new Subject(), new UserPrincipal(username), new String[] { "pam" });
+    this.delegate = UserIdentity.from(
+        new Subject(), new UserPrincipal(username), "pam");
   }
 
   @Override
-  public boolean isUserInRole(String role, Scope scope) {
+  public Subject getSubject() {
+    return delegate.getSubject();
+  }
+
+  @Override
+  public Principal getUserPrincipal() {
+    return delegate.getUserPrincipal();
+  }
+
+  @Override
+  public boolean isUserInRole(String role) {
     return true;
   }
 

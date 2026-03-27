@@ -126,7 +126,7 @@
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.16.1</commons-io.version>
-    <commons-beanutils.version>1.9.4</commons-beanutils.version>
+    <commons-beanutils.version>1.11.0</commons-beanutils.version>
     <commons-lang3.version>3.18.0</commons-lang3.version>
     <commons-vfs2.version>2.10.0</commons-vfs2.version>
     <commons-math3.version>3.6.1</commons-math3.version>
@@ -138,7 +138,7 @@
     <druid.version>0.17.1</druid.version>
     <esri.version>2.2.4</esri.version>
     <flatbuffers.version>1.12.0</flatbuffers.version>
-    <guava.version>22.0</guava.version>
+    <guava.version>33.4.8-jre</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
     <hadoop.version>3.4.2</hadoop.version>
@@ -160,10 +160,10 @@
     <jackson.version>2.21.1</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
-    <javax-servlet.version>3.1.0</javax-servlet.version>
+    <jakarta-servlet.version>6.0.0</jakarta-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
-    <jetty.version>10.0.26</jetty.version>
+    <jetty.version>12.0.33</jetty.version>
     <jersey.version>1.19.4</jersey.version>
     <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
     <jline.version>3.25.0</jline.version>
@@ -182,7 +182,7 @@
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.25.3</log4j2.version>
-    <lz4.version>1.8.1</lz4.version>
+    <lz4.version>1.10.4</lz4.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
@@ -194,12 +194,12 @@
     <mockito-core.version>5.17.0</mockito-core.version>
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.127.Final</netty.version>
+    <netty.version>4.1.129.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.16.0</parquet.version>
+    <parquet.version>1.17.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
@@ -218,7 +218,7 @@
     <snappy.version>1.1.10.4</snappy.version>
     <jersey-wadl-doclet.version>4.0.0-M2</jersey-wadl-doclet.version>
     <jaxb-runtime.version>4.0.0-M2</jaxb-runtime.version>
-    <velocity.version>2.3</velocity.version>
+    <velocity.version>2.4.1</velocity.version>
     <xerces.version>2.12.2</xerces.version>
     <xmlsec.version>2.3.4</xmlsec.version>
     <zookeeper.version>3.9.5</zookeeper.version>
@@ -346,6 +346,17 @@
         <groupId>org.apache.parquet</groupId>
         <artifactId>parquet-hadoop-bundle</artifactId>
         <version>${parquet.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.parquet</groupId>
+        <artifactId>parquet-hadoop</artifactId>
+        <version>${parquet.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-jackson</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.immutables</groupId>
@@ -504,9 +515,24 @@
         <version>${junit.vintage.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.lz4</groupId>
+        <groupId>at.yawk.lz4</groupId>
         <artifactId>lz4-java</artifactId>
         <version>${lz4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.lz4</groupId>
+        <artifactId>lz4-java</artifactId>
+        <version>1.8.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.yaml</groupId>
+        <artifactId>snakeyaml</artifactId>
+        <version>2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>net.minidev</groupId>
+        <artifactId>json-smart</artifactId>
+        <version>2.5.2</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -549,14 +575,52 @@
         <version>${commons-exec.version}</version>
       </dependency>
       <dependency>
+        <groupId>commons-configuration</groupId>
+        <artifactId>commons-configuration</artifactId>
+        <version>${commons-configuration.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.jsonschema2pojo</groupId>
+        <artifactId>jsonschema2pojo-core</artifactId>
+        <version>1.0.2</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-core</artifactId>
         <version>${accumulo.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.htrace</groupId>
+            <artifactId>htrace-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-fate</artifactId>
         <version>${accumulo.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
@@ -572,6 +636,12 @@
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-trace</artifactId>
         <version>${accumulo.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.htrace</groupId>
+            <artifactId>htrace-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.avro</groupId>
@@ -811,18 +881,28 @@
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-servlet</artifactId>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-servlet</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-apache-jsp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-servlets</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>apache-jsp</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-webapp</artifactId>
+        <artifactId>jetty-session</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
@@ -836,9 +916,9 @@
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>${javax-servlet.version}</version>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>${jakarta-servlet.version}</version>
       </dependency>
       <dependency>
         <groupId>org.datanucleus</groupId>
@@ -1352,6 +1432,12 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-internals</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1361,6 +1447,10 @@
           <exclusion>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -1376,6 +1466,10 @@
           <exclusion>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -1418,12 +1512,22 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-yarn-client</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-common</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
