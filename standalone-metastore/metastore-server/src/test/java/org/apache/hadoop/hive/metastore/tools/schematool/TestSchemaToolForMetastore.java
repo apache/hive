@@ -579,7 +579,8 @@ public class TestSchemaToolForMetastore {
             "alter table TEST_E add constraint TEST_E_FK foreign key (FK_COL) references TEST_E(ID);"
         };
         dropScripts = new String[]{
-            "alter table TEST_E drop constraint TEST_E_FK;",
+            "create procedure #DROP_FK_HELPER as begin alter table TEST_E drop constraint TEST_E_FK end;",
+            "exec #DROP_FK_HELPER;",
             "alter table TEST_E drop constraint TEST_E_UQ;"
         };
       }

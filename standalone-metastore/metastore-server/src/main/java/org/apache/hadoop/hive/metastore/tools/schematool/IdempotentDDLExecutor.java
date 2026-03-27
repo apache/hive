@@ -26,9 +26,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public class IdempotentDDLExecutor {
   private static final Logger LOG = LoggerFactory.getLogger(IdempotentDDLExecutor.class);
+  private static final Set<String> DDL_FIRST_TOKENS = Set.of(
+      "CREATE", "ALTER", "DROP", "RENAME", "TRUNCATE", "COMMENT");
 
   private final Connection conn;
   private final DbErrorCodes errorCodes;
@@ -70,7 +74,7 @@ public class IdempotentDDLExecutor {
     try (Statement stmt = conn.createStatement()) {
       stmt.execute(sqlStmt);
     } catch (SQLException e) {
-      if (errorCodes.isIgnorable(e)) {
+      if (isDdlStatement(sqlStmt) && errorCodes.isIgnorable(e)) {
         String msg = String.format("Object already exists or was already dropped. " +
             "Statement: %s, ErrorCode: %d, SQLState: %s", sqlStmt, e.getErrorCode(), e.getSQLState());
         if (verbose) {
@@ -82,5 +86,48 @@ public class IdempotentDDLExecutor {
         throw e;
       }
     }
+  }
+
+  private boolean isDdlStatement(String sqlStmt) {
+    if (sqlStmt == null) {
+      return false;
+    }
+
+    String trimmed = sqlStmt.trim();
+    if (trimmed.isEmpty()) {
+      return false;
+    }
+
+    // We only inspect the first one or two keywords for statement type classification.
+    String[] tokens = trimmed.split("\\s+", 3);
+    if (tokens.length == 0) {
+      return false;
+    }
+
+    String first = normalizeToken(tokens[0]).toUpperCase(Locale.ROOT);
+    if (DDL_FIRST_TOKENS.contains(first)) {
+      return true;
+    }
+
+    if (("EXEC".equals(first) || "EXECUTE".equals(first)) && tokens.length > 1) {
+      String second = normalizeToken(tokens[1]);
+      return "SP_RENAME".equalsIgnoreCase(second) || isDropHelperProcedure(second);
+    }
+
+    return false;
+  }
+
+  private String normalizeToken(String token) {
+    if (token == null || token.isEmpty()) {
+      return "";
+    }
+    if (token.endsWith(";")) {
+      return token.substring(0, token.length() - 1);
+    }
+    return token;
+  }
+
+  private boolean isDropHelperProcedure(String token) {
+    return token != null && token.toUpperCase(Locale.ROOT).startsWith("#DROP_");
   }
 }
