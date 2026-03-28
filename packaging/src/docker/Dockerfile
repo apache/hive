@@ -108,6 +108,6 @@ RUN chmod +x /entrypoint.sh && \
 
 USER hive
 WORKDIR $HIVE_HOME
-EXPOSE 10000 10002 9083
+EXPOSE 10000 10001 10002 10003 9083
 
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]

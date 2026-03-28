@@ -193,6 +193,8 @@ docker compose down
 
 The compose file `packaging/src/docker/docker-compose.yml` can start a cluster with LLAP daemons (discovered via Zookeeper) if the `llap` profile is activated.
 
+When the `llap` profile is active, a **separate** LLAP-enabled HiveServer2 service (`hiveserver2-llap`) is started in addition to the default HiveServer2. That instance listens for JDBC/Thrift on port **10001** on the host (`jdbc:hive2://localhost:10001/`). Its web UI is exposed on port **10003**. The non-LLAP HiveServer2 service continues to use Thrift **10000** and web **10002** when both are running.
+
 Use the following workflow from `packaging/src/docker`:
 
 ```shell
@@ -200,7 +202,7 @@ docker-compose --profile llap -f docker-compose.yml down --rmi local # cleanup p
 
 export POSTGRES_LOCAL_PATH=... # set the path to the postgres driver jar on the host machine
 ./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 # build image from the common Dockerfile
-docker compose -f docker-compose.yml up -d
+docker compose --profile llap -f docker-compose.yml up -d
 ```
 
 To view LLAP logs:
