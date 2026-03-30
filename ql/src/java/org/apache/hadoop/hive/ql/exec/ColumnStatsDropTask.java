@@ -38,7 +38,7 @@ public class ColumnStatsDropTask extends Task<ColumnStatsDropWork> {
   @Override
   public int execute() {
     try {
-      getHive().deleteColumnStatistics(work.dbName(), work.tableName());
+      getHive().deleteColumnStatistics(work.tableName());
       return 0;
     } catch (Exception e) {
       setException(e);

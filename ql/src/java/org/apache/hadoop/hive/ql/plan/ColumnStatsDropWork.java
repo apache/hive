@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serial;
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -30,7 +31,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * ALTER TABLE src_stat DROP STATISTICS for columns;
  */
 @Explain(displayName = "Column Stats Drop Work", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED})
-public record ColumnStatsDropWork(String dbName, String tableName) implements Serializable {
+public record ColumnStatsDropWork(TableName tableName) implements Serializable {
   @Serial
   private static final long serialVersionUID = 1L;
 }

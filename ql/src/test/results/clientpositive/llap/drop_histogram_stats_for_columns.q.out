@@ -39,55 +39,55 @@ POSTHOOK: Output: default@test_stats
 POSTHOOK: Lineage: test_stats.a SCRIPT []
 POSTHOOK: Lineage: test_stats.b SCRIPT []
 POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("d", 2, 3.1)
+PREHOOK: query: insert into test_stats (a, b, c) values ("d", 3, 3.1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("d", 2, 3.1)
+POSTHOOK: query: insert into test_stats (a, b, c) values ("d", 3, 3.1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_stats
 POSTHOOK: Lineage: test_stats.a SCRIPT []
 POSTHOOK: Lineage: test_stats.b SCRIPT []
 POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("e", 2, 3.1)
+PREHOOK: query: insert into test_stats (a, b, c) values ("e", 4, 3.1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("e", 2, 3.1)
+POSTHOOK: query: insert into test_stats (a, b, c) values ("e", 4, 3.1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_stats
 POSTHOOK: Lineage: test_stats.a SCRIPT []
 POSTHOOK: Lineage: test_stats.b SCRIPT []
 POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("f", 2, 4.1)
+PREHOOK: query: insert into test_stats (a, b, c) values ("f", 4, 4.1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("f", 2, 4.1)
+POSTHOOK: query: insert into test_stats (a, b, c) values ("f", 4, 4.1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_stats
 POSTHOOK: Lineage: test_stats.a SCRIPT []
 POSTHOOK: Lineage: test_stats.b SCRIPT []
 POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("g", 2, 5.1)
+PREHOOK: query: insert into test_stats (a, b, c) values ("g", 5, 5.1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("g", 2, 5.1)
+POSTHOOK: query: insert into test_stats (a, b, c) values ("g", 5, 5.1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_stats
 POSTHOOK: Lineage: test_stats.a SCRIPT []
 POSTHOOK: Lineage: test_stats.b SCRIPT []
 POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("h", 2, 6.1)
+PREHOOK: query: insert into test_stats (a, b, c) values ("h", 6, 6.1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("h", 2, 6.1)
+POSTHOOK: query: insert into test_stats (a, b, c) values ("h", 6, 6.1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_stats
@@ -170,15 +170,15 @@ POSTHOOK: Input: default@test_stats
 col_name            	b                   
 data_type           	int                 
 min                 	2                   
-max                 	3                   
+max                 	6                   
 num_nulls           	0                   
-distinct_count      	2                   
+distinct_count      	5                   
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	Q1: 2, Q2: 2, Q3: 2 
+histogram           	Q1: 2, Q2: 3, Q3: 4 
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: describe formatted test_stats c

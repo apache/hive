@@ -52,7 +52,7 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
           "doesn't store stats in metastore.");
     }
 
-    ColumnStatsDropWork work = new ColumnStatsDropWork(table.getDbName(), table.getTableName());
+    ColumnStatsDropWork work = new ColumnStatsDropWork(tableName);
     ColumnStatsDropTask task = (ColumnStatsDropTask) TaskFactory.get(work);
     
     addInputsOutputsAlterTable(tableName, partitionSpec, null, AlterTableType.DROP_COL_STATS, false);
