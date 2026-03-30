@@ -440,7 +440,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     for (JobContext jobContext : jobContexts) {
       JobConf conf = jobContext.getJobConf();
 
-      table = Optional.ofNullable(table).orElseGet(() -> Catalogs.loadTable(conf, catalogProperties));
+      table = Optional.ofNullable(table).orElseGet(() -> IcebergTableUtil.getTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
       snapshotId = getSnapshotId(outputTable.table, branchName);
 
