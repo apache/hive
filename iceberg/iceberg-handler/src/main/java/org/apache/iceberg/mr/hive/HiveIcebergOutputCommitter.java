@@ -518,15 +518,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   private Long getSnapshotId(Table table, String branchName) {
-    // Use the transaction table (if available) so that intra-txn changes
-    // (e.g. a prior INSERT) don't cause false conflict validation failures.
-    Table snapshotTable = Optional.ofNullable(IcebergAcidUtil.getTransaction(table))
-        .map(Transaction::table)
-        .orElse(table);
-
-    return Optional.ofNullable(IcebergTableUtil.getTableSnapshot(snapshotTable, branchName))
-        .map(Snapshot::snapshotId)
-        .orElse(null);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, branchName);
+    return Optional.ofNullable(snapshot).map(Snapshot::snapshotId).orElse(null);
   }
 
   /**
