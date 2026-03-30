@@ -1818,12 +1818,7 @@ public class WorkloadManager extends AbstractTriggerValidator
   protected WmTezSession createSessionObject(String sessionId, HiveConf conf) {
     conf = (conf == null) ? new HiveConf(this.conf) : conf;
     conf.set(LlapTaskSchedulerService.LLAP_PLUGIN_ENDPOINT_ENABLED, "true");
-    TezSessionState base = null;
-    if (useExternalSessions) {
-      base = new TezExternalSessionState(sessionId, conf);
-    } else {
-      base = new TezSessionState(sessionId, conf);
-    }
+    TezSessionState base = TezSessionState.create(sessionId, conf, useExternalSessions);
     return new WmTezSession(this, expirationTracker, base);
   }
 

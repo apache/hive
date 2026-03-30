@@ -168,6 +168,12 @@ public class TezSessionState implements TezSession {
     this.sessionId = sessionId;
   }
 
+  public static TezSessionState create(String sessionId, HiveConf conf, boolean useExternalSessions) {
+    return useExternalSessions ? new TezExternalSessionState(sessionId, conf) :
+        new TezSessionState(sessionId, conf);
+  }
+
+  @Override
   public boolean isOpening() {
     if (session != null || sessionFuture == null) {
       return false;
@@ -191,6 +197,7 @@ public class TezSessionState implements TezSession {
     return false;
   }
 
+  @Override
   public boolean isOpen() {
     if (session != null) {
       return true;
@@ -813,6 +820,7 @@ public class TezSessionState implements TezSession {
     return session;
   }
 
+  @Override
   public LocalResource getAppJarLr() {
     return appJarLr;
   }
@@ -938,10 +946,12 @@ public class TezSessionState implements TezSession {
     return conf;
   }
 
+  @Override
   public List<LocalResource> getLocalizedResources() {
     return resources == null ? new ArrayList<>() : new ArrayList<>(resources.localizedResources);
   }
 
+  @Override
   public String getUser() {
     return user;
   }
@@ -1005,18 +1015,22 @@ public class TezSessionState implements TezSession {
     return wmContext;
   }
 
+  @Override
   public void setWmContext(final WmContext wmContext) {
     this.wmContext = wmContext;
   }
 
+  @Override
   public KillQuery getKillQuery() {
     return killQuery;
   }
 
+  @Override
   public void setKillQuery(final KillQuery killQuery) {
     this.killQuery = killQuery;
   }
 
+  @Override
   public HiveResources extractHiveResources() {
     HiveResources result = resources;
     resources = null;
@@ -1042,6 +1056,7 @@ public class TezSessionState implements TezSession {
     return dir;
   }
 
+  @Override
   public String getAppMasterUri() {
     return Optional.of(session).map(
             tezClient -> tezClient.getAmHost() + ":" + tezClient.getAmPort())

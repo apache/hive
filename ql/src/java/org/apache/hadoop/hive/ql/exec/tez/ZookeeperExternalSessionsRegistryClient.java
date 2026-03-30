@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
@@ -42,8 +43,6 @@ import com.google.common.base.Preconditions;
 public class ZookeeperExternalSessionsRegistryClient implements ExternalSessionsRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(ZookeeperExternalSessionsRegistryClient.class);
 
-  // TODO: internal only for now to start and reconnect to external session
-  private static final String ZK_PATH = "/tez_am/server";
   private final HiveConf initConf;
   private final Set<String> available = new HashSet<>();
   private final Set<String> taken = new HashSet<>();
@@ -51,7 +50,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
   private final int maxAttempts;
 
   private CuratorCache cache;
-  private boolean isInitialized;
+  private volatile boolean isInitialized;
 
 
   public ZookeeperExternalSessionsRegistryClient(final HiveConf initConf) {
@@ -63,16 +62,10 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
     return childData.getPath().substring(childData.getPath().lastIndexOf("/") + 1);
   }
 
-  public void close() {
-    if (cache != null) {
-      cache.close();
-    }
-  }
-
   private void init() throws Exception {
     String zkServer = HiveConf.getVar(initConf, ConfVars.HIVE_ZOOKEEPER_QUORUM);
     String zkNamespace = HiveConf.getVar(initConf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE);
-    String effectivePath = zkNamespace + ZK_PATH;
+    String effectivePath = normalizeZkPath(zkNamespace);
     CuratorFramework client = CuratorFrameworkFactory.newClient(zkServer, new ExponentialBackoffRetry(1000, 3));
     synchronized (lock) {
       client.start();
@@ -91,6 +84,12 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
     }
   }
 
+  @VisibleForTesting
+  static String normalizeZkPath(String zkNamespace) {
+    return (zkNamespace.startsWith("/") ? zkNamespace : "/" + zkNamespace);
+  }
+
+  @Override
   public String getSession() throws Exception {
     synchronized (lock) {
       if (!isInitialized) {
@@ -111,16 +110,24 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
     }
   }
 
+  @Override
   public void returnSession(String appId) {
     synchronized (lock) {
       if (!isInitialized) {
-        throw new AssertionError("Not initialized");
+        throw new IllegalStateException("Not initialized");
       }
       if (!taken.remove(appId)) {
         return; // Session has been removed from ZK.
       }
       available.add(appId);
       lock.notifyAll();
+    }
+  }
+
+  @Override
+  public void close() {
+    if (cache != null) {
+      cache.close();
     }
   }
 

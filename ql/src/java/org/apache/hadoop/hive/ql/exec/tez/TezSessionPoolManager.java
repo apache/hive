@@ -420,12 +420,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
   }
 
   protected TezSessionPoolSession createSession(String sessionId, HiveConf conf) {
-    TezSessionState base;
-    if (useExternalSessions) {
-      base = new TezExternalSessionState(sessionId, conf);
-    } else {
-      base = new TezSessionState(sessionId, conf);
-    }
+    TezSessionState base = TezSessionState.create(sessionId, conf, useExternalSessions);
     return new TezSessionPoolSession(this, expirationTracker, base);
   }
 

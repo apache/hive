@@ -23,8 +23,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTriggerValidator {
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractTriggerValidator.class);
+
   private ScheduledExecutorService scheduledExecutorService = null;
   abstract Runnable getTriggerValidatorRunnable();
 
@@ -35,7 +39,7 @@ public abstract class AbstractTriggerValidator {
       Runnable triggerValidatorRunnable = getTriggerValidatorRunnable();
       scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
           triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
-      TezSessionPoolSession.LOG.info("Started trigger validator with interval: {} ms", triggerValidationIntervalMs);
+      LOG.info("Started trigger validator with interval: {} ms", triggerValidationIntervalMs);
     }
   }
 
@@ -43,7 +47,7 @@ public abstract class AbstractTriggerValidator {
     if (scheduledExecutorService != null) {
       scheduledExecutorService.shutdownNow();
       scheduledExecutorService = null;
-      TezSessionPoolSession.LOG.info("Stopped trigger validator");
+      LOG.info("Stopped trigger validator");
     }
   }
 }

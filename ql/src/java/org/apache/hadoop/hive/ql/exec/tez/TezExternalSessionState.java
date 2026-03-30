@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,7 +30,6 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
-import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 
 /**
@@ -59,15 +56,16 @@ import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
  */
 public class TezExternalSessionState extends TezSessionState {
   private static final Object DEFAULT_CONF_CREATE_LOCK = new Object();
-  private static TezConfiguration defaultTezConfiguration;
+  private static volatile TezConfiguration defaultTezConfiguration;
 
   private String externalAppId;
-  private boolean isDestroying = false;
+  private volatile boolean isOpen = false;
+  private volatile boolean isDestroying = false;
   private final ExternalSessionsRegistry registry;
 
   public TezExternalSessionState(String sessionId, HiveConf conf) {
     super(sessionId, conf);
-    this.registry = ExternalSessionsRegistry.getClient(conf);
+    this.registry = ExternalSessionsRegistryFactory.getClient(conf);
     synchronized (DEFAULT_CONF_CREATE_LOCK) {
       if (defaultTezConfiguration == null) {
         defaultTezConfiguration = createDefaultTezConfig();
@@ -89,19 +87,21 @@ public class TezExternalSessionState extends TezSessionState {
   protected void openInternal(String[] additionalFilesNotFromConf,
                               boolean isAsync, LogHelper console, HiveResources resources)
       throws IOException, TezException {
+    if (isOpen) {
+      LOG.info("External Tez session {} is already open, skipping duplicate openInternal call", getSessionId());
+      return;
+    }
+
     initQueueAndUser();
 
     boolean llapMode = isLlapMode();
-
-    Map<String, String> amEnv = new HashMap<>();
-    MRHelpers.updateEnvBasedOnMRAMEnv(conf, amEnv);
 
     TezConfiguration tezConfig = new TezConfiguration(defaultTezConfiguration);
     setupSessionAcls(tezConfig, conf);
     ServicePluginsDescriptor spd = createServicePluginDescriptor(llapMode, tezConfig);
     Credentials llapCredentials = createLlapCredentials(llapMode, tezConfig);
 
-    final TezClient session = TezClient.newBuilder("HIVE-" + getSessionId(), tezConfig)
+    final TezClient sessionTezClient = TezClient.newBuilder("HIVE-" + getSessionId(), tezConfig)
         .setIsSession(true)
         .setCredentials(llapCredentials).setServicePluginDescriptor(spd)
         .build();
@@ -122,18 +122,26 @@ public class TezExternalSessionState extends TezSessionState {
       throw new IOException(e);
     }
 
-    session.getClient(ApplicationId.fromString(externalAppId));
-    LOG.info("Started an external session; client name {}, app ID {}", session.getClientName(), externalAppId);
-    setTezClient(session);
+    sessionTezClient.getClient(ApplicationId.fromString(externalAppId));
+    LOG.info("Started an external session; client name {}, app ID {}", sessionTezClient.getClientName(), externalAppId);
+    setTezClient(sessionTezClient);
+    isOpen = true;
   }
 
   @Override
   public void close(boolean keepDagFilesDir) throws Exception {
     // We never close external sessions that don't have errors.
-    if (externalAppId != null) {
-      registry.returnSession(externalAppId);
+    try {
+      if (externalAppId != null) {
+        registry.returnSession(externalAppId);
+      }
+    } catch (Exception e) {
+      LOG.warn("Caught exception while trying to return external session {}, moving on with session state closure",
+          externalAppId, e);
     }
+
     externalAppId = null;
+    isOpen = false;
     if (isDestroying) {
       super.close(keepDagFilesDir);
     }
@@ -153,6 +161,11 @@ public class TezExternalSessionState extends TezSessionState {
     // This will actually close the session. We assume the external manager will restart it.
     // It could instead somehow communicate to the external manager that the session is bad.
     super.destroy();
+  }
+
+  @Override
+  public boolean isOpen(){
+    return isOpen;
   }
 
   @Override

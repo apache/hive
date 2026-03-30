@@ -54,7 +54,7 @@ public class TestZookeeperExternalSessionsRegistryClient {
       conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS, 1);
 
       String namespace = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE);
-      String effectivePath = namespace + "/tez_am/server";
+      String effectivePath = ZookeeperExternalSessionsRegistryClient.normalizeZkPath(namespace);
 
       CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder();
       client = builder.connectString(connectString).retryPolicy(new RetryOneTime(1)).build();
@@ -104,7 +104,7 @@ public class TestZookeeperExternalSessionsRegistryClient {
       conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS, 1);
 
       String namespace = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE);
-      String effectivePath = namespace + "/tez_am/server";
+      String effectivePath = ZookeeperExternalSessionsRegistryClient.normalizeZkPath(namespace);
 
       CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder();
       client = builder.connectString(connectString).retryPolicy(new RetryOneTime(1)).build();

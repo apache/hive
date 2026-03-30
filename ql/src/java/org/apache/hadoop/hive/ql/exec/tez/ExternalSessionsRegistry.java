@@ -17,13 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,32 +42,14 @@ public interface ExternalSessionsRegistry {
    */
   void close();
 
-  Map<String, ExternalSessionsRegistry> INSTANCES = new HashMap<>();
+  private static Configuration prepareConf(Configuration conf) {
+    // HS2 would need to know about all coordinators running on all compute groups for a given compute (namespace)
+    // Setting this config to false in client, will make registry client listen on paths under @compute instead of
+    // @compute/compute-group
+    Configuration newConf = new Configuration(conf);
 
-  static ExternalSessionsRegistry getClient(final Configuration conf) {
-    ExternalSessionsRegistry registry;
-    synchronized (INSTANCES) {
-      // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_NAMESPACE after Tez 1.0.0 is released.
-      String namespace = conf.get("tez.am.registry.namespace");
-      // HS2 would need to know about all coordinators running on all compute groups for a given compute (namespace)
-      // Setting this config to false in client, will make registry client listen on paths under @compute instead of
-      // @compute/compute-group
-      // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_ENABLE_COMPUTE_GROUPS after Tez 1.0.0 is released.
-      conf.setBoolean("tez.am.registry.enable.compute.groups", false);
-      registry = INSTANCES.get(namespace);
-      String clazz = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS);
-      if (registry == null) {
-        try {
-          registry = JavaUtils.newInstance(JavaUtils.getClass(clazz, ExternalSessionsRegistry.class),
-            new Class<?>[]{HiveConf.class}, new Object[]{conf});
-        } catch (MetaException e) {
-          throw new RuntimeException(e);
-        }
-        INSTANCES.put(namespace, registry);
-      }
-      LOG.info("Returning tez external AM registry ({}) for namespace '{}'", System.identityHashCode(registry),
-          namespace);
-    }
-    return registry;
+    // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_ENABLE_COMPUTE_GROUPS after Tez 1.0.0 is released.
+    newConf.setBoolean("tez.am.registry.enable.compute.groups", false);
+    return conf;
   }
 }

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -30,8 +31,8 @@ public class TestTezExternalSessionsRegistryClient {
         DummyExternalSessionsRegistry.class.getName());
     // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_NAMESPACE after Tez 1.0.0 is released.
     conf.set("tez.am.registry.namespace", "dummy");
-    ExternalSessionsRegistry externalSessionsRegistry = ExternalSessionsRegistry.getClient(conf);
-    assertTrue(externalSessionsRegistry instanceof DummyExternalSessionsRegistry);
+    ExternalSessionsRegistry externalSessionsRegistry = ExternalSessionsRegistryFactory.getClient(conf);
+    assertEquals(DummyExternalSessionsRegistry.class, externalSessionsRegistry.getClass());
   }
 
   @Test
@@ -43,7 +44,7 @@ public class TestTezExternalSessionsRegistryClient {
     conf.set("tez.am.registry.namespace", "tez");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS,
         ZookeeperExternalSessionsRegistryClient.class.getName());
-    ExternalSessionsRegistry externalSessionsRegistry = ExternalSessionsRegistry.getClient(conf);
-    assertTrue(externalSessionsRegistry instanceof ZookeeperExternalSessionsRegistryClient);
+    ExternalSessionsRegistry externalSessionsRegistry = ExternalSessionsRegistryFactory.getClient(conf);
+    assertEquals(ZookeeperExternalSessionsRegistryClient.class, externalSessionsRegistry.getClass());
   }
 }
