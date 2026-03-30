@@ -2111,7 +2111,10 @@ public class StatsUtils {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         long ndv = cs.getCountDistint();
-        if (cs.getNumNulls() > 0) {
+        // NDV needs to be adjusted if a column has a known NDV along with NULL values
+        // or if a column happens to be "const NULL"
+        if ((ndv > 0 && cs.getNumNulls() > 0) ||
+            (ndv == 0 && !cs.isEstimated() && cs.getNumNulls() == parentStats.getNumRows())) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }
         ndvValues.add(ndv);

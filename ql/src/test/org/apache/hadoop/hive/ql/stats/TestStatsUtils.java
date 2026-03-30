@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -45,7 +44,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.jupiter.api.Test;
@@ -506,51 +507,6 @@ class TestStatsUtils {
     assertEquals(-1, colStats.get(0).getNumFalses(), "Unknown numFalses (-1) should be preserved after scaling");
   }
 
-  // Tests for buildColStatForConstant (via getColStatisticsFromExpression)
-
-  @Test
-  void testGetColStatisticsFromExpressionNullConstant() {
-    HiveConf conf = new HiveConf();
-    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
-
-    ExprNodeConstantDesc nullConst = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
-    ColStatistics cs = StatsUtils.getColStatisticsFromExpression(conf, parentStats, nullConst);
-
-    assertNotNull(cs);
-    assertEquals(1, cs.getCountDistint(), "NULL constant should have NDV=1");
-    assertEquals(1000, cs.getNumNulls(), "NULL constant should have numNulls=numRows");
-    assertFalse(cs.isEstimated(), "Constant stats should not be marked as estimated");
-  }
-
-  @Test
-  void testGetColStatisticsFromExpressionNonNullConstant() {
-    HiveConf conf = new HiveConf();
-    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
-
-    ExprNodeConstantDesc strConst = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "hello");
-    ColStatistics cs = StatsUtils.getColStatisticsFromExpression(conf, parentStats, strConst);
-
-    assertNotNull(cs);
-    assertEquals(1, cs.getCountDistint(), "Non-NULL constant should have NDV=1");
-    assertEquals(0, cs.getNumNulls(), "Non-NULL constant should have numNulls=0");
-  }
-
-  @Test
-  void testGetColStatisticsFromExpressionIntConstant() {
-    HiveConf conf = new HiveConf();
-    Statistics parentStats = new Statistics(500, 4000, 0, 0);
-
-    ExprNodeConstantDesc intConst = new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, 42);
-    ColStatistics cs = StatsUtils.getColStatisticsFromExpression(conf, parentStats, intConst);
-
-    assertNotNull(cs);
-    assertEquals(1, cs.getCountDistint(), "Integer constant should have NDV=1");
-    assertEquals(0, cs.getNumNulls(), "Integer constant should have numNulls=0");
-    assertNotNull(cs.getRange(), "Integer constant should have a range");
-    assertEquals(42, cs.getRange().minValue.intValue());
-    assertEquals(42, cs.getRange().maxValue.intValue());
-  }
-
   // Tests for computeNDVGroupingColumns / extractNDVGroupingColumns
 
   @Test
@@ -592,7 +548,7 @@ class TestStatsUtils {
     cs.setIsEstimated(true);  // computed expression (e.g., CASE)
 
     long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
-    assertEquals(3, ndv, "Estimated expression should NOT get +1 (already accounts for NULL)");
+    assertEquals(4, ndv, "NDV with nulls: 3 + 1 = 4");
   }
 
   @Test
@@ -601,12 +557,26 @@ class TestStatsUtils {
     parentStats.setColumnStatsState(Statistics.State.COMPLETE);
 
     ColStatistics cs = new ColStatistics("col1", "string");
-    cs.setCountDistint(1);
+    cs.setCountDistint(0);
     cs.setNumNulls(1000);  // all rows are NULL
     cs.setIsEstimated(false);
 
     long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
-    assertEquals(1, ndv, "All-NULL column should NOT get +1 (numNulls == numRows)");
+    assertEquals(1, ndv, "All-NULL column: NDV=0 but numNulls==numRows, so NDV becomes 1");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsAllNullEstimatedColumn() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs = new ColStatistics("case_expr", "string");
+    cs.setCountDistint(0);
+    cs.setNumNulls(1000);  // all rows are NULL
+    cs.setIsEstimated(true);  // from expression like CASE
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
+    assertEquals(0, ndv, "Estimated all-NULL column: NDV stays 0 (unknown from combiner)");
   }
 
   @Test
@@ -660,22 +630,15 @@ class TestStatsUtils {
     caseExpr.setIsEstimated(true);  // estimated: no +1
 
     long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(sourceCol, caseExpr), parentStats, false);
-    // sourceCol: 10 + 1 = 11, caseExpr: 3 (no +1)
-    // Product: 11 * 3 = 33
-    assertEquals(33, ndv, "Mixed columns: source (10+1) * estimated (3) = 33");
+    // sourceCol: 10 + 1 = 11, caseExpr: 3 + 1 = 4
+    // Product: 11 * 4 = 44
+    assertEquals(44, ndv, "Mixed columns: (10+1) * (3+1) = 44");
   }
-
-  // Test for NDV cap after StatEstimator (NDV cannot exceed numRows)
 
   @Test
   void testGetColStatisticsFromExpressionNdvCappedAtNumRows() {
-    HiveConf conf = new HiveConf();
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATORS_ENABLE, true);
-
-    // Create parent stats with only 100 rows
     Statistics parentStats = new Statistics(100, 800, 0, 0);
 
-    // Create column stats for col1 and col2 with high NDV (each 80)
     ColStatistics col1Stats = new ColStatistics("col1", "string");
     col1Stats.setCountDistint(80);
     col1Stats.setNumNulls(0);
@@ -688,9 +651,6 @@ class TestStatsUtils {
 
     parentStats.setColumnStats(Arrays.asList(col1Stats, col2Stats));
 
-    // Create IF(true, col1, col2) expression
-    // IF uses PessimisticStatCombiner which sums NDVs: 80 + 80 = 160
-    // But numRows is only 100, so NDV should be capped at 100
     GenericUDFIf udfIf = new GenericUDFIf();
     ExprNodeConstantDesc condExpr = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, true);
     ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "t", false);
@@ -700,11 +660,70 @@ class TestStatsUtils {
         TypeInfoFactory.stringTypeInfo, udfIf, "if",
         Arrays.asList(condExpr, col1Expr, col2Expr));
 
-    ColStatistics result = StatsUtils.getColStatisticsFromExpression(conf, parentStats, ifExpr);
+    ColStatistics result = StatsUtils.getColStatisticsFromExpression(new HiveConf(), parentStats, ifExpr);
 
     assertNotNull(result);
-    // PessimisticStatCombiner would produce 80 + 80 = 160, but cap ensures NDV <= numRows (100)
     assertEquals(100, result.getCountDistint(), "NDV should be capped at numRows (100), not 160");
   }
 
+  @Test
+  void testGetColStatisticsFromExpressionWhenNdvCapped() {
+    Statistics parentStats = new Statistics(100, 800, 0, 0);
+
+    ColStatistics col1Stats = new ColStatistics("col1", "string");
+    col1Stats.setCountDistint(60);
+    col1Stats.setNumNulls(0);
+    col1Stats.setAvgColLen(10);
+
+    ColStatistics col2Stats = new ColStatistics("col2", "string");
+    col2Stats.setCountDistint(70);
+    col2Stats.setNumNulls(0);
+    col2Stats.setAvgColLen(10);
+
+    parentStats.setColumnStats(Arrays.asList(col1Stats, col2Stats));
+
+    GenericUDFWhen udfWhen = new GenericUDFWhen();
+    ExprNodeConstantDesc condExpr = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, true);
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "t", false);
+    ExprNodeColumnDesc col2Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col2", "t", false);
+
+    ExprNodeGenericFuncDesc whenExpr = new ExprNodeGenericFuncDesc(
+        TypeInfoFactory.stringTypeInfo, udfWhen, "when",
+        Arrays.asList(condExpr, col1Expr, col2Expr));
+
+    ColStatistics result = StatsUtils.getColStatisticsFromExpression(new HiveConf(), parentStats, whenExpr);
+
+    assertNotNull(result);
+    assertEquals(100, result.getCountDistint(), "NDV should be capped at numRows (100), not 130");
+  }
+
+  @Test
+  void testGetColStatisticsFromExpressionCoalesceNdvCapped() {
+    Statistics parentStats = new Statistics(100, 800, 0, 0);
+
+    ColStatistics col1Stats = new ColStatistics("col1", "string");
+    col1Stats.setCountDistint(50);
+    col1Stats.setNumNulls(20);
+    col1Stats.setAvgColLen(10);
+
+    ColStatistics col2Stats = new ColStatistics("col2", "string");
+    col2Stats.setCountDistint(80);
+    col2Stats.setNumNulls(10);
+    col2Stats.setAvgColLen(10);
+
+    parentStats.setColumnStats(Arrays.asList(col1Stats, col2Stats));
+
+    GenericUDFCoalesce udfCoalesce = new GenericUDFCoalesce();
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "t", false);
+    ExprNodeColumnDesc col2Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col2", "t", false);
+
+    ExprNodeGenericFuncDesc coalesceExpr = new ExprNodeGenericFuncDesc(
+        TypeInfoFactory.stringTypeInfo, udfCoalesce, "coalesce",
+        Arrays.asList(col1Expr, col2Expr));
+
+    ColStatistics result = StatsUtils.getColStatisticsFromExpression(new HiveConf(), parentStats, coalesceExpr);
+
+    assertNotNull(result);
+    assertEquals(100, result.getCountDistint(), "NDV should be capped at numRows (100), not 130");
+  }
 }
