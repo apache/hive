@@ -50,5 +50,26 @@ commit;
 select * from iceberg_txn_t1 order by a;
 select * from iceberg_txn_t2 order by a;
 
+-- Test with ext.locking.enabled
+
+set iceberg.engine.hive.lock-enabled=false;
+set hive.txn.ext.locking.enabled=true;
+
+from (
+  select 1 as a union all select 2
+) s
+insert into iceberg_txn_t1
+  select a
+insert into iceberg_txn_t2
+  select a + 10;
+
+start transaction;
+update iceberg_txn_t1 set a = a + 1;
+insert into iceberg_txn_t2 select * from iceberg_txn_t1;
+commit;
+
+select * from iceberg_txn_t1 order by a;
+select * from iceberg_txn_t2 order by a;
+
 drop table if exists iceberg_txn_t1;
 drop table if exists iceberg_txn_t2;
