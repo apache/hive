@@ -501,9 +501,10 @@ public class TestSchemaToolForMetastore {
     }
     try {
       schemaTool.execSql(scriptFile.getPath());
-    } catch (IOException e) {
+    } catch (Exception e) {
       Assert.fail("[" + testName + "] Idempotent retry failed for " + dbms.getDbType()
-          + " — DbErrorCodes did not cover the error: " + e.getMessage());
+          + " — possible missing DbErrorCodes mapping or underlying SQL/configuration issue. "
+          + "Exception: " + e + ", cause: " + e.getCause());
     }
   }
 
