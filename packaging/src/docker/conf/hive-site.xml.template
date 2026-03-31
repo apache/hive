@@ -72,8 +72,4 @@
         <name>hive.query.results.cache.directory</name>
         <value>${HIVE_QUERY_RESULTS_CACHE_DIRECTORY}</value>
     </property>
-    <property>
-        <name>hive.server2.webui.port</name>
-        <value>${HIVE_SERVER2_WEB_PORT}</value>
-    </property>
 </configuration>

@@ -116,8 +116,7 @@ services:
     environment:
       USER: hive
       HADOOP_CLASSPATH: /opt/hadoop/share/hadoop/tools/lib/*
-      HIVE_SERVER2_THRIFT_PORT: 10001
-      HIVE_SERVER2_WEB_PORT: 10003
+      HIVE_SERVER2_THRIFT_PORT: 10000
 
       # Directories shared between HiveServer2 and LLAP daemon
       HIVE_SCRATCH_DIR: /opt/hive/scratch
@@ -138,8 +137,8 @@ services:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
     ports:
-      - '10001:10001'
-      - '10003:10003'
+      - '10000:10000'
+      - '10002:10002'
     volumes:
       - warehouse:/opt/hive/data/warehouse
       - scratch:/opt/hive/scratch
