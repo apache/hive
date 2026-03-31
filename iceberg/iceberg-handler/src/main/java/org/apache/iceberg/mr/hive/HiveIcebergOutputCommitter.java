@@ -442,7 +442,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
       table = Optional.ofNullable(table).orElseGet(() -> IcebergTableUtil.getTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
-      snapshotId = getSnapshotId(outputTable.table, branchName);
+      snapshotId = getSnapshotId(table, branchName);
 
       if (filterExpr == null) {
         filterExpr = SessionStateUtil.getConflictDetectionFilter(conf, catalogProperties.get(Catalogs.NAME))
