@@ -158,6 +158,7 @@ class CompactionCleaner extends TaskHandler {
           cleanUsingAcidDir(ci, t, path, cleanerWaterMark);
         }
       } else {
+        ci.setSoftDelete(true);
         cleanUsingLocation(ci, location, false);
       }
     } catch (Exception e) {
