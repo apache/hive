@@ -584,10 +584,12 @@ class DriverTxnHandler {
 
     boolean isTxnOpen =
         txnManager != null && txnManager.isTxnOpen() &&
-        (txnManager.isImplicitTransactionOpen(context) || COMMIT_OR_ROLLBACK.contains(hiveOp)) &&
         org.apache.commons.lang3.StringUtils.equals(queryIdFromDriver, txnManager.getQueryid());
 
-    release(!hiveLocks.isEmpty() || isTxnOpen);
+    boolean isImplicitTxnOrCommit = isTxnOpen &&
+        (txnManager.isImplicitTransactionOpen(context) || COMMIT_OR_ROLLBACK.contains(hiveOp));
+
+    release((!hiveLocks.isEmpty() && !isTxnOpen) || isImplicitTxnOrCommit);
   }
 
   private void release(boolean releaseLocks) {

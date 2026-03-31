@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.TxnCoordinator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -69,6 +70,7 @@ public class HiveTxnCoordinator implements TxnCoordinator {
 
   public HiveTxnCoordinator(Configuration conf, IMetaStoreClient msClient, boolean isExplicitTransaction) {
     this.conf = conf;
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
     this.msClient = msClient;
     this.isExplicitTransaction = isExplicitTransaction;
   }

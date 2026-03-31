@@ -528,6 +528,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       lockMgr = null;
     }
     txnId = 0;
+    isExplicitTransaction = false;
     txnCoordinator = null;
     stmtId = -1;
     numStatements = 0;
@@ -601,6 +602,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       clearLocksAndHB();
       getTxnCoordinator().commit();
 
+      if (isExplicitTxnOpen()) {
+        getDefaultCoordinator().commit();
+      }
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
@@ -625,6 +629,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       clearLocksAndHB();
       getTxnCoordinator().rollback();
 
+      if (isExplicitTxnOpen()) {
+        getDefaultCoordinator().rollback();
+      }
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
@@ -913,13 +920,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       //some commands like "show databases" don't start implicit transactions
       return false;
     }
-    if (!isExplicitTransaction) {
-      if (ctx == null || !ctx.isExplainSkipExecution()) {
-        assert numStatements <= 1 : "numStatements=" + numStatements;
-      }
-      return true;
-    }
-    return false;
+    return !isExplicitTransaction;
   }
   
   @Override
@@ -985,6 +986,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   public boolean isTxnOpen() {
     return txnId > 0 ||
         txnCoordinator != null && txnCoordinator.hasPendingWork();
+  }
+
+  private boolean isExplicitTxnOpen() {
+    return isExplicitTransaction && txnId > 0;
   }
 
   @Override
