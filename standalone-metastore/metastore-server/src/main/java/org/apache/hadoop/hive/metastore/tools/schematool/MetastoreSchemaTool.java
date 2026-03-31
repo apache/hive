@@ -258,7 +258,7 @@ public class MetastoreSchemaTool {
 
   protected NestedScriptParser getDbCommandParser(String dbType, String metaDbType) {
     return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-        passWord, conf, null, true);
+        passWord, conf, metaDbType, false);
   }
 
   protected MetaStoreConnectionInfo getConnectionInfo(boolean printInfo) {
