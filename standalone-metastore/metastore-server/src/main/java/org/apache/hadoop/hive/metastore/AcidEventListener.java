@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -91,6 +92,10 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
             rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
             rqst.putToProperties("location", table.getSd().getLocation());
             rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(tableEvent.getEnvironmentContext(), table)));
+            if (Boolean.parseBoolean(tableEvent.getEnvironmentContext().getProperties()
+                .get(ReplConst.SOURCE_OF_REPLICATION))) {
+              rqst.putToProperties(ReplConst.SOURCE_OF_REPLICATION, Boolean.TRUE.toString());
+            }
             txnHandler.submitForCleanup(rqst, table.getWriteId(), currentTxn);
           } catch (InterruptedException | IOException e) {
             throwMetaException(e);

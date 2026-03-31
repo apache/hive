@@ -99,17 +99,18 @@ public class FSRemover {
     LOG.info("About to remove {} obsolete directories from {}. {}", cr.getObsoleteDirs().size(),
             cr.getLocation(), CompactorUtil.getDebugInfo(cr.getObsoleteDirs()));
     boolean needCmRecycle;
+    Database db = null;
     try {
-      Database db = metadataCache.computeIfAbsent(cr.getDbName(),
+      db = metadataCache.computeIfAbsent(cr.getDbName(),
               () -> CompactorUtil.resolveDatabase(conf, cr.getDbName()));
       needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
     } catch (NoSuchObjectException ex) {
       // can not drop a database which is a source of replication
-      needCmRecycle = false;
+      needCmRecycle = cr.isSourceOfReplication();
     } catch (RuntimeException ex) {
       if (ex.getCause() instanceof NoSuchObjectException) {
         // can not drop a database which is a source of replication
-        needCmRecycle = false;
+        needCmRecycle = cr.isSourceOfReplication();
       } else {
         throw ex;
       }
@@ -126,6 +127,20 @@ public class FSRemover {
         deleted.add(dead);
       }
     }
+    removeDatabaseDirIfNecessary(db, cr, fs);
     return deleted;
+  }
+
+  private void removeDatabaseDirIfNecessary(Database db, CleanupRequest cr, FileSystem fs) throws IOException {
+    if (db != null || !cr.isSoftDelete()) {
+      return;
+    }
+    Path databasePath = new Path(cr.getLocation()).getParent();
+    if (FileUtils.isDirEmpty(fs, databasePath)) {
+      if (cr.isSourceOfReplication()) {
+        replChangeManager.recycle(databasePath, ReplChangeManager.RecycleType.MOVE, cr.isPurge());
+      }
+      FileUtils.deleteDir(fs, databasePath, cr.isPurge(), conf);
+    }
   }
 }

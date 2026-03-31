@@ -287,6 +287,8 @@ class CompactionCleaner extends TaskHandler {
         .setFullPartitionName(ci.getFullPartitionName())
         .setRunAs(ci.runAs)
         .setPurge(ifPurge)
+        .setSoftDelete(true)
+        .setSourceOfReplication(ci.isSourceOfReplication())
         .setObsoleteDirs(Collections.singletonList(obsoletePath))
         .build();
   }
