@@ -61,6 +61,10 @@
         <value>false</value>
     </property>
     <property>
+        <name>hive.llap.execution.mode</name>
+        <value>all</value>
+    </property>
+    <property>
         <name>hive.exec.scratchdir</name>
         <value>${HIVE_SCRATCH_DIR}</value>
     </property>

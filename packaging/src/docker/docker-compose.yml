@@ -17,9 +17,6 @@
 name: hive-cluster
 services:
   postgres:
-    profiles:
-      - core
-      - llap
     image: postgres
     restart: unless-stopped
     container_name: postgres
@@ -36,9 +33,6 @@ services:
       - hive
 
   metastore:
-    profiles:
-      - core
-      - llap
     image: apache/hive:${HIVE_VERSION}
     depends_on:
       - postgres
@@ -74,13 +68,12 @@ services:
       - hive
 
   hiveserver2:
-    profiles:
-      - core
     image: apache/hive:${HIVE_VERSION}
     depends_on:
       - metastore
     restart: unless-stopped
     container_name: hiveserver2
+    hostname: hiveserver2
     environment:
       USER: hive
       HADOOP_CLASSPATH: /opt/hadoop/share/hadoop/tools/lib/*
@@ -93,51 +86,10 @@ services:
       SERVICE_OPTS: >-
         -Xmx1G
         -Dhive.metastore.uris=thrift://metastore:9083
-      IS_RESUME: 'true'
-      SERVICE_NAME: 'hiveserver2'
 
-      S3_ENDPOINT_URL: "${S3_ENDPOINT_URL}"
-      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-    ports:
-      - '10000:10000'
-      - '10002:10002'
-    volumes:
-      - warehouse:/opt/hive/data/warehouse
-      - scratch:/opt/hive/scratch
-      # Mount local jars to a temporary staging area (Read-Only)
-      - ./jars:/tmp/ext-jars:ro
-    networks:
-      - hive
-
-  hiveserver2-llap:
-    profiles:
-      - llap
-    image: apache/hive:${HIVE_VERSION}
-    depends_on:
-      - metastore
-      - zookeeper
-      - llapdaemon1
-      - llapdaemon2
-    restart: unless-stopped
-    container_name: hiveserver2
-    environment:
-      USER: hive
-      HADOOP_CLASSPATH: /opt/hadoop/share/hadoop/tools/lib/*
-      HIVE_SERVER2_THRIFT_PORT: 10000
-
-      # Directories shared between HiveServer2 and LLAP daemon
-      HIVE_SCRATCH_DIR: /opt/hive/scratch
-      HIVE_QUERY_RESULTS_CACHE_DIRECTORY: /opt/hive/scratch/_resultscache_
-
-      # SERVICE_OPTS for LLAP mode
-      SERVICE_OPTS: >-
-        -Xmx1G
-        -Dhive.metastore.uris=thrift://metastore:9083
-        -Dhive.execution.mode=llap
-        -Dhive.llap.execution.mode=all
-        -Dhive.zookeeper.quorum=zookeeper:2181
-        -Dhive.llap.daemon.service.hosts=@llap0
+        -Dhive.execution.mode=${HIVE_EXECUTION_MODE:-container}
+        -Dhive.zookeeper.quorum=${HIVE_ZOOKEEPER_QUORUM:-}
+        -Dhive.llap.daemon.service.hosts=${HIVE_LLAP_DAEMON_SERVICE_HOSTS:-}
       IS_RESUME: 'true'
       SERVICE_NAME: 'hiveserver2'
 
@@ -197,7 +149,7 @@ services:
       LLAP_EXECUTORS: '1'
       # LLAP daemon zookeeper registration
       HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
-      LLAP_SERVICE_HOSTS: '@llap0'
+      HIVE_LLAP_DAEMON_SERVICE_HOSTS: '@llap0'
 
       # Directories shared between HiveServer2 and LLAP daemon
       HIVE_SCRATCH_DIR: /opt/hive/scratch
@@ -235,7 +187,7 @@ services:
       LLAP_EXECUTORS: '1'
       # LLAP daemon zookeeper registration
       HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
-      LLAP_SERVICE_HOSTS: '@llap0'
+      HIVE_LLAP_DAEMON_SERVICE_HOSTS: '@llap0'
 
       # Directories shared between HiveServer2 and LLAP daemon
       HIVE_SCRATCH_DIR: /opt/hive/scratch

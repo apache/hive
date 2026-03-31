@@ -37,12 +37,9 @@ fi
 # =========================================================================
 # REPLACE ${VARS} in the template
 # =========================================================================
-: "${HIVE_WAREHOUSE_PATH:=/opt/hive/data/warehouse}"
-: "${HIVE_SCRATCH_DIR:=/opt/hive/scratch}"
-: "${HIVE_QUERY_RESULTS_CACHE_DIRECTORY:=/opt/hive/scratch/_resultscache_}"
-export HIVE_WAREHOUSE_PATH
-export HIVE_SCRATCH_DIR
-export HIVE_QUERY_RESULTS_CACHE_DIRECTORY
+export HIVE_WAREHOUSE_PATH="${HIVE_WAREHOUSE_PATH:-/opt/hive/data/warehouse}"
+export HIVE_SCRATCH_DIR="${HIVE_SCRATCH_DIR:-/opt/hive/scratch}"
+export HIVE_QUERY_RESULTS_CACHE_DIRECTORY="${HIVE_WAREHOUSE_PATH:-/opt/hive/scratch/_resultscache_}"
 
 envsubst < $HIVE_HOME/conf/core-site.xml.template > $HIVE_HOME/conf/core-site.xml
 envsubst < $HIVE_HOME/conf/hive-site.xml.template > $HIVE_HOME/conf/hive-site.xml
@@ -73,7 +70,7 @@ function initialize_hive {
 
 function run_llap {
   export HIVE_ZOOKEEPER_QUORUM="${HIVE_ZOOKEEPER_QUORUM:-zookeeper:2181}"
-  export LLAP_SERVICE_HOSTS="${LLAP_SERVICE_HOSTS:-@llap0}"
+  export HIVE_LLAP_DAEMON_SERVICE_HOSTS="${HIVE_LLAP_DAEMON_SERVICE_HOSTS:-@llap0}"
   export LLAP_MEMORY_MB="${LLAP_MEMORY_MB:-1024}"
   export LLAP_EXECUTORS="${LLAP_EXECUTORS:-1}"
 

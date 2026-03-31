@@ -22,7 +22,7 @@
   </property>
   <property>
     <name>hive.llap.daemon.service.hosts</name>
-    <value>${LLAP_SERVICE_HOSTS}</value>
+    <value>${HIVE_LLAP_DAEMON_SERVICE_HOSTS}</value>
   </property>
   <property>
     <name>hive.llap.daemon.memory.per.instance.mb</name>
