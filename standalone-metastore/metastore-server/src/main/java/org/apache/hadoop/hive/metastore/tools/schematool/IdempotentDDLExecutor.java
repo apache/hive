@@ -37,13 +37,16 @@ public class IdempotentDDLExecutor {
   private final Connection conn;
   private final DbErrorCodes errorCodes;
   private final HiveSchemaHelper.NestedScriptParser parser;
+  private final boolean fixQuotes;
   private final boolean verbose;
 
   public IdempotentDDLExecutor(
-      Connection conn, String dbType, HiveSchemaHelper.NestedScriptParser parser, boolean verbose) {
+      Connection conn, String dbType, HiveSchemaHelper.NestedScriptParser parser,
+      boolean fixQuotes, boolean verbose) {
     this.conn = conn;
     this.errorCodes = DbErrorCodes.forDbType(dbType);
     this.parser = parser;
+    this.fixQuotes = fixQuotes;
     this.verbose = verbose;
   }
 
@@ -52,7 +55,7 @@ public class IdempotentDDLExecutor {
     conn.setAutoCommit(true);
 
     File file = new File(scriptFile);
-    List<String> commands = parser.getExecutableCommands(file.getParent(), file.getName());
+    List<String> commands = parser.getExecutableCommands(file.getParent(), file.getName(), fixQuotes);
 
     for (String sqlStmt : commands) {
       if (!sqlStmt.isEmpty()) {

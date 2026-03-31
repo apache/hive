@@ -311,7 +311,8 @@ public class MetastoreSchemaTool {
     try (Connection conn = getConnectionToMetastore(true)) {
       conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
       NestedScriptParser parser = getDbCommandParser(dbType, metaDbType);
-      IdempotentDDLExecutor idempotentExecutor = new IdempotentDDLExecutor(conn, dbType, parser, verbose);
+      IdempotentDDLExecutor idempotentExecutor =
+          new IdempotentDDLExecutor(conn, dbType, parser, metaDbType != null, verbose);
       idempotentExecutor.executeScript(sqlScriptFile);
       LOG.info("Script executed successfully.");
     } catch (Exception e) {
