@@ -311,6 +311,10 @@ public class HiveSchemaHelper {
           }
           currentCommand = null;
         }
+
+        if (currentCommand != null && !isNonExecCommand(currentCommand)) {
+          throw new IllegalArgumentException("Unterminated SQL statement at end of script: " + scriptFile);
+        }
       }
       return commands;
     }
