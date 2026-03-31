@@ -17,6 +17,9 @@
 name: hive-cluster
 services:
   postgres:
+    profiles:
+      - core
+      - llap
     image: postgres
     restart: unless-stopped
     container_name: postgres
@@ -33,6 +36,9 @@ services:
       - hive
 
   metastore:
+    profiles:
+      - core
+      - llap
     image: apache/hive:${HIVE_VERSION}
     depends_on:
       - postgres
@@ -68,6 +74,8 @@ services:
       - hive
 
   hiveserver2:
+    profiles:
+      - core
     image: apache/hive:${HIVE_VERSION}
     depends_on:
       - metastore
@@ -112,7 +120,7 @@ services:
       - llapdaemon1
       - llapdaemon2
     restart: unless-stopped
-    container_name: hiveserver2-llap
+    container_name: hiveserver2
     environment:
       USER: hive
       HADOOP_CLASSPATH: /opt/hadoop/share/hadoop/tools/lib/*
