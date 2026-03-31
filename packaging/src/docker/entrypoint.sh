@@ -72,14 +72,10 @@ function initialize_hive {
 }
 
 function run_llap {
-  : "${HIVE_ZOOKEEPER_QUORUM:=zookeeper:2181}"
-  : "${LLAP_SERVICE_HOSTS:=@llap0}"
-  : "${LLAP_MEMORY_MB:=1024}"
-  : "${LLAP_EXECUTORS:=1}"
-  export HIVE_ZOOKEEPER_QUORUM
-  export LLAP_SERVICE_HOSTS
-  export LLAP_MEMORY_MB
-  export LLAP_EXECUTORS
+  export HIVE_ZOOKEEPER_QUORUM="${HIVE_ZOOKEEPER_QUORUM:-zookeeper:2181}"
+  export LLAP_SERVICE_HOSTS="${LLAP_SERVICE_HOSTS:-@llap0}"
+  export LLAP_MEMORY_MB="${LLAP_MEMORY_MB:-1024}"
+  export LLAP_EXECUTORS="${LLAP_EXECUTORS:-1}"
 
   envsubst < "$HIVE_HOME/conf/llap-daemon-site.xml.template" > "$HIVE_HOME/conf/llap-daemon-site.xml"
 
@@ -113,11 +109,12 @@ function run_llap {
       LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS:-} ${opt}"
     fi
   done
-  export LLAP_DAEMON_OPTS
 
   if [[ -n "${LLAP_EXTRA_OPTS:-}" ]]; then
     export LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS:-} ${LLAP_EXTRA_OPTS}"
   fi
+
+  export LLAP_DAEMON_OPTS
 
   LLAP_RUN_SCRIPT="${HIVE_HOME}/scripts/llap/bin/runLlapDaemon.sh"
   if [ ! -x "${LLAP_RUN_SCRIPT}" ]; then
