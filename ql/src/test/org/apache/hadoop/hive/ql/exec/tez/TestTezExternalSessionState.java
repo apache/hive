@@ -72,6 +72,7 @@ public class TestTezExternalSessionState {
 
     @Override
     public void close() {
+      // Testing registry; nothing specific to clean up.
     }
 
     int getGetSessionCalls() {

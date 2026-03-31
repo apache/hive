@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Test;

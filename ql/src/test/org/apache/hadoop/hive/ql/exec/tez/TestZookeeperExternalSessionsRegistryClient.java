@@ -41,11 +41,10 @@ public class TestZookeeperExternalSessionsRegistryClient {
    */
   @Test
   public void testGetAndReturnSession() throws Exception {
-    TestingServer server = null;
     CuratorFramework client = null;
     ZookeeperExternalSessionsRegistryClient registry = null;
-    try {
-      server = new TestingServer();
+
+    try (TestingServer server = new TestingServer()) {
       String connectString = server.getConnectString();
 
       HiveConf conf = new HiveConf();
@@ -66,21 +65,18 @@ public class TestZookeeperExternalSessionsRegistryClient {
       registry = new ZookeeperExternalSessionsRegistryClient(conf);
 
       String first = registry.getSession();
-      assertTrue(first.equals("app_1") || first.equals("app_2"));
+      assertTrue("app_1".equals(first) || "app_2".equals(first));
 
       registry.returnSession(first);
       String second = registry.getSession();
       assertNotNull(second);
-      assertTrue(second.equals("app_1") || second.equals("app_2"));
+      assertTrue("app_1".equals(second) || "app_2".equals(second));
     } finally {
       if (registry != null) {
         registry.close();
       }
       if (client != null) {
         client.close();
-      }
-      if (server != null) {
-        server.close();
       }
     }
   }
@@ -91,11 +87,10 @@ public class TestZookeeperExternalSessionsRegistryClient {
    */
   @Test
   public void testReuseSameSession() throws Exception {
-    TestingServer server = null;
     CuratorFramework client = null;
     ZookeeperExternalSessionsRegistryClient registry = null;
-    try {
-      server = new TestingServer();
+
+    try (TestingServer server = new TestingServer()) {
       String connectString = server.getConnectString();
 
       HiveConf conf = new HiveConf();
@@ -130,9 +125,6 @@ public class TestZookeeperExternalSessionsRegistryClient {
       }
       if (client != null) {
         client.close();
-      }
-      if (server != null) {
-        server.close();
       }
     }
   }

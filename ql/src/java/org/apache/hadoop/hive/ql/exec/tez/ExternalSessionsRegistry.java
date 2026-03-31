@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,18 +37,7 @@ public interface ExternalSessionsRegistry {
   void returnSession(String appId);
 
   /**
-   * Closes the external session registry
+   * Closes the external session registry.
    */
   void close();
-
-  private static Configuration prepareConf(Configuration conf) {
-    // HS2 would need to know about all coordinators running on all compute groups for a given compute (namespace)
-    // Setting this config to false in client, will make registry client listen on paths under @compute instead of
-    // @compute/compute-group
-    Configuration newConf = new Configuration(conf);
-
-    // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_ENABLE_COMPUTE_GROUPS after Tez 1.0.0 is released.
-    newConf.setBoolean("tez.am.registry.enable.compute.groups", false);
-    return conf;
-  }
 }

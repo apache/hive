@@ -62,7 +62,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
     return childData.getPath().substring(childData.getPath().lastIndexOf("/") + 1);
   }
 
-  private void init() throws Exception {
+  private void init() {
     String zkServer = HiveConf.getVar(initConf, ConfVars.HIVE_ZOOKEEPER_QUORUM);
     String zkNamespace = HiveConf.getVar(initConf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE);
     String effectivePath = normalizeZkPath(zkNamespace);

@@ -1058,9 +1058,8 @@ public class TezSessionState implements TezSession {
 
   @Override
   public String getAppMasterUri() {
-    return Optional.of(session).map(
-            tezClient -> tezClient.getAmHost() + ":" + tezClient.getAmPort())
-        .get();
+    return Optional.ofNullable(session).map(
+            tezClient -> tezClient.getAmHost() + ":" + tezClient.getAmPort()).orElse(null);
   }
 
   /**

@@ -41,9 +41,10 @@ public abstract class ExternalSessionsRegistryFactory {
   private static final Map<String, ExternalSessionsRegistry> CLIENTS = new HashMap<>();
 
   static {
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      CLIENTS.values().forEach(ExternalSessionsRegistry::close);
-    }));
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> CLIENTS.values().forEach(ExternalSessionsRegistry::close)));
+  }
+
+  private ExternalSessionsRegistryFactory() {
   }
 
   public static ExternalSessionsRegistry getClient(final Configuration conf) {

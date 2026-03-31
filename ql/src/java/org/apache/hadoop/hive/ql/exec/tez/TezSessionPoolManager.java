@@ -334,7 +334,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
     returnSession(session);
   }
 
-  void returnSession(TezSession tezSessionState) throws Exception {
+  void returnSession(TezSession tezSessionState) {
     // Ignore the interrupt status while returning the session, but set it back
     // on the thread in case anything else needs to deal with it.
     boolean isInterrupted = Thread.interrupted();
@@ -521,9 +521,9 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
 
 
   public void closeNonDefaultSessions() throws Exception {
-    List<TezSession> sessionsToClose = null;
+    List<TezSession> sessionsToClose;
     synchronized (openSessions) {
-      sessionsToClose = new ArrayList<TezSession>(openSessions);
+      sessionsToClose = new ArrayList<>(openSessions);
     }
     for (TezSession sessionState : sessionsToClose) {
       System.err.println("Shutting down tez session.");
