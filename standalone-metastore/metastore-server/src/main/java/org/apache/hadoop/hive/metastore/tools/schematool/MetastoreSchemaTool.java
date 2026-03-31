@@ -315,6 +315,7 @@ public class MetastoreSchemaTool {
   protected void execSql(String sqlScriptFile) throws IOException {
     LOG.info("Going to run script <{}> via Idempotent JDBC Executor", sqlScriptFile);
     try (Connection conn = getConnectionToMetastore(true)) {
+      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
       NestedScriptParser parser = getDbCommandParser(dbType, metaDbType);
       IdempotentDDLExecutor idempotentExecutor = new IdempotentDDLExecutor(conn, dbType, parser, verbose);
       idempotentExecutor.executeScript(sqlScriptFile);
