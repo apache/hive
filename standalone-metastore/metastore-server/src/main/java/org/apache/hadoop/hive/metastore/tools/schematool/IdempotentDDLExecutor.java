@@ -60,13 +60,13 @@ public class IdempotentDDLExecutor {
       }
     }
     if (verbose) {
-      System.out.println("Completed successfully.");
+      LOG.info("Completed successfully.");
     }
   }
 
   private void executeStatement(String sqlStmt) throws SQLException {
     if (verbose) {
-      System.out.println("Executing: " + sqlStmt);
+      LOG.info("Executing: {}", sqlStmt);
     } else if (LOG.isDebugEnabled()) {
       LOG.debug("Executing: {}", sqlStmt);
     }
@@ -75,12 +75,8 @@ public class IdempotentDDLExecutor {
       stmt.execute(sqlStmt);
     } catch (SQLException e) {
       if (isDdlStatement(sqlStmt) && errorCodes.isIgnorable(e)) {
-        String msg = String.format("Object already exists or was already dropped. " +
-            "Statement: %s, ErrorCode: %d, SQLState: %s", sqlStmt, e.getErrorCode(), e.getSQLState());
-        if (verbose) {
-          System.out.println(msg);
-        }
-        LOG.info(msg);
+        LOG.info("Object already exists or was already dropped. Statement: {}, ErrorCode: {}, SQLState: {}",
+            sqlStmt, e.getErrorCode(), e.getSQLState());
       } else {
         LOG.error("SQL Error executing: {}. Error Code: {}, SQLState: {}", sqlStmt, e.getErrorCode(), e.getSQLState());
         throw e;
