@@ -124,6 +124,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSQCountCheck;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFPosExplode;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
@@ -2971,8 +2974,8 @@ public class StatsRulesProcFactory {
 
   /**
    * UDTF operator changes the number of rows and thereby the data size.
-   * This rule creates column statistics for the UDTF's OUTPUT columns (e.g., pos1, val1),
-   * not the input columns (e.g., _col0), to prevent namespace collisions in LateralViewJoin.
+   * This rule creates column statistics specifically for the UDTF's OUTPUT schema,
+   * ignoring the parent's columns to prevent downstream namespace collisions in LVJ.
    */
   public static class UDTFStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
     @Override
@@ -2986,15 +2989,19 @@ public class StatsRulesProcFactory {
       Statistics parentStats = parent.getStatistics();
 
       if (parentStats != null) {
+        Statistics st = parentStats.clone();
+
         float udtfFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
         long numRows = Math.max(StatsUtils.safeMult(parentStats.getNumRows(), udtfFactor), 1);
-        long dataSize = StatsUtils.safeMult(parentStats.getDataSize(), udtfFactor);
+        st.setNumRows(numRows);
 
-        Statistics st = new Statistics(numRows, dataSize, 0, 0);
+        st.setBasicStatsState(Statistics.State.PARTIAL);
+        st.setColumnStatsState(Statistics.State.PARTIAL);
 
         RowSchema outputSchema = uop.getSchema();
         if (outputSchema != null && outputSchema.getSignature() != null) {
           List<ColStatistics> outputColStats = new ArrayList<>();
+          long totalAvgColLen = 0;
 
           for (ColumnInfo ci : outputSchema.getSignature()) {
             String colName = ci.getInternalName();
@@ -3003,12 +3010,19 @@ public class StatsRulesProcFactory {
             ColStatistics cs = new ColStatistics(colName, colType);
             cs.setCountDistint(0);
             cs.setNumNulls(-1);
-            cs.setAvgColLen(StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), colType));
+
+            long colLen = StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), colType);
+            cs.setAvgColLen(colLen);
+            cs.setIsEstimated(true);
+
+            totalAvgColLen += colLen;
             outputColStats.add(cs);
           }
 
+          long dataSize = StatsUtils.safeMult(numRows, totalAvgColLen);
+          st.setDataSize(dataSize);
           st.setColumnStats(outputColStats);
-          st.setColumnStatsState(parentStats.getColumnStatsState());
+
           StatsUtils.updateStats(st, numRows, true, uop);
         }
 
@@ -3024,6 +3038,8 @@ public class StatsRulesProcFactory {
 
   /**
    * LateralViewJoinOperator changes the data size and column level statistics.
+   * This rule scales the left branch and merges it with the right branch. Because
+   * the right (UDTF) branch is now fully isolated upstream, this merge is collision-free.
    *
    * A diagram of LATERAL VIEW.
    *
@@ -3060,8 +3076,9 @@ public class StatsRulesProcFactory {
         return null;
       }
 
+      final Operator<? extends OperatorDesc> udtfOp = parents.get(LateralViewJoinOperator.UDTF_TAG);
       final Statistics selectStats = parents.get(LateralViewJoinOperator.SELECT_TAG).getStatistics();
-      final Statistics udtfStats = parents.get(LateralViewJoinOperator.UDTF_TAG).getStatistics();
+      final Statistics udtfStats = udtfOp.getStatistics();
 
       final long udtfNumRows = Math.max(udtfStats.getNumRows(), 1);
       final double factor = (double) udtfNumRows / (double) Math.max(selectStats.getNumRows(), 1);
@@ -3082,6 +3099,9 @@ public class StatsRulesProcFactory {
         joinedStats.updateColumnStatsState(udtfStats.getColumnStatsState());
         final List<ColStatistics> udtfColStats = StatsUtils
                 .getColStatisticsFromExprMap(conf, udtfStats, columnExprMap, schema);
+
+        refineUdtfColStats(udtfColStats, udtfOp, udtfNumRows, factor);
+
         joinedStats.addToColumnStats(udtfColStats);
       }
 
@@ -3093,6 +3113,51 @@ public class StatsRulesProcFactory {
       }
 
       return null;
+    }
+
+    /**
+     * Refines UDTF column statistics using LVJ's context and defensive identity mapping.
+     */
+    private void refineUdtfColStats(List<ColStatistics> udtfColStats,
+                                    Operator<? extends OperatorDesc> udtfOp,
+                                    long udtfNumRows, double factor) {
+      if (!(udtfOp instanceof UDTFOperator udtf)) {
+        return;
+      }
+
+      GenericUDTF genericUDTF = udtf.getConf().getGenericUDTF();
+
+      boolean isPosExplode = genericUDTF instanceof GenericUDTFPosExplode;
+      boolean isExplode = genericUDTF instanceof GenericUDTFExplode;
+
+      String expectedPosColumnName = null;
+      if (isPosExplode && udtf.getSchema() != null
+          && udtf.getSchema().getSignature() != null
+          && !udtf.getSchema().getSignature().isEmpty()) {
+        expectedPosColumnName = udtf.getSchema().getSignature().get(0).getInternalName();
+      }
+
+      long inputNdv = 0;
+      List<Operator<? extends OperatorDesc>> udtfParents = udtf.getParentOperators();
+      if (udtfParents != null && !udtfParents.isEmpty()) {
+        Statistics udtfParentStats = udtfParents.get(0).getStatistics();
+        if (udtfParentStats != null && udtfParentStats.getColumnStats() != null
+            && !udtfParentStats.getColumnStats().isEmpty()) {
+          inputNdv = udtfParentStats.getColumnStats().get(0).getCountDistint();
+        }
+      }
+
+      for (ColStatistics cs : udtfColStats) {
+        if (cs.getCountDistint() == 0 && cs.isEstimated()) {
+          if (isPosExplode && cs.getColumnName().equals(expectedPosColumnName)) {
+            cs.setCountDistint(Math.max(1, (long) Math.ceil(factor)));
+            cs.setNumNulls(0);
+          } else if ((isPosExplode || isExplode) && inputNdv > 0) {
+            long ndvBound = Math.min(udtfNumRows, inputNdv * (long) Math.ceil(factor));
+            cs.setCountDistint(Math.max(1, ndvBound));
+          }
+        }
+      }
     }
   }
 

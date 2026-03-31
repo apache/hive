@@ -61,3 +61,17 @@ select id, f1, pos1, count(*)
 from (select id, f1 from lvj_stats group by id, f1) sub
 lateral view posexplode(array(f1, f1)) t1 as pos1, val1
 group by id, f1, pos1;
+
+-- Test 5: Standalone UDTF without LATERAL VIEW (UDTFStatsRule only, no LVJ refinement)
+-- Stats should show placeholder values (NDV=0, numNulls=-1) since LVJ doesn't refine
+set hive.stats.udtf.factor=1.0;
+
+explain
+select * from (select explode(array('a','b','c')) as val) t;
+
+select * from (select explode(array('a','b','c')) as val) t;
+
+explain
+select * from (select posexplode(array('a','b','c')) as (pos, val)) t;
+
+select * from (select posexplode(array('a','b','c')) as (pos, val)) t;

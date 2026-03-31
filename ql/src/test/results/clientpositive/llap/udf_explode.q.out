@@ -42,7 +42,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: explode
                       Reduce Output Operator
                         bucketingVersion: 2
@@ -50,7 +50,7 @@ STAGE PLANS:
                         null sort order: z
                         numBuckets: -1
                         sort order: +
-                        Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 2000 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         auto parallelism: false
             Execution mode: llap
@@ -99,14 +99,14 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 2000 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -164,7 +164,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: explode
                       Group By Operator
                         aggregations: count(1)
@@ -172,7 +172,7 @@ STAGE PLANS:
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 6000 Basic stats: PARTIAL Column stats: PARTIAL
                         Reduce Output Operator
                           bucketingVersion: 2
                           key expressions: _col0 (type: int)
@@ -180,7 +180,7 @@ STAGE PLANS:
                           numBuckets: -1
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 500 Data size: 6000 Basic stats: PARTIAL Column stats: PARTIAL
                           tag: -1
                           value expressions: _col1 (type: bigint)
                           auto parallelism: true
@@ -232,14 +232,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 3000 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: int)
                   null sort order: z
                   numBuckets: -1
                   sort order: +
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 3000 Basic stats: PARTIAL Column stats: PARTIAL
                   tag: -1
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
@@ -250,14 +250,14 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 3000 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 3000 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -347,7 +347,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 94000 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: explode
                       Reduce Output Operator
                         bucketingVersion: 2
@@ -355,7 +355,7 @@ STAGE PLANS:
                         null sort order: zz
                         numBuckets: -1
                         sort order: ++
-                        Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 94000 Basic stats: PARTIAL Column stats: PARTIAL
                         tag: -1
                         auto parallelism: false
             Execution mode: llap
@@ -404,14 +404,14 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 94000 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 94000 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -469,7 +469,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 94000 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: explode
                       Group By Operator
                         aggregations: count(1)
@@ -477,7 +477,7 @@ STAGE PLANS:
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 98000 Basic stats: PARTIAL Column stats: PARTIAL
                         Reduce Output Operator
                           bucketingVersion: 2
                           key expressions: _col0 (type: int), _col1 (type: string)
@@ -485,7 +485,7 @@ STAGE PLANS:
                           numBuckets: -1
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 500 Data size: 98000 Basic stats: PARTIAL Column stats: PARTIAL
                           tag: -1
                           value expressions: _col2 (type: bigint)
                           auto parallelism: true
@@ -537,14 +537,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 49000 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: int), _col1 (type: string)
                   null sort order: zz
                   numBuckets: -1
                   sort order: ++
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 49000 Basic stats: PARTIAL Column stats: PARTIAL
                   tag: -1
                   value expressions: _col2 (type: bigint)
                   auto parallelism: false
@@ -555,14 +555,14 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: bigint)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 49000 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 49000 Basic stats: PARTIAL Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

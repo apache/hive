@@ -40,6 +40,7 @@ import java.util.Stack;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -268,8 +269,58 @@ public class TestUDTFStatsRule {
     rule.process(udtf, new Stack<>(), ctx);
 
     assertNotNull("Statistics should be set", capturedStats[0]);
-    assertEquals("Column stats state should be COMPLETE",
-        Statistics.State.COMPLETE, capturedStats[0].getColumnStatsState());
+    assertEquals("Column stats state should be PARTIAL (placeholders)",
+        Statistics.State.PARTIAL, capturedStats[0].getColumnStatsState());
+  }
+
+  /**
+   * Tests that basic stats state is set to PARTIAL.
+   */
+  @Test
+  public void testBasicStatsStateIsPartial() throws Exception {
+    Operator<? extends OperatorDesc> parent = createMockParentOperator(
+        Arrays.asList("_col0"), Arrays.asList(10L), 100, 5000);
+
+    List<ColumnInfo> outputSignature = Arrays.asList(
+        new ColumnInfo("val", TypeInfoFactory.stringTypeInfo, "", false));
+
+    final Statistics[] capturedStats = new Statistics[1];
+    UDTFOperator udtf = createMockUDTFOperator(parent, outputSignature, capturedStats);
+
+    AnnotateStatsProcCtx ctx = createAnnotateStatsProcCtx();
+    StatsRulesProcFactory.UDTFStatsRule rule = new StatsRulesProcFactory.UDTFStatsRule();
+    rule.process(udtf, new Stack<>(), ctx);
+
+    assertNotNull("Statistics should be set", capturedStats[0]);
+    assertEquals("Basic stats state should be PARTIAL",
+        Statistics.State.PARTIAL, capturedStats[0].getBasicStatsState());
+  }
+
+  /**
+   * Tests that isEstimated flag is set to true for all output columns.
+   */
+  @Test
+  public void testIsEstimatedFlagIsTrue() throws Exception {
+    Operator<? extends OperatorDesc> parent = createMockParentOperator(
+        Arrays.asList("_col0"), Arrays.asList(10L), 100, 5000);
+
+    List<ColumnInfo> outputSignature = Arrays.asList(
+        new ColumnInfo("pos", TypeInfoFactory.intTypeInfo, "", false),
+        new ColumnInfo("val", TypeInfoFactory.stringTypeInfo, "", false));
+
+    final Statistics[] capturedStats = new Statistics[1];
+    UDTFOperator udtf = createMockUDTFOperator(parent, outputSignature, capturedStats);
+
+    AnnotateStatsProcCtx ctx = createAnnotateStatsProcCtx();
+    StatsRulesProcFactory.UDTFStatsRule rule = new StatsRulesProcFactory.UDTFStatsRule();
+    rule.process(udtf, new Stack<>(), ctx);
+
+    assertNotNull("Statistics should be set", capturedStats[0]);
+
+    for (ColStatistics cs : capturedStats[0].getColumnStats()) {
+      assertTrue("Column " + cs.getColumnName() + " should have isEstimated=true",
+          cs.isEstimated());
+    }
   }
 
   private Operator<? extends OperatorDesc> createMockParentOperator(

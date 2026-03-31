@@ -374,15 +374,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), col2 (type: int), 'USA' (type: string), 'CA' (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -391,20 +391,20 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string)
                           outputColumnNames: name, age, country, state
-                          Statistics: Num rows: 1 Data size: 173 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           Group By Operator
                             aggregations: max(length(name)), avg(COALESCE(length(name),0)), count(1), count(name), compute_bit_vector_hll(name), min(age), max(age), count(age), compute_bit_vector_hll(age), max(length(country)), avg(COALESCE(length(country),0)), count(country), compute_bit_vector_hll(country), max(length(state)), avg(COALESCE(length(state),0)), count(state), compute_bit_vector_hll(state)
                             keys: country (type: string), state (type: string)
-                            minReductionHashAggr: 0.4
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                            Statistics: Num rows: 1 Data size: 1037 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 1052 Basic stats: PARTIAL Column stats: PARTIAL
                             Reduce Output Operator
                               key expressions: _col0 (type: string), _col1 (type: string)
                               null sort order: zz
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                              Statistics: Num rows: 1 Data size: 1037 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 1052 Basic stats: PARTIAL Column stats: PARTIAL
                               value expressions: _col2 (type: int), _col3 (type: struct<count:bigint,sum:double,input:int>), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary), _col11 (type: int), _col12 (type: struct<count:bigint,sum:double,input:int>), _col13 (type: bigint), _col14 (type: binary), _col15 (type: int), _col16 (type: struct<count:bigint,sum:double,input:int>), _col17 (type: bigint), _col18 (type: binary)
         Reducer 2 
             Execution mode: vectorized
@@ -414,14 +414,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                Statistics: Num rows: 1 Data size: 833 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 1052 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col2,0)) (type: bigint), COALESCE(_col3,0) (type: double), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'LONG' (type: string), UDFToLong(_col7) (type: bigint), UDFToLong(_col8) (type: bigint), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col11,0)) (type: bigint), COALESCE(_col12,0) (type: double), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col15,0)) (type: bigint), COALESCE(_col16,0) (type: double), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), named_struct('country',_col0,'state',_col1) (type: struct<country:string,state:string>)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
-                  Statistics: Num rows: 1 Data size: 1478 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1052 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 1478 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 1052 Basic stats: PARTIAL Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1390,15 +1390,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: bigint), col2 (type: int), DATE'1999-12-31' (type: date)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -1407,20 +1407,20 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
                           outputColumnNames: bigintcol, intcol, pcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
                             keys: pcol (type: date)
-                            minReductionHashAggr: 0.4
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                            Statistics: Num rows: 1 Data size: 656 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 612 Basic stats: PARTIAL Column stats: PARTIAL
                             Reduce Output Operator
                               key expressions: _col0 (type: date)
                               null sort order: z
                               sort order: +
                               Map-reduce partition columns: _col0 (type: date)
-                              Statistics: Num rows: 1 Data size: 656 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 612 Basic stats: PARTIAL Column stats: PARTIAL
                               value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: date), _col11 (type: date), _col12 (type: bigint), _col13 (type: binary)
         Reducer 2 
             Execution mode: vectorized
@@ -1430,14 +1430,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: date)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                Statistics: Num rows: 1 Data size: 656 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 612 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DATE' (type: string), _col10 (type: date), _col11 (type: date), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol',_col0) (type: struct<pcol:date>)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                  Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 612 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 612 Basic stats: PARTIAL Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1858,15 +1858,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: CAST( col1 AS DATE) (type: date), col2 (type: int), 34567890123456787L (type: bigint)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -1875,20 +1875,20 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: date), _col1 (type: int), _col2 (type: bigint)
                           outputColumnNames: datecol, intcol, pcol
-                          Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           Group By Operator
                             aggregations: min(datecol), max(datecol), count(1), count(datecol), compute_bit_vector_hll(datecol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
                             keys: pcol (type: bigint)
-                            minReductionHashAggr: 0.4
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                            Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                             Reduce Output Operator
                               key expressions: _col0 (type: bigint)
                               null sort order: z
                               sort order: +
                               Map-reduce partition columns: _col0 (type: bigint)
-                              Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                               value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: binary)
         Reducer 2 
             Execution mode: vectorized
@@ -1898,14 +1898,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: bigint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), _col10 (type: bigint), _col11 (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol',_col0) (type: struct<pcol:bigint>)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                  Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2326,15 +2326,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: CAST( col1 AS DATE) (type: date), col2 (type: int), 3.14786D (type: double)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -2343,20 +2343,20 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: date), _col1 (type: int), _col2 (type: double)
                           outputColumnNames: datecol, intcol, pcol
-                          Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           Group By Operator
                             aggregations: min(datecol), max(datecol), count(1), count(datecol), compute_bit_vector_hll(datecol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
                             keys: pcol (type: double)
-                            minReductionHashAggr: 0.4
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                            Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                             Reduce Output Operator
                               key expressions: _col0 (type: double)
                               null sort order: z
                               sort order: +
                               Map-reduce partition columns: _col0 (type: double)
-                              Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                               value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: double), _col11 (type: double), _col12 (type: bigint), _col13 (type: binary)
         Reducer 2 
             Execution mode: vectorized
@@ -2366,14 +2366,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                Statistics: Num rows: 1 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DOUBLE' (type: string), _col10 (type: double), _col11 (type: double), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol',_col0) (type: struct<pcol:double>)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                  Statistics: Num rows: 1 Data size: 938 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 938 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 788 Basic stats: PARTIAL Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2794,15 +2794,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: CAST( col1 AS DATE) (type: date), col2 (type: int), 3.14786 (type: decimal(10,6))
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -2811,20 +2811,20 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: date), _col1 (type: int), _col2 (type: decimal(10,6))
                           outputColumnNames: datecol, intcol, pcol
-                          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           Group By Operator
                             aggregations: min(datecol), max(datecol), count(1), count(datecol), compute_bit_vector_hll(datecol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
                             keys: pcol (type: decimal(10,6))
-                            minReductionHashAggr: 0.4
+                            minReductionHashAggr: 0.99
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                            Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 996 Basic stats: PARTIAL Column stats: PARTIAL
                             Reduce Output Operator
                               key expressions: _col0 (type: decimal(10,6))
                               null sort order: z
                               sort order: +
                               Map-reduce partition columns: _col0 (type: decimal(10,6))
-                              Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 996 Basic stats: PARTIAL Column stats: PARTIAL
                               value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: decimal(10,6)), _col11 (type: decimal(10,6)), _col12 (type: bigint), _col13 (type: binary)
         Reducer 2 
             Execution mode: vectorized
@@ -2834,14 +2834,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(10,6))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-                Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 996 Basic stats: PARTIAL Column stats: PARTIAL
                 Select Operator
                   expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DECIMAL' (type: string), _col10 (type: decimal(10,6)), _col11 (type: decimal(10,6)), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol',_col0) (type: struct<pcol:decimal(10,6)>)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
-                  Statistics: Num rows: 1 Data size: 1251 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 996 Basic stats: PARTIAL Column stats: PARTIAL
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 1251 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 996 Basic stats: PARTIAL Column stats: PARTIAL
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

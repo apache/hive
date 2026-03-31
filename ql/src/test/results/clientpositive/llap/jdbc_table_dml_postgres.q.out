@@ -85,15 +85,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: int), CAST( col2 AS varchar(20)) (type: varchar(20))
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           table:
                               input format: org.apache.hive.storage.jdbc.JdbcInputFormat
                               output format: org.apache.hive.storage.jdbc.JdbcOutputFormat
