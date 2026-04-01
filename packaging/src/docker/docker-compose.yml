@@ -16,35 +16,6 @@
 
 name: hive-cluster
 
-x-llap-daemon-env: &llap-daemon-env
-  USER: hive
-  SERVICE_NAME: 'llap'
-
-  # Basic LLAP daemon configuration
-  LLAP_MEMORY_MB: '1024'
-  LLAP_EXECUTORS: '1'
-
-  # Directories shared between HiveServer2 and LLAP daemon
-  HIVE_SCRATCH_DIR: /opt/hive/scratch
-  HIVE_QUERY_RESULTS_CACHE_DIRECTORY: /opt/hive/scratch/_resultscache_
-
-  # Runtime defaults expected by LLAP
-  LOCAL_DIRS: /tmp/llap-local
-
-x-llap-daemon: &llap-daemon
-  profiles:
-    - llap
-  image: apache/hive:${HIVE_VERSION}
-  depends_on:
-    - zookeeper
-  restart: unless-stopped
-  environment: *llap-daemon-env
-  volumes:
-    - warehouse:/opt/hive/data/warehouse
-    - scratch:/opt/hive/scratch
-  networks:
-    - hive
-
 services:
   postgres:
     image: postgres
@@ -162,33 +133,33 @@ services:
     #     - make HIVE-29477 happen to let HiveServer2 use Tez external sessions
     # 4. Define hadoop components here to be used by all the containers (working example can be found at TEZ-4682), currently a local volume
 
-  llapdaemon1:
-    <<: *llap-daemon
-    container_name: llapdaemon1
-    hostname: llapdaemon1
+  llapdaemon:
+    profiles:
+      - llap
+    image: apache/hive:${HIVE_VERSION}
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
     environment:
-      <<: *llap-daemon-env
+      USER: hive
+      SERVICE_NAME: 'llap'
+
+      LLAP_MEMORY_MB: '1024'
+      LLAP_EXECUTORS: '1'
+
+      HIVE_SCRATCH_DIR: /opt/hive/scratch
+      HIVE_QUERY_RESULTS_CACHE_DIRECTORY: /opt/hive/scratch/_resultscache_
+
+      LOCAL_DIRS: /tmp/llap-local
+
       LLAP_WEB_PORT: '15001'
       LLAP_MANAGEMENT_RPC_PORT: '15004'
       LLAP_SHUFFLE_PORT: '15551'
-    ports:
-      - '15001:15001'
-      - '15004:15004'
-      - '15551:15551'
-
-  llapdaemon2:
-    <<: *llap-daemon
-    container_name: llapdaemon2
-    hostname: llapdaemon2
-    environment:
-      <<: *llap-daemon-env
-      LLAP_WEB_PORT: '15002'
-      LLAP_MANAGEMENT_RPC_PORT: '15005'
-      LLAP_SHUFFLE_PORT: '15552'
-    ports:
-      - '15002:15002'
-      - '15005:15005'
-      - '15552:15552'
+    volumes:
+      - warehouse:/opt/hive/data/warehouse
+      - scratch:/opt/hive/scratch
+    networks:
+      - hive
 
 volumes:
   hive-db:

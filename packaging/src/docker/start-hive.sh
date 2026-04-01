@@ -18,12 +18,14 @@ set -e
 
 MODE="container"
 PROFILE=""
+SCALE=""
 
 for arg in "$@"; do
   case "$arg" in
     --llap)
       MODE="llap"
       PROFILE="--profile llap"
+      SCALE="--scale llapdaemon=2"
       export HIVE_ZOOKEEPER_QUORUM=zookeeper:2181
       export HIVE_LLAP_DAEMON_SERVICE_HOSTS=@llap0
       ;;
@@ -38,6 +40,6 @@ export HIVE_EXECUTION_MODE="$MODE"
 
 echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE)"
 
-docker compose $PROFILE up -d
+docker compose $PROFILE up -d $SCALE
 
 docker compose $PROFILE logs -f
