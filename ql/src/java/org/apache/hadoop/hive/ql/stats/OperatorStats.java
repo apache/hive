@@ -57,6 +57,10 @@ public final class OperatorStats {
     return operatorId;
   }
 
+  public void setOperatorId(final String operatorId) {
+    this.operatorId = operatorId;
+  }
+
   @Override
   public String toString() {
     return String.format("OperatorStats %s records: %d", operatorId, outputRecords);
