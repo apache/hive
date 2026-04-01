@@ -3126,38 +3126,52 @@ public class StatsRulesProcFactory {
       }
 
       GenericUDTF genericUDTF = udtf.getConf().getGenericUDTF();
-
       boolean isPosExplode = genericUDTF instanceof GenericUDTFPosExplode;
       boolean isExplode = genericUDTF instanceof GenericUDTFExplode;
 
-      String expectedPosColumnName = null;
-      if (isPosExplode && udtf.getSchema() != null
-          && udtf.getSchema().getSignature() != null
-          && !udtf.getSchema().getSignature().isEmpty()) {
-        expectedPosColumnName = udtf.getSchema().getSignature().get(0).getInternalName();
+      if (!isPosExplode && !isExplode) {
+        return;
       }
 
-      long inputNdv = 0;
-      List<Operator<? extends OperatorDesc>> udtfParents = udtf.getParentOperators();
-      if (udtfParents != null && !udtfParents.isEmpty()) {
-        Statistics udtfParentStats = udtfParents.get(0).getStatistics();
-        if (udtfParentStats != null && udtfParentStats.getColumnStats() != null
-            && !udtfParentStats.getColumnStats().isEmpty()) {
-          inputNdv = udtfParentStats.getColumnStats().get(0).getCountDistint();
-        }
-      }
+      String posColumnName = isPosExplode ? getPosColumnName(udtf) : null;
+      long inputNdv = getInputNdv(udtf);
+      long ceilFactor = (long) Math.ceil(factor);
 
       for (ColStatistics cs : udtfColStats) {
-        if (cs.getCountDistint() == 0 && cs.isEstimated()) {
-          if (isPosExplode && cs.getColumnName().equals(expectedPosColumnName)) {
-            cs.setCountDistint(Math.max(1, (long) Math.ceil(factor)));
-            cs.setNumNulls(0);
-          } else if ((isPosExplode || isExplode) && inputNdv > 0) {
-            long ndvBound = Math.min(udtfNumRows, inputNdv * (long) Math.ceil(factor));
-            cs.setCountDistint(Math.max(1, ndvBound));
-          }
+        if (cs.getCountDistint() != 0 || !cs.isEstimated()) {
+          continue;
+        }
+        if (isPosExplode && cs.getColumnName().equals(posColumnName)) {
+          cs.setCountDistint(Math.max(1, ceilFactor));
+          cs.setNumNulls(0);
+        } else if (inputNdv > 0) {
+          long ndvBound = Math.min(udtfNumRows, inputNdv * ceilFactor);
+          cs.setCountDistint(Math.max(1, ndvBound));
         }
       }
+    }
+
+    private String getPosColumnName(UDTFOperator udtf) {
+      if (udtf.getSchema() == null
+          || udtf.getSchema().getSignature() == null
+          || udtf.getSchema().getSignature().isEmpty()) {
+        return null;
+      }
+      return udtf.getSchema().getSignature().get(0).getInternalName();
+    }
+
+    private long getInputNdv(UDTFOperator udtf) {
+      List<Operator<? extends OperatorDesc>> parents = udtf.getParentOperators();
+      if (parents == null || parents.isEmpty()) {
+        return 0;
+      }
+      Statistics parentStats = parents.get(0).getStatistics();
+      if (parentStats == null
+          || parentStats.getColumnStats() == null
+          || parentStats.getColumnStats().isEmpty()) {
+        return 0;
+      }
+      return parentStats.getColumnStats().get(0).getCountDistint();
     }
   }
 
