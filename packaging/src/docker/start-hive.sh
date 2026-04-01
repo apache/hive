@@ -24,3 +24,5 @@ export HIVE_EXECUTION_MODE="$MODE"
 echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE)"
 
 docker compose $PROFILE up -d
+
+docker compose $PROFILE logs -f
