@@ -24,10 +24,6 @@ x-llap-daemon-env: &llap-daemon-env
   LLAP_MEMORY_MB: '1024'
   LLAP_EXECUTORS: '1'
 
-  # LLAP daemon zookeeper registration
-  HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
-  HIVE_LLAP_DAEMON_SERVICE_HOSTS: '@llap0'
-
   # Directories shared between HiveServer2 and LLAP daemon
   HIVE_SCRATCH_DIR: /opt/hive/scratch
   HIVE_QUERY_RESULTS_CACHE_DIRECTORY: /opt/hive/scratch/_resultscache_
