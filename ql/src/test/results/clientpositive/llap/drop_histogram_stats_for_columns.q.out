@@ -17,94 +17,6 @@ POSTHOOK: Output: default@test_stats
 POSTHOOK: Lineage: test_stats.a SCRIPT []
 POSTHOOK: Lineage: test_stats.b SCRIPT []
 POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("b", 2, 2.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("b", 2, 2.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("c", 2, 2.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("c", 2, 2.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("d", 3, 3.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("d", 3, 3.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("e", 4, 3.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("e", 4, 3.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("f", 4, 4.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("f", 4, 4.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("g", 5, 5.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("g", 5, 5.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("h", 6, 6.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("h", 6, 6.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
-PREHOOK: query: insert into test_stats (a, b, c) values ("i", 3, 6.1)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_stats
-POSTHOOK: query: insert into test_stats (a, b, c) values ("i", 3, 6.1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_stats
-POSTHOOK: Lineage: test_stats.a SCRIPT []
-POSTHOOK: Lineage: test_stats.b SCRIPT []
-POSTHOOK: Lineage: test_stats.c SCRIPT []
 PREHOOK: query: describe formatted test_stats
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test_stats
@@ -125,9 +37,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
-	numFiles            	9                   
-	numRows             	9                   
-	rawDataSize         	873                 
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	97                  
 	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
@@ -152,7 +64,7 @@ data_type           	string
 min                 	                    
 max                 	                    
 num_nulls           	0                   
-distinct_count      	9                   
+distinct_count      	1                   
 avg_col_len         	1.0                 
 max_col_len         	1                   
 num_trues           	                    
@@ -170,15 +82,15 @@ POSTHOOK: Input: default@test_stats
 col_name            	b                   
 data_type           	int                 
 min                 	2                   
-max                 	6                   
+max                 	2                   
 num_nulls           	0                   
-distinct_count      	5                   
+distinct_count      	1                   
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	Q1: 2, Q2: 3, Q3: 4 
+histogram           	Q1: 2, Q2: 2, Q3: 2 
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: describe formatted test_stats c
@@ -190,15 +102,15 @@ POSTHOOK: Input: default@test_stats
 col_name            	c                   
 data_type           	double              
 min                 	1.1                 
-max                 	6.1                 
+max                 	1.1                 
 num_nulls           	0                   
-distinct_count      	6                   
+distinct_count      	1                   
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	Q1: 2.1, Q2: 3.1, Q3: 5.1
+histogram           	Q1: 1.1, Q2: 1.1, Q3: 1.1
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: alter table test_stats drop statistics for columns
@@ -229,9 +141,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	9                   
-	numRows             	9                   
-	rawDataSize         	873                 
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	97                  
 	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 

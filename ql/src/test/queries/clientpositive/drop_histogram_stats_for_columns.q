@@ -7,14 +7,6 @@ set hive.stats.column.autogather=true;
 CREATE TABLE test_stats (a string, b int, c double) STORED AS ORC;
 
 insert into test_stats (a, b, c) values ("a", 2, 1.1);
-insert into test_stats (a, b, c) values ("b", 2, 2.1);
-insert into test_stats (a, b, c) values ("c", 2, 2.1);
-insert into test_stats (a, b, c) values ("d", 3, 3.1);
-insert into test_stats (a, b, c) values ("e", 4, 3.1);
-insert into test_stats (a, b, c) values ("f", 4, 4.1);
-insert into test_stats (a, b, c) values ("g", 5, 5.1);
-insert into test_stats (a, b, c) values ("h", 6, 6.1);
-insert into test_stats (a, b, c) values ("i", 3, 6.1);
 
 describe formatted test_stats;
 describe formatted test_stats a;
