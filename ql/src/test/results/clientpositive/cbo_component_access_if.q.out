@@ -1,0 +1,34 @@
+PREHOOK: query: DROP TABLE IF EXISTS cbo_component_access_if_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS cbo_component_access_if_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE cbo_component_access_if_tbl (
+  `jobs` array<struct<code:string>>
+) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cbo_component_access_if_tbl
+POSTHOOK: query: CREATE TABLE cbo_component_access_if_tbl (
+  `jobs` array<struct<code:string>>
+) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cbo_component_access_if_tbl
+PREHOOK: query: EXPLAIN CBO
+SELECT if(concat_ws(',', `jobs`.code) = '', null, concat_ws(',', `jobs`.code)) AS codes
+FROM cbo_component_access_if_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_component_access_if_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT if(concat_ws(',', `jobs`.code) = '', null, concat_ws(',', `jobs`.code)) AS codes
+FROM cbo_component_access_if_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_component_access_if_tbl
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(codes=[CASE(=(concat_ws(_UTF-16LE',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", COMPONENT_ACCESS($0).code), _UTF-16LE''), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", COMPONENT_ACCESS($0).code))])
+  HiveTableScan(table=[[default, cbo_component_access_if_tbl]], table:alias=[cbo_component_access_if_tbl])
+

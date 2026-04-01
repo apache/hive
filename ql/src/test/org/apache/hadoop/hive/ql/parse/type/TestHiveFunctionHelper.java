@@ -18,12 +18,15 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
@@ -43,9 +46,9 @@ public class TestHiveFunctionHelper {
     RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl();
     RexBuilder rexBuilder = new RexBuilder(typeFactory);
     List<RexNode> operands =
-        Lists.newArrayList(rexBuilder.makeLiteral("hello"), rexBuilder.makeLiteral("world"));
+            Lists.newArrayList(rexBuilder.makeLiteral("hello"), rexBuilder.makeLiteral("world"));
     List<RexNode> arrayNode =
-        Lists.newArrayList(rexBuilder.makeCall(SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR, operands));
+            Lists.newArrayList(rexBuilder.makeCall(SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR, operands));
 
     FunctionHelper functionHelper = new HiveFunctionHelper(rexBuilder);
     RexCall explodeNode = (RexCall) functionHelper.getUDTFFunction("explode", arrayNode);
@@ -80,8 +83,12 @@ public class TestHiveFunctionHelper {
             rexBuilder.makeCall(array.getType().getComponentType(), HiveComponentAccess.COMPONENT_ACCESS,
                     Lists.newArrayList(array));
 
-    FunctionInfo fi = functionHelper.getFunctionInfo("nvl");
+    FunctionInfo fi = functionHelper.getFunctionInfo("coalesce");
     List<RexNode> inputs = Lists.newArrayList(componentAccess, rexBuilder.makeNullLiteral(componentAccess.getType()));
-    functionHelper.getExpression("nvl", fi, inputs, componentAccess.getType());
+    RexNode expr = functionHelper.getExpression("coalesce", fi, inputs, componentAccess.getType());
+    assertNotNull(expr);
+    assertTrue(expr instanceof RexCall);
+    // COALESCE is rewritten to CASE; the stateful-functions checker walks this tree.
+    assertEquals(SqlKind.CASE, ((RexCall) expr).getOperator().getKind());
   }
 }

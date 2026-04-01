@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.exec.HiveFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
@@ -346,18 +345,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         // doing this check.
         GenericUDF nodeUDF = SqlFunctionConverter.getHiveUDF(
             call.getOperator(), call.getType(), call.getOperands().size());
-        if (nodeUDF == null) {
-          // Some internal Calcite operators (e.g. COMPONENT_ACCESS used for nested field access over
-          // collections) are not backed by a Hive GenericUDF. They are not stateful and should not
-          // fail query compilation; still recurse into operands to find any stateful expressions.
-          if (call.getOperator() == HiveComponentAccess.COMPONENT_ACCESS) {
-            return super.visitCall(call);
-          }
-          throw new AssertionError("Cannot retrieve function " + call.getOperator().getName()
-                  + " (kind=" + call.getOperator().getKind() + ") within StatefulFunctionsChecker");
-        }
-        // Stateful?
-        if (FunctionRegistry.isStateful(nodeUDF)) {
+        if (nodeUDF != null && FunctionRegistry.isStateful(nodeUDF)) {
           throw new Util.FoundOne(call);
         }
         return super.visitCall(call);
