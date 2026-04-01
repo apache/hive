@@ -47,8 +47,8 @@ public abstract class ExternalSessionsRegistryFactory {
   private ExternalSessionsRegistryFactory() {
   }
 
-  public static ExternalSessionsRegistry getClient(final Configuration conf) {
-    Configuration newConf = prepareConf(conf);
+  public static ExternalSessionsRegistry getClient(final HiveConf conf) {
+    HiveConf newConf = prepareConf(conf);
     // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_NAMESPACE after Tez 1.0.0 is released.
     String namespace = conf.get("tez.am.registry.namespace");
 
@@ -70,11 +70,11 @@ public abstract class ExternalSessionsRegistryFactory {
     return registry;
   }
 
-  private static Configuration prepareConf(Configuration conf) {
+  private static HiveConf prepareConf(HiveConf conf) {
     // HS2 would need to know about all coordinators running on all compute groups for a given compute (namespace)
     // Setting this config to false in client, will make registry client listen on paths under @compute instead of
     // @compute/compute-group
-    Configuration newConf = new Configuration(conf);
+    HiveConf newConf = new HiveConf(conf, ExternalSessionsRegistryFactory.class);
 
     // TODO: change this to TezConfiguration.TEZ_AM_REGISTRY_ENABLE_COMPUTE_GROUPS after Tez 1.0.0 is released.
     newConf.setBoolean("tez.am.registry.enable.compute.groups", false);
