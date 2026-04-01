@@ -210,9 +210,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.FILE_PATH;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_HASH;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_PROJECTION;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_SPEC_ID;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.ROW_LINEAGE_ID;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.ROW_POSITION;
 import static org.apache.iceberg.SnapshotSummary.ADDED_RECORDS_PROP;
 import static org.apache.iceberg.SnapshotSummary.DELETED_RECORDS_PROP;
@@ -392,8 +394,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     ExprNodeDesc pushedPredicate = exprNodeDesc.clone();
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
-    Set<String> skipList = Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_HASH)
-        .map(VirtualColumn::getName).collect(Collectors.toSet());
+    Set<String> skipList =
+        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_HASH, ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
+            .map(VirtualColumn::getName).collect(Collectors.toSet());
 
     if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
           nodeDesc.getCols().stream().anyMatch(skipList::contains))) {
