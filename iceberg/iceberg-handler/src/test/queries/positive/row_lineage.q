@@ -7,8 +7,8 @@ update ice_t set balance = 500 where id = 2;
 select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by id;
 
 -- Test filtering with row lineage columns
-select id,name, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where ROW__LINEAGE__ID = 1;
-select id,name,balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 1;
+select id, name, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where ROW__LINEAGE__ID = 1;
+select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 1;
 select *, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 2 OR ROW__LINEAGE__ID = 1;
 delete from ice_t where ROW__LINEAGE__ID = 1 OR LAST__UPDATED__SEQUENCE__NUMBER = 2;
 select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by id;
