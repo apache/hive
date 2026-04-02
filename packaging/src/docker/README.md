@@ -206,13 +206,15 @@ export POSTGRES_LOCAL_PATH=... # set the path to the postgres driver jar on the 
 To view LLAP logs:
 
 ```shell
-docker compose logs -f llapdaemon1 llapdaemon2
+docker compose logs -f llapdaemon
 ```
 
 To stop and remove the LLAP stack:
 
 ```shell
-docker compose down
+./stop-hive.sh --llap # to stop and delete containers
+#OR
+./stop-hive.sh --llap --cleanup # to remove volumes also
 ```
 
 #### Usage

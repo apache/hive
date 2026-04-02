@@ -19,18 +19,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-MODE="container"
 PROFILE=""
-SCALE=""
+CLEANUP_FLAG=""
 
 for arg in "$@"; do
   case "$arg" in
     --llap)
-      MODE="llap"
       PROFILE="--profile llap"
-      SCALE="--scale llapdaemon=2"
-      export HIVE_ZOOKEEPER_QUORUM=zookeeper:2181
-      export HIVE_LLAP_DAEMON_SERVICE_HOSTS=@llap0
+      ;;
+    --cleanup)
+      CLEANUP_FLAG="--volumes"
       ;;
     *)
       echo "Unknown option: $arg"
@@ -39,8 +37,10 @@ for arg in "$@"; do
   esac
 done
 
-export HIVE_EXECUTION_MODE="$MODE"
+if [[ -n "$CLEANUP_FLAG" ]]; then
+  echo "Stopping Hive cluster and removing compose volumes"
+else
+  echo "Stopping Hive cluster (volumes preserved; use --cleanup to remove them)"
+fi
 
-echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE)"
-
-docker compose $PROFILE up -d $SCALE
+docker compose $PROFILE down $CLEANUP_FLAG
