@@ -1,9 +1,3 @@
-PREHOOK: query: DROP TABLE IF EXISTS cbo_component_access_if_tbl
-PREHOOK: type: DROPTABLE
-PREHOOK: Output: database:default
-POSTHOOK: query: DROP TABLE IF EXISTS cbo_component_access_if_tbl
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE cbo_component_access_if_tbl (
   `jobs` array<struct<code:string>>
 ) STORED AS ORC
