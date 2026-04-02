@@ -86,6 +86,7 @@ import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -6330,26 +6331,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
   }
-
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
-    throws HiveException {
+  
+  public void deleteColumnStatistics(TableName tableName) throws HiveException {
+    DeleteColumnStatisticsRequest request = 
+        new DeleteColumnStatisticsRequest(tableName.getDb(), tableName.getTable());
+    request.setEngine(Constants.HIVE_ENGINE);
     try {
-      return getMSC().deleteTableColumnStatistics(dbName, tableName, colName, Constants.HIVE_ENGINE);
-    } catch(Exception e) {
-      LOG.debug("Failed deleteTableColumnStatistics", e);
-      throw new HiveException(e);
+      getMSC().deleteColumnStatistics(request);
+    } catch (Exception e) {
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
   }
-
-  public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
-    String colName) throws HiveException {
-      try {
-        return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName, Constants.HIVE_ENGINE);
-      } catch(Exception e) {
-        LOG.debug("Failed deletePartitionColumnStatistics", e);
-        throw new HiveException(e);
-      }
-    }
 
   public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws HiveException {
     try {

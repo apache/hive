@@ -86,6 +86,7 @@ alterTableStatementSuffix
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
     | alterStatementSuffixSetWriteOrder
+    | alterStatementSuffixDropStatsForColumns
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -283,6 +284,13 @@ alterStatementSuffixUpdateStats[boolean partition]
     : KW_UPDATE KW_STATISTICS KW_SET tableProperties
     -> {partition}? ^(TOK_ALTERPARTITION_UPDATESTATS tableProperties)
     ->              ^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
+    ;
+
+alterStatementSuffixDropStatsForColumns
+@init { gParent.pushMsg("drop statistics for columns", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_STATISTICS KW_FOR KW_COLUMNS
+    -> ^(TOK_ALTERTABLE_DROPCOLSTATS)
     ;
 
 alterStatementChangeColPosition
@@ -790,3 +798,4 @@ alterForeignKeyWithName
     : KW_CONSTRAINT constraintName=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
     -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsAlter?)
     ;
+
