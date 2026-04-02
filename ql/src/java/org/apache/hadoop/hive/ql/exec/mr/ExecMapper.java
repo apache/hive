@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.mr;
 
 import java.io.IOException;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -104,6 +107,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       // initialize map operator
       mo.initialize(job, null);
       mo.setChildren(job);
+      balanceRSOpbucketVersion(mo);
       l4j.info(mo.dump(0));
       // initialize map local work
       localWork = mrwork.getMapRedLocalWork();
@@ -136,6 +140,40 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       } else {
         throw new RuntimeException("Map operator initialization failed", e);
       }
+    }
+  }
+
+  private static void balanceRSOpbucketVersion(Operator<? extends OperatorDesc> rootOp) {
+    List<Operator<? extends OperatorDesc>> needDealOps =
+        new ArrayList<Operator<? extends OperatorDesc>>();
+    visitChildGetRSOps(rootOp, needDealOps);
+    int bucketVersion = -1;
+    for (Operator<? extends OperatorDesc> operator : needDealOps) {
+      if (operator.getBucketingVersion() != 1 && operator.getBucketingVersion() != 2) {
+        operator.setBucketingVersion(-1);
+      }
+      if (operator.getBucketingVersion() > bucketVersion) {
+        bucketVersion = operator.getBucketingVersion();
+      }
+    }
+    for (Operator<? extends OperatorDesc> operator : needDealOps) {
+      l4j.info("update reduceSinkOperator name={}, opId={}, oldBucketVersion={}, newBucketVersion={}",
+          operator.getName(), operator.getOperatorId(), operator.getBucketingVersion(), bucketVersion);
+      operator.setBucketingVersion(bucketVersion);
+    }
+  }
+
+  private static void visitChildGetRSOps(
+      Operator<? extends OperatorDesc> rootOp, List<Operator<? extends OperatorDesc>> needDealOps) {
+    List<Operator<? extends OperatorDesc>> ops = rootOp.getChildOperators();
+    if (ops == null || ops.isEmpty()) {
+      return;
+    }
+    for (Operator<? extends OperatorDesc> op : ops) {
+      if (op instanceof ReduceSinkOperator || op instanceof TableScanOperator) {
+        needDealOps.add(op);
+      }
+      visitChildGetRSOps(op, needDealOps);
     }
   }
   @Override

@@ -29,9 +29,12 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -55,6 +58,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SecureCmdDoAs;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
@@ -66,9 +70,13 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -175,6 +183,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       // write out the plan to a local file
       Path planPath = new Path(ctx.getLocalTmpPath(), "plan.xml");
       MapredLocalWork plan = getWork();
+      removeRowkeyInHashTable(plan);
       LOG.info("Generating plan file " + planPath.toString());
 
       OutputStream out = null;
@@ -370,6 +379,46 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     }
   }
 
+  private void removeRowkeyInHashTable(MapredLocalWork plan) {
+    LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = plan.getAliasToWork();
+    for (Map.Entry<String, Operator<? extends OperatorDesc>> entry : aliasToWork.entrySet()) {
+      if (!(entry.getValue() instanceof TableScanOperator)) {
+        continue;
+      }
+      TableScanOperator tsOp = (TableScanOperator) entry.getValue();
+      TableScanDesc tsDesc = tsOp.getConf();
+      if (tsDesc == null || !tsDesc.isTranscationalTable()) {
+        continue;
+      }
+      List<Operator<? extends OperatorDesc>> children = tsOp.getChildOperators();
+      if (children == null) {
+        continue;
+      }
+      for (Operator<? extends OperatorDesc> childOp : children) {
+        if (!(childOp instanceof HashTableSinkOperator)) {
+          continue;
+        }
+        HashTableSinkOperator hashOp = (HashTableSinkOperator) childOp;
+        Map<Byte, List<ExprNodeDesc>> exprs = ((HashTableSinkDesc) hashOp.getConf()).getExprs();
+        for (Map.Entry<Byte, List<ExprNodeDesc>> exprEntry : exprs.entrySet()) {
+          removeInnerKey(exprEntry.getValue());
+        }
+      }
+    }
+  }
+
+  private void removeInnerKey(List<ExprNodeDesc> columns) {
+    List<String> innerKeys = Arrays.asList("ROW__ID", "INPUT__FILE__NAME", "BLOCK__OFFSET__INSIDE__FILE");
+    List<ExprNodeDesc> needRemove = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc nodeDesc : columns) {
+      if (nodeDesc instanceof ExprNodeColumnDesc &&
+          innerKeys.contains(((ExprNodeColumnDesc) nodeDesc).getColumn())) {
+        needRemove.add(nodeDesc);
+      }
+    }
+    columns.removeAll(needRemove);
+  }
+
   public int executeInProcess(DriverContext driverContext) {
     // check the local work
     if (work == null) {
@@ -388,6 +437,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     execContext.setJc(job);
     // set the local work, so all the operator can get this context
     execContext.setLocalWork(work);
+    removeRowkeyInHashTable(work);
     try {
       startForward(null);
       long currentTime = System.currentTimeMillis();
