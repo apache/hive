@@ -19,14 +19,11 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-PROFILE=""
+PROFILE="--profile llap" # delete all containers regardless of profile
 CLEANUP_FLAG=""
 
 for arg in "$@"; do
   case "$arg" in
-    --llap)
-      PROFILE="--profile llap"
-      ;;
     --cleanup)
       CLEANUP_FLAG="--volumes"
       ;;
