@@ -18,7 +18,9 @@
 -- Mask iceberg version
 --! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
+set hive.optimize.sort.dynamic.partition.threshold=1;
 set hive.explain.user=false;
+
 create external table ice_parquet_date_transform_year(
   bigintcol bigint,
   intcol integer,
