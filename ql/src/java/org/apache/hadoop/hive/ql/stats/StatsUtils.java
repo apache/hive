@@ -839,12 +839,14 @@ public class StatsUtils {
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
+      cs.setCountDistint(csd.getTimestampStats().getNumDVs());
       cs.setNumNulls(csd.getTimestampStats().getNumNulls());
       Long lowVal = (csd.getTimestampStats().getLowValue() != null) ? csd.getTimestampStats().getLowValue()
           .getSecondsSinceEpoch() : null;
       Long highVal = (csd.getTimestampStats().getHighValue() != null) ? csd.getTimestampStats().getHighValue()
           .getSecondsSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
+      cs.setBitVectors(csd.getTimestampStats().getBitVectors());
       cs.setHistogram(csd.getTimestampStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
@@ -869,6 +871,7 @@ public class StatsUtils {
       cs.setHistogram(csd.getDecimalStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
+      cs.setCountDistint(csd.getDateStats().getNumDVs());
       cs.setNumNulls(csd.getDateStats().getNumNulls());
       Long lowVal = (csd.getDateStats().getLowValue() != null) ? csd.getDateStats().getLowValue()
           .getDaysSinceEpoch() : null;
