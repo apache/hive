@@ -215,6 +215,12 @@ public class SortedDynPartitionOptimizer extends Transform {
       if (customSortExprs.isEmpty() && !shouldDo(partitionPositions, customPartitionExprs, fsParent, allRSCols)) {
         return null;
       }
+
+      // Mark that sorting will be applied with custom partition expressions, so the writer layer
+      // (e.g. Iceberg) knows the input is ordered and can use a clustered writer.
+      if (!customPartitionExprs.isEmpty()) {
+        dpCtx.setHasCustomPartitionOrSortExpression(true);
+      }
       // if RS is inserted by enforce bucketing or sorting, we need to remove it
       // since ReduceSinkDeDuplication will not merge them to single RS.
       // RS inserted by enforce bucketing/sorting will have bucketing column in
