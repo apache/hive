@@ -263,16 +263,7 @@ public class ColumnStatsAutoGatherContext {
     }
     for (int i = 0; i < this.columns.size(); i++) {
       ColumnInfo col = columns.get(i);
-      ObjectInspector objectInspector = col.getObjectInspector();
-      if (objectInspector == null) {
-        continue;
-      }
-      boolean columnSupported = isColumnSupported(objectInspector.getCategory(), col::getType);
-      if (!columnSupported) {
-        continue;
-      }
-
-      Integer selRSIdx = columnNameToIndex.get(this.columns.get(i).getName());
+      Integer selRSIdx = getSelRSColumnIndex(i, col, columnNameToIndex);
       if (selRSIdx == null) {
         continue;
       }
@@ -287,7 +278,8 @@ public class ColumnStatsAutoGatherContext {
     // partition or mixed case)
     int dynamicPartBegin = -1;
     for (int i = 0; i < partitionColumns.size(); i++) {
-      ExprNodeDesc exprNodeDesc = null;
+      ExprNodeDesc exprNodeDesc;
+      TypeInfo srcType;
       String partColName = partitionColumns.get(i).getName();
       // 2. deal with static partition columns
       if (partSpec != null && partSpec.containsKey(partColName)
@@ -297,25 +289,21 @@ public class ColumnStatsAutoGatherContext {
               "Dynamic partition columns should not come before static partition columns.");
         }
         exprNodeDesc = new ExprNodeConstantDesc(partSpec.get(partColName));
-        TypeInfo srcType = exprNodeDesc.getTypeInfo();
-        TypeInfo destType = selRSSig.get(this.columns.size() + i).getType();
-        if (!srcType.equals(destType)) {
-          // This may be possible when srcType is string but destType is integer
-          exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-              .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
-        }
+        srcType = exprNodeDesc.getTypeInfo();
       }
       // 3. dynamic partition columns
       else {
         dynamicPartBegin++;
         ColumnInfo col = columns.get(this.columns.size() + dynamicPartBegin);
-        TypeInfo srcType = col.getType();
-        TypeInfo destType = selRSSig.get(this.columns.size() + i).getType();
         exprNodeDesc = new ExprNodeColumnDesc(col);
-        if (!srcType.equals(destType)) {
-          exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-              .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
-        }
+        srcType = col.getType();
+
+      }
+      TypeInfo destType = selRSSig.get(this.columns.size() + i).getType();
+      if (!srcType.equals(destType)) {
+        // This may be possible when srcType is string but destType is integer
+        exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+            .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
       }
       colList.add(exprNodeDesc);
       String internalName = selRS.getColumnNames().get(this.columns.size() + i);
@@ -327,6 +315,18 @@ public class ColumnStatsAutoGatherContext {
     operator.setColumnExprMap(columnExprMap);
     selRS.setSignature(signature);
     operator.setSchema(selRS);
+  }
+
+  private Integer getSelRSColumnIndex(int i, ColumnInfo col, Map<String, Integer> columnNameToIndex) {
+    ObjectInspector objectInspector = col.getObjectInspector();
+    if (objectInspector == null) {
+      return null;
+    }
+    boolean columnSupported = isColumnSupported(objectInspector.getCategory(), col::getType);
+    if (!columnSupported) {
+      return null;
+    }
+    return columnNameToIndex.get(this.columns.get(i).getName());
   }
 
   public String getCompleteName() {
@@ -363,7 +363,7 @@ public class ColumnStatsAutoGatherContext {
     }
   }
 
-  public static boolean canRunAutogatherStats(Table destinationTable, Operator curr) {
+  public static boolean canRunAutogatherStats(Table destinationTable, Operator<? extends OperatorDesc> curr) {
     if (destinationTable.isNonNative() && destinationTable.getStorageHandler().supportsPartitioning()) {
       // On partitioned tables, the partition key is needed to store the stats.
       // However, external tables (e.g. stored by iceberg) may not define partition keys,
@@ -374,7 +374,7 @@ public class ColumnStatsAutoGatherContext {
     return isAnyColumnSupported(curr);
   }
 
-  private static boolean areAllColumnsSupported(Operator curr) {
+  private static boolean areAllColumnsSupported(Operator<? extends OperatorDesc> curr) {
     // check the ObjectInspector
     for (ColumnInfo cinfo : curr.getSchema().getSignature()) {
       if (cinfo.getIsVirtualCol() || !isColumnSupported(cinfo.getObjectInspector().getCategory(), cinfo::getType)) {
@@ -384,7 +384,7 @@ public class ColumnStatsAutoGatherContext {
     return true;
   }
 
-  private static boolean isAnyColumnSupported(Operator curr) {
+  private static boolean isAnyColumnSupported(Operator<? extends OperatorDesc> curr) {
     // check the ObjectInspector
     for (ColumnInfo cinfo : curr.getSchema().getSignature()) {
       if (!cinfo.getIsVirtualCol() && isColumnSupported(cinfo.getObjectInspector().getCategory(), cinfo::getType)) {
