@@ -276,6 +276,7 @@
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>bundle</artifactId>
         <version>${aws-java-sdk.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>com.amazonaws.secretsmanager</groupId>
