@@ -57,17 +57,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_t
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	bbb	1	2
-PREHOOK: query: select id,name,balance ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 1
+PREHOOK: query: select id,name,balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_t
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select id,name,balance ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 1
+POSTHOOK: query: select id,name,balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_t
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	aaa	25	1
-3	ccc	82	1
-4	ddd	91	1
+1	aaa	25	0	1
+3	ccc	82	2	1
+4	ddd	91	3	1
 PREHOOK: query: select *, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where LAST__UPDATED__SEQUENCE__NUMBER = 2 OR ROW__LINEAGE__ID = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_t
