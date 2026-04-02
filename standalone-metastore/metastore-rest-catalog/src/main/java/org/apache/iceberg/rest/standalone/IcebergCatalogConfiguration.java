@@ -17,8 +17,6 @@
  */
 package org.apache.iceberg.rest.standalone;
 
-import javax.servlet.http.HttpServlet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletServerBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -54,14 +52,14 @@ public class IcebergCatalogConfiguration {
   }
 
   @Bean
-  public ServletRegistrationBean<HttpServlet> restCatalogServlet(Configuration conf) {
+  public ServletRegistrationBean<?> restCatalogServlet(Configuration conf) {
     return createRestCatalogServlet(conf);
   }
 
   /**
    * Creates the REST Catalog servlet registration. Shared by production config and tests.
    */
-  public static ServletRegistrationBean<HttpServlet> createRestCatalogServlet(Configuration conf) {
+  public static ServletRegistrationBean<?> createRestCatalogServlet(Configuration conf) {
     String servletPath = MetastoreConf.getVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
     if (servletPath == null || servletPath.isEmpty()) {
       servletPath = DEFAULT_SERVLET_PATH;
@@ -80,9 +78,8 @@ public class IcebergCatalogConfiguration {
     if (descriptor == null || descriptor.getServlet() == null) {
       throw new IllegalStateException("Failed to create Iceberg REST Catalog servlet");
     }
-
-    ServletRegistrationBean<HttpServlet> registration =
-        new ServletRegistrationBean<>(descriptor.getServlet(), "/" + servletPath + "/*");
+    ServletRegistrationBean<?> registration =
+        new ServletRegistrationBean(descriptor.getServlet(), "/" + servletPath + "/*");
     registration.setName("IcebergRESTCatalog");
     registration.setLoadOnStartup(1);
 

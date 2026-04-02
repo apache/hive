@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PropertyServlet;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;

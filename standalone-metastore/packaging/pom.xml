@@ -96,6 +96,10 @@
                   <regexp>http://(www\.)?antlr.org/license.html</regexp>
                   <replacement>http://www.antlr.org/license.html</replacement>
                 </licenseUrlReplacement>
+                <licenseUrlReplacement>
+                  <regexp>https?://www\.eclipse\.org/legal/epl-2\.0/?</regexp>
+                  <replacement>https://www.eclipse.org/legal/epl-2.0</replacement>
+                </licenseUrlReplacement>
               </licenseUrlReplacements>
               <licenseUrlFileNames>
                 <APACHE-2.0>
@@ -103,6 +107,7 @@
                   \Qhttps://aws.amazon.com/apache2.0\E
                   \Qhttps://opensource.org/licenses/Apache-2.0\E
                   \Qhttp://www.apache.org/licenses/\E
+                  \Qhttps://repository.jboss.org/licenses/apache-2.0.txt\E
                 </APACHE-2.0>
                 <BSD-2-CLAUSE>
                   https?://(www\.)?opensource.org/licenses/bsd-license.php

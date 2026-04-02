@@ -99,9 +99,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.servlet.Servlet;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
 /**
  * TODO:pc remove application logic to a separate interface.
  */
@@ -382,7 +382,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    final SslContextFactory.Server sslContextFactory = ServletSecurity.createSslContextFactory(conf);
     if (sslContextFactory != null) {
       connector = new ServerConnector(server, sslContextFactory, http);
     } else {

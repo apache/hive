@@ -36,7 +36,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;

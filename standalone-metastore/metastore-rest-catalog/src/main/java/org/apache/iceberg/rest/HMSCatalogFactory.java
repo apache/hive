@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;

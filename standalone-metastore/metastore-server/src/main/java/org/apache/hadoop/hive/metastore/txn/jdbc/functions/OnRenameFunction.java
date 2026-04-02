@@ -149,7 +149,12 @@ public class OnRenameFunction implements TransactionalFunction<Void> {
       // caught and either swallowed or wrapped in MetaException. Also, only a single test fails without this block:
       // org.apache.hadoop.hive.metastore.client.TestDatabases.testAlterDatabaseNotNullableFields
       // It may worth investigate if this catch block is really needed. 
-      if (e.getMessage() != null && e.getMessage().contains("does not exist")) {
+      String msg = e.getMessage();
+      Throwable cause = e.getCause();
+      boolean isMissingTable = (msg != null && msg.contains("does not exist")) ||
+              (cause != null && cause.getMessage() != null && cause.getMessage().contains("does not exist"));
+
+      if (isMissingTable) {
         LOG.warn("Cannot perform {} since metastore table does not exist", callSig);
       } else {
         throw new MetaException("Unable to " + callSig + ":" + org.apache.hadoop.util.StringUtils.stringifyException(e));

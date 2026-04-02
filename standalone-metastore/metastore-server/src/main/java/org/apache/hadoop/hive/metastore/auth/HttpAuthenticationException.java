@@ -15,7 +15,7 @@
 package org.apache.hadoop.hive.metastore.auth;
 
 import java.util.Optional;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /*
 Encapsulates any exceptions thrown by HiveMetastore server

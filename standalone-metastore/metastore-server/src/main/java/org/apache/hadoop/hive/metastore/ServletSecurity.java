@@ -33,22 +33,18 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.pac4j.core.context.JEEContext;
-import org.pac4j.core.credentials.TokenCredentials;
-import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.Optional;
 
 /**
  * Secures servlet processing.
@@ -305,10 +301,15 @@ public class ServletSecurity {
    */
   private String extractBearerToken(HttpServletRequest request,
                                     HttpServletResponse response) {
-    BearerAuthExtractor extractor = new BearerAuthExtractor();
-    Optional<TokenCredentials> tokenCredentials = extractor.extract(new JEEContext(
-        request, response));
-    return tokenCredentials.map(TokenCredentials::getToken).orElse(null);
+    String authorization = request.getHeader("Authorization");
+    if (authorization == null) {
+      return null;
+    }
+    if (authorization.regionMatches(true, 0, "Bearer ", 0, 7)) {
+      String token = authorization.substring(7).trim();
+      return token.isEmpty() ? null : token;
+    }
+    return null;
   }
 
   /**
@@ -338,7 +339,7 @@ public class ServletSecurity {
    * @return null if no ssl in config, an instance otherwise
    * @throws IOException if getting password fails
    */
-  static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
+  static SslContextFactory.Server createSslContextFactory(Configuration conf) throws IOException {
     final boolean useSsl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     if (!useSsl) {
       return null;
@@ -359,7 +360,7 @@ public class ServletSecurity {
     if (LOG.isInfoEnabled()) {
       LOG.info("HTTP Server SSL: adding excluded protocols: {}", Arrays.toString(excludedProtocols));
     }
-    SslContextFactory factory = new SslContextFactory.Server();
+    SslContextFactory.Server factory = new SslContextFactory.Server();
     factory.addExcludeProtocols(excludedProtocols);
     if (LOG.isInfoEnabled()) {
       LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = {}",
