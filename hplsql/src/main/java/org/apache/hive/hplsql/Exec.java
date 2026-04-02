@@ -1037,11 +1037,13 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
       } else if (sig.type == Signal.Type.VALIDATION) {
         error(((HplValidationException)sig.exception).getCtx(), sig.exception.getMessage());
       } else if (sig.type == Signal.Type.SQLEXCEPTION) {
-        console.printError("Unhandled exception in HPL/SQL");
+        console.printError("Unhandled exception in HPL/SQL: " + sig.value);
       } else if (sig.type == Signal.Type.UNSUPPORTED_OPERATION) {
         console.printError(sig.value == null ? "Unsupported operation" : sig.value);
       } else if (sig.exception != null) {
         console.printError("HPL/SQL error: " + ExceptionUtils.getStackTrace(sig.exception));
+      } else if (sig.type == Signal.Type.LEAVE_PROGRAM) {
+        console.printLine("Leaving Program: " + sig.value);
       } else if (sig.value != null) {
         console.printError(sig.value);
       } else {
@@ -1096,6 +1098,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
         return 0;
       }
     }
+
+    if (!exec.signals.empty()) {
+      Signal sig = exec.signals.peek();
+      if (sig.type == Signal.Type.LEAVE_PROGRAM) {
+        return 0;
+      }
+    }
+
     Var prev = stackPop();
     if (prev != null && prev.value != null) {
       console.printLine(prev.toString());
