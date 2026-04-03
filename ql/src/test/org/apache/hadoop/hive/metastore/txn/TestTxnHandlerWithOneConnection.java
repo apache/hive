@@ -56,7 +56,7 @@ public class TestTxnHandlerWithOneConnection {
   @Test
   public void testGetValidWriteIds() throws Exception {
     GetValidWriteIdsRequest req = new GetValidWriteIdsRequest();
-    req.setFullTableNames(Collections.singletonList("foo.bar"));
+    req.setFullTableNames(Collections.singletonList("hive.foo.bar"));
     txnHandler.getValidWriteIds(req);
   }
 

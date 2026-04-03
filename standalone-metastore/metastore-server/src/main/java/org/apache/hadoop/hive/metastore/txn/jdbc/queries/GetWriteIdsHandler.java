@@ -31,11 +31,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GetWriteIdsHandler implements QueryHandler<Map<Pair<String, String>, Long>> {
+public class GetWriteIdsHandler implements QueryHandler<Map<Pair<String,Pair<String, String>>, Long>> {
 
 
   //language=SQL
-  private static final String SELECT_WRITE_ID_QUERY = "SELECT \"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\" " +
+  private static final String SELECT_WRITE_ID_QUERY = "SELECT \"T2W_CATALOG\", \"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\" " +
       "FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" = :txnId ";
 
   private final LockRequest lockRequest;
@@ -49,7 +49,8 @@ public class GetWriteIdsHandler implements QueryHandler<Map<Pair<String, String>
     StringBuilder sb = new StringBuilder(SELECT_WRITE_ID_QUERY);
     sb.append(" AND (");
     for(int i = 0; i< lockRequest.getComponentSize(); i++) {
-      sb.append("(\"T2W_DATABASE\" = ").append(":db").append(i)
+      sb.append("(\"T2W_CATALOG\" = ").append(":cat").append(i)
+          .append("AND \"T2W_DATABASE\" = ").append(":db").append(i)
           .append(" AND \"T2W_TABLE\" = :table").append(i).append(")");
       if(i < lockRequest.getComponentSize() - 1) {
         sb.append(" OR ");
@@ -64,6 +65,7 @@ public class GetWriteIdsHandler implements QueryHandler<Map<Pair<String, String>
     MapSqlParameterSource params = new MapSqlParameterSource()
         .addValue("txnId", lockRequest.getTxnid());
     for(int i = 0; i< lockRequest.getComponentSize(); i++) {
+      params.addValue("cat" + i, lockRequest.getComponent().get(i).getCatName());
       params.addValue("db" + i, lockRequest.getComponent().get(i).getDbname());
       params.addValue("table" + i, lockRequest.getComponent().get(i).getTablename());
     }
@@ -71,10 +73,10 @@ public class GetWriteIdsHandler implements QueryHandler<Map<Pair<String, String>
   }
 
   @Override
-  public Map<Pair<String, String>, Long> extractData(ResultSet rs) throws SQLException, DataAccessException {
-    Map<Pair<String, String>, Long> writeIds = new HashMap<>();
+  public Map<Pair<String,Pair<String, String>>, Long> extractData(ResultSet rs) throws SQLException, DataAccessException {
+    Map<Pair<String,Pair<String, String>>, Long> writeIds = new HashMap<>();
     while (rs.next()) {
-      writeIds.put(Pair.of(rs.getString("T2W_DATABASE"), rs.getString("T2W_TABLE")), rs.getLong("T2W_WRITEID"));
+      writeIds.put(Pair.of(rs.getString("T2W_CATALOG"), Pair.of(rs.getString("T2W_DATABASE"), rs.getString("T2W_TABLE"))), rs.getLong("T2W_WRITEID"));
     }
     return writeIds;
   }

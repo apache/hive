@@ -141,7 +141,7 @@ public class AcidCompactionService extends CompactionService {
         }
       }
 
-      String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());
+      String fullTableName = TxnUtils.getFullTableName(table.getCatName(), table.getDbName(), table.getTableName());
 
       // Find the partition we will be working with, if there is one.
       Partition p;
@@ -257,7 +257,7 @@ public class AcidCompactionService extends CompactionService {
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
         compactionTxn.wasSuccessful();
 
-        AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
+        AcidMetricService.updateMetricsFromWorker(ci.catName, ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
       } catch (Throwable e) {
         computeStats = false;
@@ -359,7 +359,7 @@ public class AcidCompactionService extends CompactionService {
       lockId = res.getLockid();
 
       CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, 
-          TxnUtils.getFullTableName(ci.dbname, ci.tableName));
+          TxnUtils.getFullTableName(ci.catName, ci.dbname, ci.tableName));
     }
 
     private LockRequest createLockRequest(CompactionInfo ci) {

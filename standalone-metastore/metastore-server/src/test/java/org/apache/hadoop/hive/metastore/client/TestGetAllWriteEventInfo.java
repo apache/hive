@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
@@ -136,6 +137,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
     Assert.assertEquals(1, writeEventInfoList.size());
     WriteEventInfo writeEventInfo = writeEventInfoList.get(0);
     Assert.assertEquals(TXN_ID, writeEventInfo.getWriteId());
+    Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, writeEventInfo.getCatalog());
     Assert.assertEquals(DB_NAME, writeEventInfo.getDatabase());
     Assert.assertEquals(TABLE_NAME, writeEventInfo.getTable());
   }
@@ -144,12 +146,14 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   public void testGetByTxnIdAndTableName() throws Exception {
     GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
     req.setTxnId(TXN_ID);
+    req.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     req.setDbName(DB_NAME);
     req.setTableName(TABLE_NAME);
     List<WriteEventInfo> writeEventInfoList = client.getAllWriteEventInfo(req);
     Assert.assertEquals(1, writeEventInfoList.size());
     WriteEventInfo writeEventInfo = writeEventInfoList.get(0);
     Assert.assertEquals(TXN_ID, writeEventInfo.getWriteId());
+    Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, writeEventInfo.getCatalog());
     Assert.assertEquals(DB_NAME, writeEventInfo.getDatabase());
     Assert.assertEquals(TABLE_NAME, writeEventInfo.getTable());
   }
@@ -166,6 +170,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   public void testGetByWrongDB() throws Exception {
     GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
     req.setTxnId(TXN_ID);
+    req.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     req.setDbName("wrong_db");
     List<WriteEventInfo> writeEventInfoList = client.getAllWriteEventInfo(req);
     Assert.assertTrue(writeEventInfoList.isEmpty());
@@ -175,6 +180,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   public void testGetByWrongTable() throws Exception {
     GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
     req.setTxnId(TXN_ID);
+    req.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     req.setDbName(DB_NAME);
     req.setTableName("wrong_table");
     List<WriteEventInfo> writeEventInfoList = client.getAllWriteEventInfo(req);

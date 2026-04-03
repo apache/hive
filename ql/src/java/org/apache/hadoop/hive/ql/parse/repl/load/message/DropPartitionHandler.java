@@ -39,13 +39,15 @@ public class DropPartitionHandler extends AbstractMessageHandler {
       throws SemanticException {
     try {
       DropPartitionMessage msg = deserializer.getDropPartitionMessage(context.dmd.getPayload());
+      String actualCatName = context.isCatNameEmpty() ? msg.getCat() : context.catName;
       String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
       String actualTblName = msg.getTable();
       Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
           ReplUtils.genPartSpecs(new Table(msg.getTableObj()), msg.getPartitions());
       if (partSpecs.size() > 0) {
         AlterTableDropPartitionDesc dropPtnDesc =
-            new AlterTableDropPartitionDesc(HiveTableName.ofNullable(actualTblName, actualDbName), partSpecs, true,
+            new AlterTableDropPartitionDesc(HiveTableName.ofNullable(actualCatName, actualTblName,
+                actualDbName, null), partSpecs, true,
                 context.eventOnlyReplicationSpec());
         Task<DDLWork> dropPtnTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, dropPtnDesc,
                     true, context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf

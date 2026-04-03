@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import java.util.List;
 
 public interface TableEvent extends BootstrapEvent {
-  ImportTableDesc tableDesc(String dbName) throws SemanticException;
+  ImportTableDesc tableDesc(String catName, String dbName) throws SemanticException;
 
   List<AlterTableAddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
       throws SemanticException;

@@ -120,7 +120,8 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
             " txnToWriteIdList: " +txnToWriteIdList.toString() + " table name: " + tableName);
         return 0;
       case REPL_WRITEID_STATE:
-        txnManager.replTableWriteIdState(work.getValidWriteIdList(), work.getDbName(), tableName, work.getPartNames());
+        txnManager.replTableWriteIdState(work.getValidWriteIdList(), work.getCatName(), work.getDbName(),
+            tableName, work.getPartNames());
         LOG.info("Replicated WriteId state for DbName: " + work.getDbName() +
             " TableName: " + tableName +
             " ValidWriteIdList: " + work.getValidWriteIdList());

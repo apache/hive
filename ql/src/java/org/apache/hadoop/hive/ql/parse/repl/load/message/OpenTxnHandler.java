@@ -43,7 +43,7 @@ public class OpenTxnHandler extends AbstractMessageHandler {
     OpenTxnMessage msg = deserializer.getOpenTxnMessage(context.dmd.getPayload());
 
     Task<ReplTxnWork> openTxnTask = TaskFactory.get(
-        new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName, null,
+        new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.catName, context.dbName, null,
                 msg.getTxnIds(), ReplTxnWork.OperationType.REPL_OPEN_TXN, context.eventOnlyReplicationSpec(),
                 context.getDumpDirectory(), context.getMetricCollector()),
         context.hiveConf

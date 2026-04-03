@@ -45,8 +45,13 @@ public class JSONCreateCatalogMessage extends CreateCatalogMessage {
   }
 
   @Override
-  public String getDB() {
+  public String getCat() {
     return null;
+  }
+
+  @Override
+  public String getDB() {
+    return catalog;
   }
 
   @Override

@@ -47,6 +47,8 @@ IF_PURGE = %q"ifPurge"
 
 META_TABLE_NAME = %q"name"
 
+META_TABLE_CAT = %q"cat"
+
 META_TABLE_DB = %q"db"
 
 META_TABLE_LOCATION = %q"location"

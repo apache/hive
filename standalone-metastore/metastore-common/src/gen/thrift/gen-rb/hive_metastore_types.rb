@@ -3987,6 +3987,7 @@ class WriteEventInfo
   PARTITION = 5
   TABLEOBJ = 6
   PARTITIONOBJ = 7
+  CATALOG = 8
 
   FIELDS = {
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'},
@@ -3995,7 +3996,8 @@ class WriteEventInfo
     FILES => {:type => ::Thrift::Types::STRING, :name => 'files'},
     PARTITION => {:type => ::Thrift::Types::STRING, :name => 'partition', :optional => true},
     TABLEOBJ => {:type => ::Thrift::Types::STRING, :name => 'tableObj', :optional => true},
-    PARTITIONOBJ => {:type => ::Thrift::Types::STRING, :name => 'partitionObj', :optional => true}
+    PARTITIONOBJ => {:type => ::Thrift::Types::STRING, :name => 'partitionObj', :optional => true},
+    CATALOG => {:type => ::Thrift::Types::STRING, :name => 'catalog', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4102,6 +4104,7 @@ class ReplTblWriteIdStateRequest
   DBNAME = 4
   TABLENAME = 5
   PARTNAMES = 6
+  CATNAME = 7
 
   FIELDS = {
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdlist'},
@@ -4109,7 +4112,8 @@ class ReplTblWriteIdStateRequest
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4219,6 +4223,7 @@ class AllocateTableWriteIdsRequest
   REPLPOLICY = 4
   SRCTXNTOWRITEIDLIST = 5
   REALLOCATE = 6
+  CATNAME = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -4226,7 +4231,8 @@ class AllocateTableWriteIdsRequest
     TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
     SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true},
-    REALLOCATE => {:type => ::Thrift::Types::BOOL, :name => 'reallocate', :default => false, :optional => true}
+    REALLOCATE => {:type => ::Thrift::Types::BOOL, :name => 'reallocate', :default => false, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4260,10 +4266,12 @@ class MaxAllocatedTableWriteIdRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
   TABLENAME = 2
+  CATNAME = 3
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4298,11 +4306,13 @@ class SeedTableWriteIdsRequest
   DBNAME = 1
   TABLENAME = 2
   SEEDWRITEID = 3
+  CATNAME = 4
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-    SEEDWRITEID => {:type => ::Thrift::Types::I64, :name => 'seedWriteId'}
+    SEEDWRITEID => {:type => ::Thrift::Types::I64, :name => 'seedWriteId'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4674,6 +4684,7 @@ class CompactionRequest
   POOLNAME = 9
   NUMBEROFBUCKETS = 10
   ORDERBYCLAUSE = 11
+  CATNAME = 12
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4686,7 +4697,8 @@ class CompactionRequest
     INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
     POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
     NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true},
-    ORDERBYCLAUSE => {:type => ::Thrift::Types::STRING, :name => 'orderByClause', :optional => true}
+    ORDERBYCLAUSE => {:type => ::Thrift::Types::STRING, :name => 'orderByClause', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4724,6 +4736,7 @@ class CompactionInfoStruct
   POOLNAME = 17
   NUMBEROFBUCKETS = 18
   ORDERBYCLAUSE = 19
+  CATNAME = 20
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -4744,7 +4757,8 @@ class CompactionInfoStruct
     RETRYRETENTION => {:type => ::Thrift::Types::I64, :name => 'retryRetention', :optional => true},
     POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolname', :optional => true},
     NUMBEROFBUCKETS => {:type => ::Thrift::Types::I32, :name => 'numberOfBuckets', :optional => true},
-    ORDERBYCLAUSE => {:type => ::Thrift::Types::STRING, :name => 'orderByClause', :optional => true}
+    ORDERBYCLAUSE => {:type => ::Thrift::Types::STRING, :name => 'orderByClause', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4787,6 +4801,7 @@ class CompactionMetricsDataStruct
   METRICVALUE = 5
   VERSION = 6
   THRESHOLD = 7
+  CATNAME = 8
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4795,7 +4810,8 @@ class CompactionMetricsDataStruct
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType},
     METRICVALUE => {:type => ::Thrift::Types::I32, :name => 'metricvalue'},
     VERSION => {:type => ::Thrift::Types::I32, :name => 'version'},
-    THRESHOLD => {:type => ::Thrift::Types::I32, :name => 'threshold'}
+    THRESHOLD => {:type => ::Thrift::Types::I32, :name => 'threshold'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4837,12 +4853,14 @@ class CompactionMetricsDataRequest
   TBLNAME = 2
   PARTITIONNAME = 3
   TYPE = 4
+  CATNAME = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionName', :optional => true},
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType}
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionMetricsMetricType},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4895,6 +4913,7 @@ class ShowCompactRequest
   STATE = 7
   LIMIT = 8
   ORDER = 9
+  CATNAME = 10
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
@@ -4905,7 +4924,8 @@ class ShowCompactRequest
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :optional => true, :enum_class => ::CompactionType},
     STATE => {:type => ::Thrift::Types::STRING, :name => 'state', :optional => true},
     LIMIT => {:type => ::Thrift::Types::I64, :name => 'limit', :optional => true},
-    ORDER => {:type => ::Thrift::Types::STRING, :name => 'order', :optional => true}
+    ORDER => {:type => ::Thrift::Types::STRING, :name => 'order', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4945,6 +4965,7 @@ class ShowCompactResponseElement
   TXNID = 22
   COMMITTIME = 23
   HIGHTESTWRITEID = 24
+  CATNAME = 25
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4970,7 +4991,8 @@ class ShowCompactResponseElement
     NEXTTXNID => {:type => ::Thrift::Types::I64, :name => 'nextTxnId', :optional => true},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :optional => true},
     COMMITTIME => {:type => ::Thrift::Types::I64, :name => 'commitTime', :optional => true},
-    HIGHTESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'hightestWriteId', :optional => true}
+    HIGHTESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'hightestWriteId', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5070,12 +5092,14 @@ class GetLatestCommittedCompactionInfoRequest
   TABLENAME = 2
   PARTITIONNAMES = 3
   LASTCOMPACTIONID = 4
+  CATNAME = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
     PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    LASTCOMPACTIONID => {:type => ::Thrift::Types::I64, :name => 'lastCompactionId', :optional => true}
+    LASTCOMPACTIONID => {:type => ::Thrift::Types::I64, :name => 'lastCompactionId', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5133,6 +5157,7 @@ class AddDynamicPartitions
   TABLENAME = 4
   PARTITIONNAMES = 5
   OPERATIONTYPE = 6
+  CATNAME = 7
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
@@ -5140,7 +5165,8 @@ class AddDynamicPartitions
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
     PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}},
-    OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType}
+    OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5444,6 +5470,7 @@ class WriteNotificationLogRequest
   TABLE = 4
   FILEINFO = 5
   PARTITIONVALS = 6
+  CAT = 7
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
@@ -5451,7 +5478,8 @@ class WriteNotificationLogRequest
     DB => {:type => ::Thrift::Types::STRING, :name => 'db'},
     TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
     FILEINFO => {:type => ::Thrift::Types::STRUCT, :name => 'fileInfo', :class => ::InsertEventRequestData},
-    PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    CAT => {:type => ::Thrift::Types::STRING, :name => 'cat', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -8450,11 +8478,13 @@ class GetAllWriteEventInfoRequest
   TXNID = 1
   DBNAME = 2
   TABLENAME = 3
+  CATNAME = 4
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true}
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end

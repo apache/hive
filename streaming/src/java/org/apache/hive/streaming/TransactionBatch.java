@@ -282,7 +282,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
         }
         if (!partNames.isEmpty()) {
           conn.getMSC().addDynamicPartitions(txnToWriteId.getTxnId(),
-              txnToWriteId.getWriteId(), conn.getDatabase(),
+              txnToWriteId.getWriteId(), conn.getCatalog(), conn.getDatabase(),
               conn.getTable().getTableName(), partNames,
               DataOperationType.INSERT);
         }

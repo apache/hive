@@ -275,6 +275,12 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void replTableWriteIdState(String validWriteIdList, String catName, String dbName, String tableName, List<String> partNames)
+      throws LockException {
+    // No-op
+  }
+
+  @Override
   public Map<String, String> getReplayedTxnsForPolicy(String replPolicy) throws LockException {
 //    No-op
     return new HashMap<>();

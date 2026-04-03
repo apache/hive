@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.testutil;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -46,9 +47,10 @@ public final class TxnStoreHelper {
   /**
    * Allocates a new write ID for the table in the given transaction.
    */
-  public long allocateTableWriteId(String dbName, String tblName, long txnId)
+  public long allocateTableWriteId(String catName, String dbName, String tblName, long txnId)
       throws TxnAbortedException, NoSuchTxnException, MetaException {
     AllocateTableWriteIdsRequest request = new AllocateTableWriteIdsRequest(dbName, tblName.toLowerCase());
+    request.setCatName(catName);
     request.setTxnIds(Collections.singletonList(txnId));
 
     AllocateTableWriteIdsResponse response = txnHandler.allocateTableWriteIds(request);
@@ -62,12 +64,12 @@ public final class TxnStoreHelper {
     if (!ConfVars.useMinHistoryWriteId()) {
       return;
     }
-    long maxWriteId = txnHandler.getMaxAllocatedTableWriteId(
-            new MaxAllocatedTableWriteIdRequest(dbName, tblName.toLowerCase()))
-        .getMaxWriteId();
+    MaxAllocatedTableWriteIdRequest rqst = new MaxAllocatedTableWriteIdRequest(dbName, tblName.toLowerCase());
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
+    long maxWriteId = txnHandler.getMaxAllocatedTableWriteId(rqst).getMaxWriteId();
 
     txnHandler.addWriteIdsToMinHistory(txnId,
         Collections.singletonMap(
-            TxnUtils.getFullTableName(dbName, tblName), maxWriteId + 1));
+            TxnUtils.getFullTableName(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName), maxWriteId + 1));
   }
 }

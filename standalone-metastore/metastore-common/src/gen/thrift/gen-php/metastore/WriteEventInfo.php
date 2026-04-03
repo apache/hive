@@ -56,6 +56,11 @@ class WriteEventInfo
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        8 => array(
+            'var' => 'catalog',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -86,6 +91,10 @@ class WriteEventInfo
      * @var string
      */
     public $partitionObj = null;
+    /**
+     * @var string
+     */
+    public $catalog = "hive";
 
     public function __construct($vals = null)
     {
@@ -110,6 +119,9 @@ class WriteEventInfo
             }
             if (isset($vals['partitionObj'])) {
                 $this->partitionObj = $vals['partitionObj'];
+            }
+            if (isset($vals['catalog'])) {
+                $this->catalog = $vals['catalog'];
             }
         }
     }
@@ -182,6 +194,13 @@ class WriteEventInfo
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 8:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catalog);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -229,6 +248,11 @@ class WriteEventInfo
         if ($this->partitionObj !== null) {
             $xfer += $output->writeFieldBegin('partitionObj', TType::STRING, 7);
             $xfer += $output->writeString($this->partitionObj);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catalog !== null) {
+            $xfer += $output->writeFieldBegin('catalog', TType::STRING, 8);
+            $xfer += $output->writeString($this->catalog);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

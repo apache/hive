@@ -39,7 +39,7 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
   private Long txnid, writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database, table, partition, tableObjJson, partitionObjJson;
+  private String server, servicePrincipal, catalog, database, table, partition, tableObjJson, partitionObjJson;
 
   @JsonProperty
   private List<String> files;
@@ -56,6 +56,7 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
     this.txnid = acidWriteEvent.getTxnId();
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.catalog = acidWriteEvent.getCatalog();
     this.database = acidWriteEvent.getDatabase();
     this.table = acidWriteEvent.getTable();
     this.writeId = acidWriteEvent.getWriteId();
@@ -81,6 +82,11 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
   @Override
   public Long getTimestamp() {
     return timestamp;
+  }
+
+  @Override
+  public String getCat() {
+    return catalog;
   }
 
   @Override

@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONDropTableMessage extends DropTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, cat, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -43,15 +43,16 @@ public class JSONDropTableMessage extends DropTableMessage {
   public JSONDropTableMessage() {
   }
 
-  public JSONDropTableMessage(String server, String servicePrincipal, String db, String table,
+  public JSONDropTableMessage(String server, String servicePrincipal, String cat, String db, String table,
       Long timestamp) {
-    this(server, servicePrincipal, db, table, null, timestamp);
+    this(server, servicePrincipal, cat, db, table, null, timestamp);
   }
 
-  public JSONDropTableMessage(String server, String servicePrincipal, String db, String table,
+  public JSONDropTableMessage(String server, String servicePrincipal, String cat, String db, String table,
       String tableType, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = cat;
     this.db = db;
     this.table = table;
     this.tableType = tableType;
@@ -61,7 +62,7 @@ public class JSONDropTableMessage extends DropTableMessage {
 
   public JSONDropTableMessage(String server, String servicePrincipal, Table tableObj,
       Long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
+    this(server, servicePrincipal, tableObj.getCatName(), tableObj.getDbName(), tableObj.getTableName(),
         tableObj.getTableType(), timestamp);
     try {
       this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
@@ -98,6 +99,11 @@ public class JSONDropTableMessage extends DropTableMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

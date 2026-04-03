@@ -6103,11 +6103,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         List<String> partitionValue = null;
         Partition ptnObj = null;
         String root;
-        Table tbl = getTblObject(writeEventInfo.getDatabase(), writeEventInfo.getTable(), null);
+        Table tbl = getTblObject(writeEventInfo.getDatabase(), writeEventInfo.getTable(), writeEventInfo.getCatalog());
 
         if (writeEventInfo.getPartition() != null && !writeEventInfo.getPartition().isEmpty()) {
           partitionValue = Warehouse.getPartValuesFromPartName(writeEventInfo.getPartition());
-          ptnObj = getPartitionObj(writeEventInfo.getDatabase(), writeEventInfo.getTable(), partitionValue, tbl);
+          ptnObj = getPartitionObj(writeEventInfo.getCatalog(), writeEventInfo.getDatabase(), writeEventInfo.getTable(),
+              partitionValue, tbl);
           root = ptnObj.getSd().getLocation();
         } else {
           root = tbl.getSd().getLocation();
@@ -6134,6 +6135,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
         WriteNotificationLogRequest wnRqst = new WriteNotificationLogRequest(targetTxnId,
             writeEventInfo.getWriteId(), writeEventInfo.getDatabase(), writeEventInfo.getTable(), insertData);
+        wnRqst.setCat(writeEventInfo.getCatalog());
         if (partitionValue != null) {
           wnRqst.setPartitionVals(partitionValue);
         }
@@ -6218,8 +6220,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void remove_compaction_metrics_data(CompactionMetricsDataRequest request)
       throws MetaException, TException {
-    getTxnHandler().removeCompactionMetricsData(request.getDbName(), request.getTblName(), request.getPartitionName(),
-        CompactionMetricsDataConverter.thriftCompactionMetricType2DbType(request.getType()));
+    getTxnHandler().removeCompactionMetricsData(request.getCatName(), request.getDbName(), request.getTblName(),
+        request.getPartitionName(), CompactionMetricsDataConverter.thriftCompactionMetricType2DbType(request.getType()));
   }
 
   @Override
@@ -6236,12 +6238,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(
       GetLatestCommittedCompactionInfoRequest rqst) throws MetaException {
-    if (rqst.getDbname() == null || rqst.getTablename() == null) {
-      throw new MetaException("Database name and table name cannot be null.");
+    if (rqst.getCatName() == null || rqst.getDbname() == null || rqst.getTablename() == null) {
+      throw new MetaException("Catalog name, Database name and table name cannot be null.");
     }
     GetLatestCommittedCompactionInfoResponse response = getTxnHandler().getLatestCommittedCompactionInfo(rqst);
     return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isServerFilterEnabled, filterHook,
-        getDefaultCatalog(conf), rqst.getDbname(), rqst.getTablename(), response);
+        rqst.getCatName(), rqst.getDbname(), rqst.getTablename(), response);
   }
 
   @Override
@@ -6250,7 +6252,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);
     if (listeners != null && !listeners.isEmpty()) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALLOC_WRITE_ID,
-          new AllocWriteIdEvent(response.getTxnToWriteIds(), rqst.getDbName(),
+          new AllocWriteIdEvent(response.getTxnToWriteIds(), rqst.getCatName(), rqst.getDbName(),
               rqst.getTableName(), this));
     }
     return response;
@@ -6294,10 +6296,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return get_table_req(req).getTable();
   }
 
-  private Partition getPartitionObj(String db, String table, List<String> partitionVals, Table tableObj)
-      throws MetaException, NoSuchObjectException {
+  private Partition getPartitionObj(String catName, String db, String table, List<String> partitionVals, Table tableObj)
+      throws MetaException, NoSuchObjectException, TException {
     if (tableObj.isSetPartitionKeys() && !tableObj.getPartitionKeys().isEmpty()) {
-      return get_partition(db, table, partitionVals);
+      GetPartitionRequest rqst = new GetPartitionRequest(db, table, partitionVals);
+      rqst.setCatName(catName);
+      return get_partition_req(rqst).getPartition();
     }
     return null;
   }
@@ -6305,8 +6309,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
       throws TException {
-    Table tableObj = getTblObject(rqst.getDb(), rqst.getTable(), null);
-    Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
+    Table tableObj = getTblObject(rqst.getDb(), rqst.getTable(), rqst.getCat());
+    Partition ptnObj = getPartitionObj(rqst.getCat(), rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(),
+        tableObj);
     addTxnWriteNotificationLog(tableObj, ptnObj, rqst);
     return new WriteNotificationLogResponse();
   }
@@ -8054,7 +8059,8 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
     Exception ex = null;
     try {
       List<WriteEventInfo> writeEventInfoList =
-          getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
+          getMS().getAllWriteEventInfo(request.getTxnId(), request.getCatName(),
+              request.getDbName(), request.getTableName());
       return writeEventInfoList == null ? Collections.emptyList() : writeEventInfoList;
     } catch (Exception e) {
       LOG.error("Caught exception", e);

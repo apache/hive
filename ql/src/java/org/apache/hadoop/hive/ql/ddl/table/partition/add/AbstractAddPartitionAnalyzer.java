@@ -69,8 +69,8 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
       return;
     }
 
-    AlterTableAddPartitionDesc desc = new AlterTableAddPartitionDesc(table.getDbName(), table.getTableName(),
-        ifNotExists, partitions);
+    AlterTableAddPartitionDesc desc = new AlterTableAddPartitionDesc(table.getCatName(), table.getDbName(),
+        table.getTableName(), ifNotExists, partitions);
     Task<DDLWork> ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(ddlTask);
 

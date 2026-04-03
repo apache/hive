@@ -38,6 +38,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $FIELD_TO_DIMENSION;
     static protected $IF_PURGE;
     static protected $META_TABLE_NAME;
+    static protected $META_TABLE_CAT;
     static protected $META_TABLE_DB;
     static protected $META_TABLE_LOCATION;
     static protected $META_TABLE_SERDE;
@@ -161,6 +162,11 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_META_TABLE_NAME()
     {
         return "name";
+    }
+
+    protected static function init_META_TABLE_CAT()
+    {
+        return "cat";
     }
 
     protected static function init_META_TABLE_DB()

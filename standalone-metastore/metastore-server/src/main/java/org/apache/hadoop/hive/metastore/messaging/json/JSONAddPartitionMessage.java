@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, cat, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -72,6 +72,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
       Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = tableObj.getCatName();
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
     this.tableType = tableObj.getTableType();
@@ -102,6 +103,11 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

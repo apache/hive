@@ -317,11 +317,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           listing before providing the lower level listing. This is also required such that
           the dbTracker /  tableTracker are setup correctly always.
        */
-        TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
+        TableContext tableContext = new TableContext(dbTracker, work.catName, work.dbNameToLoadIn);
         FSTableEvent tableEvent = (FSTableEvent) next;
         if (TableType.VIRTUAL_VIEW.name().equals(tableEvent.getMetaData().getTable().getTableType())) {
           tableTracker = new TaskTracker(1);
-          tableTracker.addTask(createViewTask(tableEvent.getMetaData(), work.dbNameToLoadIn, conf,
+          tableTracker.addTask(createViewTask(tableEvent.getMetaData(), work.catName, work.dbNameToLoadIn, conf,
                   (new Path(work.dumpDirectory).getParent()).toString(), work.getMetricCollector()));
         } else {
           LoadTable loadTable = new LoadTable(tableEvent, loadContext, iterator.replLogger(), tableContext,
@@ -351,7 +351,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           // for a table we explicitly try to load partitions as there is no separate partitions events.
           LoadPartitions loadPartitions =
               new LoadPartitions(loadContext, iterator.replLogger(), loadTaskTracker, tableEvent,
-                  work.dbNameToLoadIn, tableContext, work.getMetricCollector(), work.tablesToBootstrap);
+                  work.catName, work.dbNameToLoadIn, tableContext, work.getMetricCollector(), work.tablesToBootstrap);
           TaskTracker partitionsTracker = loadPartitions.tasks();
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
               partitionsTracker);
@@ -488,11 +488,12 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
                                             BootstrapEventsIterator iterator, Scope scope, TaskTracker loadTaskTracker,
                                             TaskTracker tableTracker) throws Exception {
     PartitionEvent event = (PartitionEvent) next;
-    TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn);
+    TableContext tableContext = new TableContext(dbTracker, work.catName, work.dbNameToLoadIn);
     LoadPartitions loadPartitions =
         new LoadPartitions(loadContext, iterator.replLogger(), tableContext, loadTaskTracker,
-        event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated(), work.getMetricCollector(),
-          event.lastPartSpecReplicated(), event.lastStageReplicated(), getWork().tablesToBootstrap);
+        event.asTableEvent(), work.catName, work.dbNameToLoadIn, event.lastPartitionReplicated(),
+            work.getMetricCollector(), event.lastPartSpecReplicated(), event.lastStageReplicated(),
+            getWork().tablesToBootstrap);
         /*
              the tableTracker here should be a new instance and not an existing one as this can
              only happen when we break in between loading partitions.
@@ -509,7 +510,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
                                               TaskTracker dbTracker,
                                               Scope scope) throws IOException, SemanticException {
     LoadConstraint loadConstraint =
-        new LoadConstraint(loadContext, (ConstraintEvent) next, work.dbNameToLoadIn, dbTracker,
+        new LoadConstraint(loadContext, (ConstraintEvent) next, work.catName, work.dbNameToLoadIn, dbTracker,
                 (new Path(work.dumpDirectory)).getParent().toString(), work.getMetricCollector());
     TaskTracker constraintTracker = loadConstraint.tasks();
     scope.rootTasks.addAll(constraintTracker.tasks());
@@ -520,7 +521,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private TaskTracker addLoadFunctionTasks(Context loadContext, BootstrapEventsIterator iterator, BootstrapEvent next,
                                     TaskTracker dbTracker, Scope scope) throws IOException, SemanticException {
     LoadFunction loadFunction = new LoadFunction(loadContext, iterator.replLogger(),
-            (FunctionEvent) next, work.dbNameToLoadIn, dbTracker, (new Path(work.dumpDirectory)).getParent().toString(),
+            (FunctionEvent) next, work.catName, work.dbNameToLoadIn, dbTracker, (new Path(work.dumpDirectory)).getParent().toString(),
             work.getMetricCollector());
     TaskTracker functionsTracker = loadFunction.tasks();
     if (!scope.database) {
@@ -532,12 +533,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return functionsTracker;
   }
 
-  public static Task<?> createViewTask(MetaData metaData, String dbNameToLoadIn, HiveConf conf,
+  public static Task<?> createViewTask(MetaData metaData, String catalogName, String dbNameToLoadIn, HiveConf conf,
                                        String dumpDirectory, ReplicationMetricCollector metricCollector)
           throws SemanticException {
     Table table = new Table(metaData.getTable());
+    String catName = catalogName == null ? table.getCatName() : catalogName;
     String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
-    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
+    TableName tableName = HiveTableName.ofNullable(catName, table.getTableName(), dbName, null);
     String dbDotView = tableName.getNotEmptyDbTable();
 
     String viewOriginalText = table.getViewOriginalText();

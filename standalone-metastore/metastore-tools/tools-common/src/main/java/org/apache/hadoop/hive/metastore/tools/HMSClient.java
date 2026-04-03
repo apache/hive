@@ -401,8 +401,9 @@ final class HMSClient implements AutoCloseable {
     return true;
   }
 
-  boolean allocateTableWriteIds(String dbName, String tableName, List<Long> openTxns) throws TException {
+  boolean allocateTableWriteIds(String catName, String dbName, String tableName, List<Long> openTxns) throws TException {
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    awiRqst.setCatName(catName);
     openTxns.forEach(t -> {
       awiRqst.addToTxnIds(t);
     });

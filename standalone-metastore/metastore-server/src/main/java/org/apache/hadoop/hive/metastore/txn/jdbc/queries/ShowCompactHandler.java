@@ -46,7 +46,7 @@ public class ShowCompactHandler implements QueryHandler<ShowCompactResponse> {
   //language=SQL
   private static final String SHOW_COMPACTION_QUERY =
       " XX.* FROM ( SELECT " +
-          "  \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", \"CQ_PARTITION\" AS \"CC_PARTITION\", " +
+          "  \"CQ_CATALOG\" AS \"CC_CATALOG\", \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", \"CQ_PARTITION\" AS \"CC_PARTITION\", " +
           "  \"CQ_STATE\" AS \"CC_STATE\", \"CQ_TYPE\" AS \"CC_TYPE\", \"CQ_WORKER_ID\" AS \"CC_WORKER_ID\", " +
           "  \"CQ_START\" AS \"CC_START\", -1 \"CC_END\", \"CQ_RUN_AS\" AS \"CC_RUN_AS\", " +
           "  \"CQ_HADOOP_JOB_ID\" AS \"CC_HADOOP_JOB_ID\", \"CQ_ID\" AS \"CC_ID\", \"CQ_ERROR_MESSAGE\" AS \"CC_ERROR_MESSAGE\", " +
@@ -59,7 +59,7 @@ public class ShowCompactHandler implements QueryHandler<ShowCompactResponse> {
           "  \"COMPACTION_QUEUE\" " +
           "UNION ALL " +
           "SELECT " +
-          "  \"CC_DATABASE\" , \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
+          "  \"CC_CATALOG\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
           "  \"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\", \"CC_ERROR_MESSAGE\", " +
           "  \"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", " +
           "   -1 , \"CC_POOL_NAME\", \"CC_TXN_ID\", \"CC_NEXT_TXN_ID\", \"CC_COMMIT_TIME\", " +
@@ -68,6 +68,7 @@ public class ShowCompactHandler implements QueryHandler<ShowCompactResponse> {
           "  \"COMPLETED_COMPACTIONS\" ) XX " +
           "WHERE " +
           "  (\"CC_ID\" = :id OR :id IS NULL) AND " +
+          "  (\"CC_CATALOG\" = :catName OR :catName IS NULL) AND " +
           "  (\"CC_DATABASE\" = :dbName OR :dbName IS NULL) AND " +
           "  (\"CC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
           "  (\"CC_PARTITION\" = :partition OR :partition IS NULL) AND " +
@@ -113,6 +114,7 @@ public class ShowCompactHandler implements QueryHandler<ShowCompactResponse> {
     try {
       return new MapSqlParameterSource()
           .addValue("id", id, Types.BIGINT)
+          .addValue("catName", request.getCatName(), Types.VARCHAR)
           .addValue("dbName", request.getDbName(), Types.VARCHAR)
           .addValue("tableName", request.getTbName(), Types.VARCHAR)
           .addValue("partition", request.getPartName(), Types.VARCHAR)
@@ -129,49 +131,50 @@ public class ShowCompactHandler implements QueryHandler<ShowCompactResponse> {
     ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
     while (rs.next()) {
       ShowCompactResponseElement e = new ShowCompactResponseElement();
-      e.setDbname(rs.getString(1));
-      e.setTablename(rs.getString(2));
-      e.setPartitionname(rs.getString(3));
-      e.setState(CompactionState.fromSqlConst(rs.getString(4)).toString());
+      e.setCatName(rs.getString(1));
+      e.setDbname(rs.getString(2));
+      e.setTablename(rs.getString(3));
+      e.setPartitionname(rs.getString(4));
+      e.setState(CompactionState.fromSqlConst(rs.getString(5)).toString());
       try {
-        e.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+        e.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(6).charAt(0)));
       } catch (SQLException ex) {
         //do nothing to handle RU/D if we add another status
       }
-      e.setWorkerid(rs.getString(6));
-      long start = rs.getLong(7);
+      e.setWorkerid(rs.getString(7));
+      long start = rs.getLong(8);
       if (!rs.wasNull()) {
         e.setStart(start);
       }
-      long endTime = rs.getLong(8);
+      long endTime = rs.getLong(9);
       if (endTime != -1) {
         e.setEndTime(endTime);
       }
-      e.setRunAs(rs.getString(9));
-      e.setHadoopJobId(rs.getString(10));
-      e.setId(rs.getLong(11));
-      e.setErrorMessage(rs.getString(12));
-      long enqueueTime = rs.getLong(13);
+      e.setRunAs(rs.getString(10));
+      e.setHadoopJobId(rs.getString(11));
+      e.setId(rs.getLong(12));
+      e.setErrorMessage(rs.getString(13));
+      long enqueueTime = rs.getLong(14);
       if (!rs.wasNull()) {
         e.setEnqueueTime(enqueueTime);
       }
-      e.setWorkerVersion(rs.getString(14));
-      e.setInitiatorId(rs.getString(15));
-      e.setInitiatorVersion(rs.getString(16));
-      long cleanerStart = rs.getLong(17);
+      e.setWorkerVersion(rs.getString(15));
+      e.setInitiatorId(rs.getString(16));
+      e.setInitiatorVersion(rs.getString(17));
+      long cleanerStart = rs.getLong(18);
       if (!rs.wasNull() && (cleanerStart != -1)) {
         e.setCleanerStart(cleanerStart);
       }
-      String poolName = rs.getString(18);
+      String poolName = rs.getString(19);
       if (isBlank(poolName)) {
         e.setPoolName(DEFAULT_POOL_NAME);
       } else {
         e.setPoolName(poolName);
       }
-      e.setTxnId(rs.getLong(19));
-      e.setNextTxnId(rs.getLong(20));
-      e.setCommitTime(rs.getLong(21));
-      e.setHightestTxnId(rs.getLong(22));
+      e.setTxnId(rs.getLong(20));
+      e.setNextTxnId(rs.getLong(21));
+      e.setCommitTime(rs.getLong(22));
+      e.setHightestTxnId(rs.getLong(23));
       response.addToCompacts(e);      
     }
     return response;

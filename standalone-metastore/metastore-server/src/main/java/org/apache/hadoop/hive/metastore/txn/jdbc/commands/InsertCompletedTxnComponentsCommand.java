@@ -42,8 +42,8 @@ public class InsertCompletedTxnComponentsCommand implements ParameterizedBatchCo
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
     return
         "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" " +
-        "(\"CTC_TXNID\", \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") " +
-        "VALUES (?, ?, ?, ?, ?, ?)";
+        "(\"CTC_TXNID\", \"CTC_CATALOG\", \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?)";
   }
 
   @Override
@@ -55,11 +55,12 @@ public class InsertCompletedTxnComponentsCommand implements ParameterizedBatchCo
   public ParameterizedPreparedStatementSetter<WriteEventInfo> getPreparedStatementSetter() {
     return (ps, argument) -> {
       ps.setLong(1, txnId);
-      ps.setString(2, argument.getDatabase());
-      ps.setString(3, argument.getTable());
-      ps.setString(4, argument.getPartition());
-      ps.setLong(5, argument.getWriteId());
-      ps.setString(6, Character.toString(isUpdateDelete));
+      ps.setString(2, argument.getCatalog());
+      ps.setString(3, argument.getDatabase());
+      ps.setString(4, argument.getTable());
+      ps.setString(5, argument.getPartition());
+      ps.setLong(6, argument.getWriteId());
+      ps.setString(7, Character.toString(isUpdateDelete));
     };
   }
 

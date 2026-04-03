@@ -1096,10 +1096,10 @@ public class Hive implements AutoCloseable {
     }
   }
 
-  public void updateCreationMetadata(String dbName, String tableName, MaterializedViewMetadata metadata)
+  public void updateCreationMetadata(String catName, String dbName, String tableName, MaterializedViewMetadata metadata)
       throws HiveException {
     try {
-      getMSC().updateCreationMetadata(dbName, tableName, metadata.creationMetadata);
+      getMSC().updateCreationMetadata(catName, dbName, tableName, metadata.creationMetadata);
     } catch (TException e) {
       throw new HiveException("Unable to update creation metadata " + e.getMessage(), e);
     }
@@ -3525,7 +3525,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         List<String> partNames =
                 result.values().stream().map(Partition::getName).collect(Collectors.toList());
         getMSC().addDynamicPartitions(parentSession.getTxnMgr().getCurrentTxnId(), writeId,
-                tbl.getDbName(), tbl.getTableName(), partNames,
+                tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), partNames,
                 AcidUtils.toDataOperationType(operation));
       }
       LOG.info("Loaded " + result.size() + "partitionsToAdd");
@@ -3986,6 +3986,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     WriteNotificationLogRequest rqst = new WriteNotificationLogRequest(txnId, writeId,
             tbl.getDbName(), tbl.getTableName(), insertData);
+    rqst.setCat(tbl.getCatName());
     addInsertFileInformation(newFiles, fileSystem, insertData);
     rqst.setPartitionVals(partitionVals);
 

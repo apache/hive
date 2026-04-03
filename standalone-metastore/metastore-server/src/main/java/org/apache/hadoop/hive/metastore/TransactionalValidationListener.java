@@ -224,8 +224,10 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       files already present in the table. Not needed if oldTable is insertOnly.*/
       TxnStore t = TxnUtils.getTxnStore(getConf());
       //For now assume no partition may have > 10M files.  Perhaps better to count them.
-      t.seedWriteId(new SeedTableWriteIdsRequest(newTable.getDbName(),
-          newTable.getTableName(), 10000000));
+      SeedTableWriteIdsRequest rqst = new SeedTableWriteIdsRequest(newTable.getDbName(),
+          newTable.getTableName(), 10000000);
+      rqst.setCatName(newTable.getCatName());
+      t.seedWriteId(rqst);
     }
   }
 

@@ -60,6 +60,10 @@ public class AcidWriteEvent extends ListenerEvent {
     return writeNotificationLogRequest.getFileInfo().getFilesAddedChecksum();
   }
 
+  public String getCatalog() {
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequest.getCat());
+  }
+
   public String getDatabase() {
     return StringUtils.normalizeIdentifier(writeNotificationLogRequest.getDb());
   }

@@ -64,6 +64,7 @@ public class AllocateTableWriteIdsFunction implements TransactionalFunction<Allo
   @Override
   public AllocateTableWriteIdsResponse execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     List<Long> txnIds;
+    String catName = rqst.getCatName().toLowerCase();
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
     boolean shouldReallocate = rqst.isReallocate();
@@ -124,9 +125,10 @@ public class AllocateTableWriteIdsFunction implements TransactionalFunction<Allo
       // during query recompilation after lock acquistion, it is important to realloc new writeIds
       // to ensure writeIds are committed in increasing order.
       jdbcResource.execute(new InClauseBatchCommand<>(
-          "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\" = :dbName AND \"T2W_TABLE\" = :tableName AND " +
+          "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_CATALOG\" = :catName AND \"T2W_DATABASE\" = :dbName AND \"T2W_TABLE\" = :tableName AND " +
               "\"T2W_TXNID\" IN (:txnIds)", 
           new MapSqlParameterSource()
+              .addValue("catName", catName)
               .addValue("dbName", dbName)
               .addValue("tableName", tblName)
               .addValue("txnIds", txnIds),
@@ -137,13 +139,14 @@ public class AllocateTableWriteIdsFunction implements TransactionalFunction<Allo
       // The write id would have been already allocated in case of multi-statement txns where
       // first write on a table will allocate write id and rest of the writes should re-use it.
       prefix.append("SELECT \"T2W_TXNID\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE")
-          .append(" \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND ");
+          .append(" \"T2W_CATALOG\" = ? AND \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND ");
       TxnUtils.buildQueryWithINClause(jdbcResource.getConf(), queries, prefix, suffix,
           txnIds, "\"T2W_TXNID\"", false, false);
       for (String query : queries) {
         try (PreparedStatement pStmt = jdbcResource.getSqlGenerator().prepareStmtWithParameters(dbConn, query, params)) {
           if (LOG.isDebugEnabled()) {
-            LOG.debug("Going to execute query <" + query.replace("?", "'{}'") + ">", dbName, tblName);
+            LOG.debug("Going to execute query <" + query.replace("?", "'{}'") + ">", catName, dbName,
+                tblName);
           }
           try (ResultSet rs = pStmt.executeQuery()) {
             while (rs.next()) {
@@ -182,20 +185,21 @@ public class AllocateTableWriteIdsFunction implements TransactionalFunction<Allo
     // Get the next write id for the given table and update it with new next write id.
     // This is select for update query which takes a lock if the table entry is already there in NEXT_WRITE_ID
     String query = jdbcResource.getSqlGenerator().addForUpdateClause(
-        "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName");
+        "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_CATALOG\" = :catName AND \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName");
     if (LOG.isDebugEnabled()) {
       LOG.debug("Going to execute query {}", query);
     }
     
     Long nextWriteId = jdbcResource.getJdbcTemplate().query(query, 
         new MapSqlParameterSource()
+            .addValue("catName", catName)
             .addValue("dbName", dbName)
             .addValue("tableName", tblName),
         (ResultSet rs) -> rs.next() ? rs.getLong(1) : null);
     
     if (nextWriteId == null) {
-      query = "INSERT INTO \"NEXT_WRITE_ID\" (\"NWI_DATABASE\", \"NWI_TABLE\", \"NWI_NEXT\") " +
-          "VALUES (:dbName, :tableName, :nextId)";
+      query = "INSERT INTO \"NEXT_WRITE_ID\" (\"NWI_CATALOG\", \"NWI_DATABASE\", \"NWI_TABLE\", \"NWI_NEXT\") " +
+          "VALUES (:catName, :dbName, :tableName, :nextId)";
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query {}", query);
       }
@@ -206,11 +210,12 @@ public class AllocateTableWriteIdsFunction implements TransactionalFunction<Allo
       writeId = (srcWriteId > 0) ? srcWriteId : 1;
       jdbcResource.getJdbcTemplate().update(query,
           new MapSqlParameterSource()
+              .addValue("catName", catName)
               .addValue("dbName", dbName)
               .addValue("tableName", tblName)
               .addValue("nextId", writeId + numOfWriteIds));      
     } else {
-      query = "UPDATE \"NEXT_WRITE_ID\" SET \"NWI_NEXT\" = :nextId WHERE \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName";
+      query = "UPDATE \"NEXT_WRITE_ID\" SET \"NWI_NEXT\" = :nextId WHERE \"NWI_CATALOG\" = :catName AND \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName";
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query {}", query);
       }
@@ -219,6 +224,7 @@ public class AllocateTableWriteIdsFunction implements TransactionalFunction<Allo
       // Update the NEXT_WRITE_ID for the given table after incrementing by number of write ids allocated
       jdbcResource.getJdbcTemplate().update(query,
           new MapSqlParameterSource()
+              .addValue("catName", catName)
               .addValue("dbName", dbName)
               .addValue("tableName", tblName)
               .addValue("nextId", writeId + numOfWriteIds));
@@ -228,29 +234,31 @@ public class AllocateTableWriteIdsFunction implements TransactionalFunction<Allo
       // This is possible in case of first incremental repl after bootstrap where concurrent write
       // and drop table was performed at source during bootstrap dump.
       if ((srcWriteId > 0) && (srcWriteId != nextWriteId)) {
-        query = "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\" = :dbName AND \"T2W_TABLE\" = :tableName";
+        query = "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_CATALOG\" = :catName AND \"T2W_DATABASE\" = :dbName AND \"T2W_TABLE\" = :tableName";
         if (LOG.isDebugEnabled()) {
           LOG.debug("Going to execute query {}", query);
         }
 
         jdbcResource.getJdbcTemplate().update(query,
             new MapSqlParameterSource()
+                .addValue("catName", catName)
                 .addValue("dbName", dbName)
                 .addValue("tableName", tblName));
       }
     }
 
     // Map the newly allocated write ids against the list of txns which doesn't have pre-allocated write ids
-    jdbcResource.execute(new AddWriteIdsToTxnToWriteIdCommand(dbName, tblName, writeId, txnIds, txnToWriteIds));
+    jdbcResource.execute(new AddWriteIdsToTxnToWriteIdCommand(catName, dbName, tblName, writeId, txnIds, txnToWriteIds));
 
     if (transactionalListeners != null) {
       MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
           EventMessage.EventType.ALLOC_WRITE_ID,
-          new AllocWriteIdEvent(txnToWriteIds, dbName, tblName),
+          new AllocWriteIdEvent(txnToWriteIds, catName, dbName, tblName),
           dbConn, jdbcResource.getSqlGenerator());
     }
 
-    LOG.info("Allocated write ids for dbName={}, tblName={} (txnIds: {})", dbName, tblName, rqst.getTxnIds());
+    LOG.info("Allocated write ids for catName={}, dbName={}, tblName={} (txnIds: {})", catName, dbName, tblName,
+        rqst.getTxnIds());
     return new AllocateTableWriteIdsResponse(txnToWriteIds);
   }
 

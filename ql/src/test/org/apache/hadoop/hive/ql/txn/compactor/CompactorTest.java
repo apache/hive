@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -181,22 +182,34 @@ public abstract class CompactorTest {
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned) throws TException {
-    return newTable(dbName, tableName, partitioned, new HashMap<>(), null, false);
+    return newTable(HiveUtils.getCurrentCatalogOrDefault(conf), dbName, tableName, partitioned, new HashMap<>());
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned,
                            Map<String, String> parameters)  throws TException {
-    return newTable(dbName, tableName, partitioned, parameters, null, false);
+    return newTable(HiveUtils.getCurrentCatalogOrDefault(conf), dbName, tableName, partitioned, parameters);
+  }
 
+  protected Table newTable(String catName, String dbName, String tableName, boolean partitioned,
+                           Map<String, String> parameters)  throws TException {
+    return newTable(catName, dbName, tableName, partitioned, parameters, null, false);
   }
 
   protected Table newTable(String dbName, String tableName, boolean partitioned,
+                           Map<String, String> parameters, List<Order> sortCols,
+                           boolean  isTemporary) throws TException {
+    return newTable(HiveUtils.getCurrentCatalogOrDefault(conf), dbName, tableName, partitioned,
+        parameters, sortCols, isTemporary);
+  }
+
+  protected Table newTable(String catName, String dbName, String tableName, boolean partitioned,
                            Map<String, String> parameters, List<Order> sortCols,
                            boolean  isTemporary)
       throws  TException {
     Table table = new Table();
     table.setTableType(TableType.MANAGED_TABLE.name());
     table.setTableName(tableName);
+    table.setCatName(catName);
     table.setDbName(dbName);
     table.setOwner("me");
     table.setSd(newStorageDescriptor(getLocation(tableName, null), sortCols));
@@ -222,7 +235,7 @@ public abstract class CompactorTest {
     }
 
     // drop the table first, in case some previous test created it
-    ms.dropTable(dbName, tableName);
+    ms.dropTable(catName, dbName, tableName);
 
     ms.createTable(table);
     return table;
@@ -263,10 +276,10 @@ public abstract class CompactorTest {
     return txns.getFirst();
   }
 
-  protected long allocateWriteId(String dbName, String tblName, long txnid)
+  protected long allocateWriteId(String catName, String dbName, String tblName, long txnid)
           throws MetaException, TxnAbortedException, NoSuchTxnException {
     return TxnStoreHelper.wrap(txnHandler)
-        .allocateTableWriteId(dbName, tblName, txnid);
+        .allocateTableWriteId(catName, dbName, tblName, txnid);
   }
 
   protected void addDeltaFileWithTxnComponents(Table t, Partition p, int numRecords, boolean abort)
@@ -349,21 +362,22 @@ public abstract class CompactorTest {
     return paths;
   }
 
-  protected void burnThroughTransactions(String dbName, String tblName, int num)
+  protected void burnThroughTransactions(String catName, String dbName, String tblName, int num)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
-    burnThroughTransactions(dbName, tblName, num, null, null);
+    burnThroughTransactions(catName, dbName, tblName, num, null, null);
   }
 
-  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
+  protected void burnThroughTransactions(String catName, String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
       throws NoSuchTxnException, TxnAbortedException, MetaException {
-    burnThroughTransactions(dbName, tblName, num, open, aborted, null);
+    burnThroughTransactions(catName, dbName, tblName, num, open, aborted, null);
   }
 
-  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted,
+  protected void burnThroughTransactions(String catName, String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted,
       LockRequest lockReq)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setCatName(catName);
     awiRqst.setTxnIds(rsp.getTxn_ids());
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
 

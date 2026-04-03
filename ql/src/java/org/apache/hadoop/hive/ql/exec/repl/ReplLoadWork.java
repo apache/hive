@@ -75,6 +75,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private static final Logger LOG = LoggerFactory.getLogger(ReplLoadWork.class);
   private static boolean enableMBeansRegistrationForTests = false;
   public static boolean disableMbeanUnregistrationForTests = false;
+  final String catName;
   final String dbNameToLoadIn;
   final ReplScope currentReplScope;
   final String dumpDirectory;
@@ -108,13 +109,14 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   final LineageState sessionStateLineageState;
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory,
-                      String sourceDbName, String dbNameToLoadIn, ReplScope currentReplScope,
+                      String sourceDbName, String catName, String dbNameToLoadIn, ReplScope currentReplScope,
                       LineageState lineageState, boolean isIncrementalDump, Long eventTo,
                       Long dumpExecutionId,
                       ReplicationMetricCollector metricCollector,
                       boolean replScopeModified) throws IOException, SemanticException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
+    this.catName = catName;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.currentReplScope = currentReplScope;
     this.sourceDbName = sourceDbName;
@@ -185,7 +187,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
         this.constraintsIterator = null;
       }
       try {
-        incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
+        incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(catName, dbNameToLoadIn, dumpDirectory,
                 new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
                 replStatsTracker, shouldFailover, tablesToBootstrap.size());
       } catch (HiveException e) {

@@ -1554,7 +1554,7 @@ public class ObjectStore implements RawStore, Configurable {
         Set<MMVSource> tables = p.getTables();
         for (MMVSource sourceTable : tables) {
           MTable table = sourceTable.getTable();
-          if (dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
+          if (catName.equals(table.getDatabase().getCatalogName()) && dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
             LOG.info("Cannot drop table " + table.getTableName() +
                     " as it is being used by MView " + p.getTblName());
             mViewList.add(p.getDbName() + "." + p.getTblName());
@@ -11140,7 +11140,14 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  @Deprecated
   public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+    return getAllWriteEventInfo(txnId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName);
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String catName, String dbName, String tableName)
+      throws MetaException {
     List<WriteEventInfo> writeEventInfoList = null;
     boolean commited = false;
     Query query = null;
@@ -11148,6 +11155,9 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       List<String> parameterVals = new ArrayList<>();
       StringBuilder filterBuilder = new StringBuilder(" txnId == " + Long.toString(txnId));
+      if (catName != null && !"*".equals(catName)) {
+        appendSimpleCondition(filterBuilder, "catalog", new String[]{catName}, parameterVals);
+      }
       if (dbName != null && !"*".equals(dbName)) { // * means get all database, so no need to add filter
         appendSimpleCondition(filterBuilder, "database", new String[]{dbName}, parameterVals);
       }

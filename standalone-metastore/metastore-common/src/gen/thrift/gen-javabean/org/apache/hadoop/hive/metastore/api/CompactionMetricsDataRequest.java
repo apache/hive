@@ -15,6 +15,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField PARTITION_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionName", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)4);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CompactionMetricsDataRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CompactionMetricsDataRequestTupleSchemeFactory();
@@ -23,6 +24,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String partitionName; // optional
   private @org.apache.thrift.annotation.Nullable CompactionMetricsMetricType type; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -33,7 +35,8 @@ package org.apache.hadoop.hive.metastore.api;
      * 
      * @see CompactionMetricsMetricType
      */
-    TYPE((short)4, "type");
+    TYPE((short)4, "type"),
+    CAT_NAME((short)5, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -57,6 +60,8 @@ package org.apache.hadoop.hive.metastore.api;
           return PARTITION_NAME;
         case 4: // TYPE
           return TYPE;
+        case 5: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -98,7 +103,7 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.PARTITION_NAME};
+  private static final _Fields optionals[] = {_Fields.PARTITION_NAME,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -110,11 +115,15 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, CompactionMetricsMetricType.class)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionMetricsDataRequest.class, metaDataMap);
   }
 
   public CompactionMetricsDataRequest() {
+    this.catName = "hive";
+
   }
 
   public CompactionMetricsDataRequest(
@@ -144,6 +153,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetType()) {
       this.type = other.type;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public CompactionMetricsDataRequest deepCopy() {
@@ -156,6 +168,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.tblName = null;
     this.partitionName = null;
     this.type = null;
+    this.catName = "hive";
+
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -262,6 +276,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -296,6 +334,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -313,6 +359,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case TYPE:
       return getType();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new java.lang.IllegalStateException();
@@ -333,6 +382,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetPartitionName();
     case TYPE:
       return isSetType();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -386,6 +437,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -408,6 +468,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetType()) ? 131071 : 524287);
     if (isSetType())
       hashCode = hashCode * 8191 + type.getValue();
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -456,6 +520,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetType()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, other.type);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -514,6 +588,16 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.type);
     }
     first = false;
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -601,6 +685,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -636,6 +728,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI32(struct.type.getValue());
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -660,9 +759,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPartitionName()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetCatName()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetPartitionName()) {
         oprot.writeString(struct.partitionName);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
@@ -675,10 +780,14 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTblNameIsSet(true);
       struct.type = org.apache.hadoop.hive.metastore.api.CompactionMetricsMetricType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
+      java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.partitionName = iprot.readString();
         struct.setPartitionNameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

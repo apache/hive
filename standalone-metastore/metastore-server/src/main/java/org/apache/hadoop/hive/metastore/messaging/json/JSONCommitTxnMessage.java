@@ -50,7 +50,7 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
   private List<Long> writeIds;
 
   @JsonProperty
-  private List<String> databases, tables, partitions, tableObjs, partitionObjs, files;
+  private List<String> catalogs, databases, tables, partitions, tableObjs, partitionObjs, files;
 
   /**
    * Default constructor, needed for Jackson.
@@ -63,6 +63,7 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
     this.txnid = txnid;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.catalogs = null;
     this.databases = null;
     this.tables = null;
     this.writeIds = null;
@@ -72,8 +73,9 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
     this.files = null;
   }
 
-  public JSONCommitTxnMessage(String server, String servicePrincipal, Long txnid, Long timestamp, List<String> databases, List<Long> writeIds) {
+  public JSONCommitTxnMessage(String server, String servicePrincipal, Long txnid, Long timestamp, List<String> catalogs, List<String> databases, List<Long> writeIds) {
     this(server, servicePrincipal, txnid, timestamp);
+    this.catalogs = catalogs;
     this.databases = databases;
     this.writeIds = writeIds;
   }
@@ -86,6 +88,11 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
   @Override
   public Long getTimestamp() {
     return timestamp;
+  }
+
+  @Override
+  public String getCat() {
+    return null;
   }
 
   @Override
@@ -106,6 +113,11 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
   @Override
   public List<Long> getWriteIds() {
     return writeIds;
+  }
+
+  @Override
+  public List<String> getCatalogs() {
+    return catalogs;
   }
 
   @Override
@@ -146,6 +158,9 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
 
   @Override
   public void addWriteEventInfo(List<WriteEventInfo> writeEventInfoList) {
+    if (this.catalogs == null) {
+      this.catalogs = Lists.newArrayList();
+    }
     if (this.databases == null) {
       this.databases = Lists.newArrayList();
     }
@@ -169,6 +184,7 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
     }
 
     for (WriteEventInfo writeEventInfo : writeEventInfoList) {
+      this.catalogs.add(writeEventInfo.getCatalog());
       this.databases.add(writeEventInfo.getDatabase());
       this.tables.add(writeEventInfo.getTable());
       this.writeIds.add(writeEventInfo.getWriteId());

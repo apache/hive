@@ -36,14 +36,15 @@ public class CommitTxnEvent extends ListenerEvent {
   private final Long txnId;
   private final TxnType txnType;
   private final List<Long> writeId;
+  private final List<String> catalogs;
   private final List<String> databases;
 
   public CommitTxnEvent(Long transactionId, IHMSHandler handler) {
-    this(transactionId, null, handler, null, null);
+    this(transactionId, null, handler, null, null, null);
   }
 
   public CommitTxnEvent(Long transactionId, TxnType txnType) {
-    this(transactionId, txnType, null, null, null);
+    this(transactionId, txnType, null, null, null, null);
   }
 
   /**
@@ -53,11 +54,12 @@ public class CommitTxnEvent extends ListenerEvent {
    * @param databases list of databases for which commit txn event is fired
    * @param writeId write id for transaction
    */
-  public CommitTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler, List<String> databases, List<Long> writeId) {
+  public CommitTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler, List<String> catalogs, List<String> databases, List<Long> writeId) {
     super(true, handler);
     this.txnId = transactionId;
     this.txnType = txnType;
     this.writeId = writeId;
+    this.catalogs = catalogs;
     this.databases = databases;
   }
 
@@ -87,5 +89,9 @@ public class CommitTxnEvent extends ListenerEvent {
      */
   public List<String> getDatabases() {
     return databases;
+  }
+
+  public List<String> getCatalogs() {
+    return catalogs;
   }
 }

@@ -64,6 +64,7 @@ import java.util.HashSet;
  * Iterate through the dump directory and create tasks to load the events.
  */
 public class IncrementalLoadTasksBuilder {
+  private final String catName;
   private final String dbName;
   private final IncrementalLoadEventsIterator iterator;
   private final HashSet<ReadEntity> inputs;
@@ -82,9 +83,10 @@ public class IncrementalLoadTasksBuilder {
   private final ReplicationMetricCollector metricCollector;
   private boolean shouldFailover;
 
-  public IncrementalLoadTasksBuilder(String dbName, String loadPath, IncrementalLoadEventsIterator iterator,
+  public IncrementalLoadTasksBuilder(String catName, String dbName, String loadPath, IncrementalLoadEventsIterator iterator,
       HiveConf conf, Long eventTo, ReplicationMetricCollector metricCollector, ReplStatsTracker replStatsTracker,
                                      boolean shouldFailover, int bootstrapTableSize) throws SemanticException {
+    this.catName = catName;
     this.dbName = dbName;
     dumpDirectory = (new Path(loadPath).getParent()).toString();
     this.iterator = iterator;
@@ -171,7 +173,7 @@ public class IncrementalLoadTasksBuilder {
       // Once this entire chain is generated, we add evTaskRoot to rootTasks, so as to execute the
       // entire chain
 
-      MessageHandler.Context mhContext = new MessageHandler.Context(dbName, location,
+      MessageHandler.Context mhContext = new MessageHandler.Context(catName, dbName, location,
               taskChainTail, eventDmd, conf, hive, context, this.log,
               dumpDirectory, metricCollector);
       List<Task<?>> evTasks = analyzeEventLoad(mhContext);

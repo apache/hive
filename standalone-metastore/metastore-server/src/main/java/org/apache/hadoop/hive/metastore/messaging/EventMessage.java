@@ -111,6 +111,8 @@ public abstract class EventMessage {
    */
   public abstract String getServicePrincipal();
 
+  public abstract String getCat();
+
   /**
    * Getter for the name of the Database on which the Metastore operation is done.
    * @return Database-name (String).
@@ -132,6 +134,9 @@ public abstract class EventMessage {
     }
     if (getEventType() == null) {
       throw new IllegalStateException("Event-type unset.");
+    }
+    if (getCat() == null) {
+      throw new IllegalArgumentException("Cat-name unset");
     }
     if (getDB() == null) {
       throw new IllegalArgumentException("DB-name unset.");

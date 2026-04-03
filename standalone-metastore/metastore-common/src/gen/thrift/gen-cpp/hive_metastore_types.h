@@ -9319,10 +9319,11 @@ void swap(CommitTxnKeyValue &a, CommitTxnKeyValue &b);
 std::ostream& operator<<(std::ostream& out, const CommitTxnKeyValue& obj);
 
 typedef struct _WriteEventInfo__isset {
-  _WriteEventInfo__isset() : partition(false), tableObj(false), partitionObj(false) {}
+  _WriteEventInfo__isset() : partition(false), tableObj(false), partitionObj(false), catalog(true) {}
   bool partition :1;
   bool tableObj :1;
   bool partitionObj :1;
+  bool catalog :1;
 } _WriteEventInfo__isset;
 
 class WriteEventInfo : public virtual ::apache::thrift::TBase {
@@ -9330,14 +9331,14 @@ class WriteEventInfo : public virtual ::apache::thrift::TBase {
 
   WriteEventInfo(const WriteEventInfo&);
   WriteEventInfo& operator=(const WriteEventInfo&);
-  WriteEventInfo() noexcept
-                 : writeId(0),
-                   database(),
-                   table(),
-                   files(),
-                   partition(),
-                   tableObj(),
-                   partitionObj() {
+  WriteEventInfo() : writeId(0),
+                     database(),
+                     table(),
+                     files(),
+                     partition(),
+                     tableObj(),
+                     partitionObj(),
+                     catalog("hive") {
   }
 
   virtual ~WriteEventInfo() noexcept;
@@ -9348,6 +9349,7 @@ class WriteEventInfo : public virtual ::apache::thrift::TBase {
   std::string partition;
   std::string tableObj;
   std::string partitionObj;
+  std::string catalog;
 
   _WriteEventInfo__isset __isset;
 
@@ -9364,6 +9366,8 @@ class WriteEventInfo : public virtual ::apache::thrift::TBase {
   void __set_tableObj(const std::string& val);
 
   void __set_partitionObj(const std::string& val);
+
+  void __set_catalog(const std::string& val);
 
   bool operator == (const WriteEventInfo & rhs) const
   {
@@ -9386,6 +9390,10 @@ class WriteEventInfo : public virtual ::apache::thrift::TBase {
     if (__isset.partitionObj != rhs.__isset.partitionObj)
       return false;
     else if (__isset.partitionObj && !(partitionObj == rhs.partitionObj))
+      return false;
+    if (__isset.catalog != rhs.__isset.catalog)
+      return false;
+    else if (__isset.catalog && !(catalog == rhs.catalog))
       return false;
     return true;
   }
@@ -9632,8 +9640,9 @@ void swap(CommitTxnRequest &a, CommitTxnRequest &b);
 std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj);
 
 typedef struct _ReplTblWriteIdStateRequest__isset {
-  _ReplTblWriteIdStateRequest__isset() : partNames(false) {}
+  _ReplTblWriteIdStateRequest__isset() : partNames(false), catName(true) {}
   bool partNames :1;
+  bool catName :1;
 } _ReplTblWriteIdStateRequest__isset;
 
 class ReplTblWriteIdStateRequest : public virtual ::apache::thrift::TBase {
@@ -9641,12 +9650,12 @@ class ReplTblWriteIdStateRequest : public virtual ::apache::thrift::TBase {
 
   ReplTblWriteIdStateRequest(const ReplTblWriteIdStateRequest&);
   ReplTblWriteIdStateRequest& operator=(const ReplTblWriteIdStateRequest&);
-  ReplTblWriteIdStateRequest() noexcept
-                             : validWriteIdlist(),
-                               user(),
-                               hostName(),
-                               dbName(),
-                               tableName() {
+  ReplTblWriteIdStateRequest() : validWriteIdlist(),
+                                 user(),
+                                 hostName(),
+                                 dbName(),
+                                 tableName(),
+                                 catName("hive") {
   }
 
   virtual ~ReplTblWriteIdStateRequest() noexcept;
@@ -9656,6 +9665,7 @@ class ReplTblWriteIdStateRequest : public virtual ::apache::thrift::TBase {
   std::string dbName;
   std::string tableName;
   std::vector<std::string>  partNames;
+  std::string catName;
 
   _ReplTblWriteIdStateRequest__isset __isset;
 
@@ -9670,6 +9680,8 @@ class ReplTblWriteIdStateRequest : public virtual ::apache::thrift::TBase {
   void __set_tableName(const std::string& val);
 
   void __set_partNames(const std::vector<std::string> & val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const ReplTblWriteIdStateRequest & rhs) const
   {
@@ -9686,6 +9698,10 @@ class ReplTblWriteIdStateRequest : public virtual ::apache::thrift::TBase {
     if (__isset.partNames != rhs.__isset.partNames)
       return false;
     else if (__isset.partNames && !(partNames == rhs.partNames))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -9912,11 +9928,12 @@ void swap(TxnToWriteId &a, TxnToWriteId &b);
 std::ostream& operator<<(std::ostream& out, const TxnToWriteId& obj);
 
 typedef struct _AllocateTableWriteIdsRequest__isset {
-  _AllocateTableWriteIdsRequest__isset() : txnIds(false), replPolicy(false), srcTxnToWriteIdList(false), reallocate(true) {}
+  _AllocateTableWriteIdsRequest__isset() : txnIds(false), replPolicy(false), srcTxnToWriteIdList(false), reallocate(true), catName(true) {}
   bool txnIds :1;
   bool replPolicy :1;
   bool srcTxnToWriteIdList :1;
   bool reallocate :1;
+  bool catName :1;
 } _AllocateTableWriteIdsRequest__isset;
 
 class AllocateTableWriteIdsRequest : public virtual ::apache::thrift::TBase {
@@ -9924,11 +9941,11 @@ class AllocateTableWriteIdsRequest : public virtual ::apache::thrift::TBase {
 
   AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest&);
   AllocateTableWriteIdsRequest& operator=(const AllocateTableWriteIdsRequest&);
-  AllocateTableWriteIdsRequest() noexcept
-                               : dbName(),
-                                 tableName(),
-                                 replPolicy(),
-                                 reallocate(false) {
+  AllocateTableWriteIdsRequest() : dbName(),
+                                   tableName(),
+                                   replPolicy(),
+                                   reallocate(false),
+                                   catName("hive") {
   }
 
   virtual ~AllocateTableWriteIdsRequest() noexcept;
@@ -9938,6 +9955,7 @@ class AllocateTableWriteIdsRequest : public virtual ::apache::thrift::TBase {
   std::string replPolicy;
   std::vector<TxnToWriteId>  srcTxnToWriteIdList;
   bool reallocate;
+  std::string catName;
 
   _AllocateTableWriteIdsRequest__isset __isset;
 
@@ -9952,6 +9970,8 @@ class AllocateTableWriteIdsRequest : public virtual ::apache::thrift::TBase {
   void __set_srcTxnToWriteIdList(const std::vector<TxnToWriteId> & val);
 
   void __set_reallocate(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const AllocateTableWriteIdsRequest & rhs) const
   {
@@ -9974,6 +9994,10 @@ class AllocateTableWriteIdsRequest : public virtual ::apache::thrift::TBase {
     if (__isset.reallocate != rhs.__isset.reallocate)
       return false;
     else if (__isset.reallocate && !(reallocate == rhs.reallocate))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -10029,30 +10053,43 @@ void swap(AllocateTableWriteIdsResponse &a, AllocateTableWriteIdsResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsResponse& obj);
 
+typedef struct _MaxAllocatedTableWriteIdRequest__isset {
+  _MaxAllocatedTableWriteIdRequest__isset() : catName(true) {}
+  bool catName :1;
+} _MaxAllocatedTableWriteIdRequest__isset;
 
 class MaxAllocatedTableWriteIdRequest : public virtual ::apache::thrift::TBase {
  public:
 
   MaxAllocatedTableWriteIdRequest(const MaxAllocatedTableWriteIdRequest&);
   MaxAllocatedTableWriteIdRequest& operator=(const MaxAllocatedTableWriteIdRequest&);
-  MaxAllocatedTableWriteIdRequest() noexcept
-                                  : dbName(),
-                                    tableName() {
+  MaxAllocatedTableWriteIdRequest() : dbName(),
+                                      tableName(),
+                                      catName("hive") {
   }
 
   virtual ~MaxAllocatedTableWriteIdRequest() noexcept;
   std::string dbName;
   std::string tableName;
+  std::string catName;
+
+  _MaxAllocatedTableWriteIdRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const MaxAllocatedTableWriteIdRequest & rhs) const
   {
     if (!(dbName == rhs.dbName))
       return false;
     if (!(tableName == rhs.tableName))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -10109,28 +10146,37 @@ void swap(MaxAllocatedTableWriteIdResponse &a, MaxAllocatedTableWriteIdResponse 
 
 std::ostream& operator<<(std::ostream& out, const MaxAllocatedTableWriteIdResponse& obj);
 
+typedef struct _SeedTableWriteIdsRequest__isset {
+  _SeedTableWriteIdsRequest__isset() : catName(true) {}
+  bool catName :1;
+} _SeedTableWriteIdsRequest__isset;
 
 class SeedTableWriteIdsRequest : public virtual ::apache::thrift::TBase {
  public:
 
   SeedTableWriteIdsRequest(const SeedTableWriteIdsRequest&);
   SeedTableWriteIdsRequest& operator=(const SeedTableWriteIdsRequest&);
-  SeedTableWriteIdsRequest() noexcept
-                           : dbName(),
-                             tableName(),
-                             seedWriteId(0) {
+  SeedTableWriteIdsRequest() : dbName(),
+                               tableName(),
+                               seedWriteId(0),
+                               catName("hive") {
   }
 
   virtual ~SeedTableWriteIdsRequest() noexcept;
   std::string dbName;
   std::string tableName;
   int64_t seedWriteId;
+  std::string catName;
+
+  _SeedTableWriteIdsRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
 
   void __set_seedWriteId(const int64_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const SeedTableWriteIdsRequest & rhs) const
   {
@@ -10139,6 +10185,10 @@ class SeedTableWriteIdsRequest : public virtual ::apache::thrift::TBase {
     if (!(tableName == rhs.tableName))
       return false;
     if (!(seedWriteId == rhs.seedWriteId))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -11069,7 +11119,7 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
 std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeResponse& obj);
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false), orderByClause(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false), numberOfBuckets(false), orderByClause(false), catName(true) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -11078,6 +11128,7 @@ typedef struct _CompactionRequest__isset {
   bool poolName :1;
   bool numberOfBuckets :1;
   bool orderByClause :1;
+  bool catName :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest : public virtual ::apache::thrift::TBase {
@@ -11085,17 +11136,17 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
 
   CompactionRequest(const CompactionRequest&);
   CompactionRequest& operator=(const CompactionRequest&);
-  CompactionRequest() noexcept
-                    : dbname(),
-                      tablename(),
-                      partitionname(),
-                      type(static_cast<CompactionType::type>(0)),
-                      runas(),
-                      initiatorId(),
-                      initiatorVersion(),
-                      poolName(),
-                      numberOfBuckets(0),
-                      orderByClause() {
+  CompactionRequest() : dbname(),
+                        tablename(),
+                        partitionname(),
+                        type(static_cast<CompactionType::type>(0)),
+                        runas(),
+                        initiatorId(),
+                        initiatorVersion(),
+                        poolName(),
+                        numberOfBuckets(0),
+                        orderByClause(),
+                        catName("hive") {
   }
 
   virtual ~CompactionRequest() noexcept;
@@ -11114,6 +11165,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   std::string poolName;
   int32_t numberOfBuckets;
   std::string orderByClause;
+  std::string catName;
 
   _CompactionRequest__isset __isset;
 
@@ -11138,6 +11190,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   void __set_numberOfBuckets(const int32_t val);
 
   void __set_orderByClause(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -11179,6 +11233,10 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.orderByClause && !(orderByClause == rhs.orderByClause))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const CompactionRequest &rhs) const {
@@ -11198,7 +11256,7 @@ void swap(CompactionRequest &a, CompactionRequest &b);
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj);
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false), orderByClause(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false), numberOfBuckets(false), orderByClause(false), catName(true) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -11214,6 +11272,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool poolname :1;
   bool numberOfBuckets :1;
   bool orderByClause :1;
+  bool catName :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
@@ -11221,26 +11280,26 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
 
   CompactionInfoStruct(const CompactionInfoStruct&);
   CompactionInfoStruct& operator=(const CompactionInfoStruct&);
-  CompactionInfoStruct() noexcept
-                       : id(0),
-                         dbname(),
-                         tablename(),
-                         partitionname(),
-                         type(static_cast<CompactionType::type>(0)),
-                         runas(),
-                         properties(),
-                         toomanyaborts(0),
-                         state(),
-                         workerId(),
-                         start(0),
-                         highestWriteId(0),
-                         errorMessage(),
-                         hasoldabort(0),
-                         enqueueTime(0),
-                         retryRetention(0),
-                         poolname(),
-                         numberOfBuckets(0),
-                         orderByClause() {
+  CompactionInfoStruct() : id(0),
+                           dbname(),
+                           tablename(),
+                           partitionname(),
+                           type(static_cast<CompactionType::type>(0)),
+                           runas(),
+                           properties(),
+                           toomanyaborts(0),
+                           state(),
+                           workerId(),
+                           start(0),
+                           highestWriteId(0),
+                           errorMessage(),
+                           hasoldabort(0),
+                           enqueueTime(0),
+                           retryRetention(0),
+                           poolname(),
+                           numberOfBuckets(0),
+                           orderByClause(),
+                           catName("hive") {
   }
 
   virtual ~CompactionInfoStruct() noexcept;
@@ -11267,6 +11326,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   std::string poolname;
   int32_t numberOfBuckets;
   std::string orderByClause;
+  std::string catName;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -11307,6 +11367,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   void __set_numberOfBuckets(const int32_t val);
 
   void __set_orderByClause(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -11378,6 +11440,10 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.orderByClause && !(orderByClause == rhs.orderByClause))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const CompactionInfoStruct &rhs) const {
@@ -11441,8 +11507,9 @@ void swap(OptionalCompactionInfoStruct &a, OptionalCompactionInfoStruct &b);
 std::ostream& operator<<(std::ostream& out, const OptionalCompactionInfoStruct& obj);
 
 typedef struct _CompactionMetricsDataStruct__isset {
-  _CompactionMetricsDataStruct__isset() : partitionname(false) {}
+  _CompactionMetricsDataStruct__isset() : partitionname(false), catName(true) {}
   bool partitionname :1;
+  bool catName :1;
 } _CompactionMetricsDataStruct__isset;
 
 class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
@@ -11450,14 +11517,14 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
 
   CompactionMetricsDataStruct(const CompactionMetricsDataStruct&);
   CompactionMetricsDataStruct& operator=(const CompactionMetricsDataStruct&);
-  CompactionMetricsDataStruct() noexcept
-                              : dbname(),
-                                tblname(),
-                                partitionname(),
-                                type(static_cast<CompactionMetricsMetricType::type>(0)),
-                                metricvalue(0),
-                                version(0),
-                                threshold(0) {
+  CompactionMetricsDataStruct() : dbname(),
+                                  tblname(),
+                                  partitionname(),
+                                  type(static_cast<CompactionMetricsMetricType::type>(0)),
+                                  metricvalue(0),
+                                  version(0),
+                                  threshold(0),
+                                  catName("hive") {
   }
 
   virtual ~CompactionMetricsDataStruct() noexcept;
@@ -11472,6 +11539,7 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
   int32_t metricvalue;
   int32_t version;
   int32_t threshold;
+  std::string catName;
 
   _CompactionMetricsDataStruct__isset __isset;
 
@@ -11488,6 +11556,8 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
   void __set_version(const int32_t val);
 
   void __set_threshold(const int32_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const CompactionMetricsDataStruct & rhs) const
   {
@@ -11506,6 +11576,10 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
     if (!(version == rhs.version))
       return false;
     if (!(threshold == rhs.threshold))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -11570,8 +11644,9 @@ void swap(CompactionMetricsDataResponse &a, CompactionMetricsDataResponse &b);
 std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataResponse& obj);
 
 typedef struct _CompactionMetricsDataRequest__isset {
-  _CompactionMetricsDataRequest__isset() : partitionName(false) {}
+  _CompactionMetricsDataRequest__isset() : partitionName(false), catName(true) {}
   bool partitionName :1;
+  bool catName :1;
 } _CompactionMetricsDataRequest__isset;
 
 class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
@@ -11579,11 +11654,11 @@ class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
 
   CompactionMetricsDataRequest(const CompactionMetricsDataRequest&);
   CompactionMetricsDataRequest& operator=(const CompactionMetricsDataRequest&);
-  CompactionMetricsDataRequest() noexcept
-                               : dbName(),
-                                 tblName(),
-                                 partitionName(),
-                                 type(static_cast<CompactionMetricsMetricType::type>(0)) {
+  CompactionMetricsDataRequest() : dbName(),
+                                   tblName(),
+                                   partitionName(),
+                                   type(static_cast<CompactionMetricsMetricType::type>(0)),
+                                   catName("hive") {
   }
 
   virtual ~CompactionMetricsDataRequest() noexcept;
@@ -11595,6 +11670,7 @@ class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
    * @see CompactionMetricsMetricType
    */
   CompactionMetricsMetricType::type type;
+  std::string catName;
 
   _CompactionMetricsDataRequest__isset __isset;
 
@@ -11605,6 +11681,8 @@ class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
   void __set_partitionName(const std::string& val);
 
   void __set_type(const CompactionMetricsMetricType::type val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const CompactionMetricsDataRequest & rhs) const
   {
@@ -11617,6 +11695,10 @@ class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
     else if (__isset.partitionName && !(partitionName == rhs.partitionName))
       return false;
     if (!(type == rhs.type))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -11700,7 +11782,7 @@ void swap(CompactionResponse &a, CompactionResponse &b);
 std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj);
 
 typedef struct _ShowCompactRequest__isset {
-  _ShowCompactRequest__isset() : id(false), poolName(false), dbName(false), tbName(false), partName(false), type(false), state(false), limit(false), order(false) {}
+  _ShowCompactRequest__isset() : id(false), poolName(false), dbName(false), tbName(false), partName(false), type(false), state(false), limit(false), order(false), catName(true) {}
   bool id :1;
   bool poolName :1;
   bool dbName :1;
@@ -11710,6 +11792,7 @@ typedef struct _ShowCompactRequest__isset {
   bool state :1;
   bool limit :1;
   bool order :1;
+  bool catName :1;
 } _ShowCompactRequest__isset;
 
 class ShowCompactRequest : public virtual ::apache::thrift::TBase {
@@ -11717,16 +11800,16 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
 
   ShowCompactRequest(const ShowCompactRequest&);
   ShowCompactRequest& operator=(const ShowCompactRequest&);
-  ShowCompactRequest() noexcept
-                     : id(0),
-                       poolName(),
-                       dbName(),
-                       tbName(),
-                       partName(),
-                       type(static_cast<CompactionType::type>(0)),
-                       state(),
-                       limit(0),
-                       order() {
+  ShowCompactRequest() : id(0),
+                         poolName(),
+                         dbName(),
+                         tbName(),
+                         partName(),
+                         type(static_cast<CompactionType::type>(0)),
+                         state(),
+                         limit(0),
+                         order(),
+                         catName("hive") {
   }
 
   virtual ~ShowCompactRequest() noexcept;
@@ -11743,6 +11826,7 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
   std::string state;
   int64_t limit;
   std::string order;
+  std::string catName;
 
   _ShowCompactRequest__isset __isset;
 
@@ -11763,6 +11847,8 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
   void __set_limit(const int64_t val);
 
   void __set_order(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const ShowCompactRequest & rhs) const
   {
@@ -11802,6 +11888,10 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.order && !(order == rhs.order))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const ShowCompactRequest &rhs) const {
@@ -11821,7 +11911,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj);
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false), poolName(false), nextTxnId(false), txnId(false), commitTime(false), hightestWriteId(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false), poolName(false), nextTxnId(false), txnId(false), commitTime(false), hightestWriteId(false), catName(true) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -11842,6 +11932,7 @@ typedef struct _ShowCompactResponseElement__isset {
   bool txnId :1;
   bool commitTime :1;
   bool hightestWriteId :1;
+  bool catName :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
@@ -11872,7 +11963,8 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
                                  nextTxnId(0),
                                  txnId(0),
                                  commitTime(0),
-                                 hightestWriteId(0) {
+                                 hightestWriteId(0),
+                                 catName("hive") {
   }
 
   virtual ~ShowCompactResponseElement() noexcept;
@@ -11904,6 +11996,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   int64_t txnId;
   int64_t commitTime;
   int64_t hightestWriteId;
+  std::string catName;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -11954,6 +12047,8 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   void __set_commitTime(const int64_t val);
 
   void __set_hightestWriteId(const int64_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -12044,6 +12139,10 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
     if (__isset.hightestWriteId != rhs.__isset.hightestWriteId)
       return false;
     else if (__isset.hightestWriteId && !(hightestWriteId == rhs.hightestWriteId))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -12255,9 +12354,10 @@ void swap(AbortCompactResponse &a, AbortCompactResponse &b);
 std::ostream& operator<<(std::ostream& out, const AbortCompactResponse& obj);
 
 typedef struct _GetLatestCommittedCompactionInfoRequest__isset {
-  _GetLatestCommittedCompactionInfoRequest__isset() : partitionnames(false), lastCompactionId(false) {}
+  _GetLatestCommittedCompactionInfoRequest__isset() : partitionnames(false), lastCompactionId(false), catName(true) {}
   bool partitionnames :1;
   bool lastCompactionId :1;
+  bool catName :1;
 } _GetLatestCommittedCompactionInfoRequest__isset;
 
 class GetLatestCommittedCompactionInfoRequest : public virtual ::apache::thrift::TBase {
@@ -12265,10 +12365,10 @@ class GetLatestCommittedCompactionInfoRequest : public virtual ::apache::thrift:
 
   GetLatestCommittedCompactionInfoRequest(const GetLatestCommittedCompactionInfoRequest&);
   GetLatestCommittedCompactionInfoRequest& operator=(const GetLatestCommittedCompactionInfoRequest&);
-  GetLatestCommittedCompactionInfoRequest() noexcept
-                                          : dbname(),
-                                            tablename(),
-                                            lastCompactionId(0) {
+  GetLatestCommittedCompactionInfoRequest() : dbname(),
+                                              tablename(),
+                                              lastCompactionId(0),
+                                              catName("hive") {
   }
 
   virtual ~GetLatestCommittedCompactionInfoRequest() noexcept;
@@ -12276,6 +12376,7 @@ class GetLatestCommittedCompactionInfoRequest : public virtual ::apache::thrift:
   std::string tablename;
   std::vector<std::string>  partitionnames;
   int64_t lastCompactionId;
+  std::string catName;
 
   _GetLatestCommittedCompactionInfoRequest__isset __isset;
 
@@ -12286,6 +12387,8 @@ class GetLatestCommittedCompactionInfoRequest : public virtual ::apache::thrift:
   void __set_partitionnames(const std::vector<std::string> & val);
 
   void __set_lastCompactionId(const int64_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const GetLatestCommittedCompactionInfoRequest & rhs) const
   {
@@ -12300,6 +12403,10 @@ class GetLatestCommittedCompactionInfoRequest : public virtual ::apache::thrift:
     if (__isset.lastCompactionId != rhs.__isset.lastCompactionId)
       return false;
     else if (__isset.lastCompactionId && !(lastCompactionId == rhs.lastCompactionId))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -12419,8 +12526,9 @@ void swap(FindNextCompactRequest &a, FindNextCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const FindNextCompactRequest& obj);
 
 typedef struct _AddDynamicPartitions__isset {
-  _AddDynamicPartitions__isset() : operationType(true) {}
+  _AddDynamicPartitions__isset() : operationType(true), catName(true) {}
   bool operationType :1;
+  bool catName :1;
 } _AddDynamicPartitions__isset;
 
 class AddDynamicPartitions : public virtual ::apache::thrift::TBase {
@@ -12428,12 +12536,12 @@ class AddDynamicPartitions : public virtual ::apache::thrift::TBase {
 
   AddDynamicPartitions(const AddDynamicPartitions&);
   AddDynamicPartitions& operator=(const AddDynamicPartitions&);
-  AddDynamicPartitions() noexcept
-                       : txnid(0),
-                         writeid(0),
-                         dbname(),
-                         tablename(),
-                         operationType((DataOperationType::type)5) {
+  AddDynamicPartitions() : txnid(0),
+                           writeid(0),
+                           dbname(),
+                           tablename(),
+                           operationType((DataOperationType::type)5),
+                           catName("hive") {
     operationType = (DataOperationType::type)5;
 
   }
@@ -12449,6 +12557,7 @@ class AddDynamicPartitions : public virtual ::apache::thrift::TBase {
    * @see DataOperationType
    */
   DataOperationType::type operationType;
+  std::string catName;
 
   _AddDynamicPartitions__isset __isset;
 
@@ -12463,6 +12572,8 @@ class AddDynamicPartitions : public virtual ::apache::thrift::TBase {
   void __set_partitionnames(const std::vector<std::string> & val);
 
   void __set_operationType(const DataOperationType::type val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const AddDynamicPartitions & rhs) const
   {
@@ -12479,6 +12590,10 @@ class AddDynamicPartitions : public virtual ::apache::thrift::TBase {
     if (__isset.operationType != rhs.__isset.operationType)
       return false;
     else if (__isset.operationType && !(operationType == rhs.operationType))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -13243,8 +13358,9 @@ void swap(FireEventResponse &a, FireEventResponse &b);
 std::ostream& operator<<(std::ostream& out, const FireEventResponse& obj);
 
 typedef struct _WriteNotificationLogRequest__isset {
-  _WriteNotificationLogRequest__isset() : partitionVals(false) {}
+  _WriteNotificationLogRequest__isset() : partitionVals(false), cat(true) {}
   bool partitionVals :1;
+  bool cat :1;
 } _WriteNotificationLogRequest__isset;
 
 class WriteNotificationLogRequest : public virtual ::apache::thrift::TBase {
@@ -13252,11 +13368,11 @@ class WriteNotificationLogRequest : public virtual ::apache::thrift::TBase {
 
   WriteNotificationLogRequest(const WriteNotificationLogRequest&);
   WriteNotificationLogRequest& operator=(const WriteNotificationLogRequest&);
-  WriteNotificationLogRequest() noexcept
-                              : txnId(0),
-                                writeId(0),
-                                db(),
-                                table() {
+  WriteNotificationLogRequest() : txnId(0),
+                                  writeId(0),
+                                  db(),
+                                  table(),
+                                  cat("hive") {
   }
 
   virtual ~WriteNotificationLogRequest() noexcept;
@@ -13266,6 +13382,7 @@ class WriteNotificationLogRequest : public virtual ::apache::thrift::TBase {
   std::string table;
   InsertEventRequestData fileInfo;
   std::vector<std::string>  partitionVals;
+  std::string cat;
 
   _WriteNotificationLogRequest__isset __isset;
 
@@ -13280,6 +13397,8 @@ class WriteNotificationLogRequest : public virtual ::apache::thrift::TBase {
   void __set_fileInfo(const InsertEventRequestData& val);
 
   void __set_partitionVals(const std::vector<std::string> & val);
+
+  void __set_cat(const std::string& val);
 
   bool operator == (const WriteNotificationLogRequest & rhs) const
   {
@@ -13296,6 +13415,10 @@ class WriteNotificationLogRequest : public virtual ::apache::thrift::TBase {
     if (__isset.partitionVals != rhs.__isset.partitionVals)
       return false;
     else if (__isset.partitionVals && !(partitionVals == rhs.partitionVals))
+      return false;
+    if (__isset.cat != rhs.__isset.cat)
+      return false;
+    else if (__isset.cat && !(cat == rhs.cat))
       return false;
     return true;
   }
@@ -21413,9 +21536,10 @@ void swap(Package &a, Package &b);
 std::ostream& operator<<(std::ostream& out, const Package& obj);
 
 typedef struct _GetAllWriteEventInfoRequest__isset {
-  _GetAllWriteEventInfoRequest__isset() : dbName(false), tableName(false) {}
+  _GetAllWriteEventInfoRequest__isset() : dbName(false), tableName(false), catName(true) {}
   bool dbName :1;
   bool tableName :1;
+  bool catName :1;
 } _GetAllWriteEventInfoRequest__isset;
 
 class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
@@ -21423,16 +21547,17 @@ class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
 
   GetAllWriteEventInfoRequest(const GetAllWriteEventInfoRequest&);
   GetAllWriteEventInfoRequest& operator=(const GetAllWriteEventInfoRequest&);
-  GetAllWriteEventInfoRequest() noexcept
-                              : txnId(0),
-                                dbName(),
-                                tableName() {
+  GetAllWriteEventInfoRequest() : txnId(0),
+                                  dbName(),
+                                  tableName(),
+                                  catName("hive") {
   }
 
   virtual ~GetAllWriteEventInfoRequest() noexcept;
   int64_t txnId;
   std::string dbName;
   std::string tableName;
+  std::string catName;
 
   _GetAllWriteEventInfoRequest__isset __isset;
 
@@ -21441,6 +21566,8 @@ class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
   void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const GetAllWriteEventInfoRequest & rhs) const
   {
@@ -21453,6 +21580,10 @@ class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
     if (__isset.tableName != rhs.__isset.tableName)
       return false;
     else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }

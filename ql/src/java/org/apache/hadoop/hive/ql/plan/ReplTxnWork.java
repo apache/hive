@@ -38,6 +38,7 @@ import java.util.List;
 public class ReplTxnWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String replPolicy;
+  private String catName;
   private String dbName;
   private String tableName;
   private List<String> partNames;
@@ -61,9 +62,10 @@ public class ReplTxnWork implements Serializable {
 
   OperationType operation;
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
+  public ReplTxnWork(String replPolicy, String catName, String dbName, String tableName, List<Long> txnIds, OperationType type,
                      List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec) {
     this.txnIds = txnIds;
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.operation = type;
@@ -74,45 +76,46 @@ public class ReplTxnWork implements Serializable {
     this.replLastIdInfo = null;
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
+  public ReplTxnWork(String replPolicy, String catName, String dbName, String tableName, List<Long> txnIds, OperationType type,
                      ReplicationSpec replicationSpec) {
-    this(replPolicy, dbName, tableName, txnIds, type, null, replicationSpec);
+    this(replPolicy, catName, dbName, tableName, txnIds, type, null, replicationSpec);
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
+  public ReplTxnWork(String replPolicy, String catName, String dbName, String tableName, List<Long> txnIds, OperationType type,
                      ReplicationSpec replicationSpec, String dumpDirectory, ReplicationMetricCollector metricCollector) {
-    this(replPolicy, dbName, tableName, txnIds, type, null, replicationSpec);
+    this(replPolicy, catName, dbName, tableName, txnIds, type, null, replicationSpec);
     this.dumpDirectory = dumpDirectory;
     this.metricCollector = metricCollector;
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId,
+  public ReplTxnWork(String replPolicy, String catName, String dbName, String tableName, Long txnId,
                      OperationType type, ReplicationSpec replicationSpec) {
-    this(replPolicy, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
+    this(replPolicy, catName, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId,
+  public ReplTxnWork(String replPolicy, String catName, String dbName, String tableName, Long txnId,
                      OperationType type, ReplicationSpec replicationSpec,
                      String dumpDirectory, ReplicationMetricCollector metricCollector) {
-    this(replPolicy, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
+    this(replPolicy, catName, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
     this.dumpDirectory = dumpDirectory;
     this.metricCollector = metricCollector;
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, OperationType type,
+  public ReplTxnWork(String replPolicy, String catName, String dbName, String tableName, OperationType type,
                      List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec) {
-    this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
+    this(replPolicy, catName, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, OperationType type,
+  public ReplTxnWork(String replPolicy, String catName, String dbName, String tableName, OperationType type,
                      List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec,
                      String dumpDirectory, ReplicationMetricCollector metricCollector) {
-    this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
+    this(replPolicy, catName, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
     this.dumpDirectory = dumpDirectory;
     this.metricCollector = metricCollector;
   }
-  public ReplTxnWork(String dbName, String tableName, List<String> partNames,
+  public ReplTxnWork(String catName, String dbName, String tableName, List<String> partNames,
                      String validWriteIdList, OperationType type) {
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.partNames = partNames;
@@ -120,9 +123,10 @@ public class ReplTxnWork implements Serializable {
     this.operation = type;
   }
 
-  public ReplTxnWork(String dbName, String tableName, List<String> partNames,
+  public ReplTxnWork(String catName, String dbName, String tableName, List<String> partNames,
                      String validWriteIdList, OperationType type, String dumpDirectory,
                      ReplicationMetricCollector metricCollector) {
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.partNames = partNames;
@@ -141,6 +145,10 @@ public class ReplTxnWork implements Serializable {
 
   public List<Long> getTxnIds() {
     return txnIds;
+  }
+
+  public String getCatName() {
+    return catName;
   }
 
   public String getDbName() {

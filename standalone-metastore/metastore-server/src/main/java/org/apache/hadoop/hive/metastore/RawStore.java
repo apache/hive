@@ -2028,7 +2028,17 @@ public interface RawStore extends Configurable {
    * @param dbName the name of db for which dump is being taken
    * @param tableName the name of the table for which the dump is being taken
    */
+  @Deprecated
   List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
+
+  /**
+   * Get all write events for a specific transaction .
+   * @param txnId get all the events done by this transaction
+   * @param catName the name of catalog for which dump is being taken
+   * @param dbName the name of db for which dump is being taken
+   * @param tableName the name of the table for which the dump is being taken
+   */
+  List<WriteEventInfo> getAllWriteEventInfo(long txnId, String catName, String dbName, String tableName) throws MetaException;
 
   /**
    * Checking if table is part of a materialized view.

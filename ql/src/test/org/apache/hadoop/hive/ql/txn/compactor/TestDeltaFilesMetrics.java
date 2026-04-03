@@ -121,7 +121,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
 
     components.add(createLockComponent(dbName, tblName, partName));
 
-    burnThroughTransactions(dbName, tblName, 23);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 23);
     long txnId = openTxn();
 
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -129,7 +129,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    long writeId = allocateWriteId(dbName, tblName, txnId);
+    long writeId = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, txnId);
     Assert.assertEquals(24, writeId);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
@@ -169,7 +169,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     addDeltaFile(t, p, 27L, 28L, 20);
     addDeltaFile(t, p, 29L, 30L, 2);
 
-    burnThroughTransactions(dbName, tblName, 30);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 30);
     txnId = openTxn();
 
     req = new LockRequest(components, "me", "localhost");
@@ -177,7 +177,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    writeId = allocateWriteId(dbName, tblName, txnId);
+    writeId = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, txnId);
     Assert.assertEquals(55, writeId);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
     // Change these params to initiate MINOR compaction
@@ -277,7 +277,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     components.add(createLockComponent(dbName, tblName, part2Name));
     components.add(createLockComponent(dbName, tblName, part3Name));
 
-    burnThroughTransactions(dbName, tblName, 19);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 19);
     long txnId = openTxn();
 
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -285,7 +285,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    allocateWriteId(dbName, tblName, txnId);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, txnId);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
@@ -360,7 +360,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     addDeltaFile(t, null, 23L, 24L, 20);
 
     components.add(createLockComponent(dbName, tblName, null));
-    burnThroughTransactions(dbName, tblName, 24);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 24);
     long txnId = openTxn();
 
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -368,7 +368,7 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    long writeId = allocateWriteId(dbName, tblName, txnId);
+    long writeId = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, txnId);
     Assert.assertEquals(25, writeId);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 

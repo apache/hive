@@ -3049,9 +3049,15 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.cleanWriteNotificationEvents(olderThan);
   }
 
+  @Deprecated
   @Override public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName)
       throws MetaException {
-    return rawStore.getAllWriteEventInfo(txnId, dbName, tableName);
+    return getAllWriteEventInfo(txnId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName);
+  }
+
+  @Override public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String catName, String dbName, String tableName)
+      throws MetaException {
+    return rawStore.getAllWriteEventInfo(txnId, catName, dbName, tableName);
   }
 
   static boolean isNotInBlackList(String catName, String dbName, String tblName) {

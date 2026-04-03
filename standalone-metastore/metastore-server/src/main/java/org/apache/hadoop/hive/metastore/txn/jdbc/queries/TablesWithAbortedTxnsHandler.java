@@ -35,9 +35,9 @@ public class TablesWithAbortedTxnsHandler implements QueryHandler<Set<String>> {
 
   //language=SQL
   private static final String SELECT_TABLES_WITH_X_ABORTED_TXNS =
-      "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
+      "SELECT \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = :abortedState " +
-          "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > :txnThreshold";
+          "GROUP BY \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > :txnThreshold";
   
   private final int txnThreshold;
 
@@ -61,8 +61,8 @@ public class TablesWithAbortedTxnsHandler implements QueryHandler<Set<String>> {
   public Set<String> extractData(ResultSet rs) throws SQLException, DataAccessException {
     Set<String> resourceNames = new TreeSet<>();
     while (rs.next()) {
-      String resourceName = rs.getString(1) + "." + rs.getString(2);
-      String partName = rs.getString(3);
+      String resourceName = rs.getString(1) + "." + rs.getString(2) + "." + rs.getString(3);
+      String partName = rs.getString(4);
       resourceName = partName != null ? resourceName + "#" + partName : resourceName;
       resourceNames.add(resourceName);
     }

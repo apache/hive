@@ -60,6 +60,11 @@ class AllocateTableWriteIdsRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        7 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -86,6 +91,10 @@ class AllocateTableWriteIdsRequest
      * @var bool
      */
     public $reallocate = false;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -107,6 +116,9 @@ class AllocateTableWriteIdsRequest
             }
             if (isset($vals['reallocate'])) {
                 $this->reallocate = $vals['reallocate'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -191,6 +203,13 @@ class AllocateTableWriteIdsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -247,6 +266,11 @@ class AllocateTableWriteIdsRequest
         if ($this->reallocate !== null) {
             $xfer += $output->writeFieldBegin('reallocate', TType::BOOL, 6);
             $xfer += $output->writeBool($this->reallocate);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 7);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

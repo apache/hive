@@ -196,7 +196,7 @@ public class Initiator extends MetaStoreCompactorThread {
   protected String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
       throws IOException, InterruptedException {
     //Figure out who we should run the file operations as
-    String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
+    String fullTableName = TxnUtils.getFullTableName(t.getCatName(), t.getDbName(), t.getTableName());
     StorageDescriptor sd = CompactorUtil.resolveStorageDescriptor(t, p);
 
     String user = cache.get(fullTableName);

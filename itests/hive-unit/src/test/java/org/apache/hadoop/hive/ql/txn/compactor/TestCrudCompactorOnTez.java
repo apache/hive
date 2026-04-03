@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -863,7 +864,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable(dbName, tblName);
 
     //compute stats before compaction
-    CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
+    CompactionInfo ci = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, null, CompactionType.MAJOR);
     new StatsUpdater().gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
@@ -3170,7 +3171,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable(dbName, tblName);
 
     //compute stats before compaction
-    CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", compactionType);
+    CompactionInfo ci = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, "bkt=1", compactionType);
     new StatsUpdater().gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 

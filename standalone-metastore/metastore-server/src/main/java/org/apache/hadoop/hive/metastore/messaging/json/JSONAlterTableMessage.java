@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAlterTableMessage extends AlterTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjBeforeJson, tableObjAfterJson;
+  String server, servicePrincipal, cat, db, table, tableType, tableObjBeforeJson, tableObjAfterJson;
 
   @JsonProperty
   String isTruncateOp;
@@ -49,6 +49,7 @@ public class JSONAlterTableMessage extends AlterTableMessage {
       boolean isTruncateOp, Long writeId, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = tableObjBefore.getCatName();
     this.db = tableObjBefore.getDbName();
     this.table = tableObjBefore.getTableName();
     this.tableType = tableObjBefore.getTableType();
@@ -72,6 +73,11 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

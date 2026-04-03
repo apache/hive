@@ -44,10 +44,10 @@ import java.util.stream.Collectors;
 public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Object[]> {
   
   private final LockRequest lockRequest;
-  private final Map<Pair<String, String>, Long> writeIds;
+  private final Map<Pair<String, Pair<String, String>>, Long> writeIds;
   private final AddDynamicPartitions dynamicPartitions;
 
-  public InsertTxnComponentsCommand(LockRequest lockRequest, Map<Pair<String, String>, Long> writeIds) {
+  public InsertTxnComponentsCommand(LockRequest lockRequest, Map<Pair<String, Pair<String, String>>, Long> writeIds) {
     this.lockRequest = lockRequest;
     this.writeIds = writeIds;
     this.dynamicPartitions = null;
@@ -62,8 +62,8 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
     return "INSERT INTO \"TXN_COMPONENTS\" (" +
-        "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
-        " VALUES (?, ?, ?, ?, ?, ?)";
+        "\"TC_TXNID\", \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
+        " VALUES (?, ?, ?, ?, ?, ?, ?)";
   }
 
   @Override
@@ -79,7 +79,8 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
       ps.setString(3, (String)argument[2]);
       ps.setString(4, (String)argument[3]);
       ps.setString(5, (String)argument[4]);
-      ps.setObject(6, argument[5], Types.BIGINT);
+      ps.setString(6, (String)argument[5]);
+      ps.setObject(7, argument[6], Types.BIGINT);
     };
   }
 
@@ -105,6 +106,7 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
       Function<LockComponent, Pair<String, String>> getWriteIdKey = lockComponent ->
           Pair.of(StringUtils.lowerCase(lockComponent.getDbname()), StringUtils.lowerCase(lockComponent.getTablename()));
 
+      String catName = StringUtils.lowerCase(lc.getCatName());
       String dbName = StringUtils.lowerCase(lc.getDbname());
       String tblName = StringUtils.lowerCase(lc.getTablename());
       String partName = TxnUtils.normalizePartitionCase(lc.getPartitionname());
@@ -127,7 +129,7 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
       }
       Long writeId = writeIds.get(writeIdKey);
 
-      params.add(new Object[]{lockRequest.getTxnid(), dbName, tblName, partName, opType.getSqlConst(), writeId});
+      params.add(new Object[]{lockRequest.getTxnid(), catName, dbName, tblName, partName, opType.getSqlConst(), writeId});
       alreadyAddedTables.add(writeIdKey);
     }
     return params;    
@@ -145,6 +147,7 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
     for (String partName : dynamicPartitions.getPartitionnames()) {
       params.add(new Object[]{
           dynamicPartitions.getTxnid(),
+          dynamicPartitions.getCatName().toLowerCase(),
           dynamicPartitions.getDbname().toLowerCase(),
           dynamicPartitions.getTablename().toLowerCase(),
           partName,

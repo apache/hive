@@ -23315,6 +23315,11 @@ void WriteEventInfo::__set_partitionObj(const std::string& val) {
   this->partitionObj = val;
 __isset.partitionObj = true;
 }
+
+void WriteEventInfo::__set_catalog(const std::string& val) {
+  this->catalog = val;
+__isset.catalog = true;
+}
 std::ostream& operator<<(std::ostream& out, const WriteEventInfo& obj)
 {
   obj.printTo(out);
@@ -23403,6 +23408,14 @@ uint32_t WriteEventInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catalog);
+          this->__isset.catalog = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -23459,6 +23472,11 @@ uint32_t WriteEventInfo::write(::apache::thrift::protocol::TProtocol* oprot) con
     xfer += oprot->writeString(this->partitionObj);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catalog) {
+    xfer += oprot->writeFieldBegin("catalog", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->catalog);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -23473,6 +23491,7 @@ void swap(WriteEventInfo &a, WriteEventInfo &b) {
   swap(a.partition, b.partition);
   swap(a.tableObj, b.tableObj);
   swap(a.partitionObj, b.partitionObj);
+  swap(a.catalog, b.catalog);
   swap(a.__isset, b.__isset);
 }
 
@@ -23484,6 +23503,7 @@ WriteEventInfo::WriteEventInfo(const WriteEventInfo& other904) {
   partition = other904.partition;
   tableObj = other904.tableObj;
   partitionObj = other904.partitionObj;
+  catalog = other904.catalog;
   __isset = other904.__isset;
 }
 WriteEventInfo& WriteEventInfo::operator=(const WriteEventInfo& other905) {
@@ -23494,6 +23514,7 @@ WriteEventInfo& WriteEventInfo::operator=(const WriteEventInfo& other905) {
   partition = other905.partition;
   tableObj = other905.tableObj;
   partitionObj = other905.partitionObj;
+  catalog = other905.catalog;
   __isset = other905.__isset;
   return *this;
 }
@@ -23507,6 +23528,7 @@ void WriteEventInfo::printTo(std::ostream& out) const {
   out << ", " << "partition="; (__isset.partition ? (out << to_string(partition)) : (out << "<null>"));
   out << ", " << "tableObj="; (__isset.tableObj ? (out << to_string(tableObj)) : (out << "<null>"));
   out << ", " << "partitionObj="; (__isset.partitionObj ? (out << to_string(partitionObj)) : (out << "<null>"));
+  out << ", " << "catalog="; (__isset.catalog ? (out << to_string(catalog)) : (out << "<null>"));
   out << ")";
 }
 
@@ -24153,6 +24175,11 @@ void ReplTblWriteIdStateRequest::__set_partNames(const std::vector<std::string> 
   this->partNames = val;
 __isset.partNames = true;
 }
+
+void ReplTblWriteIdStateRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const ReplTblWriteIdStateRequest& obj)
 {
   obj.printTo(out);
@@ -24246,6 +24273,14 @@ uint32_t ReplTblWriteIdStateRequest::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -24306,6 +24341,11 @@ uint32_t ReplTblWriteIdStateRequest::write(::apache::thrift::protocol::TProtocol
     }
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -24319,6 +24359,7 @@ void swap(ReplTblWriteIdStateRequest &a, ReplTblWriteIdStateRequest &b) {
   swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
   swap(a.partNames, b.partNames);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -24329,6 +24370,7 @@ ReplTblWriteIdStateRequest::ReplTblWriteIdStateRequest(const ReplTblWriteIdState
   dbName = other931.dbName;
   tableName = other931.tableName;
   partNames = other931.partNames;
+  catName = other931.catName;
   __isset = other931.__isset;
 }
 ReplTblWriteIdStateRequest& ReplTblWriteIdStateRequest::operator=(const ReplTblWriteIdStateRequest& other932) {
@@ -24338,6 +24380,7 @@ ReplTblWriteIdStateRequest& ReplTblWriteIdStateRequest::operator=(const ReplTblW
   dbName = other932.dbName;
   tableName = other932.tableName;
   partNames = other932.partNames;
+  catName = other932.catName;
   __isset = other932.__isset;
   return *this;
 }
@@ -24350,6 +24393,7 @@ void ReplTblWriteIdStateRequest::printTo(std::ostream& out) const {
   out << ", " << "dbName=" << to_string(dbName);
   out << ", " << "tableName=" << to_string(tableName);
   out << ", " << "partNames="; (__isset.partNames ? (out << to_string(partNames)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -24977,6 +25021,11 @@ void AllocateTableWriteIdsRequest::__set_reallocate(const bool val) {
   this->reallocate = val;
 __isset.reallocate = true;
 }
+
+void AllocateTableWriteIdsRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsRequest& obj)
 {
   obj.printTo(out);
@@ -25079,6 +25128,14 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -25144,6 +25201,11 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
     xfer += oprot->writeBool(this->reallocate);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -25157,6 +25219,7 @@ void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b) {
   swap(a.replPolicy, b.replPolicy);
   swap(a.srcTxnToWriteIdList, b.srcTxnToWriteIdList);
   swap(a.reallocate, b.reallocate);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -25167,6 +25230,7 @@ AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWr
   replPolicy = other971.replPolicy;
   srcTxnToWriteIdList = other971.srcTxnToWriteIdList;
   reallocate = other971.reallocate;
+  catName = other971.catName;
   __isset = other971.__isset;
 }
 AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other972) {
@@ -25176,6 +25240,7 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   replPolicy = other972.replPolicy;
   srcTxnToWriteIdList = other972.srcTxnToWriteIdList;
   reallocate = other972.reallocate;
+  catName = other972.catName;
   __isset = other972.__isset;
   return *this;
 }
@@ -25188,6 +25253,7 @@ void AllocateTableWriteIdsRequest::printTo(std::ostream& out) const {
   out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
   out << ", " << "srcTxnToWriteIdList="; (__isset.srcTxnToWriteIdList ? (out << to_string(srcTxnToWriteIdList)) : (out << "<null>"));
   out << ", " << "reallocate="; (__isset.reallocate ? (out << to_string(reallocate)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -25315,6 +25381,11 @@ void MaxAllocatedTableWriteIdRequest::__set_dbName(const std::string& val) {
 void MaxAllocatedTableWriteIdRequest::__set_tableName(const std::string& val) {
   this->tableName = val;
 }
+
+void MaxAllocatedTableWriteIdRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const MaxAllocatedTableWriteIdRequest& obj)
 {
   obj.printTo(out);
@@ -25361,6 +25432,14 @@ uint32_t MaxAllocatedTableWriteIdRequest::read(::apache::thrift::protocol::TProt
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -25390,6 +25469,11 @@ uint32_t MaxAllocatedTableWriteIdRequest::write(::apache::thrift::protocol::TPro
   xfer += oprot->writeString(this->tableName);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -25399,15 +25483,21 @@ void swap(MaxAllocatedTableWriteIdRequest &a, MaxAllocatedTableWriteIdRequest &b
   using ::std::swap;
   swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
+  swap(a.catName, b.catName);
+  swap(a.__isset, b.__isset);
 }
 
 MaxAllocatedTableWriteIdRequest::MaxAllocatedTableWriteIdRequest(const MaxAllocatedTableWriteIdRequest& other981) {
   dbName = other981.dbName;
   tableName = other981.tableName;
+  catName = other981.catName;
+  __isset = other981.__isset;
 }
 MaxAllocatedTableWriteIdRequest& MaxAllocatedTableWriteIdRequest::operator=(const MaxAllocatedTableWriteIdRequest& other982) {
   dbName = other982.dbName;
   tableName = other982.tableName;
+  catName = other982.catName;
+  __isset = other982.__isset;
   return *this;
 }
 void MaxAllocatedTableWriteIdRequest::printTo(std::ostream& out) const {
@@ -25415,6 +25505,7 @@ void MaxAllocatedTableWriteIdRequest::printTo(std::ostream& out) const {
   out << "MaxAllocatedTableWriteIdRequest(";
   out << "dbName=" << to_string(dbName);
   out << ", " << "tableName=" << to_string(tableName);
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -25526,6 +25617,11 @@ void SeedTableWriteIdsRequest::__set_tableName(const std::string& val) {
 void SeedTableWriteIdsRequest::__set_seedWriteId(const int64_t val) {
   this->seedWriteId = val;
 }
+
+void SeedTableWriteIdsRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const SeedTableWriteIdsRequest& obj)
 {
   obj.printTo(out);
@@ -25581,6 +25677,14 @@ uint32_t SeedTableWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* i
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -25616,6 +25720,11 @@ uint32_t SeedTableWriteIdsRequest::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeI64(this->seedWriteId);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -25626,17 +25735,23 @@ void swap(SeedTableWriteIdsRequest &a, SeedTableWriteIdsRequest &b) {
   swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
   swap(a.seedWriteId, b.seedWriteId);
+  swap(a.catName, b.catName);
+  swap(a.__isset, b.__isset);
 }
 
 SeedTableWriteIdsRequest::SeedTableWriteIdsRequest(const SeedTableWriteIdsRequest& other985) {
   dbName = other985.dbName;
   tableName = other985.tableName;
   seedWriteId = other985.seedWriteId;
+  catName = other985.catName;
+  __isset = other985.__isset;
 }
 SeedTableWriteIdsRequest& SeedTableWriteIdsRequest::operator=(const SeedTableWriteIdsRequest& other986) {
   dbName = other986.dbName;
   tableName = other986.tableName;
   seedWriteId = other986.seedWriteId;
+  catName = other986.catName;
+  __isset = other986.__isset;
   return *this;
 }
 void SeedTableWriteIdsRequest::printTo(std::ostream& out) const {
@@ -25645,6 +25760,7 @@ void SeedTableWriteIdsRequest::printTo(std::ostream& out) const {
   out << "dbName=" << to_string(dbName);
   out << ", " << "tableName=" << to_string(tableName);
   out << ", " << "seedWriteId=" << to_string(seedWriteId);
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -28042,6 +28158,11 @@ void CompactionRequest::__set_orderByClause(const std::string& val) {
   this->orderByClause = val;
 __isset.orderByClause = true;
 }
+
+void CompactionRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj)
 {
   obj.printTo(out);
@@ -28178,6 +28299,14 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -28262,6 +28391,11 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeString(this->orderByClause);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 12);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28280,6 +28414,7 @@ void swap(CompactionRequest &a, CompactionRequest &b) {
   swap(a.poolName, b.poolName);
   swap(a.numberOfBuckets, b.numberOfBuckets);
   swap(a.orderByClause, b.orderByClause);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -28295,6 +28430,7 @@ CompactionRequest::CompactionRequest(const CompactionRequest& other1054) {
   poolName = other1054.poolName;
   numberOfBuckets = other1054.numberOfBuckets;
   orderByClause = other1054.orderByClause;
+  catName = other1054.catName;
   __isset = other1054.__isset;
 }
 CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other1055) {
@@ -28309,6 +28445,7 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other10
   poolName = other1055.poolName;
   numberOfBuckets = other1055.numberOfBuckets;
   orderByClause = other1055.orderByClause;
+  catName = other1055.catName;
   __isset = other1055.__isset;
   return *this;
 }
@@ -28326,6 +28463,7 @@ void CompactionRequest::printTo(std::ostream& out) const {
   out << ", " << "poolName="; (__isset.poolName ? (out << to_string(poolName)) : (out << "<null>"));
   out << ", " << "numberOfBuckets="; (__isset.numberOfBuckets ? (out << to_string(numberOfBuckets)) : (out << "<null>"));
   out << ", " << "orderByClause="; (__isset.orderByClause ? (out << to_string(orderByClause)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -28423,6 +28561,11 @@ __isset.numberOfBuckets = true;
 void CompactionInfoStruct::__set_orderByClause(const std::string& val) {
   this->orderByClause = val;
 __isset.orderByClause = true;
+}
+
+void CompactionInfoStruct::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
 }
 std::ostream& operator<<(std::ostream& out, const CompactionInfoStruct& obj)
 {
@@ -28610,6 +28753,14 @@ uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 20:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -28726,6 +28877,11 @@ uint32_t CompactionInfoStruct::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeString(this->orderByClause);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 20);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28752,6 +28908,7 @@ void swap(CompactionInfoStruct &a, CompactionInfoStruct &b) {
   swap(a.poolname, b.poolname);
   swap(a.numberOfBuckets, b.numberOfBuckets);
   swap(a.orderByClause, b.orderByClause);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -28775,6 +28932,7 @@ CompactionInfoStruct::CompactionInfoStruct(const CompactionInfoStruct& other1057
   poolname = other1057.poolname;
   numberOfBuckets = other1057.numberOfBuckets;
   orderByClause = other1057.orderByClause;
+  catName = other1057.catName;
   __isset = other1057.__isset;
 }
 CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct& other1058) {
@@ -28797,6 +28955,7 @@ CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct
   poolname = other1058.poolname;
   numberOfBuckets = other1058.numberOfBuckets;
   orderByClause = other1058.orderByClause;
+  catName = other1058.catName;
   __isset = other1058.__isset;
   return *this;
 }
@@ -28822,6 +28981,7 @@ void CompactionInfoStruct::printTo(std::ostream& out) const {
   out << ", " << "poolname="; (__isset.poolname ? (out << to_string(poolname)) : (out << "<null>"));
   out << ", " << "numberOfBuckets="; (__isset.numberOfBuckets ? (out << to_string(numberOfBuckets)) : (out << "<null>"));
   out << ", " << "orderByClause="; (__isset.orderByClause ? (out << to_string(orderByClause)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -28952,6 +29112,11 @@ void CompactionMetricsDataStruct::__set_version(const int32_t val) {
 void CompactionMetricsDataStruct::__set_threshold(const int32_t val) {
   this->threshold = val;
 }
+
+void CompactionMetricsDataStruct::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataStruct& obj)
 {
   obj.printTo(out);
@@ -29044,6 +29209,14 @@ uint32_t CompactionMetricsDataStruct::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -29102,6 +29275,11 @@ uint32_t CompactionMetricsDataStruct::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeI32(this->threshold);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -29116,6 +29294,7 @@ void swap(CompactionMetricsDataStruct &a, CompactionMetricsDataStruct &b) {
   swap(a.metricvalue, b.metricvalue);
   swap(a.version, b.version);
   swap(a.threshold, b.threshold);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -29127,6 +29306,7 @@ CompactionMetricsDataStruct::CompactionMetricsDataStruct(const CompactionMetrics
   metricvalue = other1062.metricvalue;
   version = other1062.version;
   threshold = other1062.threshold;
+  catName = other1062.catName;
   __isset = other1062.__isset;
 }
 CompactionMetricsDataStruct& CompactionMetricsDataStruct::operator=(const CompactionMetricsDataStruct& other1063) {
@@ -29137,6 +29317,7 @@ CompactionMetricsDataStruct& CompactionMetricsDataStruct::operator=(const Compac
   metricvalue = other1063.metricvalue;
   version = other1063.version;
   threshold = other1063.threshold;
+  catName = other1063.catName;
   __isset = other1063.__isset;
   return *this;
 }
@@ -29150,6 +29331,7 @@ void CompactionMetricsDataStruct::printTo(std::ostream& out) const {
   out << ", " << "metricvalue=" << to_string(metricvalue);
   out << ", " << "version=" << to_string(version);
   out << ", " << "threshold=" << to_string(threshold);
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -29268,6 +29450,11 @@ __isset.partitionName = true;
 void CompactionMetricsDataRequest::__set_type(const CompactionMetricsMetricType::type val) {
   this->type = val;
 }
+
+void CompactionMetricsDataRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataRequest& obj)
 {
   obj.printTo(out);
@@ -29333,6 +29520,14 @@ uint32_t CompactionMetricsDataRequest::read(::apache::thrift::protocol::TProtoco
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -29373,6 +29568,11 @@ uint32_t CompactionMetricsDataRequest::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeI32(static_cast<int32_t>(this->type));
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -29384,6 +29584,7 @@ void swap(CompactionMetricsDataRequest &a, CompactionMetricsDataRequest &b) {
   swap(a.tblName, b.tblName);
   swap(a.partitionName, b.partitionName);
   swap(a.type, b.type);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -29392,6 +29593,7 @@ CompactionMetricsDataRequest::CompactionMetricsDataRequest(const CompactionMetri
   tblName = other1067.tblName;
   partitionName = other1067.partitionName;
   type = other1067.type;
+  catName = other1067.catName;
   __isset = other1067.__isset;
 }
 CompactionMetricsDataRequest& CompactionMetricsDataRequest::operator=(const CompactionMetricsDataRequest& other1068) {
@@ -29399,6 +29601,7 @@ CompactionMetricsDataRequest& CompactionMetricsDataRequest::operator=(const Comp
   tblName = other1068.tblName;
   partitionName = other1068.partitionName;
   type = other1068.type;
+  catName = other1068.catName;
   __isset = other1068.__isset;
   return *this;
 }
@@ -29409,6 +29612,7 @@ void CompactionMetricsDataRequest::printTo(std::ostream& out) const {
   out << ", " << "tblName=" << to_string(tblName);
   out << ", " << "partitionName="; (__isset.partitionName ? (out << to_string(partitionName)) : (out << "<null>"));
   out << ", " << "type=" << to_string(type);
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -29624,6 +29828,11 @@ void ShowCompactRequest::__set_order(const std::string& val) {
   this->order = val;
 __isset.order = true;
 }
+
+void ShowCompactRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj)
 {
   obj.printTo(out);
@@ -29726,6 +29935,14 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -29788,6 +30005,11 @@ uint32_t ShowCompactRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->order);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 10);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -29804,6 +30026,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b) {
   swap(a.state, b.state);
   swap(a.limit, b.limit);
   swap(a.order, b.order);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -29817,6 +30040,7 @@ ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other1072) {
   state = other1072.state;
   limit = other1072.limit;
   order = other1072.order;
+  catName = other1072.catName;
   __isset = other1072.__isset;
 }
 ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other1073) {
@@ -29829,6 +30053,7 @@ ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& othe
   state = other1073.state;
   limit = other1073.limit;
   order = other1073.order;
+  catName = other1073.catName;
   __isset = other1073.__isset;
   return *this;
 }
@@ -29844,6 +30069,7 @@ void ShowCompactRequest::printTo(std::ostream& out) const {
   out << ", " << "state="; (__isset.state ? (out << to_string(state)) : (out << "<null>"));
   out << ", " << "limit="; (__isset.limit ? (out << to_string(limit)) : (out << "<null>"));
   out << ", " << "order="; (__isset.order ? (out << to_string(order)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -29966,6 +30192,11 @@ __isset.commitTime = true;
 void ShowCompactResponseElement::__set_hightestWriteId(const int64_t val) {
   this->hightestWriteId = val;
 __isset.hightestWriteId = true;
+}
+
+void ShowCompactResponseElement::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
 }
 std::ostream& operator<<(std::ostream& out, const ShowCompactResponseElement& obj)
 {
@@ -30193,6 +30424,14 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 25:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -30334,6 +30573,11 @@ uint32_t ShowCompactResponseElement::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeI64(this->hightestWriteId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 25);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -30365,6 +30609,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.txnId, b.txnId);
   swap(a.commitTime, b.commitTime);
   swap(a.hightestWriteId, b.hightestWriteId);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -30393,6 +30638,7 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   txnId = other1075.txnId;
   commitTime = other1075.commitTime;
   hightestWriteId = other1075.hightestWriteId;
+  catName = other1075.catName;
   __isset = other1075.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other1076) {
@@ -30420,6 +30666,7 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   txnId = other1076.txnId;
   commitTime = other1076.commitTime;
   hightestWriteId = other1076.hightestWriteId;
+  catName = other1076.catName;
   __isset = other1076.__isset;
   return *this;
 }
@@ -30450,6 +30697,7 @@ void ShowCompactResponseElement::printTo(std::ostream& out) const {
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
   out << ", " << "commitTime="; (__isset.commitTime ? (out << to_string(commitTime)) : (out << "<null>"));
   out << ", " << "hightestWriteId="; (__isset.hightestWriteId ? (out << to_string(hightestWriteId)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -31001,6 +31249,11 @@ void GetLatestCommittedCompactionInfoRequest::__set_lastCompactionId(const int64
   this->lastCompactionId = val;
 __isset.lastCompactionId = true;
 }
+
+void GetLatestCommittedCompactionInfoRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoRequest& obj)
 {
   obj.printTo(out);
@@ -31075,6 +31328,14 @@ uint32_t GetLatestCommittedCompactionInfoRequest::read(::apache::thrift::protoco
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -31122,6 +31383,11 @@ uint32_t GetLatestCommittedCompactionInfoRequest::write(::apache::thrift::protoc
     xfer += oprot->writeI64(this->lastCompactionId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -31133,6 +31399,7 @@ void swap(GetLatestCommittedCompactionInfoRequest &a, GetLatestCommittedCompacti
   swap(a.tablename, b.tablename);
   swap(a.partitionnames, b.partitionnames);
   swap(a.lastCompactionId, b.lastCompactionId);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -31141,6 +31408,7 @@ GetLatestCommittedCompactionInfoRequest::GetLatestCommittedCompactionInfoRequest
   tablename = other1111.tablename;
   partitionnames = other1111.partitionnames;
   lastCompactionId = other1111.lastCompactionId;
+  catName = other1111.catName;
   __isset = other1111.__isset;
 }
 GetLatestCommittedCompactionInfoRequest& GetLatestCommittedCompactionInfoRequest::operator=(const GetLatestCommittedCompactionInfoRequest& other1112) {
@@ -31148,6 +31416,7 @@ GetLatestCommittedCompactionInfoRequest& GetLatestCommittedCompactionInfoRequest
   tablename = other1112.tablename;
   partitionnames = other1112.partitionnames;
   lastCompactionId = other1112.lastCompactionId;
+  catName = other1112.catName;
   __isset = other1112.__isset;
   return *this;
 }
@@ -31158,6 +31427,7 @@ void GetLatestCommittedCompactionInfoRequest::printTo(std::ostream& out) const {
   out << ", " << "tablename=" << to_string(tablename);
   out << ", " << "partitionnames="; (__isset.partitionnames ? (out << to_string(partitionnames)) : (out << "<null>"));
   out << ", " << "lastCompactionId="; (__isset.lastCompactionId ? (out << to_string(lastCompactionId)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -31440,6 +31710,11 @@ void AddDynamicPartitions::__set_operationType(const DataOperationType::type val
   this->operationType = val;
 __isset.operationType = true;
 }
+
+void AddDynamicPartitions::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const AddDynamicPartitions& obj)
 {
   obj.printTo(out);
@@ -31535,6 +31810,14 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -31595,6 +31878,11 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeI32(static_cast<int32_t>(this->operationType));
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -31608,6 +31896,7 @@ void swap(AddDynamicPartitions &a, AddDynamicPartitions &b) {
   swap(a.tablename, b.tablename);
   swap(a.partitionnames, b.partitionnames);
   swap(a.operationType, b.operationType);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -31618,6 +31907,7 @@ AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other1130
   tablename = other1130.tablename;
   partitionnames = other1130.partitionnames;
   operationType = other1130.operationType;
+  catName = other1130.catName;
   __isset = other1130.__isset;
 }
 AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions& other1131) {
@@ -31627,6 +31917,7 @@ AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions
   tablename = other1131.tablename;
   partitionnames = other1131.partitionnames;
   operationType = other1131.operationType;
+  catName = other1131.catName;
   __isset = other1131.__isset;
   return *this;
 }
@@ -31639,6 +31930,7 @@ void AddDynamicPartitions::printTo(std::ostream& out) const {
   out << ", " << "tablename=" << to_string(tablename);
   out << ", " << "partitionnames=" << to_string(partitionnames);
   out << ", " << "operationType="; (__isset.operationType ? (out << to_string(operationType)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -33804,6 +34096,11 @@ void WriteNotificationLogRequest::__set_partitionVals(const std::vector<std::str
   this->partitionVals = val;
 __isset.partitionVals = true;
 }
+
+void WriteNotificationLogRequest::__set_cat(const std::string& val) {
+  this->cat = val;
+__isset.cat = true;
+}
 std::ostream& operator<<(std::ostream& out, const WriteNotificationLogRequest& obj)
 {
   obj.printTo(out);
@@ -33897,6 +34194,14 @@ uint32_t WriteNotificationLogRequest::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->cat);
+          this->__isset.cat = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -33957,6 +34262,11 @@ uint32_t WriteNotificationLogRequest::write(::apache::thrift::protocol::TProtoco
     }
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.cat) {
+    xfer += oprot->writeFieldBegin("cat", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->cat);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -33970,6 +34280,7 @@ void swap(WriteNotificationLogRequest &a, WriteNotificationLogRequest &b) {
   swap(a.table, b.table);
   swap(a.fileInfo, b.fileInfo);
   swap(a.partitionVals, b.partitionVals);
+  swap(a.cat, b.cat);
   swap(a.__isset, b.__isset);
 }
 
@@ -33980,6 +34291,7 @@ WriteNotificationLogRequest::WriteNotificationLogRequest(const WriteNotification
   table = other1252.table;
   fileInfo = other1252.fileInfo;
   partitionVals = other1252.partitionVals;
+  cat = other1252.cat;
   __isset = other1252.__isset;
 }
 WriteNotificationLogRequest& WriteNotificationLogRequest::operator=(const WriteNotificationLogRequest& other1253) {
@@ -33989,6 +34301,7 @@ WriteNotificationLogRequest& WriteNotificationLogRequest::operator=(const WriteN
   table = other1253.table;
   fileInfo = other1253.fileInfo;
   partitionVals = other1253.partitionVals;
+  cat = other1253.cat;
   __isset = other1253.__isset;
   return *this;
 }
@@ -34001,6 +34314,7 @@ void WriteNotificationLogRequest::printTo(std::ostream& out) const {
   out << ", " << "table=" << to_string(table);
   out << ", " << "fileInfo=" << to_string(fileInfo);
   out << ", " << "partitionVals="; (__isset.partitionVals ? (out << to_string(partitionVals)) : (out << "<null>"));
+  out << ", " << "cat="; (__isset.cat ? (out << to_string(cat)) : (out << "<null>"));
   out << ")";
 }
 
@@ -54650,6 +54964,11 @@ void GetAllWriteEventInfoRequest::__set_tableName(const std::string& val) {
   this->tableName = val;
 __isset.tableName = true;
 }
+
+void GetAllWriteEventInfoRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+__isset.catName = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoRequest& obj)
 {
   obj.printTo(out);
@@ -54703,6 +55022,14 @@ uint32_t GetAllWriteEventInfoRequest::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -54736,6 +55063,11 @@ uint32_t GetAllWriteEventInfoRequest::write(::apache::thrift::protocol::TProtoco
     xfer += oprot->writeString(this->tableName);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.catName) {
+    xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->catName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -54746,6 +55078,7 @@ void swap(GetAllWriteEventInfoRequest &a, GetAllWriteEventInfoRequest &b) {
   swap(a.txnId, b.txnId);
   swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
+  swap(a.catName, b.catName);
   swap(a.__isset, b.__isset);
 }
 
@@ -54753,12 +55086,14 @@ GetAllWriteEventInfoRequest::GetAllWriteEventInfoRequest(const GetAllWriteEventI
   txnId = other1917.txnId;
   dbName = other1917.dbName;
   tableName = other1917.tableName;
+  catName = other1917.catName;
   __isset = other1917.__isset;
 }
 GetAllWriteEventInfoRequest& GetAllWriteEventInfoRequest::operator=(const GetAllWriteEventInfoRequest& other1918) {
   txnId = other1918.txnId;
   dbName = other1918.dbName;
   tableName = other1918.tableName;
+  catName = other1918.catName;
   __isset = other1918.__isset;
   return *this;
 }
@@ -54768,6 +55103,7 @@ void GetAllWriteEventInfoRequest::printTo(std::ostream& out) const {
   out << "txnId=" << to_string(txnId);
   out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
   out << ", " << "tableName="; (__isset.tableName ? (out << to_string(tableName)) : (out << "<null>"));
+  out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ")";
 }
 

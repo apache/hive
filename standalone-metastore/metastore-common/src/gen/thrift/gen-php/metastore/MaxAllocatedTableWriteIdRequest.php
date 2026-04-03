@@ -31,6 +31,11 @@ class MaxAllocatedTableWriteIdRequest
             'isRequired' => true,
             'type' => TType::STRING,
         ),
+        3 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -41,6 +46,10 @@ class MaxAllocatedTableWriteIdRequest
      * @var string
      */
     public $tableName = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -50,6 +59,9 @@ class MaxAllocatedTableWriteIdRequest
             }
             if (isset($vals['tableName'])) {
                 $this->tableName = $vals['tableName'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -87,6 +99,13 @@ class MaxAllocatedTableWriteIdRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 3:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -109,6 +128,11 @@ class MaxAllocatedTableWriteIdRequest
         if ($this->tableName !== null) {
             $xfer += $output->writeFieldBegin('tableName', TType::STRING, 2);
             $xfer += $output->writeString($this->tableName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 3);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

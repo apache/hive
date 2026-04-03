@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.entities;
 
 public class CompactionMetricsData {
 
+  private final String catName;
   private final String dbName;
   private final String tblName;
   private final String partitionName;
@@ -45,6 +46,7 @@ public class CompactionMetricsData {
   }
 
   private CompactionMetricsData(Builder builder) {
+    this.catName = builder.catName;
     this.dbName = builder.dbName;
     this.tblName = builder.tblName;
     this.partitionName = builder.partitionName;
@@ -52,6 +54,10 @@ public class CompactionMetricsData {
     this.metricValue = builder.metricValue;
     this.version = builder.version;
     this.threshold = builder.threshold;
+  }
+
+  public String getCatName() {
+    return catName;
   }
 
   public String getDbName() {
@@ -89,12 +95,13 @@ public class CompactionMetricsData {
 
   @Override
   public String toString() {
-    return "DeltaMetricsInfo{" + "dbName='" + dbName + '\'' + ", tblName='" + tblName + '\'' + ", partitionName='"
+    return "DeltaMetricsInfo{" + "catName='" + catName + '\'' + ", dbName='" + dbName + '\'' + ", tblName='" + tblName + '\'' + ", partitionName='"
         + partitionName + '\'' + ", metricType=" + metricType + ", metricValue=" + metricValue + ", version=" + version
         + '}';
   }
 
   public static class Builder {
+    private String catName;
     private String dbName;
     private String tblName;
     private String partitionName;
@@ -105,6 +112,11 @@ public class CompactionMetricsData {
 
     public CompactionMetricsData build() {
       return new CompactionMetricsData(this);
+    }
+
+    public Builder catName(String catName) {
+      this.catName = catName;
+      return this;
     }
 
     public Builder dbName(String dbName) {
