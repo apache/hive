@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -1027,7 +1027,8 @@ public class MetaStoreUtils {
 
   private static boolean hasCatalogName(String dbName) {
     return dbName != null && dbName.length() > 0 &&
-        dbName.charAt(0) == CATALOG_DB_THRIFT_NAME_MARKER;
+        dbName.charAt(0) == CATALOG_DB_THRIFT_NAME_MARKER &&
+        dbName.contains(CATALOG_DB_SEPARATOR);
   }
 
   /**
@@ -1092,25 +1093,20 @@ public class MetaStoreUtils {
    *            in the database name.
    * @return an array of two elements, the first being the catalog name, the second the database
    * name.
-   * @throws MetaException if the name is not either just a database name or a catalog plus
-   * database name with the proper delimiters.
    */
-  public static String[] parseDbName(String dbName, Configuration conf) throws MetaException {
+  public static String[] parseDbName(String dbName, Configuration conf) {
     if (dbName == null) {
       return Arrays.copyOf(nullCatalogAndDatabase, nullCatalogAndDatabase.length);
     }
     if (hasCatalogName(dbName)) {
-      if (dbName.endsWith(CATALOG_DB_SEPARATOR)) {
-        // This means the DB name is null
-        return new String[] {dbName.substring(1, dbName.length() - 1), null};
-      } else if (dbName.endsWith(DB_EMPTY_MARKER)) {
-        // This means the DB name is empty
-        return new String[] {dbName.substring(1, dbName.length() - DB_EMPTY_MARKER.length() - 1), ""};
-      }
       String[] names = dbName.substring(1).split(CATALOG_DB_SEPARATOR, 2);
-      if (names.length != 2) {
-        throw new MetaException(dbName + " is prepended with the catalog marker but does not " +
-            "appear to have a catalog name in it");
+      if (names.length == 1) {
+        return new String[] {names[0], null};
+      }
+      if (names[1].isEmpty()) {
+        names[1] = null;
+      } else if (names[1].equals(DB_EMPTY_MARKER)) {
+        names[1] = "";
       }
       return names;
     } else {
