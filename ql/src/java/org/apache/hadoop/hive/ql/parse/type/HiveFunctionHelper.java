@@ -345,12 +345,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         // doing this check.
         GenericUDF nodeUDF = SqlFunctionConverter.getHiveUDF(
             call.getOperator(), call.getType(), call.getOperands().size());
-        if (nodeUDF == null) {
-          throw new AssertionError("Cannot retrieve function " + call.getOperator().getName()
-              + " within StatefulFunctionsChecker");
-        }
-        // Stateful?
-        if (FunctionRegistry.isStateful(nodeUDF)) {
+        if (nodeUDF != null && FunctionRegistry.isStateful(nodeUDF)) {
           throw new Util.FoundOne(call);
         }
         return super.visitCall(call);
