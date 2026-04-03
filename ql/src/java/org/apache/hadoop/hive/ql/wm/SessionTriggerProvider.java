@@ -17,21 +17,21 @@ package org.apache.hadoop.hive.ql.wm;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
+import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 
 /**
  * Implementation for providing current open sessions and active trigger.
  */
 public class SessionTriggerProvider {
-  private List<TezSessionState> sessions;
+  private List<TezSession> sessions;
   private List<Trigger> triggers;
 
-  public SessionTriggerProvider(List<TezSessionState> openSessions, List<Trigger> triggers) {
+  public SessionTriggerProvider(List<TezSession> openSessions, List<Trigger> triggers) {
     this.sessions = openSessions;
     this.triggers = triggers;
   }
 
-  public List<TezSessionState> getSessions() {
+  public List<TezSession> getSessions() {
     return sessions;
   }
 
@@ -39,7 +39,7 @@ public class SessionTriggerProvider {
     return triggers;
   }
 
-  public void setSessions(final List<TezSessionState> sessions) {
+  public void setSessions(final List<TezSession> sessions) {
     this.sessions = sessions;
   }
 

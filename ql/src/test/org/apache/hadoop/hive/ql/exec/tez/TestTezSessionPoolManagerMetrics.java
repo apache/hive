@@ -42,7 +42,7 @@ public class TestTezSessionPoolManagerMetrics {
   @Test
   public void testRefreshMetrics(){
     TezSessionPoolManager poolManager = mock(TezSessionPoolManager.class);
-    List<TezSessionState> sessions = testSessions();
+    List<TezSession> sessions = testSessions();
     when(poolManager.getSessions()).thenReturn(sessions);
 
     TezSessionPoolManagerMetrics metrics = new TezSessionPoolManagerMetrics(poolManager);
@@ -56,7 +56,7 @@ public class TestTezSessionPoolManagerMetrics {
   @Test
   public void testBasicMetricsUpdate() {
     TezSessionPoolManager poolManager = mock(TezSessionPoolManager.class);
-    List<TezSessionState> sessions = testSessions();
+    List<TezSession> sessions = testSessions();
     when(poolManager.getSessions()).thenReturn(sessions);
 
     TezSessionPoolManagerMetrics metrics = new TezSessionPoolManagerMetrics(poolManager);
@@ -93,9 +93,9 @@ public class TestTezSessionPoolManagerMetrics {
     Assert.assertEquals(0.0, metrics.taskBacklogRatio.value, 0.0001);
   }
 
-  private List<TezSessionState> testSessions() {
-    List<TezSessionState> sessions = new ArrayList<>();
-    TezSessionState session = mock(TezSessionState.class);
+  private List<TezSession> testSessions() {
+    List<TezSession> sessions = new ArrayList<>();
+    TezSession session = mock(TezSession.class);
     when(session.getMetrics()).thenReturn(testMetrics());
     IntStream.range(0, NO_OF_SESSIONS).forEach(i -> sessions.add(session));
     return sessions;

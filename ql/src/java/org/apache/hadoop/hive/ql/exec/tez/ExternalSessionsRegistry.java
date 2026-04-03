@@ -15,16 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.exec.tez;
 
-package org.apache.hadoop.hive.ql.session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+public interface ExternalSessionsRegistry {
+  Logger LOG = LoggerFactory.getLogger(ExternalSessionsRegistry.class);
 
-public class NullKillQuery implements KillQuery {
-  @Override
-  public void killQuery(String queryId, String errMsg, HiveConf conf, boolean isYarn)
-      throws HiveException {
-    // Do nothing
-  }
+  /**
+   * Returns application of id of the external session.
+   * @return application id
+   * @throws Exception in case of any exceptions
+   */
+  String getSession() throws Exception;
+
+  /**
+   * Returns external session back to registry.
+   * @param appId application id
+   */
+  void returnSession(String appId);
+
+  /**
+   * Closes the external session registry.
+   */
+  void close();
 }

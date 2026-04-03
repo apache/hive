@@ -15,16 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.exec.tez;
 
-package org.apache.hadoop.hive.ql.session;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public class NullKillQuery implements KillQuery {
+public class DummyExternalSessionsRegistry implements ExternalSessionsRegistry {
+
+  // This constructor is required. Reflective instantiation will invoke this constructor.
+  public DummyExternalSessionsRegistry(HiveConf conf) {
+  }
+
   @Override
-  public void killQuery(String queryId, String errMsg, HiveConf conf, boolean isYarn)
-      throws HiveException {
-    // Do nothing
+  public String getSession() throws Exception {
+    throw new UnsupportedOperationException("not supported in dummy external session registry");
+  }
+
+  @Override
+  public void returnSession(final String appId) {
+    throw new UnsupportedOperationException("not supported in dummy external session registry");
+  }
+
+  @Override
+  public void close() {
+    throw new UnsupportedOperationException("not supported in dummy external session registry");
   }
 }

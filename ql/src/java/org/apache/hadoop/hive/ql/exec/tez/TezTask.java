@@ -157,7 +157,7 @@ public class TezTask extends Task<TezWork> {
     int rc = 1;
     boolean cleanContext = false;
     Context ctx = null;
-    Ref<TezSessionState> sessionRef = Ref.from(null);
+    Ref<TezSession> sessionRef = Ref.from(null);
 
     final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
 
@@ -177,7 +177,7 @@ public class TezTask extends Task<TezWork> {
       SessionState ss = SessionState.get();
       // Note: given that we return pool sessions to the pool in the finally block below, and that
       //       we need to set the global to null to do that, this "reuse" may be pointless.
-      TezSessionState session = sessionRef.value = ss.getTezSession();
+      TezSession session = sessionRef.value = ss.getTezSession();
       if (session != null && !session.isOpen()) {
         LOG.warn("The session: " + session + " has not been opened");
       }
@@ -269,7 +269,7 @@ public class TezTask extends Task<TezWork> {
         String dagId = this.dagClient.getDagIdentifierString();
         String appId = this.dagClient.getSessionIdentifierString();
         LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG App ID: [{}], DAG App address: [{}]",
-            ServerUtils.hostname(), queryId, dagId, appId, session.getSession().getAmHost());
+            ServerUtils.hostname(), queryId, dagId, appId, session.getTezClient().getAmHost());
         LogUtils.putToMDC(LogUtils.DAGID_KEY, dagId);
         this.jobID = dagId;
         runtimeContext.setDagId(dagId);
@@ -469,8 +469,8 @@ public class TezTask extends Task<TezWork> {
    */
   @VisibleForTesting
   void ensureSessionHasResources(
-      TezSessionState session, String[] nonConfResources) throws Exception {
-    TezClient client = session.getSession();
+      TezSession session, String[] nonConfResources) throws Exception {
+    TezClient client = session.getTezClient();
     // TODO null can also mean that this operation was interrupted. Should we really try to re-create the session in that case ?
     if (client == null) {
       // Note: the only sane case where this can happen is the non-pool one. We should get rid
@@ -642,19 +642,19 @@ public class TezTask extends Task<TezWork> {
     dag.setAccessControls(ac);
   }
 
-  private TezSessionState getNewTezSessionOnError(
-      TezSessionState oldSession) throws Exception {
+  private TezSession getNewTezSessionOnError(
+      TezSession oldSession) throws Exception {
     // Note: we don't pass the config to reopen. If the session was already open, it would
     //       have kept running with its current config - preserve that behavior.
-    TezSessionState newSession = oldSession.reopen();
+    TezSession newSession = oldSession.reopen();
     console.printInfo("Session re-established.");
     return newSession;
   }
 
-  DAGClient submit(DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
+  DAGClient submit(DAG dag, Ref<TezSession> sessionStateRef) throws Exception {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
-    TezSessionState sessionState = sessionStateRef.value;
+    TezSession sessionState = sessionStateRef.value;
     try {
       try {
         // ready to start execution on the cluster
@@ -690,13 +690,13 @@ public class TezTask extends Task<TezWork> {
     return new SyncDagClient(dagClient);
   }
 
-  private DAGClient submitInternal(DAG dag, TezSessionState sessionState) throws TezException, IOException {
+  private DAGClient submitInternal(DAG dag, TezSession sessionState) throws TezException, IOException {
     runtimeContext.init(sessionState);
-    return sessionState.getSession().submitDAG(dag);
+    return sessionState.getTezClient().submitDAG(dag);
   }
 
-  private void sessionDestroyOrReturnToPool(Ref<TezSessionState> sessionStateRef,
-      TezSessionState sessionState) throws Exception{
+  private void sessionDestroyOrReturnToPool(Ref<TezSession> sessionStateRef,
+      TezSession sessionState) throws Exception{
     sessionStateRef.value = null;
     if (sessionState.isDefault() && sessionState instanceof TezSessionPoolSession) {
       sessionState.returnToSessionManager();
