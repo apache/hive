@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<configuration>
+  <property>
+    <name>hive.zookeeper.quorum</name>
+    <value>${HIVE_ZOOKEEPER_QUORUM}</value>
+  </property>
+  <property>
+    <name>hive.llap.daemon.service.hosts</name>
+    <value>${HIVE_LLAP_DAEMON_SERVICE_HOSTS}</value>
+  </property>
+  <property>
+    <name>hive.llap.daemon.memory.per.instance.mb</name>
+    <value>${LLAP_MEMORY_MB}</value>
+  </property>
+  <property>
+    <name>hive.llap.daemon.num.executors</name>
+    <value>${LLAP_EXECUTORS}</value>
+  </property>
+  <property>
+    <name>hive.llap.daemon.web.port</name>
+    <value>${LLAP_WEB_PORT}</value>
+  </property>
+  <property>
+    <name>hive.llap.management.rpc.port</name>
+    <value>${LLAP_MANAGEMENT_RPC_PORT}</value>
+  </property>
+  <property>
+    <name>hive.llap.daemon.yarn.shuffle.port</name>
+    <value>${LLAP_SHUFFLE_PORT}</value>
+  </property>
+</configuration>

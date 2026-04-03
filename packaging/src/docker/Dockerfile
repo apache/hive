@@ -69,7 +69,7 @@ RUN tar -xzv \
       -f /opt/apache-tez-$TEZ_VERSION-bin.tar.gz \
       -C /opt
 
-FROM eclipse-temurin:21.0.3_9-jre-ubi9-minimal AS run
+FROM eclipse-temurin:21-jdk-ubi9-minimal AS run
 
 ARG UID=1000
 ARG HADOOP_VERSION
@@ -101,6 +101,8 @@ COPY --chown=hive conf $HIVE_HOME/conf
 RUN chmod +x /entrypoint.sh && \
     mkdir -p $HIVE_HOME/data/warehouse && \
     chown hive $HIVE_HOME/data/warehouse && \
+    mkdir -p $HIVE_HOME/scratch && \
+    chown hive $HIVE_HOME/scratch && \
     mkdir -p /home/hive/.beeline && \
     chown hive /home/hive/.beeline
 

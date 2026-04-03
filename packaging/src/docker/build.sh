@@ -23,7 +23,7 @@ TEZ_VERSION=
 usage() {
     cat <<EOF 1>&2
 Usage: $0 [-h] [-hadoop <Hadoop version>] [-tez <Tez version>] [-hive <Hive version>] [-repo <Docker repo>]
-Build the Hive Docker image
+Build the Hive Docker image (reused for LLAP too)
 -help                Display help
 -hadoop              Build image with the specified Hadoop version
 -tez                 Build image with the specified Tez version
@@ -129,6 +129,6 @@ docker build \
         -t "$repo/hive:$HIVE_VERSION" \
         --build-arg "HIVE_VERSION=$HIVE_VERSION" \
         --build-arg "HADOOP_VERSION=$HADOOP_VERSION" \
-        --build-arg "TEZ_VERSION=$TEZ_VERSION" \
+        --build-arg "TEZ_VERSION=$TEZ_VERSION"
 
 rm -r "${WORK_DIR}"
