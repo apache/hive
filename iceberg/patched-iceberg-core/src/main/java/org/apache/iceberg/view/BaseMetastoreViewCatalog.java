@@ -217,7 +217,7 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
 
       StorageTable storageTable = null;
       if (!StringUtils.isEmpty(storageTableName)) {
-        ImmutableStorageTable.of(
+        storageTable = ImmutableStorageTable.of(
             Arrays.asList(this.identifier.namespace().levels()), storageTableName
         );
       }
