@@ -409,12 +409,18 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       handleChangeColumn(hmsTable);
     } else {
       setWriteModeDefaults(
-          icebergTable != null ?
-              icebergTable :
-              icebergMaterializedView.getStorageTable(),
+          getIcebergTbl(),
           hmsTable.getParameters(), context);
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
     }
+  }
+
+  private Table getIcebergTbl() {
+    if (icebergMaterializedView != null) {
+      return icebergMaterializedView.getStorageTable();
+    }
+
+    return icebergTable;
   }
 
   /**

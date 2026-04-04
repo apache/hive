@@ -141,8 +141,8 @@ public class ViewVersionParser {
             Namespace.of(JsonUtil.getStringArray(JsonUtil.get(DEFAULT_NAMESPACE, node)));
 
     StorageTable storageTable = null;
-    JsonNode serializedStorageTable = JsonUtil.get(STORAGE_TABLE, node);
-    if (serializedStorageTable != null) {
+    if (node.hasNonNull(STORAGE_TABLE)) {
+      JsonNode serializedStorageTable = JsonUtil.get(STORAGE_TABLE, node);
       JsonNode serializedNamespace = JsonUtil.get(NAMESPACE, serializedStorageTable);
       Preconditions.checkArgument(
           serializedNamespace.isArray(),
@@ -154,8 +154,8 @@ public class ViewVersionParser {
     }
 
     RefreshState refreshState = null;
-    JsonNode serializedRefreshState = JsonUtil.get(REFRESH_STATE, node);
-    if (serializedRefreshState != null) {
+    if (node.hasNonNull(REFRESH_STATE)) {
+      JsonNode serializedRefreshState = JsonUtil.get(REFRESH_STATE, node);
       Integer viewVersionId = JsonUtil.getInt(VIEW_VERSION_ID, serializedRefreshState);
 
       JsonNode serializedSourceStates = JsonUtil.get(SOURCE_STATES, serializedRefreshState);
