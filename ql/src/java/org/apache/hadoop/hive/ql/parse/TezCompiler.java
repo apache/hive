@@ -1977,8 +1977,9 @@ public class TezCompiler extends TaskCompiler {
           LOG.debug("Old stats for {}: {}", roi.filterOperator, roi.filterStats);
           LOG.debug("Number of rows reduction: {}/{}", newNumRows, roi.filterStats.getNumRows());
         }
+        boolean useColStats = roi.filterStats.getColumnStats() != null;
         StatsUtils.updateStats(roi.filterStats, newNumRows,
-            true, roi.filterOperator, roi.colNames);
+            useColStats, roi.filterOperator, roi.colNames);
         if (LOG.isDebugEnabled()) {
           LOG.debug("New stats for {}: {}", roi.filterOperator, roi.filterStats);
         }
