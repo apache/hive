@@ -88,6 +88,14 @@ POSTHOOK: query: ALTER TABLE t3 CHANGE COLUMN name name string DEFAULT 'null'
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@t3
 POSTHOOK: Output: default@t3
+PREHOOK: query: ALTER TABLE t3 CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT null
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@t3
+PREHOOK: Output: default@t3
+POSTHOOK: query: ALTER TABLE t3 CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT null
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: default@t3
 PREHOOK: query: INSERT INTO t3 (id) VALUES (7)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -104,9 +112,9 @@ POSTHOOK: query: SELECT * FROM t3 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-2	{"x":100,"y":7}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+2	{"x":null,"y":7}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
 3	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
 4	{"x":100,"y":99}	NULL	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
 5	{"x":100,"y":99}	custom_name	30	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-6	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-7	{"x":100,"y":99}	null	NULL	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+6	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+7	NULL	null	NULL	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general

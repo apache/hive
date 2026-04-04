@@ -163,7 +163,7 @@ class HiveSchemaConverter {
         StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
         List<Types.NestedField> fields =
             convertInternal(structTypeInfo.getAllStructFieldNames(), structTypeInfo.getAllStructFieldTypeInfos(),
-                HiveSchemaUtil.getDefaultValuesMap(defaultValue), Collections.emptyList());
+                HiveSchemaUtil.getDefaultValuesMap(null, defaultValue), Collections.emptyList());
         return Types.StructType.of(fields);
       case MAP:
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;

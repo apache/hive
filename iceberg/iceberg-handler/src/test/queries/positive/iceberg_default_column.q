@@ -13,7 +13,7 @@ CREATE TABLE t3 (
 STORED BY ICEBERG
 TBLPROPERTIES ('format-version'='3');
 
--- Case 1: Partial struct with explicit null field
+-- Case 1: Partial struct with explicit null field, the null should be preserved
 INSERT INTO t3 (id, point) VALUES (2, named_struct('x', CAST(null AS INT), 'y', 7));
 
 -- Case 2: Only ID specified (all defaults should apply)
@@ -25,12 +25,13 @@ INSERT INTO t3 (id, name) VALUES (4, NULL);
 -- Case 4: Mixed scenario - some fields provided, some missing
 INSERT INTO t3 (id, name, age) VALUES (5, 'custom_name', 30);
 
--- Case 5: Complex struct with nested nulls
+-- Case 5: Complex struct with nested nulls, the null should be preserved
 INSERT INTO t3 (id, point) VALUES (6, named_struct('x', CAST(null AS INT), 'y', CAST(null AS INT)));
 
 -- Case 6: ALTER AND SET NULL and 'null' string
 ALTER TABLE t3 CHANGE COLUMN age age int DEFAULT null;
 ALTER TABLE t3 CHANGE COLUMN name name string DEFAULT 'null';
+ALTER TABLE t3 CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT null;
 
 INSERT INTO t3 (id) VALUES (7);
 
