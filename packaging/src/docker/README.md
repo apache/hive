@@ -342,7 +342,7 @@ exit
 **Disclaimer:**  
 Hadoop **3.4.1** requires **AWS SDK v2**.
 ```shell
-wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.26.19/bundle-2.26.19.jar -P jars/
+wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.42.25/bundle-2.42.25.jar -P jars/
 ```
 
 2. Set the following environment variables:
