@@ -459,14 +459,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
           columnReaders[i] =
               buildVectorizedParquetReader(columnTypesList.get(colsToInclude.get(i)), types.get(i),
                   pages, requestedSchema.getColumns(), skipTimestampConversion, writerTimezone, skipProlepticConversion,
-                  legacyConversionEnabled, 0);
+                  legacyConversionEnabled, 0, 0);
         }
       }
     } else {
       for (int i = 0; i < types.size(); ++i) {
         columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
           requestedSchema.getColumns(), skipTimestampConversion, writerTimezone, skipProlepticConversion,
-          legacyConversionEnabled, 0);
+          legacyConversionEnabled, 0, 0);
       }
     }
 
@@ -522,7 +522,12 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     ZoneId writerTimezone,
     boolean skipProlepticConversion,
     boolean legacyConversionEnabled,
-    int depth) throws IOException {
+    int depth, int currentDefLevel) throws IOException {
+
+    int typeDefLevel = currentDefLevel;
+    if (type.isRepetition(Type.Repetition.OPTIONAL) || type.isRepetition(Type.Repetition.REPEATED)) {
+      typeDefLevel++;
+    }
     List<ColumnDescriptor> descriptors =
       getAllColumnDescriptorByType(depth, type, columnDescriptors);
     // Support for schema evolution: if the column from the current
@@ -549,8 +554,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       List<Type> types = type.asGroupType().getFields();
       for (int i = 0; i < fieldTypes.size(); i++) {
         VectorizedColumnReader r =
-          buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages, descriptors,
-            skipTimestampConversion, writerTimezone, skipProlepticConversion, legacyConversionEnabled, depth + 1);
+            buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages, descriptors, skipTimestampConversion,
+                writerTimezone, skipProlepticConversion, legacyConversionEnabled, depth + 1, typeDefLevel);
         if (r != null) {
           fieldReaders.add(r);
         } else {
@@ -559,7 +564,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
               .getTypeName() + " and Parquet type" + types.get(i).toString());
         }
       }
-      return new VectorizedStructColumnReader(fieldReaders);
+      return new VectorizedStructColumnReader(fieldReaders, typeDefLevel);
     case LIST:
       checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {

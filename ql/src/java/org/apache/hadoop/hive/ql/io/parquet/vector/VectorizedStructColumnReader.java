@@ -29,9 +29,11 @@ import java.util.List;
 public class VectorizedStructColumnReader implements VectorizedColumnReader {
 
   private final List<VectorizedColumnReader> fieldReaders;
+  private final int structDefLevel;
 
-  public VectorizedStructColumnReader(List<VectorizedColumnReader> fieldReaders) {
+  public VectorizedStructColumnReader(List<VectorizedColumnReader> fieldReaders, int structDefLevel) {
     this.fieldReaders = fieldReaders;
+    this.structDefLevel = structDefLevel;
   }
 
   @Override
@@ -46,14 +48,35 @@ public class VectorizedStructColumnReader implements VectorizedColumnReader {
       fieldReaders.get(i)
         .readBatch(total, vectors[i], structTypeInfo.getAllStructFieldTypeInfos().get(i));
       structColumnVector.isRepeating = structColumnVector.isRepeating && vectors[i].isRepeating;
-
-      for (int j = 0; j < vectors[i].isNull.length; j++) {
-        structColumnVector.isNull[j] =
-          (i == 0) ? vectors[i].isNull[j] : structColumnVector.isNull[j] && vectors[i].isNull[j];
+    }
+    int[] defLevels = null;
+    for (VectorizedColumnReader reader : fieldReaders) {
+      defLevels = reader.getDefinitionLevels();
+      if (defLevels != null) {
+        break;
       }
-      structColumnVector.noNulls =
-        (i == 0) ? vectors[i].noNulls : structColumnVector.noNulls && vectors[i].noNulls;
     }
 
+    // Evaluate struct nullability using Parquet Definition Levels
+    if (defLevels != null) {
+      for (int j = 0; j < total; j++) {
+        if (defLevels[j] < structDefLevel) {
+          // The D-Level boundary crossed the struct. The whole struct is null.
+          structColumnVector.isNull[j] = true;
+          structColumnVector.noNulls = false;
+        }
+      }
+    }
+  }
+
+  @Override
+  public int[] getDefinitionLevels() {
+    for (VectorizedColumnReader reader : fieldReaders) {
+      int[] defLevels = reader.getDefinitionLevels();
+      if (defLevels != null) {
+        return defLevels;
+      }
+    }
+    return null;
   }
 }

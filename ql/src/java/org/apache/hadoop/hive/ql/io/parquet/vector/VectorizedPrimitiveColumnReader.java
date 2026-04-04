@@ -64,6 +64,8 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       int total,
       ColumnVector column,
       TypeInfo columnType) throws IOException {
+    this.currentDefLevels = new int[total];
+    this.defLevelIndex = 0;
     int rowId = 0;
     while (total > 0) {
       // Compute the number of values we want to read in this page.
