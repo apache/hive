@@ -22,6 +22,7 @@ package org.apache.iceberg.view;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.iceberg.BaseMetastoreCatalog;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.EnvironmentContext;
@@ -214,9 +215,16 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
       Preconditions.checkState(
               null != defaultNamespace, "Cannot create view without specifying a default namespace");
 
-      StorageTable storageTable = ImmutableStorageTable.of(
-              Arrays.asList(this.identifier.namespace().levels()), storageTableName
-      );
+      StorageTable storageTable = null;
+      if (!StringUtils.isEmpty(storageTableName)) {
+        ImmutableStorageTable.of(
+            Arrays.asList(this.identifier.namespace().levels()), storageTableName
+        );
+      }
+
+      if (createTime == null) {
+        createTime = System.currentTimeMillis();
+      }
 
       ViewVersion viewVersion =
               ImmutableViewVersion.builder()
