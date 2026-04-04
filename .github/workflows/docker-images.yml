@@ -94,13 +94,10 @@ jobs:
       - name: Validate nightly tag suffix
         if: github.event_name == 'schedule'
         run: |
-          case "$tag" in
-            *-SNAPSHOT) ;;
-            *)
-              echo "Nightly image tag must end with -SNAPSHOT, got: $tag"
-              exit 1
-              ;;
-          esac
+          if [[ "$tag" != *-SNAPSHOT ]]; then
+            echo "Nightly image tag must end with -SNAPSHOT, got: $tag"
+            exit 1
+          fi
 
       - name: Build Hive project
         if: github.event_name != 'workflow_dispatch'
