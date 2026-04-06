@@ -136,7 +136,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t3
 PREHOOK: query: INSERT INTO t3 (id, person)
 VALUES (
-  8,
+  9,
   named_struct(
     'name', CAST(NULL AS STRING),
     'address', named_struct(
@@ -150,7 +150,7 @@ PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t3
 POSTHOOK: query: INSERT INTO t3 (id, person)
 VALUES (
-  8,
+  9,
   named_struct(
     'name', CAST(NULL AS STRING),
     'address', named_struct(
@@ -177,4 +177,4 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 6	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	NULL
 7	NULL	null	NULL	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	NULL
 8	NULL	null	NULL	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
-8	NULL	null	NULL	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":null,"address":{"street":null,"city":"Bangalore"}}
+9	NULL	null	NULL	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":null,"address":{"street":null,"city":"Bangalore"}}
