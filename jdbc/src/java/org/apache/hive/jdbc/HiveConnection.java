@@ -155,6 +155,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -163,6 +164,12 @@ import java.util.function.Supplier;
  */
 public class HiveConnection implements java.sql.Connection {
   private static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class);
+
+  /**
+   * Sentinel: no {@code SET hive.query.timeout.seconds} has been observed on this connection yet.
+   */
+  static final long SESSION_QUERY_TIMEOUT_NOT_TRACKED = -1L;
+  private final AtomicLong sessionQueryTimeoutSeconds = new AtomicLong(SESSION_QUERY_TIMEOUT_NOT_TRACKED);
   private String jdbcUriString;
   private String host;
   private int port;
@@ -189,6 +196,21 @@ public class HiveConnection implements java.sql.Connection {
   private IJdbcBrowserClient browserClient;
 
   public TCLIService.Iface getClient() { return client; }
+
+  /**
+   * Records the effective {@code hive.query.timeout.seconds} (in seconds) after a successful
+   * {@code SET hive.query.timeout.seconds=...} on this connection. Used for JDBC timeout messages.
+   */
+  void recordSessionQueryTimeoutFromSet(long seconds) {
+    sessionQueryTimeoutSeconds.set(seconds);
+  }
+
+  /**
+   * @return seconds from the last client-tracked SET, or {@link #SESSION_QUERY_TIMEOUT_NOT_TRACKED} if none
+   */
+  long getSessionQueryTimeoutSecondsTracked() {
+    return sessionQueryTimeoutSeconds.get();
+  }
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
