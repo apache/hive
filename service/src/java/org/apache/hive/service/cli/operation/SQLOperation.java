@@ -179,6 +179,11 @@ public class SQLOperation extends ExecuteStatementOperation {
           try {
             final String queryId = queryState.getQueryId();
             log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
+            setOperationException(new HiveSQLException(
+                "Query timed out after " + queryTimeout + " seconds",
+                "HYT00",
+                0,
+                queryId));
             SQLOperation.this.cancel(OperationState.TIMEDOUT);
           } catch (HiveSQLException e) {
             log.error("Error cancelling the query after timeout: {} seconds", queryTimeout, e);
@@ -334,7 +339,9 @@ public class SQLOperation extends ExecuteStatementOperation {
             runQuery();
           } catch (HiveSQLException e) {
             // TODO: why do we invent our own error path op top of the one from Future.get?
-            setOperationException(e);
+            if (getState() != OperationState.TIMEDOUT) {
+              setOperationException(e);
+            }
             log.error("Error running hive query", e);
           } finally {
             if (!embedded) {
@@ -353,7 +360,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       try {
         currentUGI.doAs(doAsAction);
       } catch (Exception e) {
-        setOperationException(new HiveSQLException(e));
+        if (getState() != OperationState.TIMEDOUT) {
+          setOperationException(new HiveSQLException(e));
+        }
         log.error("Error running hive query as user : {}", currentUGI.getShortUserName(), e);
       } finally {
         /**
