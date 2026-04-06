@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
