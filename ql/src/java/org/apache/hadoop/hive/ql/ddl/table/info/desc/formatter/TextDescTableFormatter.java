@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -76,7 +73,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
-import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergTable;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.ALIGNMENT;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.DEFAULT_STRINGBUILDER_SIZE;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.FIELD_DELIM;
@@ -87,13 +83,12 @@ import static org.apache.hadoop.hive.ql.ddl.ShowUtils.formatOutput;
  * Formats DESC TABLE results to text format.
  */
 class TextDescTableFormatter extends DescTableFormatter {
-  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   @Override
   public void describeTable(HiveConf conf, DataOutputStream out, String columnPath, String tableName, Table table,
       Partition partition, List<FieldSchema> columns, boolean isFormatted, boolean isExtended, boolean isOutputPadded,
       List<ColumnStatisticsObj> columnStats) throws HiveException {
     try {
-      addStatsData(out, conf, columnPath, columns, table, isFormatted, columnStats, isOutputPadded);
+      addStatsData(out, conf, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
 
       boolean isIcebergMetaTable = table.getMetaTable() != null;
@@ -136,85 +131,27 @@ class TextDescTableFormatter extends DescTableFormatter {
   }
 
   private void addStatsData(DataOutputStream out, HiveConf conf, String columnPath, List<FieldSchema> columns,
-      Table table, boolean isFormatted, List<ColumnStatisticsObj> columnStats, boolean isOutputPadded)
-      throws IOException {
+      boolean isFormatted, List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
     String statsData = "";
     
     TextMetaDataTable metaDataTable = new TextMetaDataTable();
     boolean needColStats = isFormatted && columnPath != null;
     boolean histogramEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
-    boolean isIcebergTable = isIcebergTable(table);
     if (needColStats) {
-      metaDataTable.addRow(DescTableDesc.getColumnStatisticsHeaders(histogramEnabled, isIcebergTable)
-          .toArray(new String[0]));
+      metaDataTable.addRow(DescTableDesc.getColumnStatisticsHeaders(histogramEnabled).toArray(new String[0]));
     } else if (isFormatted && !SessionState.get().isHiveServerQuery()) {
       statsData += "# ";
       metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
     }
-    JsonNode FieldsNode = OBJECT_MAPPER.readTree(table.getParameters().get("current-schema")).get("fields");
     for (FieldSchema column : columns) {
-      List<String> values = new ArrayList<>(List.of(ShowUtils.extractColumnValues(column, needColStats,
-          getColumnStatisticsObject(column.getName(), column.getType(), columnStats), histogramEnabled)));
-      if (needColStats && isIcebergTable) {
-        values.add(getColumnDefaults(FieldsNode, column.getName(), "initial-default"));
-        values.add(getColumnDefaults(FieldsNode, column.getName(), "write-default"));
-      }
-      metaDataTable.addRow(values.toArray(new String[0]));
+      metaDataTable.addRow(ShowUtils.extractColumnValues(column, needColStats,
+          getColumnStatisticsObject(column.getName(), column.getType(), columnStats), histogramEnabled));
     }
     if (needColStats) {
       metaDataTable.transpose();
     }
     statsData += metaDataTable.renderTable(isOutputPadded);
     out.write(statsData.getBytes(StandardCharsets.UTF_8));
-  }
-
-  private String getColumnDefaults(JsonNode node, String colName, String defaultType) {
-    if (node == null || colName == null) {
-      return StringUtils.EMPTY;
-    }
-
-    JsonNode targetNode = node;
-    if (node.isArray()) {
-      targetNode = null;
-      for (JsonNode field : node) {
-        if (field.has("name") && colName.equalsIgnoreCase(field.get("name").asText())) {
-          targetNode = field;
-          break;
-        }
-      }
-    }
-    
-    if (targetNode == null) {
-      return StringUtils.EMPTY;
-    } else if (targetNode.has(defaultType)) {
-      return targetNode.get(defaultType).asText();
-    }
-
-    // In case of struct, extract defaults recursively from its nested fields
-    JsonNode typeNode = targetNode.get("type");
-    if (typeNode != null && typeNode.isObject() && typeNode.has("type") && 
-        "struct".equalsIgnoreCase(typeNode.get("type").asText())) {
-      JsonNode structFields = typeNode.get("fields");
-      if (structFields != null && structFields.isArray()) {
-        List<String> fieldDefaults = new ArrayList<>();
-        boolean hasDefaults = false;
-        for (JsonNode childField : structFields) {
-          String childName = childField.has("name") ? childField.get("name").asText() : "";
-          String childDefault = getColumnDefaults(childField, childName, defaultType);
-          if (childDefault != null && !childDefault.isEmpty()) {
-            hasDefaults = true;
-            fieldDefaults.add(childName + ":" + childDefault);
-          } else {
-            fieldDefaults.add(childName + ":");
-          }
-        }
-        
-        if (hasDefaults) {
-          return String.join(",", fieldDefaults);
-        }
-      }
-    }
-    return StringUtils.EMPTY;
   }
 
   private ColumnStatisticsObj getColumnStatisticsObject(String columnName, String columnType,
