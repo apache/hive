@@ -433,6 +433,44 @@ public class HiveStatement implements java.sql.Statement {
     }
   }
 
+  /**
+   * HIVE-28265: Prefer server error text unless it is empty or the known-broken "0 seconds" case;
+   * otherwise derive seconds from JDBC {@link #setQueryTimeout(int)} or last session SET.
+   */
+  private String sqlTimeoutMessageForTimedOutState(String serverMessage) {
+    if (!needsLocalTimeoutMessageForTimedOut(serverMessage)) {
+      return serverMessage;
+    }
+    long effectiveSec = resolveEffectiveTimeoutSecondsForMessage();
+    if (effectiveSec > 0) {
+      return "Query timed out after " + effectiveSec + " seconds";
+    }
+    return "Query timed out";
+  }
+
+  private boolean needsLocalTimeoutMessageForTimedOut(String timeoutMsg) {
+    return StringUtils.isBlank(timeoutMsg)
+        || StringUtils.containsIgnoreCase(timeoutMsg, "after 0 seconds");
+  }
+
+  private long resolveEffectiveTimeoutSecondsForMessage() {
+    if (queryTimeout > 0) {
+      return queryTimeout;
+    }
+    long tracked = connection.getSessionQueryTimeoutSecondsTracked();
+    if (tracked > 0) {
+      return tracked;
+    }
+    return 0L;
+  }
+
+  private SQLException sqlExceptionForCanceledState(TGetOperationStatusResp statusResp) {
+    final String errMsg = statusResp.getErrorMessage();
+    final String fullErrMsg =
+        (errMsg == null || errMsg.isEmpty()) ? QUERY_CANCELLED_MESSAGE : QUERY_CANCELLED_MESSAGE + " " + errMsg;
+    return new SQLException(fullErrMsg, "01000");
+  }
+
   TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
     TGetOperationStatusResp statusResp = null;
 
@@ -471,27 +509,9 @@ public class HiveStatement implements java.sql.Statement {
             isLogBeingGenerated = false;
             break;
           case CANCELED_STATE:
-            // 01000 -> warning
-            final String errMsg = statusResp.getErrorMessage();
-            final String fullErrMsg =
-                (errMsg == null || errMsg.isEmpty()) ? QUERY_CANCELLED_MESSAGE : QUERY_CANCELLED_MESSAGE + " " + errMsg;
-            throw new SQLException(fullErrMsg, "01000");
-          case TIMEDOUT_STATE: {
-            String timeoutMsg = statusResp.getErrorMessage();
-            // HIVE-28265: ignore blank or known-broken "0 seconds" from mismatched/old peers; rebuild
-            // from JDBC timeout or last SET hive.query.timeout.seconds on this connection.
-            boolean needLocalMessage = StringUtils.isBlank(timeoutMsg)
-                || StringUtils.containsIgnoreCase(timeoutMsg, "after 0 seconds");
-            if (needLocalMessage) {
-              long tracked = connection.getSessionQueryTimeoutSecondsTracked();
-              long effectiveSec = queryTimeout > 0 ? queryTimeout
-                  : (tracked > 0 ? tracked : 0);
-              timeoutMsg = effectiveSec > 0
-                  ? "Query timed out after " + effectiveSec + " seconds"
-                  : "Query timed out";
-            }
-            throw new SQLTimeoutException(timeoutMsg);
-          }
+            throw sqlExceptionForCanceledState(statusResp);
+          case TIMEDOUT_STATE:
+            throw new SQLTimeoutException(sqlTimeoutMessageForTimedOutState(statusResp.getErrorMessage()));
           case ERROR_STATE:
             // Get the error details from the underlying exception
             throw new SQLException(statusResp.getErrorMessage(), statusResp.getSqlState(),
