@@ -2662,6 +2662,10 @@ public class TestJdbcDriver2 {
       fail("Expecting SQLTimeoutException");
     } catch (SQLTimeoutException e) {
       assertNotNull(e);
+      assertTrue("Message should reflect JDBC query timeout (1s): " + e.getMessage(),
+          e.getMessage().contains("1"));
+      assertFalse("Message should not claim 0 seconds: " + e.getMessage(),
+          e.getMessage().contains("after 0 seconds"));
       System.err.println(e.toString());
     } catch (SQLException e) {
       fail("Expecting SQLTimeoutException, but got SQLException: " + e);
@@ -2676,6 +2680,37 @@ public class TestJdbcDriver2 {
     } catch (SQLException e) {
       fail("Unexpected SQLException: " + e);
       e.printStackTrace();
+    }
+    stmt.close();
+  }
+
+  /**
+   * HIVE-28265: hive.query.timeout.seconds drives the server-side timer, but the JDBC client
+   * must not report "0 seconds" when Statement#setQueryTimeout was not used.
+   */
+  @Test
+  public void testQueryTimeoutMessageUsesHiveConf() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+    stmt1.close();
+
+    Statement stmt = con.createStatement();
+    stmt.execute("set hive.query.timeout.seconds=1s");
+
+    try {
+      stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
+          + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+          + " t2 on t1.under_col = t2.under_col");
+      fail("Expecting SQLTimeoutException");
+    } catch (SQLTimeoutException e) {
+      assertNotNull(e);
+      assertTrue("Message should include session timeout (1s): " + e.getMessage(),
+          e.getMessage().contains("1"));
+      assertFalse("Message should not claim 0 seconds (HIVE-28265): " + e.getMessage(),
+          e.getMessage().contains("after 0 seconds"));
+    } catch (SQLException e) {
+      fail("Expecting SQLTimeoutException, but got SQLException: " + e);
     }
     stmt.close();
   }
