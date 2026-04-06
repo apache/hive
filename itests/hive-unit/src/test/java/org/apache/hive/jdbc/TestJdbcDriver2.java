@@ -42,6 +42,7 @@ import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
 import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -130,6 +131,25 @@ public class TestJdbcDriver2 {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   @Rule public final TestName testName = new TestName();
+
+  /**
+   * {@code SET hive.query.timeout.seconds} applies to the whole HS2 session. Tests such as
+   * {@link #testQueryTimeoutMessageUsesHiveConf()} must not leave a short limit on the shared
+   * {@link #con}, or unrelated tests will see {@link SQLTimeoutException}.
+   */
+  @After
+  public void resetHiveSessionQueryTimeout() {
+    try {
+      if (con == null || con.isClosed()) {
+        return;
+      }
+      try (Statement st = con.createStatement()) {
+        st.execute("set hive.query.timeout.seconds=0s");
+      }
+    } catch (SQLException e) {
+      LOG.warn("Could not reset hive.query.timeout.seconds after {}", testName.getMethodName(), e);
+    }
+  }
 
   private static Connection getConnection(String prefix, String postfix) throws SQLException {
     Connection con1;
