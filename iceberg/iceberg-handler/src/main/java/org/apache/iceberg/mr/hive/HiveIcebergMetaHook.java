@@ -890,7 +890,8 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         Type fieldType =
             columns.stream().filter(col -> col.name().equalsIgnoreCase(simpleName)).findFirst().get().type();
         if (fieldType.isStructType()) {
-          Map<String, String> structDefaults = HiveSchemaUtil.getDefaultValuesMap(field.getValue());
+          Map<String, String> structDefaults =
+              HiveSchemaUtil.getDefaultValuesMap(fieldType.asStructType().fields(), field.getValue());
           handleDefaultValues(structDefaults, renameMapping, fieldType.asStructType().fields(), qualifiedName + ".");
         } else {
           Object defaultValue = HiveSchemaUtil.getDefaultValue(field.getValue(), fieldType);

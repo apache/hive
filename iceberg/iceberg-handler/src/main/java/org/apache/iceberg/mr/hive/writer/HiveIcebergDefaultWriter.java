@@ -42,8 +42,7 @@ import org.apache.iceberg.types.Types.NestedField;
 abstract class HiveIcebergDefaultWriter extends HiveIcebergWriterBase {
 
   private final int currentSpecId;
-  private final Set<String> missingColumns;
-  private final List<NestedField> missingOrStructFields;
+  private final List<NestedField> missingFields;
 
   HiveIcebergDefaultWriter(
       Table table,
@@ -54,12 +53,12 @@ abstract class HiveIcebergDefaultWriter extends HiveIcebergWriterBase {
 
     Schema schema = table.schema();
     this.currentSpecId = table.spec().specId();
-    this.missingColumns =
+    Set<String> missingColumns =
         context != null && context.missingColumns() != null ? context.missingColumns() : Set.of();
 
-    this.missingOrStructFields =
+    this.missingFields =
         schema.columns().stream()
-            .filter(field -> missingColumns.contains(field.name()) || field.type().isStructType())
+            .filter(field -> missingColumns.contains(field.name()))
             .toList();
   }
 
@@ -76,7 +75,7 @@ abstract class HiveIcebergDefaultWriter extends HiveIcebergWriterBase {
   }
 
   protected final void applyDefaultValues(Record record) {
-    HiveSchemaUtil.setDefaultValues(record, missingOrStructFields, missingColumns);
+    HiveSchemaUtil.setDefaultValues(record, missingFields);
   }
 
   protected final void write(Record record) {
