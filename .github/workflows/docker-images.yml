@@ -89,15 +89,16 @@ jobs:
       - name: Prepare common environment variables
         run: |
           echo "namespace=${{ vars.DOCKER_NAMESPACE || 'apache' }}" >> $GITHUB_ENV
+
+      - name: Prepare an image tag for release
+        if: github.event_name != 'schedule'
+        run: |
           echo "tag=$HIVE_VERSION" >> $GITHUB_ENV
 
-      - name: Validate nightly tag suffix
+      - name: Prepare an image tag for nightly
         if: github.event_name == 'schedule'
         run: |
-          if [[ "$tag" != *-SNAPSHOT ]]; then
-            echo "Nightly image tag must end with -SNAPSHOT, got: $tag"
-            exit 1
-          fi
+          echo "tag=nightly" >> $GITHUB_ENV
 
       - name: Build Hive project
         if: github.event_name != 'workflow_dispatch'
