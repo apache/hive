@@ -489,7 +489,7 @@
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-admin-client</artifactId>
+      <artifactId>keycloak-admin-client-jee</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
