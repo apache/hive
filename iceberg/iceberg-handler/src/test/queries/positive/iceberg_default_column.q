@@ -1,6 +1,6 @@
 CREATE TABLE t3 (
   id INT,
-  point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+  point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25,
   salary DOUBLE DEFAULT 50000.0,
@@ -34,5 +34,29 @@ ALTER TABLE t3 CHANGE COLUMN name name string DEFAULT 'null';
 ALTER TABLE t3 CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT null;
 
 INSERT INTO t3 (id) VALUES (7);
+
+-- Case 7: Add a nested struct field with default value
+ALTER TABLE t3 ADD COLUMNS (person STRUCT<
+  name: STRING,
+  address: STRUCT<
+    street: STRING,
+    city: STRING
+  >
+> DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}'
+);
+
+INSERT INTO t3 (id) VALUES (8);
+-- Partial struct with explicit null field, the null should be preserved
+INSERT INTO t3 (id, person)
+VALUES (
+  9,
+  named_struct(
+    'name', CAST(NULL AS STRING),
+    'address', named_struct(
+      'street', CAST(NULL AS STRING),
+      'city', 'Bangalore'
+    )
+  )
+);
 
 SELECT * FROM t3 ORDER BY id;

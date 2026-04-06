@@ -5,7 +5,7 @@ TBLPROPERTIES ('format-version'='3');
 
 INSERT INTO ice_t (id) VALUES (1);
 
-ALTER TABLE ice_t ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+ALTER TABLE ice_t ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25,
   salary DOUBLE DEFAULT 50000.0,
@@ -20,7 +20,7 @@ INSERT INTO ice_t (id) VALUES (2);
 SELECT * FROM ice_t ORDER BY id;
 
 ALTER TABLE ice_t REPLACE COLUMNS (id INT,
-  point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+  point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25,
   salary DOUBLE DEFAULT 50000.0,
@@ -32,7 +32,7 @@ ALTER TABLE ice_t REPLACE COLUMNS (id INT,
 SELECT * FROM ice_t ORDER BY id;
 
 -- change default of a field of Struct column
-ALTER TABLE ice_t CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:88';
+ALTER TABLE ice_t CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":88}';
 
 -- rename and change default value of age column
 ALTER TABLE ice_t CHANGE COLUMN age age_new int DEFAULT 21;
@@ -42,7 +42,7 @@ INSERT INTO ice_t (id) VALUES (3);
 SELECT * FROM ice_t ORDER BY id;
 
 -- Rename the struct column with default changes
-ALTER TABLE ice_t CHANGE COLUMN point point_new STRUCT<x:INT, y:INT> DEFAULT 'x:55,y:88';
+ALTER TABLE ice_t CHANGE COLUMN point point_new STRUCT<x:INT, y:INT> DEFAULT '{"x":55,"y":88}';
 
 INSERT INTO ice_t (id) VALUES (4);
 

@@ -20,7 +20,7 @@ POSTHOOK: query: INSERT INTO ice_t (id) VALUES (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_t
-PREHOOK: query: ALTER TABLE ice_t ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+PREHOOK: query: ALTER TABLE ice_t ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25,
   salary DOUBLE DEFAULT 50000.0,
@@ -32,7 +32,7 @@ PREHOOK: query: ALTER TABLE ice_t ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAUL
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@ice_t
 PREHOOK: Output: default@ice_t
-POSTHOOK: query: ALTER TABLE ice_t ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+POSTHOOK: query: ALTER TABLE ice_t ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25,
   salary DOUBLE DEFAULT 50000.0,
@@ -63,7 +63,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
 2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
 PREHOOK: query: ALTER TABLE ice_t REPLACE COLUMNS (id INT,
-  point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+  point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25,
   salary DOUBLE DEFAULT 50000.0,
@@ -75,7 +75,7 @@ PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@ice_t
 PREHOOK: Output: default@ice_t
 POSTHOOK: query: ALTER TABLE ice_t REPLACE COLUMNS (id INT,
-  point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+  point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25,
   salary DOUBLE DEFAULT 50000.0,
@@ -96,11 +96,11 @@ POSTHOOK: Input: default@ice_t
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	general
 2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	general
-PREHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:88'
+PREHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":88}'
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@ice_t
 PREHOOK: Output: default@ice_t
-POSTHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:88'
+POSTHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":88}'
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@ice_t
 POSTHOOK: Output: default@ice_t
@@ -131,11 +131,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	general
 2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	general
 3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	general
-PREHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point_new STRUCT<x:INT, y:INT> DEFAULT 'x:55,y:88'
+PREHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point_new STRUCT<x:INT, y:INT> DEFAULT '{"x":55,"y":88}'
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@ice_t
 PREHOOK: Output: default@ice_t
-POSTHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point_new STRUCT<x:INT, y:INT> DEFAULT 'x:55,y:88'
+POSTHOOK: query: ALTER TABLE ice_t CHANGE COLUMN point point_new STRUCT<x:INT, y:INT> DEFAULT '{"x":55,"y":88}'
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@ice_t
 POSTHOOK: Output: default@ice_t

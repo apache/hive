@@ -26,16 +26,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hive.iceberg.com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.hive.iceberg.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Literal;
-import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
@@ -46,6 +46,8 @@ import org.apache.iceberg.util.Pair;
 
 
 public final class HiveSchemaUtil {
+
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private HiveSchemaUtil() {
   }
@@ -547,21 +549,43 @@ public final class HiveSchemaUtil {
     return value; // fallback
   }
 
-  public static Map<String, String> getDefaultValuesMap(List<Types.NestedField> fields, String defaultValue) {
-    if (StringUtils.isEmpty(defaultValue)) {
+  public static Map<String, String> getDefaultValuesMap(List<Types.NestedField> fields, String json) {
+    if (json == null || json.trim().isEmpty()) {
       return Collections.emptyMap();
     }
-    if (defaultValue.equalsIgnoreCase("NULL")) {
-      Map<String, String> nullDefaults = Maps.newHashMap();
-      if (fields != null) {
-        for (Types.NestedField field : fields) {
-          nullDefaults.put(field.name(), "NULL");
+    // 1. Strip the surrounding single or double quotes passed by Hive
+    String cleanJson = stripQuotes(json);
+
+    // 2. Check for NULL on the cleaned string
+    if (cleanJson.equalsIgnoreCase("NULL")) {
+      if (fields == null || fields.isEmpty()) {
+        return Collections.emptyMap();
+      }
+      return fields.stream().collect(Collectors.toMap(Types.NestedField::name, f -> "NULL"));
+    }
+
+    Map<String, Object> parsed;
+    Map<String, String> result = Maps.newHashMap();
+    try {
+      // 3. Pass the cleaned JSON to the mapper
+      parsed = MAPPER.readValue(cleanJson, new TypeReference<>() {
+      });
+
+      for (Map.Entry<String, Object> entry : parsed.entrySet()) {
+        Object value = entry.getValue();
+
+        if (value == null) {
+          result.put(entry.getKey(), "NULL");
+        } else if (value instanceof Map || value instanceof List) {
+          result.put(entry.getKey(), MAPPER.writeValueAsString(value));
+        } else {
+          result.put(entry.getKey(), value.toString());
         }
       }
-      return nullDefaults;
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid default values JSON: " + json, e);
     }
-    // For Struct, the default value is expected to be in key:value format
-    return Splitter.on(',').trimResults().withKeyValueSeparator(':').split(stripQuotes(defaultValue));
+    return result;
   }
 
   public static String stripQuotes(String val) {
