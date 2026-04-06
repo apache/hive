@@ -25,19 +25,19 @@ insert into tbl_src values (1, 'EUR', 10), (2, 'EUR', 10), (3, 'USD', 11), (4, '
 insert into tbl_src values (10, 'EUR', 12), (20, 'EUR', 11), (30, 'USD', 100), (40, 'EUR', 10), (50, 'HUF', 30), (60, 'USD', 12), (70, 'USD', 20), (80, 'PLN', 100), (90, 'PLN', 18), (100, 'CZK', 12), (110, NULL, NULL);
 
 create external table tbl_target_identity (a int) partitioned by (ccy string) stored by iceberg stored as orc;
--- threshold = 0 (default, cost-based): NDV of b (~5) < MAX_WRITERS -> no sort (FanoutWriter)
+-- threshold = 0 (default, cost-based): NDV(b) = 5 > MAX_WRITERS (~3) -> sort (ClusteredWriter)
 explain insert overwrite table tbl_target_identity select a, b from tbl_src;
 insert overwrite table tbl_target_identity select a, b from tbl_src;
 select * from tbl_target_identity order by a, ccy;
 
---bucketed case - should invoke GenericUDFIcebergBucket to calculate buckets before sorting
-create external table tbl_target_bucket (a int, ccy string) partitioned by spec (bucket (2, ccy)) stored by iceberg stored as orc;
--- threshold = 0 (default, cost-based): NDV of b (~5) < MAX_WRITERS -> no sort (FanoutWriter)
+--bucketed case - should invoke GenericUDFIcebergBucket to estimate bucket NDV for sort decision
+create external table tbl_target_bucket (a int, ccy string) partitioned by spec (bucket (3, ccy)) stored by iceberg stored as orc;
+-- threshold = 0 (default, cost-based): bucket NDV = min(NDV(b) = 5, 3) = 3 <= MAX_WRITERS (~3) -> no sort (FanoutWriter)
 explain insert into table tbl_target_bucket select a, b from tbl_src;
 insert into table tbl_target_bucket select a, b from tbl_src;
 select * from tbl_target_bucket order by a, ccy;
 
---mixed case - 1 identity + 1 bucket cols
+--mixed case - 1 identity + 1 bucket cols: NDV(b) * min(NDV(c) = 8, 3) = 5 * 3 = 15 > MAX_WRITERS (~3) -> sort (ClusteredWriter)
 create external table tbl_target_mixed (a int, ccy string, c bigint) partitioned by spec (ccy, bucket (3, c)) stored by iceberg stored as orc;
 explain insert into table tbl_target_mixed select * from tbl_src;
 insert into table tbl_target_mixed select * from tbl_src;
@@ -45,11 +45,11 @@ select * from tbl_target_mixed order by a, ccy;
 select `partition` from default.tbl_target_mixed.partitions order by `partition`;
 select * from default.tbl_target_mixed.files;
 
---1 of 2 partition cols is folded with constant - should still sort
+--b = 'EUR' folds ccy to constant: bucket NDV = min(NDV(c) = 8, 3) = 3 <= MAX_WRITERS (~3) -> no sort (FanoutWriter)
 explain insert into table tbl_target_mixed select * from tbl_src where b = 'EUR';
 insert into table tbl_target_mixed select * from tbl_src where b = 'EUR';
 
---all partitions cols folded - should not sort as it's not needed
+--all partition cols folded (b = 'USD', c = 100) -> no sort (FanoutWriter)
 explain insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100;
 insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100;
 
@@ -126,7 +126,7 @@ explain insert into tbl_month_timestamp values (88669, '2018-05-27 11:12:00', 20
 insert into tbl_month_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018);
 select * from tbl_month_timestamp order by id, date_time_timestamp;
 
---day case - should invoke GenericUDFIcebergMonth to convert the date/timestamp value to day and use for clustering and sorting
+--day case - should invoke GenericUDFIcebergDay to convert the date/timestamp value to day and use for clustering and sorting
 create external table tbl_day_date (id string, date_time_date date, year_partition int)
     partitioned by spec (year_partition, day(date_time_date))
 stored by iceberg stored as parquet
@@ -145,7 +145,7 @@ explain insert into tbl_day_timestamp values (88669, '2018-05-27 11:12:00', 2018
 insert into tbl_day_timestamp values (88669, '2018-05-27 11:12:00', 2018), (40568, '2018-02-12 12:45:56', 2018), (40568, '2018-07-03 06:07:56', 2018);
 select * from tbl_day_timestamp order by id, date_time_timestamp;
 
---hour case - should invoke GenericUDFIcebergMonth to convert the date/timestamp value to day and use for clustering and sorting
+--hour case - should invoke GenericUDFIcebergHour to convert the timestamp value to hour and use for clustering and sorting
 create external table tbl_hour_timestamp (id string, date_time_timestamp timestamp, year_partition int)
     partitioned by spec (year_partition, hour(date_time_timestamp))
 stored by iceberg stored as parquet
@@ -165,12 +165,12 @@ set hive.optimize.sort.dynamic.partition.threshold=1;
 explain insert into tbl_target_identity select a, b from tbl_src;
 explain insert into tbl_target_bucket select a, b from tbl_src;
 
--- threshold = 2: NDV of b (~5) > 2 -> sort (ClusteredWriter)
+-- threshold = 2: bucket NDV = min(NDV(b) = 5, 3) = 3 > 2 -> sort (ClusteredWriter)
 set hive.optimize.sort.dynamic.partition.threshold=2;
 explain insert into tbl_target_identity select a, b from tbl_src;
 explain insert into tbl_target_bucket select a, b from tbl_src;
 
--- threshold = 100: NDV of b (~5) <= 100 -> no sort (FanoutWriter)
+-- threshold = 100: bucket NDV = min(NDV(b) = 5, 3) = 3 <= 100 -> no sort (FanoutWriter)
 set hive.optimize.sort.dynamic.partition.threshold=100;
 explain insert into tbl_target_identity select a, b from tbl_src;
 explain insert into tbl_target_bucket select a, b from tbl_src;

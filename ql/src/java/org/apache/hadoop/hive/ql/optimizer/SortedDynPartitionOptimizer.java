@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,11 +217,6 @@ public class SortedDynPartitionOptimizer extends Transform {
         return null;
       }
 
-      // Mark that sorting will be applied with custom partition expressions, so the writer layer
-      // (e.g. Iceberg) knows the input is ordered and can use a clustered writer.
-      if (!customPartitionExprs.isEmpty()) {
-        dpCtx.setHasCustomPartitionOrSortExpression(true);
-      }
       // if RS is inserted by enforce bucketing or sorting, we need to remove it
       // since ReduceSinkDeDuplication will not merge them to single RS.
       // RS inserted by enforce bucketing/sorting will have bucketing column in
@@ -233,6 +229,12 @@ public class SortedDynPartitionOptimizer extends Transform {
         LOG.debug("Bailing out of sort dynamic partition optimization as some partition columns " +
             "got constant folded.");
         return null;
+      }
+
+      // Mark that sorting will be applied with custom partition expressions, so the writer layer
+      // (e.g. Iceberg) knows the input is ordered and can use a clustered writer.
+      if (!customPartitionExprs.isEmpty()) {
+        dpCtx.setHasCustomPartitionOrSortExpression(true);
       }
 
       // unlink connection between FS and its parent
@@ -927,37 +929,33 @@ public class SortedDynPartitionOptimizer extends Transform {
         Statistics tStats, Operator<? extends OperatorDesc> fsParent,
         ArrayList<ExprNodeDesc> allRSCols) {
 
+      long partCardinality = 1;
+
       if (!partitionPos.isEmpty()) {
-        long cardinality = 1;
         for (Integer idx : partitionPos) {
           ColumnInfo ci = fsParent.getSchema().getSignature().get(idx);
           ColStatistics partStats = tStats.getColumnStatisticsFromColName(ci.getInternalName());
           if (partStats == null) {
             return -1;
           }
-          cardinality *= partStats.getCountDistint();
+          partCardinality *= partStats.getCountDistint();
         }
-        return cardinality;
+        return partCardinality;
       }
 
       if (!customPartitionExprs.isEmpty()) {
-        // extract source column names from custom expressions (same approach as allStaticPartitions)
-        Set<String> partColNames = new HashSet<>();
         for (Function<List<ExprNodeDesc>, ExprNodeDesc> expr : customPartitionExprs) {
           ExprNodeDesc resolved = expr.apply(allRSCols);
-          for (ExprNodeColumnDesc colDesc : ExprNodeDescUtils.findAllColumnDescs(resolved)) {
-            partColNames.add(colDesc.getColumn());
-          }
-        }
-        long cardinality = 1;
-        for (String colName : partColNames) {
-          ColStatistics partStats = tStats.getColumnStatisticsFromColName(colName);
-          if (partStats == null) {
+          // Use StatsUtils to get accurate output stats, which leverages StatEstimator
+          // implementations on UDFs (e.g. iceberg_bucket reports min(inputNDV, numBuckets))
+          ColStatistics exprStats = StatsUtils.getColStatisticsFromExpression(
+              this.parseCtx.getConf(), tStats, resolved);
+          if (exprStats == null) {
             return -1;
           }
-          cardinality *= partStats.getCountDistint();
+          partCardinality *= exprStats.getCountDistint();
         }
-        return cardinality;
+        return partCardinality;
       }
 
       return 0;

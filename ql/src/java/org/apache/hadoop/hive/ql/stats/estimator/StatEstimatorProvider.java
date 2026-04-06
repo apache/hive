@@ -25,5 +25,5 @@ public interface StatEstimatorProvider {
   /**
    * Returns the {@link StatEstimator} for the given UDF instance.
    */
-  public StatEstimator getStatEstimator();
+  StatEstimator getStatEstimator();
 }

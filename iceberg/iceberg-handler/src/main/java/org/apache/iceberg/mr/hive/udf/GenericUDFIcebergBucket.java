@@ -19,11 +19,16 @@
 package org.apache.iceberg.mr.hive.udf;
 
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -52,7 +57,7 @@ import org.apache.iceberg.types.Types;
     value = "_FUNC_(value, bucketCount) - " +
         "Returns the bucket value calculated by Iceberg bucket transform function ",
     extended = "Example:\n  > SELECT _FUNC_('A bucket full of ice!', 5);\n  4")
-public class GenericUDFIcebergBucket extends GenericUDF {
+public class GenericUDFIcebergBucket extends GenericUDF implements StatEstimatorProvider {
   private final IntWritable result = new IntWritable();
   private int numBuckets = -1;
   private transient PrimitiveObjectInspector argumentOI;
@@ -208,5 +213,33 @@ public class GenericUDFIcebergBucket extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     return getStandardDisplayString("iceberg_bucket", children);
+  }
+
+  @Override
+  public StatEstimator getStatEstimator() {
+    return new BucketStatEstimator();
+  }
+
+  private static class BucketStatEstimator implements StatEstimator {
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      if (argStats.size() != 2) {
+        return Optional.empty();
+      }
+      ColStatistics inputStats = argStats.get(0);
+      ColStatistics bucketCountStats = argStats.get(1);
+      ColStatistics.Range bucketRange = bucketCountStats.getRange();
+      if (bucketRange == null || bucketRange.minValue == null) {
+        return Optional.empty();
+      }
+      long numBuckets = bucketRange.minValue.longValue();
+      if (numBuckets <= 0) {
+        return Optional.empty();
+      }
+      ColStatistics result = inputStats.clone();
+      result.setCountDistint(Math.min(inputStats.getCountDistint(), numBuckets));
+      result.setRange(0, numBuckets - 1);
+      return Optional.of(result);
+    }
   }
 }
