@@ -1,0 +1,119 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: "3"
+
+x-image:
+  &image
+  image: ${OZONE_IMAGE:-apache/ozone}:${OZONE_IMAGE_VERSION:-2.1.0}${OZONE_IMAGE_FLAVOR:-}
+
+x-common-config:
+  &common-config
+  OZONE-SITE.XML_hdds.datanode.dir: "/data/hdds"
+  OZONE-SITE.XML_ozone.metadata.dirs: "/data/metadata"
+  OZONE-SITE.XML_ozone.om.address: "om"
+  OZONE-SITE.XML_ozone.om.http-address: "om:9874"
+  OZONE-SITE.XML_ozone.recon.address: "recon:9891"
+  OZONE-SITE.XML_ozone.recon.db.dir: "/data/metadata/recon"
+  OZONE-SITE.XML_ozone.replication: "1"
+  OZONE-SITE.XML_ozone.scm.block.client.address: "scm"
+  OZONE-SITE.XML_ozone.scm.client.address: "scm"
+  OZONE-SITE.XML_ozone.scm.datanode.id.dir: "/data/metadata"
+  OZONE-SITE.XML_ozone.scm.names: "scm"
+  no_proxy: "om,recon,scm,s3g,localhost,127.0.0.1"
+  OZONE-SITE.XML_hdds.scm.safemode.min.datanode: "1"
+  OZONE-SITE.XML_hdds.scm.safemode.healthy.pipeline.pct: "0"
+  OZONE-SITE.XML_ozone.s3g.domain.name: "s3.ozone"
+
+services:
+  datanode:
+    <<: *image
+    ports:
+      - 9864:9864
+    command: ["ozone","datanode"]
+    environment:
+      <<: *common-config
+    networks:
+      - hive
+  om:
+    <<: *image
+    ports:
+      - 9874:9874
+    environment:
+      <<: *common-config
+      CORE-SITE.XML_hadoop.proxyuser.hadoop.hosts: "*"
+      CORE-SITE.XML_hadoop.proxyuser.hadoop.groups: "*"
+      ENSURE_OM_INITIALIZED: /data/metadata/om/current/VERSION
+      WAITFOR: scm:9876
+    command: ["ozone","om"]
+    networks:
+      - hive
+  scm:
+    <<: *image
+    ports:
+      - 9876:9876
+    environment:
+      <<: *common-config
+      ENSURE_SCM_INITIALIZED: /data/metadata/scm/current/VERSION
+    command: ["ozone","scm"]
+    networks:
+      - hive
+  recon:
+    <<: *image
+    ports:
+      - 9888:9888
+    environment:
+      <<: *common-config
+    command: ["ozone","recon"]
+    networks:
+      - hive
+  s3g:
+    <<: *image
+    ports:
+      - 9878:9878
+    environment:
+      <<: *common-config
+      WAITFOR: om:9874
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        ozone s3g &
+        s3g_pid=$$!
+        until ozone sh volume list >/dev/null 2>&1; do echo '...waiting...' && sleep 1; done;
+        
+        # Force create the s3v volume in case S3G hasn't auto-generated it yet
+        ozone sh volume create /s3v || true
+        
+        # Create the 'hive' bucket
+        ozone sh bucket delete /s3v/hive || true
+        ozone sh bucket create /s3v/hive || true
+        wait "$$s3g_pid"
+    healthcheck:
+      test: [ "CMD", "ozone", "sh", "bucket", "info", "/s3v/hive" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      hive:
+        aliases:
+          - s3.ozone
+          - hive.s3.ozone
+
+networks:
+  hive:
+    name: hive

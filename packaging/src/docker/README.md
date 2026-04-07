@@ -358,3 +358,34 @@ HIVE_WAREHOUSE_PATH="/data/warehouse/tablespace/managed/hive" \
 S3_ENDPOINT_URL="s3.us-west-2.amazonaws.com" \
 docker-compose up
 ```
+
+#### Hive with Ozone-backed warehouse storage
+
+The cluster can also be started with Apache Ozone as the underlying storage layer, utilizing Ozone's S3 Gateway (S3G) to act as an S3-compatible backend for Hive.
+
+Use the provided startup script with the `--ozone` flag. This automatically injects S3A configurations into Hive and merges the main compose file with the Ozone-specific configuration located at `storage/ozone/docker-compose.yml`.
+
+```shell
+docker compose down --rmi local # cleanup previous containers and images
+
+export POSTGRES_LOCAL_PATH=... # set the path to the postgres driver jar
+./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 
+./start-hive.sh --ozone
+```
+
+By default, this spins up the Ozone components (Ozone Manager, Storage Container Manager, DataNode, 
+Recon, S3G) alongside Hive on the same local network.
+
+To view Ozone's web UIs, you can navigate to:
+
+Ozone Manager: http://localhost:9874
+
+Recon: http://localhost:9888
+
+To stop and remove the Ozone stack:
+
+```shell
+./stop-hive.sh --ozone # to stop containers
+#OR
+./stop-hive.sh --ozone --cleanup # to remove volumes and database state
+```

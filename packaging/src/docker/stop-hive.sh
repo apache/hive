@@ -21,11 +21,15 @@ cd "$SCRIPT_DIR"
 
 PROFILE="--profile llap" # delete all containers regardless of profile
 CLEANUP_FLAG=""
+COMPOSE_FILES="docker-compose.yml"
 
 for arg in "$@"; do
   case "$arg" in
     --cleanup)
       CLEANUP_FLAG="--volumes"
+      ;;
+    --ozone)
+      COMPOSE_FILES="docker-compose.yml:storage/ozone/docker-compose.yml"
       ;;
     *)
       echo "Unknown option: $arg"
@@ -33,6 +37,8 @@ for arg in "$@"; do
       ;;
   esac
 done
+
+export COMPOSE_FILE="$COMPOSE_FILES"
 
 if [[ -n "$CLEANUP_FLAG" ]]; then
   echo "Stopping Hive cluster and removing compose volumes"
