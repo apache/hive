@@ -18,6 +18,8 @@ name: Build and Publish docker images for Hive GA
 
 on:
   create:
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
     inputs:
       hiveVersion:
@@ -40,7 +42,7 @@ env:
 
 jobs:
   buildAndPush:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/'))
     runs-on: ubuntu-latest
     steps:
       - name: Free disk space
@@ -76,8 +78,8 @@ jobs:
           echo "TEZ_VERSION=${{ github.event.inputs.tezVersion }}" >> $GITHUB_ENV
           echo "BUILD_ENV=release" >> $GITHUB_ENV
 
-      - name: Prepare environment variables for Release
-        if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
+      - name: Prepare environment variables from repository
+        if: github.event_name != 'workflow_dispatch'
         run: |
           echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
           echo "HADOOP_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=hadoop.version -DforceStdout)" >> $GITHUB_ENV
@@ -87,10 +89,19 @@ jobs:
       - name: Prepare common environment variables
         run: |
           echo "namespace=${{ vars.DOCKER_NAMESPACE || 'apache' }}" >> $GITHUB_ENV
-          echo "tag=$HIVE_VERSION" | awk '{print tolower($0)}' >> $GITHUB_ENV
+
+      - name: Prepare an image tag for release
+        if: github.event_name != 'schedule'
+        run: |
+          echo "tag=$HIVE_VERSION" >> $GITHUB_ENV
+
+      - name: Prepare an image tag for nightly
+        if: github.event_name == 'schedule'
+        run: |
+          echo "tag=nightly" >> $GITHUB_ENV
 
       - name: Build Hive project
-        if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
+        if: github.event_name != 'workflow_dispatch'
         run: |
           mvn --batch-mode clean package -DskipTests -Pdist
           ls ./packaging/target/
