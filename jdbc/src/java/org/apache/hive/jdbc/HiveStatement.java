@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -439,13 +440,27 @@ public class HiveStatement implements java.sql.Statement {
    */
   private String sqlTimeoutMessageForTimedOutState(String serverMessage) {
     if (!needsLocalTimeoutMessageForTimedOut(serverMessage)) {
-      return serverMessage;
+      return stripTrailingQueryIdSuffix(serverMessage);
     }
     long effectiveSec = resolveEffectiveTimeoutSecondsForMessage();
     if (effectiveSec > 0) {
       return "Query timed out after " + effectiveSec + " seconds";
     }
     return "Query timed out";
+  }
+
+  /**
+   * HS2 wraps many errors via {@link HiveSQLException#getMessage()}, which appends
+   * {@code ; Query ID: ...}. Strip that trailer so JDBC timeout text stays stable and matches the
+   * base HS2 wording (HIVE-28265).
+   */
+  private static String stripTrailingQueryIdSuffix(String msg) {
+    if (msg == null) {
+      return null;
+    }
+    String marker = "; " + HiveSQLException.QUERY_ID + ": ";
+    int idx = msg.indexOf(marker);
+    return idx >= 0 ? msg.substring(0, idx) : msg;
   }
 
   private boolean needsLocalTimeoutMessageForTimedOut(String timeoutMsg) {
