@@ -151,6 +151,14 @@ public class TestJdbcDriver2 {
     }
   }
 
+  /**
+   * HS2 / {@code HiveStatement} report timeouts as {@code ...timed out after N seconds...}; match
+   * {@code N == 1} with flexible whitespace so we do not treat {@code 10} or unrelated digits as {@code 1}.
+   */
+  private static boolean isQueryTimedOutAfterOneSecondMessage(String msg) {
+    return msg != null && msg.matches("(?is).*timed out after\\s+1\\s+seconds.*");
+  }
+
   private static Connection getConnection(String prefix, String postfix) throws SQLException {
     Connection con1;
     String connString = "jdbc:hive2:///" + prefix + "?" + conf.getOverlayOptionsAsQueryString()
@@ -2683,7 +2691,7 @@ public class TestJdbcDriver2 {
     } catch (SQLTimeoutException e) {
       assertNotNull(e);
       assertTrue("Message should reflect JDBC query timeout (1s): " + e.getMessage(),
-          e.getMessage().contains("1"));
+          isQueryTimedOutAfterOneSecondMessage(e.getMessage()));
       assertFalse("Message should not claim 0 seconds: " + e.getMessage(),
           e.getMessage().contains("after 0 seconds"));
       System.err.println(e.toString());
@@ -2726,7 +2734,7 @@ public class TestJdbcDriver2 {
     } catch (SQLTimeoutException e) {
       assertNotNull(e);
       assertTrue("Message should include session timeout (1s): " + e.getMessage(),
-          e.getMessage().contains("1"));
+          isQueryTimedOutAfterOneSecondMessage(e.getMessage()));
       assertFalse("Message should not claim 0 seconds (HIVE-28265): " + e.getMessage(),
           e.getMessage().contains("after 0 seconds"));
     } catch (SQLException e) {
