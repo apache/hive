@@ -169,6 +169,12 @@ public class HiveConnection implements java.sql.Connection {
    * Sentinel: no {@code SET hive.query.timeout.seconds} has been observed on this connection yet.
    */
   static final long SESSION_QUERY_TIMEOUT_NOT_TRACKED = -1L;
+  /**
+   * Last effective {@code hive.query.timeout.seconds} from a client {@code SET} (seconds), or
+   * {@link #SESSION_QUERY_TIMEOUT_NOT_TRACKED}. A JDBC {@code Connection} may be shared across threads
+   * with concurrent {@link org.apache.hive.jdbc.HiveStatement}s on one HS2 session; this field uses an
+   * {@link AtomicLong} so updates remain well-defined (last SET wins).
+   */
   private final AtomicLong sessionQueryTimeoutSeconds = new AtomicLong(SESSION_QUERY_TIMEOUT_NOT_TRACKED);
   private String jdbcUriString;
   private String host;
@@ -198,17 +204,17 @@ public class HiveConnection implements java.sql.Connection {
   public TCLIService.Iface getClient() { return client; }
 
   /**
-   * Records the effective {@code hive.query.timeout.seconds} (in seconds) after a successful
+   * Sets the effective {@code hive.query.timeout.seconds} (in seconds) after a successful
    * {@code SET hive.query.timeout.seconds=...} on this connection. Used for JDBC timeout messages.
    */
-  void recordSessionQueryTimeoutFromSet(long seconds) {
+  void setSessionQueryTimeoutSeconds(long seconds) {
     sessionQueryTimeoutSeconds.set(seconds);
   }
 
   /**
    * @return seconds from the last client-tracked SET, or {@link #SESSION_QUERY_TIMEOUT_NOT_TRACKED} if none
    */
-  long getSessionQueryTimeoutSecondsTracked() {
+  long getSessionQueryTimeoutSeconds() {
     return sessionQueryTimeoutSeconds.get();
   }
 
