@@ -429,7 +429,7 @@ public class HiveStatement implements java.sql.Statement {
       }
     }
     if (lastSec != null) {
-      connection.recordSessionQueryTimeoutFromSet(lastSec);
+      connection.setSessionQueryTimeoutSeconds(lastSec);
     }
   }
 
@@ -457,7 +457,7 @@ public class HiveStatement implements java.sql.Statement {
     if (queryTimeout > 0) {
       return queryTimeout;
     }
-    long tracked = connection.getSessionQueryTimeoutSecondsTracked();
+    long tracked = connection.getSessionQueryTimeoutSeconds();
     if (tracked > 0) {
       return tracked;
     }
