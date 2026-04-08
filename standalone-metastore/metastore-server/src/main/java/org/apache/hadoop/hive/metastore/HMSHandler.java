@@ -130,6 +130,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   static final int LOG_SAMPLE_PARTITIONS_HALF_SIZE = 2;
 
   static final String LOG_SAMPLE_PARTITIONS_SEPARATOR = ",";
+  
+  private static final String AVRO_SERDE_CLASS = "org.apache.hadoop.hive.serde2.avro.AvroSerDe";
 
   private Warehouse wh; // hdfs warehouse
   private static Striped<Lock> tablelocks;
@@ -4259,37 +4261,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String base_table_name = names[0];
     String[] parsedDbName = parseDbName(db, conf);
 
-    Table tbl;
     List<FieldSchema> ret = null;
     Exception ex = null;
     try {
-      try {
-        GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], base_table_name);
-        getTableRequest.setCatName(parsedDbName[CAT_NAME]);
-        tbl = get_table_core(getTableRequest);
-        firePreEvent(new PreReadTableEvent(tbl, this));
-      } catch (NoSuchObjectException e) {
-        throw new UnknownTableException(e.getMessage());
-      }
+      Table tbl = getTableForGetFields(parsedDbName, base_table_name);
       String serdeLib = tbl.getSd().getSerdeInfo().getSerializationLib();
       if (serdeLib == null ||
               MetastoreConf.getStringCollection(conf,
                       ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(serdeLib)) {
         ret = tbl.getSd().getCols();
       } else {
-        try {
-          StorageSchemaReader schemaReader = getStorageSchemaReader();
-          ret = schemaReader.readSchema(tbl, envContext, getConf());
-        } catch (Exception e) {
-          if ("org.apache.hadoop.hive.serde2.avro.AvroSerDe".equals(serdeLib)) {
-            LOG.warn("Unable to read schema from storage for AvroSerDe table '{}.{}' ({}). " +
-                "Returning metastore SD columns as fallback; schema may be stale ",
-                db, tableName, e.getMessage());
-            ret = tbl.getSd().getCols();
-          } else {
-            throw new UnsupportedOperationException("Storage schema reading not supported");
-          }
-        }
+        ret = getFieldsUsingSchemaReader(tbl, db, tableName, serdeLib, envContext);
       }
     } catch (Exception e) {
       ex = e;
@@ -4300,6 +4282,37 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return ret;
   }
 
+  private Table getTableForGetFields(String[] parsedDbName, String baseTableName)
+      throws UnknownTableException, MetaException {
+    try {
+      GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], baseTableName);
+      getTableRequest.setCatName(parsedDbName[CAT_NAME]);
+      Table tbl = get_table_core(getTableRequest);
+      firePreEvent(new PreReadTableEvent(tbl, this));
+      return tbl;
+    } catch (NoSuchObjectException e) {
+      throw new UnknownTableException(e.getMessage());
+    }
+  }
+
+  private List<FieldSchema> getFieldsUsingSchemaReader(Table tbl, String db, String tableName, String serdeLib,
+      EnvironmentContext envContext) throws MetaException {
+    try {
+      StorageSchemaReader schemaReader = getStorageSchemaReader();
+      return schemaReader.readSchema(tbl, envContext, getConf());
+    } catch (UnsupportedOperationException e) {
+      // Fallback to metastore for Avro Schema
+      if (AVRO_SERDE_CLASS.equals(serdeLib)) {
+        LOG.warn(
+            "Unable to read schema from storage for AvroSerDe table '{}.{}'. Returning metastore SD columns " + 
+                "as fallback; schema may be stale.",
+            db, tableName, e);
+        return tbl.getSd().getCols();
+      }
+      throw e;
+    }
+  }
+  
   @Override
   public GetFieldsResponse get_fields_req(GetFieldsRequest req)
       throws MetaException, UnknownTableException, UnknownDBException {

@@ -154,7 +154,7 @@ public abstract class TestHiveMetaStore {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
-    MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
+    MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader");
     MetastoreConf.setBoolVar(conf, ConfVars.INTEGER_JDO_PUSHDOWN, true);
   }
 
