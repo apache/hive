@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: "3"
-
 x-image:
   &image
   image: ${OZONE_IMAGE:-apache/ozone}:${OZONE_IMAGE_VERSION:-2.1.0}${OZONE_IMAGE_FLAVOR:-}

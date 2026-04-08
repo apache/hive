@@ -385,7 +385,7 @@ Recon: http://localhost:9888
 To stop and remove the Ozone stack:
 
 ```shell
-./stop-hive.sh --ozone # to stop containers
+./stop-hive.sh # to stop containers
 #OR
-./stop-hive.sh --ozone --cleanup # to remove volumes and database state
+./stop-hive.sh --cleanup # to remove volumes and database state
 ```
