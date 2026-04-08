@@ -31,7 +31,6 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * DataSourceProvider for the HikariCP connection pool.
@@ -43,6 +42,10 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   static final String HIKARI = "hikaricp";
   static final long DEFAULT_CONNECTION_TIMEOUT_MS = 60000;
 
+  private static final Map<String, Long> TIME_DURATION_CONFIGS = Map.of(
+      "connectionTimeout", DEFAULT_CONNECTION_TIMEOUT_MS
+  );
+
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
     String poolName = DataSourceProvider.getDataSourceName(hdpConfig);
@@ -52,10 +55,9 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
 
-    Properties properties = replacePrefix(DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
-    //  connectionTimeout is handled separately with getTimeDuration()
-    properties.remove("connectionTimeout");
-
+    Properties properties = replacePrefix(
+        DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI, TIME_DURATION_CONFIGS));
+    
     HikariConfig config;
     try {
       config = new HikariConfig(properties);
@@ -69,10 +71,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }
-
-    long connectionTimeout = hdpConfig.getTimeDuration(HIKARI + ".connectionTimeout", 
-        DEFAULT_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-    config.setConnectionTimeout(connectionTimeout);
 
     // It's kind of a waste to create a fixed size connection pool as same as the TxnHandler#connPool,
     // TxnHandler#connPoolMutex is mostly used for MutexAPI that is primarily designed to
