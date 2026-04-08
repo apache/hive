@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -117,6 +118,8 @@ public class Table implements Serializable {
   private transient HiveStorageHandler storageHandler;
   private transient StorageHandlerInfo storageHandlerInfo;
   private transient MaterializedViewMetadata materializedViewMetadata;
+
+  private List<FieldSchema> cachedPartCols;
 
   private TableSpec tableSpec;
 
@@ -193,6 +196,9 @@ public class Table implements Serializable {
 
     newTab.setMetaTable(this.getMetaTable());
     newTab.setSnapshotRef(this.getSnapshotRef());
+    if (this.cachedPartCols != null) {
+      newTab.cachedPartCols = new ArrayList<>(this.cachedPartCols);
+    }
     return newTab;
   }
 
@@ -214,6 +220,7 @@ public class Table implements Serializable {
    */
   public void setTTable(org.apache.hadoop.hive.metastore.api.Table tTable) {
     this.tTable = tTable;
+    clearCachedPartCols();
   }
 
   /**
@@ -248,7 +255,7 @@ public class Table implements Serializable {
     org.apache.hadoop.hive.metastore.api.Table t = new org.apache.hadoop.hive.metastore.api.Table();
     {
       t.setSd(sd);
-      t.setPartitionKeys(new ArrayList<FieldSchema>());
+      t.setPartitionKeys(null);
       t.setParameters(new HashMap<String, String>());
       t.setTableType(TableType.MANAGED_TABLE.toString());
       t.setDbName(databaseName);
@@ -595,12 +602,33 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getPartCols() {
-    List<FieldSchema> partKeys = tTable.getPartitionKeys();
-    if (partKeys == null) {
-      partKeys = new ArrayList<>();
-      tTable.setPartitionKeys(partKeys);
+    if (cachedPartCols != null) {
+      return cachedPartCols;
     }
+    List<FieldSchema> partKeys;
+    if (isTableTypeSet() && hasNonNativePartitionSupport()) {
+      partKeys = getStorageHandler().getPartitionKeys(this);
+    } else {
+      partKeys = tTable.getPartitionKeys();
+      if (partKeys == null) {
+        partKeys = new ArrayList<>();
+        tTable.setPartitionKeys(partKeys);
+      }
+    }
+    cachedPartCols = partKeys;
     return partKeys;
+  }
+
+  private void clearCachedPartCols() {
+    cachedPartCols = null;
+  }
+
+  private boolean isTableTypeSet() {
+    if (tTable.getParameters() == null) {
+      return false;
+    }
+    String tableType = tTable.getParameters().get(HiveMetaHook.TABLE_TYPE);
+    return tableType != null;
   }
 
   public FieldSchema getPartColByName(String colName) {
@@ -610,9 +638,7 @@ public class Table implements Serializable {
   }
 
   public List<String> getPartColNames() {
-    List<FieldSchema> partCols = hasNonNativePartitionSupport() ?
-        getStorageHandler().getPartitionKeys(this) : getPartCols();
-    return partCols.stream().map(FieldSchema::getName)
+    return getPartCols().stream().map(FieldSchema::getName)
       .collect(Collectors.toList());
   }
 
@@ -761,14 +787,22 @@ public class Table implements Serializable {
    * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
-    ArrayList<FieldSchema> f_list = new ArrayList<FieldSchema>();
-    f_list.addAll(getCols());
-    f_list.addAll(getPartCols());
-    return f_list;
+    List<FieldSchema> allCols = new ArrayList<>(getCols());
+    Set<String> colNames = new HashSet<>();
+    for (FieldSchema col : allCols) {
+      colNames.add(col.getName());
+    }
+    for (FieldSchema col : getPartCols()) {
+      if (!colNames.contains(col.getName())) {
+        allCols.add(col);
+      }
+    }
+    return allCols;
   }
 
   public void setPartCols(List<FieldSchema> partCols) {
     tTable.setPartitionKeys(partCols);
+    clearCachedPartCols();
   }
 
   public String getCatName() {
@@ -812,7 +846,7 @@ public class Table implements Serializable {
   }
   
   public boolean isPartitioned() {
-    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) : 
+    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) :
         CollectionUtils.isNotEmpty(getPartCols());
   }
 
@@ -1153,7 +1187,7 @@ public class Table implements Serializable {
       }
       colNames.add(colName);
     }
-    if (partCols != null) {
+    if (partCols != null && !icebergTable) {
       // there is no overlap between columns and partitioning columns
       for (FieldSchema partCol: partCols) {
         String colName = normalize(partCol.getName());
