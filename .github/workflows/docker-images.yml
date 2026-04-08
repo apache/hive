@@ -37,6 +37,9 @@ on:
         required: true
         default: '0.10.2'
 
+permissions:
+  contents: read
+
 env:
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
