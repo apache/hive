@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +40,14 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -499,4 +507,223 @@ class TestStatsUtils {
     assertEquals(-1, colStats.get(0).getNumFalses(), "Unknown numFalses (-1) should be preserved after scaling");
   }
 
+  // Tests for computeNDVGroupingColumns / extractNDVGroupingColumns
+
+  @Test
+  void testComputeNDVGroupingColumnsSourceColumnWithNulls() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs = new ColStatistics("col1", "string");
+    cs.setCountDistint(100);
+    cs.setNumNulls(50);
+    cs.setIsEstimated(false);  // source column
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
+    assertEquals(101, ndv, "Source column with nulls should get +1 for NULL: 100 + 1 = 101");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsSourceColumnNoNulls() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs = new ColStatistics("col1", "string");
+    cs.setCountDistint(100);
+    cs.setNumNulls(0);
+    cs.setIsEstimated(false);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
+    assertEquals(100, ndv, "Source column without nulls should not get +1");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsEstimatedExpression() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs = new ColStatistics("case_expr", "string");
+    cs.setCountDistint(3);
+    cs.setNumNulls(500);
+    cs.setIsEstimated(true);  // computed expression (e.g., CASE)
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
+    assertEquals(4, ndv, "NDV with nulls: 3 + 1 = 4");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsAllNullColumn() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs = new ColStatistics("col1", "string");
+    cs.setCountDistint(0);
+    cs.setNumNulls(1000);  // all rows are NULL
+    cs.setIsEstimated(false);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
+    assertEquals(1, ndv, "All-NULL column: NDV=0 but numNulls==numRows, so NDV becomes 1");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsAllNullEstimatedColumn() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs = new ColStatistics("case_expr", "string");
+    cs.setCountDistint(0);
+    cs.setNumNulls(1000);  // all rows are NULL
+    cs.setIsEstimated(true);  // from expression like CASE
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
+    assertEquals(0, ndv, "Estimated all-NULL column: NDV stays 0 (unknown from combiner)");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsUnknownNdv() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs = new ColStatistics("col1", "string");
+    cs.setCountDistint(0);  // unknown NDV
+    cs.setNumNulls(50);
+    cs.setIsEstimated(false);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs), parentStats, false);
+    assertEquals(0, ndv, "Unknown NDV (0) should NOT get +1 to avoid false precision");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsMultipleColumns() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics cs1 = new ColStatistics("col1", "string");
+    cs1.setCountDistint(10);
+    cs1.setNumNulls(50);
+    cs1.setIsEstimated(false);
+
+    ColStatistics cs2 = new ColStatistics("col2", "int");
+    cs2.setCountDistint(5);
+    cs2.setNumNulls(0);
+    cs2.setIsEstimated(false);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(cs1, cs2), parentStats, false);
+    // col1: 10 + 1 = 11 (has nulls), col2: 5 (no nulls)
+    // Product: 11 * 5 = 55
+    assertEquals(55, ndv, "Product of NDVs: (10+1) * 5 = 55");
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsMixedEstimatedAndSource() {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+
+    ColStatistics sourceCol = new ColStatistics("col1", "string");
+    sourceCol.setCountDistint(10);
+    sourceCol.setNumNulls(50);
+    sourceCol.setIsEstimated(false);  // source: gets +1
+
+    ColStatistics caseExpr = new ColStatistics("case_expr", "string");
+    caseExpr.setCountDistint(3);
+    caseExpr.setNumNulls(200);
+    caseExpr.setIsEstimated(true);  // estimated: no +1
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Arrays.asList(sourceCol, caseExpr), parentStats, false);
+    // sourceCol: 10 + 1 = 11, caseExpr: 3 + 1 = 4
+    // Product: 11 * 4 = 44
+    assertEquals(44, ndv, "Mixed columns: (10+1) * (3+1) = 44");
+  }
+
+  @Test
+  void testGetColStatisticsFromExpressionNdvCappedAtNumRows() {
+    Statistics parentStats = new Statistics(100, 800, 0, 0);
+
+    ColStatistics col1Stats = new ColStatistics("col1", "string");
+    col1Stats.setCountDistint(80);
+    col1Stats.setNumNulls(0);
+    col1Stats.setAvgColLen(10);
+
+    ColStatistics col2Stats = new ColStatistics("col2", "string");
+    col2Stats.setCountDistint(80);
+    col2Stats.setNumNulls(0);
+    col2Stats.setAvgColLen(10);
+
+    parentStats.setColumnStats(Arrays.asList(col1Stats, col2Stats));
+
+    GenericUDFIf udfIf = new GenericUDFIf();
+    ExprNodeConstantDesc condExpr = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, true);
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "t", false);
+    ExprNodeColumnDesc col2Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col2", "t", false);
+
+    ExprNodeGenericFuncDesc ifExpr = new ExprNodeGenericFuncDesc(
+        TypeInfoFactory.stringTypeInfo, udfIf, "if",
+        Arrays.asList(condExpr, col1Expr, col2Expr));
+
+    ColStatistics result = StatsUtils.getColStatisticsFromExpression(new HiveConf(), parentStats, ifExpr);
+
+    assertNotNull(result);
+    assertEquals(100, result.getCountDistint(), "NDV should be capped at numRows (100), not 160");
+  }
+
+  @Test
+  void testGetColStatisticsFromExpressionWhenNdvCapped() {
+    Statistics parentStats = new Statistics(100, 800, 0, 0);
+
+    ColStatistics col1Stats = new ColStatistics("col1", "string");
+    col1Stats.setCountDistint(60);
+    col1Stats.setNumNulls(0);
+    col1Stats.setAvgColLen(10);
+
+    ColStatistics col2Stats = new ColStatistics("col2", "string");
+    col2Stats.setCountDistint(70);
+    col2Stats.setNumNulls(0);
+    col2Stats.setAvgColLen(10);
+
+    parentStats.setColumnStats(Arrays.asList(col1Stats, col2Stats));
+
+    GenericUDFWhen udfWhen = new GenericUDFWhen();
+    ExprNodeConstantDesc condExpr = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, true);
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "t", false);
+    ExprNodeColumnDesc col2Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col2", "t", false);
+
+    ExprNodeGenericFuncDesc whenExpr = new ExprNodeGenericFuncDesc(
+        TypeInfoFactory.stringTypeInfo, udfWhen, "when",
+        Arrays.asList(condExpr, col1Expr, col2Expr));
+
+    ColStatistics result = StatsUtils.getColStatisticsFromExpression(new HiveConf(), parentStats, whenExpr);
+
+    assertNotNull(result);
+    assertEquals(100, result.getCountDistint(), "NDV should be capped at numRows (100), not 130");
+  }
+
+  @Test
+  void testGetColStatisticsFromExpressionCoalesceNdvCapped() {
+    Statistics parentStats = new Statistics(100, 800, 0, 0);
+
+    ColStatistics col1Stats = new ColStatistics("col1", "string");
+    col1Stats.setCountDistint(50);
+    col1Stats.setNumNulls(20);
+    col1Stats.setAvgColLen(10);
+
+    ColStatistics col2Stats = new ColStatistics("col2", "string");
+    col2Stats.setCountDistint(80);
+    col2Stats.setNumNulls(10);
+    col2Stats.setAvgColLen(10);
+
+    parentStats.setColumnStats(Arrays.asList(col1Stats, col2Stats));
+
+    GenericUDFCoalesce udfCoalesce = new GenericUDFCoalesce();
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "t", false);
+    ExprNodeColumnDesc col2Expr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col2", "t", false);
+
+    ExprNodeGenericFuncDesc coalesceExpr = new ExprNodeGenericFuncDesc(
+        TypeInfoFactory.stringTypeInfo, udfCoalesce, "coalesce",
+        Arrays.asList(col1Expr, col2Expr));
+
+    ColStatistics result = StatsUtils.getColStatisticsFromExpression(new HiveConf(), parentStats, coalesceExpr);
+
+    assertNotNull(result);
+    assertEquals(100, result.getCountDistint(), "NDV should be capped at numRows (100), not 130");
+  }
 }

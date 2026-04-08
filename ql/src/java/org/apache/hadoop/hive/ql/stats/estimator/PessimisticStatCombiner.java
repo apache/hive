@@ -21,16 +21,26 @@ package org.apache.hadoop.hive.ql.stats.estimator;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 /**
  * Combines {@link ColStatistics} objects to provide the most pessimistic estimate.
  */
 public class PessimisticStatCombiner {
 
+  private final long numRows;
   private boolean inited;
+  private boolean hasUnknownNDV;
   private ColStatistics result;
 
+  public PessimisticStatCombiner(long numRows) {
+    this.numRows = numRows;
+  }
+
   public void add(ColStatistics stat) {
+    // NDV==0 means unknown, unless it's a NULL constant (numNulls == numRows)
+    hasUnknownNDV = hasUnknownNDV || (stat.getCountDistint() == 0 && stat.getNumNulls() != numRows);
+
     if (!inited) {
       inited = true;
       result = stat.clone();
@@ -41,8 +51,10 @@ public class PessimisticStatCombiner {
     if (stat.getAvgColLen() > result.getAvgColLen()) {
       result.setAvgColLen(stat.getAvgColLen());
     }
-    if (stat.getCountDistint() > result.getCountDistint()) {
-      result.setCountDistint(stat.getCountDistint());
+    if (hasUnknownNDV) {
+      result.setCountDistint(0);
+    } else {
+      result.setCountDistint(StatsUtils.safeAdd(result.getCountDistint(), stat.getCountDistint()));
     }
     if (stat.getNumNulls() < 0 || result.getNumNulls() < 0) {
       result.setNumNulls(-1);
@@ -63,8 +75,8 @@ public class PessimisticStatCombiner {
       result.setFilterColumn();
     }
   }
+
   public Optional<ColStatistics> getResult() {
     return Optional.of(result);
-
   }
 }

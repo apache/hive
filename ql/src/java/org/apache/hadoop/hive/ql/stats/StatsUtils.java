@@ -1578,9 +1578,11 @@ public class StatsUtils {
             csList.add(cs);
           }
           if (csList.size() == engfd.getChildren().size()) {
-            Optional<ColStatistics> res = se.estimate(csList);
+            Optional<ColStatistics> res = se.estimate(csList, parentStats);
             if (res.isPresent()) {
               ColStatistics newStats = res.get();
+              // NDV cannot exceed numRows
+              newStats.setCountDistint(Math.min(newStats.getCountDistint(), numRows));
               colType = colType.toLowerCase();
               newStats.setColumnType(colType);
               newStats.setColumnName(colName);
@@ -2109,7 +2111,10 @@ public class StatsUtils {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         long ndv = cs.getCountDistint();
-        if (cs.getNumNulls() > 0) {
+        // NDV needs to be adjusted if a column has a known NDV along with NULL values
+        // or if a column happens to be "const NULL"
+        if ((ndv > 0 && cs.getNumNulls() > 0) ||
+            (ndv == 0 && !cs.isEstimated() && cs.getNumNulls() == parentStats.getNumRows())) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }
         ndvValues.add(ndv);
