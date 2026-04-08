@@ -208,8 +208,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
 
   private static String getColTypeOf(Table tbl, String partKey) {
-    for (FieldSchema fs : tbl.hasNonNativePartitionSupport() ?
-          tbl.getStorageHandler().getPartitionKeys(tbl) : tbl.getPartitionKeys()) {
+    for (FieldSchema fs : tbl.getPartCols()) {
       if (partKey.equalsIgnoreCase(fs.getName())) {
         return fs.getType().toLowerCase();
       }
