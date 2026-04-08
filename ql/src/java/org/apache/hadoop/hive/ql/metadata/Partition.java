@@ -173,7 +173,8 @@ public class Partition implements Serializable {
           // set default if location is not set and this is a physical
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
-            Path partPath = new Path(table.getDataLocation(), Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
+            Path partPath = new Path(table.getDataLocation(),
+                Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
             tPartition.getSd().setLocation(partPath.toString());
           }
         }
