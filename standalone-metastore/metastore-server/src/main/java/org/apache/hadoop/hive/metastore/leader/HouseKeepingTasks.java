@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.leader;
 
 import com.cronutils.utils.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
@@ -69,6 +69,12 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
 
     Collection<String> taskNames =
         MetastoreConf.getStringCollection(configuration, MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY);
+    if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID)) {
+      taskNames.removeAll(ImmutableSet.of(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,
+          MetastoreConf.ACID_HOUSEKEEPER_SERVICE_CLASS,
+          MetastoreConf.ACID_TXN_CLEANER_SERVICE_CLASS,
+          MetastoreConf.MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS));
+    }
     for (String taskName : taskNames) {
       if (CompactionHouseKeeperService.class.getName().equals(taskName) && !isCompactorEnabled) {
         continue;
@@ -85,6 +91,10 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     List<MetastoreTaskThread> alwaysTasks = new ArrayList<>();
     Collection<String> taskNames =
         MetastoreConf.getStringCollection(configuration, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS);
+    if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID)) {
+      taskNames.removeAll(ImmutableSet.of(MetastoreConf.ACID_METRICS_TASK_CLASS,
+          MetastoreConf.ACID_METRICS_LOGGER_CLASS));
+    }
     for (String taskName : taskNames) {
       MetastoreTaskThread task =
           JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
