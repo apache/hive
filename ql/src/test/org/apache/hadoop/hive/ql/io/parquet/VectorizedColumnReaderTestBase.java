@@ -317,7 +317,7 @@ public class VectorizedColumnReaderTestBase {
       g.addGroup("nsf").append("c", intVal).append("d", intVal);
       g.append("e", doubleVal);
 
-      if (i % 6 != 0) {
+      if (i % 2 != 0 || i % 3 != 0) {
         Group some_null_g = group.addGroup("struct_field_some_null");
         if (i % 2 != 0) {
           some_null_g.append("f", intVal);

@@ -30,11 +30,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_parquet_struct_nulls
 POSTHOOK: Lineage: test_parquet_struct_nulls.id SCRIPT []
 POSTHOOK: Lineage: test_parquet_struct_nulls.st_prim SCRIPT []
-PREHOOK: query: SELECT * FROM test_parquet_struct_nulls ORDER BY id
+PREHOOK: query: SELECT * FROM test_parquet_struct_nulls
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_parquet_struct_nulls ORDER BY id
+POSTHOOK: query: SELECT * FROM test_parquet_struct_nulls
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####
@@ -51,11 +51,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####
 2
-PREHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL ORDER BY id
+PREHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL ORDER BY id
+POSTHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####
@@ -71,11 +71,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####
 1
-PREHOOK: query: SELECT * FROM test_parquet_struct_nulls ORDER BY id
+PREHOOK: query: SELECT * FROM test_parquet_struct_nulls
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_parquet_struct_nulls ORDER BY id
+POSTHOOK: query: SELECT * FROM test_parquet_struct_nulls
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_parquet_struct_nulls
 #### A masked pattern was here ####

@@ -49,19 +49,13 @@ public class VectorizedStructColumnReader implements VectorizedColumnReader {
         .readBatch(total, vectors[i], structTypeInfo.getAllStructFieldTypeInfos().get(i));
       structColumnVector.isRepeating = structColumnVector.isRepeating && vectors[i].isRepeating;
     }
-    int[] defLevels = null;
-    for (VectorizedColumnReader reader : fieldReaders) {
-      defLevels = reader.getDefinitionLevels();
-      if (defLevels != null) {
-        break;
-      }
-    }
+    int[] defLevels = getDefinitionLevels();
 
     // Evaluate struct nullability using Parquet Definition Levels
     if (defLevels != null) {
       for (int j = 0; j < total; j++) {
         if (defLevels[j] < structDefLevel) {
-          // The D-Level boundary crossed the struct. The whole struct is null.
+          // The Definition Level boundary crossed the struct. The whole struct is null.
           structColumnVector.isNull[j] = true;
           structColumnVector.noNulls = false;
         }
