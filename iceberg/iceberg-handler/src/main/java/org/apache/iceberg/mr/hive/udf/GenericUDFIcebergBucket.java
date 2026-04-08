@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -217,28 +218,30 @@ public class GenericUDFIcebergBucket extends GenericUDF implements StatEstimator
 
   @Override
   public StatEstimator getStatEstimator() {
-    return new BucketStatEstimator();
+    return new BucketStatEstimator(numBuckets);
   }
 
-  private static class BucketStatEstimator implements StatEstimator {
+  static class BucketStatEstimator implements StatEstimator {
+    private final int numBuckets;
+
+    BucketStatEstimator(int numBuckets) {
+      this.numBuckets = numBuckets;
+    }
+
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      if (argStats.size() != 2) {
+      if (argStats.isEmpty() || numBuckets <= 0) {
         return Optional.empty();
       }
-      ColStatistics inputStats = argStats.get(0);
-      ColStatistics bucketCountStats = argStats.get(1);
-      ColStatistics.Range bucketRange = bucketCountStats.getRange();
-      if (bucketRange == null || bucketRange.minValue == null) {
-        return Optional.empty();
-      }
-      long numBuckets = bucketRange.minValue.longValue();
-      if (numBuckets <= 0) {
-        return Optional.empty();
-      }
-      ColStatistics result = inputStats.clone();
+      ColStatistics inputStats = argStats.getFirst();
+
+      ColStatistics result = new ColStatistics();
       result.setCountDistint(Math.min(inputStats.getCountDistint(), numBuckets));
+      result.setNumNulls(inputStats.getNumNulls());
+      result.setAvgColLen(JavaDataModel.get().primitive1());
       result.setRange(0, numBuckets - 1);
+      result.setIsEstimated(true);
+
       return Optional.of(result);
     }
   }

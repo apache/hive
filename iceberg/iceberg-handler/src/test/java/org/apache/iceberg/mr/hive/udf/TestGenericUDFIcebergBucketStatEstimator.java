@@ -61,13 +61,11 @@ public class TestGenericUDFIcebergBucketStatEstimator {
     Assert.assertFalse(result.isPresent());
   }
 
-  private Optional<ColStatistics> estimateBucket(long sourceNdv, long numBuckets) {
+  private static Optional<ColStatistics> estimateBucket(long sourceNdv, int numBuckets) {
     ColStatistics sourceStats = new ColStatistics("col", "int");
     sourceStats.setCountDistint(sourceNdv);
-    ColStatistics numBucketsStats = new ColStatistics("numBuckets", "int");
-    numBucketsStats.setRange(numBuckets, numBuckets);
 
-    StatEstimator estimator = new GenericUDFIcebergBucket().getStatEstimator();
-    return estimator.estimate(Arrays.asList(sourceStats, numBucketsStats));
+    StatEstimator estimator = new GenericUDFIcebergBucket.BucketStatEstimator(numBuckets);
+    return estimator.estimate(Arrays.asList(sourceStats));
   }
 }
