@@ -21,14 +21,12 @@ package org.apache.hadoop.hive.ql.exec.repl.ranger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.multipart.FormDataMultiPart;
-import com.sun.jersey.multipart.MultiPart;
-import com.sun.jersey.multipart.file.StreamDataBodyPart;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -40,12 +38,17 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.http.client.utils.URIBuilder;
-import org.eclipse.jetty.util.MultiPartWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -101,14 +104,14 @@ public class RangerRestClientImpl implements RangerRestClient {
   @VisibleForTesting
   RangerExportPolicyList exportRangerPoliciesPlain(String finalUrl, HiveConf hiveConf) throws Exception {
 
-    WebResource.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
+    Invocation.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
     RangerExportPolicyList rangerExportPolicyList = new RangerExportPolicyList();
-    ClientResponse clientResp = builder.get(ClientResponse.class);
+    Response clientResp = builder.get(Response.class);
     String response = null;
     if (clientResp != null) {
       if (clientResp.getStatus() == HttpServletResponse.SC_OK) {
         Gson gson = new GsonBuilder().create();
-        response = clientResp.getEntity(String.class);
+        response = clientResp.readEntity(String.class);
         LOG.debug("Response received for ranger export {} ", response);
         if (StringUtils.isNotEmpty(response)) {
           rangerExportPolicyList = gson.fromJson(response, RangerExportPolicyList.class);
@@ -176,9 +179,9 @@ public class RangerRestClientImpl implements RangerRestClient {
             .withRetryOnException(Exception.class).build();
     try {
       retryable.executeCallable(() -> {
-        ClientResponse clientResp = null;
-        WebResource.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
-        clientResp = builder.delete(ClientResponse.class);
+        Response clientResp = null;
+        Invocation.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
+        clientResp = builder.delete(Response.class);
         if (clientResp != null) {
           switch (clientResp.getStatus()) {
             case HttpServletResponse.SC_NO_CONTENT:
@@ -252,7 +255,7 @@ public class RangerRestClientImpl implements RangerRestClient {
                                                            String serviceMapJsonFileName, String jsonServiceMap,
                                                            String finalUrl, RangerExportPolicyList
                                                            rangerExportPolicyList, HiveConf hiveConf) throws Exception {
-    ClientResponse clientResp = null;
+    Response clientResp = null;
     StreamDataBodyPart filePartPolicies = new StreamDataBodyPart("file",
       new ByteArrayInputStream(jsonRangerExportPolicyList.getBytes(StandardCharsets.UTF_8)),
       rangerPoliciesJsonFileName);
@@ -263,9 +266,9 @@ public class RangerRestClientImpl implements RangerRestClient {
     MultiPart multipartEntity = null;
     try {
       multipartEntity = formDataMultiPart.bodyPart(filePartPolicies).bodyPart(filePartServiceMap);
-      WebResource.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
-      clientResp = builder.accept(MediaType.APPLICATION_JSON).type(MediaType.MULTIPART_FORM_DATA)
-        .post(ClientResponse.class, multipartEntity);
+      Invocation.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
+      clientResp = builder.accept(MediaType.APPLICATION_JSON).post(Entity.entity(multipartEntity,
+              MediaType.MULTIPART_FORM_DATA), Response.class);
       if (clientResp != null) {
         if (clientResp.getStatus() == HttpServletResponse.SC_NO_CONTENT) {
           LOG.debug("Ranger policy import finished successfully");
@@ -317,15 +320,14 @@ public class RangerRestClientImpl implements RangerRestClient {
   @VisibleForTesting
   synchronized Client getRangerClient(HiveConf hiveConf) {
     Client ret = null;
-    ClientConfig config = new DefaultClientConfig();
-    config.getClasses().add(MultiPartWriter.class);
-    config.getProperties().put(ClientConfig.PROPERTY_FOLLOW_REDIRECTS, true);
-    config.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT,
+    ClientConfig config = new ClientConfig();
+    config.getClasses().add(MultiPartFeature.class);
+    config.getProperties().put(ClientProperties.FOLLOW_REDIRECTS, true);
+    config.getProperties().put(ClientProperties.CONNECT_TIMEOUT,
             (int) hiveConf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS));
-    config.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT,
+    config.getProperties().put(ClientProperties.READ_TIMEOUT,
             (int) hiveConf.getTimeVar(HiveConf.ConfVars.REPL_RANGER_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS));
-    ret = Client.create(config);
-    return ret;
+    return ClientBuilder.newClient(config);
   }
 
   @Override
@@ -455,9 +457,9 @@ public class RangerRestClientImpl implements RangerRestClient {
 
   @VisibleForTesting
   boolean checkConnectionPlain(String url, HiveConf hiveConf) {
-    WebResource.Builder builder;
+    Invocation.Builder builder;
     builder = getRangerResourceBuilder(url, hiveConf);
-    ClientResponse clientResp = builder.get(ClientResponse.class);
+    Response clientResp = builder.get(Response.class);
     return (clientResp.getStatus() < HttpServletResponse.SC_UNAUTHORIZED);
   }
 
@@ -525,10 +527,9 @@ public class RangerRestClientImpl implements RangerRestClient {
     return denyRangerPolicy;
   }
 
-  private WebResource.Builder getRangerResourceBuilder(String url, HiveConf hiveConf) {
+  private Invocation.Builder getRangerResourceBuilder(String url, HiveConf hiveConf) {
     Client client = getRangerClient(hiveConf);
-    WebResource webResource = client.resource(url);
-    WebResource.Builder builder = webResource.getRequestBuilder();
-    return builder;
+    WebTarget target = client.target(url);
+    return target.request();
   }
 }
