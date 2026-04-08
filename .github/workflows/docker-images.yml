@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Build and Publish docker images for Hive GA
+name: Build and Publish docker images
 
 on:
   create:
@@ -115,16 +115,16 @@ jobs:
           ls ./standalone-metastore/packaging/src/docker/
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
 
       - name: Build Hive Image locally
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294
         with:
           context: ./packaging/src/docker/
           file: ./packaging/src/docker/Dockerfile
@@ -139,7 +139,7 @@ jobs:
             BUILD_ENV=${{ env.BUILD_ENV }}
 
       - name: Build Standalone Metastore Image locally
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294
         with:
           context: ./standalone-metastore/packaging/src/docker/
           file: ./standalone-metastore/packaging/src/docker/Dockerfile
@@ -153,10 +153,10 @@ jobs:
             BUILD_ENV=${{ env.BUILD_ENV }}
 
       - name: Create k8s cluster
-        uses: helm/kind-action@v1
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc
 
       - name: Set up Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2
 
       - name: Load images
         run: kind load docker-image hive:test hive:standalone-metastore-test --name chart-testing
@@ -181,7 +181,7 @@ jobs:
           kind delete cluster --name chart-testing
 
       - name: Build and push Hive Image to docker hub
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294
         with:
           context: ./packaging/src/docker/
           file: ./packaging/src/docker/Dockerfile
@@ -196,7 +196,7 @@ jobs:
             BUILD_ENV=${{ env.BUILD_ENV }}
 
       - name: Build and push Standalone Metastore Image to docker hub
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294
         with:
           context: ./standalone-metastore/packaging/src/docker/
           file: ./standalone-metastore/packaging/src/docker/Dockerfile
