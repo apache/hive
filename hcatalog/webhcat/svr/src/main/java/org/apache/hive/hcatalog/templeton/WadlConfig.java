@@ -20,9 +20,9 @@ package org.apache.hive.hcatalog.templeton;
 
 import java.util.List;
 
-import com.sun.jersey.api.wadl.config.WadlGeneratorConfig;
-import com.sun.jersey.api.wadl.config.WadlGeneratorDescription;
-import com.sun.jersey.server.wadl.generators.resourcedoc.WadlGeneratorResourceDocSupport;
+import org.glassfish.jersey.server.wadl.config.WadlGeneratorConfig;
+import org.glassfish.jersey.server.wadl.config.WadlGeneratorDescription;
+import org.glassfish.jersey.server.wadl.internal.generators.resourcedoc.WadlGeneratorResourceDocSupport;
 
 /**
  * Simple class that incorporates javadoc information into the

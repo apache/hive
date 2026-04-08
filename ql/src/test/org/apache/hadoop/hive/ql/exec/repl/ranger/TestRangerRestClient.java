@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.ranger;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.config.ClientConfig;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.glassfish.jersey.client.ClientProperties;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,8 +33,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.client.Client;
 
 import static org.mockito.Mockito.mockStatic;
 
@@ -125,7 +124,7 @@ public class TestRangerRestClient {
             TimeUnit.MILLISECONDS)).thenReturn(500L);
     Mockito.when(mockClient.getRangerClient(Mockito.any(HiveConf.class))).thenCallRealMethod();
     Client client =mockClient.getRangerClient(conf);
-    Assert.assertEquals(20, client.getProperties().get(ClientConfig.PROPERTY_CONNECT_TIMEOUT));
-    Assert.assertEquals(500, client.getProperties().get(ClientConfig.PROPERTY_READ_TIMEOUT));
+    Assert.assertEquals(20, client.getConfiguration().getProperty(ClientProperties.CONNECT_TIMEOUT));
+    Assert.assertEquals(500, client.getConfiguration().getProperty(ClientProperties.READ_TIMEOUT));
   }
 }

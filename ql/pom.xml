@@ -61,6 +61,14 @@
           <groupId>org.slf4j</groupId>
           <artifactId>jul-to-slf4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey.contribs</groupId>
+          <artifactId>jersey-multipart</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -79,6 +87,10 @@
         <exclusion>
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey.contribs</groupId>
+          <artifactId>jersey-multipart</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -854,8 +866,8 @@
       <artifactId>value-annotations</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.sun.jersey.contribs</groupId>
-      <artifactId>jersey-multipart</artifactId>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey.version}</version>
     </dependency>
     <dependency>
