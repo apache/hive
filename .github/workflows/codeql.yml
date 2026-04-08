@@ -23,6 +23,7 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '16 5 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
