@@ -1,3 +1,4 @@
+set hive.optimize.sort.dynamic.partition.threshold=1;
 set hive.explain.user=false;
 
 drop table if exists tbl_ice;

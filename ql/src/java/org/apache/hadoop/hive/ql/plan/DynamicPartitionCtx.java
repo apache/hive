@@ -252,7 +252,6 @@ public class DynamicPartitionCtx implements Serializable {
   public void addCustomPartitionExpressions(
           List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customPartitionExpressions) {
     if (!org.apache.commons.collections.CollectionUtils.isEmpty(customPartitionExpressions)) {
-      this.hasCustomPartitionOrSortExpr = true;
       this.customPartitionExpressions.addAll(customPartitionExpressions);
     }
   }
@@ -289,5 +288,9 @@ public class DynamicPartitionCtx implements Serializable {
 
   public boolean hasCustomPartitionOrSortExpression() {
     return hasCustomPartitionOrSortExpr;
+  }
+
+  public void setHasCustomPartitionOrSortExpression(boolean hasCustomPartitionOrSortExpr) {
+    this.hasCustomPartitionOrSortExpr = hasCustomPartitionOrSortExpr;
   }
 }

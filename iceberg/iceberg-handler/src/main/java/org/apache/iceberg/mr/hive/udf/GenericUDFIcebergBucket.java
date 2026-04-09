@@ -19,12 +19,18 @@
 package org.apache.iceberg.mr.hive.udf;
 
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -52,7 +58,7 @@ import org.apache.iceberg.types.Types;
     value = "_FUNC_(value, bucketCount) - " +
         "Returns the bucket value calculated by Iceberg bucket transform function ",
     extended = "Example:\n  > SELECT _FUNC_('A bucket full of ice!', 5);\n  4")
-public class GenericUDFIcebergBucket extends GenericUDF {
+public class GenericUDFIcebergBucket extends GenericUDF implements StatEstimatorProvider {
   private final IntWritable result = new IntWritable();
   private int numBuckets = -1;
   private transient PrimitiveObjectInspector argumentOI;
@@ -208,5 +214,35 @@ public class GenericUDFIcebergBucket extends GenericUDF {
   @Override
   public String getDisplayString(String[] children) {
     return getStandardDisplayString("iceberg_bucket", children);
+  }
+
+  @Override
+  public StatEstimator getStatEstimator() {
+    return new BucketStatEstimator(numBuckets);
+  }
+
+  static class BucketStatEstimator implements StatEstimator {
+    private final int numBuckets;
+
+    BucketStatEstimator(int numBuckets) {
+      this.numBuckets = numBuckets;
+    }
+
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      if (argStats.isEmpty() || numBuckets <= 0) {
+        return Optional.empty();
+      }
+      ColStatistics inputStats = argStats.getFirst();
+
+      ColStatistics result = new ColStatistics();
+      result.setCountDistint(Math.min(inputStats.getCountDistint(), numBuckets));
+      result.setNumNulls(inputStats.getNumNulls());
+      result.setAvgColLen(JavaDataModel.get().primitive1());
+      result.setRange(0, numBuckets - 1);
+      result.setIsEstimated(true);
+
+      return Optional.of(result);
+    }
   }
 }
