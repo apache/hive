@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -76,10 +75,10 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       + ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED.varname + " to work around this error";
 
   private static final Map<String, VirtualColumn> ALLOWED_VIRTUAL_COLUMNS = Collections.unmodifiableMap(
-          new HashMap<String, VirtualColumn>() {{
-    put(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID);
-    put(VirtualColumn.ROWISDELETED.getName(), VirtualColumn.ROWISDELETED);
-  }});
+      new HashMap<>() {{
+        put(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID);
+        put(VirtualColumn.ROWISDELETED.getName(), VirtualColumn.ROWISDELETED);
+      }});
 
   private final InputFormat<NullWritable, VectorizedRowBatch> sourceInputFormat;
   private final AvoidSplitCombination sourceASC;
@@ -203,7 +202,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
   @Override
   public boolean shouldSkipCombine(Path path, Configuration conf) throws IOException {
-    return sourceASC == null ? false : sourceASC.shouldSkipCombine(path, conf);
+    return sourceASC != null && sourceASC.shouldSkipCombine(path, conf);
   }
 
   static VectorizedRowBatchCtx createFakeVrbCtx(MapWork mapWork) throws HiveException {
@@ -211,8 +210,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
     // Add all non-virtual columns from the TableScan operator.
     RowSchema rowSchema = findTsOp(mapWork).getSchema();
-    final List<String> colNames = new ArrayList<String>(rowSchema.getSignature().size());
-    final List<TypeInfo> colTypes = new ArrayList<TypeInfo>(rowSchema.getSignature().size());
+    final List<String> colNames = new ArrayList<>(rowSchema.getSignature().size());
+    final List<TypeInfo> colTypes = new ArrayList<>(rowSchema.getSignature().size());
     ArrayList<VirtualColumn> virtualColumnList = new ArrayList<>(2);
     for (ColumnInfo c : rowSchema.getSignature()) {
       String columnName = c.getInternalName();
@@ -232,15 +231,15 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     if (paths.hasNext()) {
       PartitionDesc partDesc = mapWork.getPathToPartitionInfo().get(paths.next());
       if (partDesc != null) {
-        LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
+        Map<String, String> partSpec = partDesc.getPartSpec();
         if (partSpec != null && !partSpec.isEmpty()) {
           partitionColumnCount = partSpec.size();
         }
       }
     }
     final VirtualColumn[] virtualColumns = virtualColumnList.toArray(new VirtualColumn[0]);
-    return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
-        colTypes.toArray(new TypeInfo[colTypes.size()]), null, null, partitionColumnCount,
+    return new VectorizedRowBatchCtx(colNames.toArray(new String[0]),
+        colTypes.toArray(new TypeInfo[0]), null, null, partitionColumnCount,
         virtualColumns.length, virtualColumns, new String[0], null);
   }
 

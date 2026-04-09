@@ -89,7 +89,7 @@ public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchi
     Path archivePath = new Path(originalDir, ARCHIVE_NAME);
     URI archiveUri = archivePath.toUri();
     URI originalUri = ArchiveUtils.addSlash(originalDir.toUri());
-    ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(context.getConf(), archiveUri, originalUri);
+    ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(archiveUri, originalUri);
     URI sourceUri = harHelper.getHarUri(originalUri);
     Path sourceDir = new Path(sourceUri.getScheme(), sourceUri.getAuthority(), sourceUri.getPath());
 
@@ -157,7 +157,7 @@ public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchi
       }
       originalDir = partitionSpecInfo.createPath(table);
     } else {
-      Partition partition = partitions.get(0);
+      Partition partition = partitions.getFirst();
       if (ArchiveUtils.isArchived(partition)) {
         originalDir = new Path(AlterTableArchiveUtils.getOriginalLocation(partition));
       } else {

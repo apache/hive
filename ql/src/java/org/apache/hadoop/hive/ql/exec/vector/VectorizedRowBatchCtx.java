@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -50,8 +49,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.FileSplit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -62,10 +59,6 @@ import com.google.common.base.Preconditions;
  * with the partition column.
  */
 public class VectorizedRowBatchCtx {
-
-  private static final long serialVersionUID = 1L;
-
-  private static final Logger LOG = LoggerFactory.getLogger(VectorizedRowBatchCtx.class.getName());
 
   // The following information is for creating VectorizedRowBatch and for helping with
   // knowing how the table is partitioned.
@@ -114,11 +107,7 @@ public class VectorizedRowBatchCtx {
     /*
      * Needed virtual columns are those used in the query.
      */
-    if (neededVirtualColumns == null) {
-      neededVirtualColumns = new VirtualColumn[0];
-    } else {
-      this.neededVirtualColumns = neededVirtualColumns;
-    }
+    this.neededVirtualColumns = (neededVirtualColumns == null) ? new VirtualColumn[0] : neededVirtualColumns;
 
     /*
      * The virtual columns available under vectorization.  They may not actually
@@ -287,7 +276,7 @@ public class VectorizedRowBatchCtx {
   public static void getPartitionValues(VectorizedRowBatchCtx vrbCtx, PartitionDesc partDesc,
       Object[] partitionValues) {
 
-    LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
+    Map<String, String> partSpec = partDesc.getPartSpec();
 
     for (int i = 0; i < vrbCtx.partitionColumnCount; i++) {
       Object objectValue;
@@ -347,8 +336,7 @@ public class VectorizedRowBatchCtx {
       }
     } else {
       // Create only needed/included columns data columns.
-      for (int i = 0; i < dataColumnNums.length; i++) {
-        int columnNum = dataColumnNums[i];
+      for (int columnNum : dataColumnNums) {
         Preconditions.checkState(columnNum < nonScratchColumnCount);
         result.cols[columnNum] =
             createColumnVectorFromRowColumnTypeInfos(columnNum);
@@ -402,7 +390,6 @@ public class VectorizedRowBatchCtx {
     LongColumnVector bucketIdColVector = (LongColumnVector) rowIdStructColVector.fields[1];
     bucketIdColVector.isRepeating = true;
     bucketIdColVector.vector[0] = bucketIdentifier.getBucketProperty();
-    LongColumnVector rowIdColVector = (LongColumnVector) rowIdStructColVector.fields[2];
   }
 
   /**
@@ -440,7 +427,7 @@ public class VectorizedRowBatchCtx {
         lcv.isNull[0] = true;
         lcv.isRepeating = true;
       } else {
-        lcv.fill((Boolean) value == true ? 1 : 0);
+        lcv.fill((Boolean) value ? 1 : 0);
       }
     }
     break;

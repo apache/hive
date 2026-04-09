@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,18 +71,16 @@ public final class ArchiveUtils {
       // scheme like table/ds=2011-01-02/hr=13/
       // ARCHIVE PARTITION (ds='2011-01-02') will work and
       // ARCHIVE PARTITION(hr='13') won't
-      List<FieldSchema> prefixFields = new ArrayList<FieldSchema>();
-      List<String> prefixValues = new ArrayList<String>();
+      List<FieldSchema> prefixFields = new ArrayList<>();
+      List<String> prefixValues = new ArrayList<>();
       List<FieldSchema> partCols = tbl.getPartCols();
       Iterator<String> itrPsKeys = partSpec.keySet().iterator();
       for (FieldSchema fs : partCols) {
         if (!itrPsKeys.hasNext()) {
           break;
         }
-        if (!itrPsKeys.next().toLowerCase().equals(
-            fs.getName().toLowerCase())) {
-          throw new HiveException("Invalid partition specification: "
-              + partSpec);
+        if (!itrPsKeys.next().equalsIgnoreCase(fs.getName())) {
+          throw new HiveException("Invalid partition specification: " + partSpec);
         }
         prefixFields.add(fs);
         prefixValues.add(partSpec.get(fs.getName()));
@@ -133,7 +130,7 @@ public final class ArchiveUtils {
      * @param archive absolute location of archive in underlying filesystem
      * @param originalBase directory for which Hadoop archive was created
      */
-    public HarPathHelper(HiveConf hconf, URI archive, URI originalBase) throws HiveException {
+    public HarPathHelper(URI archive, URI originalBase) throws HiveException {
       this.originalBase = addSlash(originalBase);
       String parentHost = archive.getHost();
       String harHost = archive.getScheme();
@@ -253,8 +250,7 @@ public final class ArchiveUtils {
    * name when it can't
    * @throws HiveException
    */
-  public static String conflictingArchiveNameOrNull(Hive db, Table tbl,
-        LinkedHashMap<String, String> partSpec)
+  public static String conflictingArchiveNameOrNull(Hive db, Table tbl, Map<String, String> partSpec)
       throws HiveException {
 
     List<FieldSchema> partKeys = tbl.getPartitionKeys();
@@ -271,8 +267,8 @@ public final class ArchiveUtils {
           "partspec " + partSpec + " is wrong for table " + tbl.getTableName());
     }
 
-    Map<String, String> spec = new HashMap<String, String>(partSpec);
-    List<String> reversedKeys = new ArrayList<String>();
+    Map<String, String> spec = new HashMap<>(partSpec);
+    List<String> reversedKeys = new ArrayList<>();
     for (FieldSchema fs : tbl.getPartCols()) {
       if (spec.containsKey(fs.getName())) {
         reversedKeys.add(fs.getName());
@@ -283,8 +279,8 @@ public final class ArchiveUtils {
 
     for (String rk : reversedKeys) {
       List<Partition> parts = db.getPartitions(tbl, spec, (short) 1);
-      if (parts.size() != 0) {
-        Partition p = parts.get(0);
+      if (!parts.isEmpty()) {
+        Partition p = parts.getFirst();
         if (!isArchived(p)) {
           // if archiving was done at this or at upper level, every matched
           // partition would be archived, so it not being archived means
