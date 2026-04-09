@@ -255,7 +255,7 @@ public class Table implements Serializable {
     org.apache.hadoop.hive.metastore.api.Table t = new org.apache.hadoop.hive.metastore.api.Table();
     {
       t.setSd(sd);
-      t.setPartitionKeys(null);
+      t.setPartitionKeys(new ArrayList<FieldSchema>());
       t.setParameters(new HashMap<String, String>());
       t.setTableType(TableType.MANAGED_TABLE.toString());
       t.setDbName(databaseName);
