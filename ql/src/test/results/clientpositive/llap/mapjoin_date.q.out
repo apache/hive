@@ -45,7 +45,7 @@ STAGE PLANS:
                 TableScan
                   alias: p1
                   filterExpr: birthdate is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:birthdate, smallTablePos:1, keyRatio:0.0
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:birthdate, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 2 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
