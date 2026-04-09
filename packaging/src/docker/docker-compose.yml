@@ -157,7 +157,6 @@ services:
       LLAP_SHUFFLE_PORT: '15551'
 
       DEFAULT_FS: "${DEFAULT_FS}"
-      HADOOP_CLASSPATH: /opt/hadoop/share/hadoop/tools/lib/*
       S3_ENDPOINT_URL: "${S3_ENDPOINT_URL}"
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
