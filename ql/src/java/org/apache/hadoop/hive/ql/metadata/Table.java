@@ -632,9 +632,9 @@ public class Table implements Serializable {
   }
 
   public FieldSchema getPartColByName(String colName) {
-    return getPartCols().stream()
-      .filter(key -> key.getName().toLowerCase().equals(colName))
-      .findFirst().orElse(null);
+    return hasNonNativePartitionSupport() ? null : getPartCols().stream()
+        .filter(key -> key.getName().toLowerCase().equals(colName))
+        .findFirst().orElse(null);
   }
 
   public List<String> getPartColNames() {
