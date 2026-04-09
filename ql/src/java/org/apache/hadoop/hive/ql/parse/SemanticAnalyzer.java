@@ -12002,6 +12002,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Determine row schema for TSOP.
       // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
+      Set<String> partCols = tab.hasNonNativePartitionSupport() ?
+          Sets.newHashSet(tab.getPartColNames()) : Collections.emptySet();
       try {
         // Including parameters passed in the query
         if (properties != null) {
@@ -12019,8 +12021,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         deserializer.handleJobLevelConfiguration(conf);
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
-        Set<String> partCols = tab.hasNonNativePartitionSupport() ?
-            Sets.newHashSet(tab.getPartColNames()) : Collections.emptySet();
         for (int i = 0; i < fields.size(); i++) {
           /**
            * if the column is a skewed column, use ColumnInfo accordingly
@@ -12040,6 +12040,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Hack!! - refactor once the metadata APIs with types are ready
       // Finally add the partitioning columns
       for (FieldSchema part_col : tab.getPartCols()) {
+        if(partCols.contains(part_col.getName())){
+          break;
+        }
         LOG.trace("Adding partition col: " + part_col);
         rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
             TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
