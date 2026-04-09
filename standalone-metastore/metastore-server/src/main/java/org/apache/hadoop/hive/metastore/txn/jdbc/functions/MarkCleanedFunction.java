@@ -56,7 +56,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
           .addValue("succeeded", Character.toString(SUCCEEDED_STATE), Types.CHAR);
       jdbcTemplate.update("""
           INSERT INTO "COMPLETED_COMPACTIONS"(
-            "CC_ID", "CC_DATABASE", "CC_TABLE", "CC_PARTITION",
+            "CC_ID", "CC_CATALOG", "CC_DATABASE", "CC_TABLE", "CC_PARTITION",
             "CC_STATE", "CC_TYPE", "CC_TBLPROPERTIES", "CC_WORKER_ID",
             "CC_START", "CC_END", "CC_RUN_AS", "CC_HIGHEST_WRITE_ID", "CC_META_INFO",
             "CC_HADOOP_JOB_ID", "CC_ERROR_MESSAGE", "CC_ENQUEUE_TIME",
@@ -64,7 +64,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
             "CC_NEXT_TXN_ID", "CC_TXN_ID", "CC_COMMIT_TIME", "CC_POOL_NAME", "CC_NUMBER_OF_BUCKETS",
             "CC_ORDER_BY")
           SELECT
-            "CQ_ID", "CQ_DATABASE", "CQ_TABLE", "CQ_PARTITION",
+            "CQ_ID", "CQ_CATALOG", "CQ_DATABASE", "CQ_TABLE", "CQ_PARTITION",
             :succeeded, "CQ_TYPE", "CQ_TBLPROPERTIES", "CQ_WORKER_ID",
             "CQ_START", %s, "CQ_RUN_AS", "CQ_HIGHEST_WRITE_ID", "CQ_META_INFO",
             "CQ_HADOOP_JOB_ID", "CQ_ERROR_MESSAGE", "CQ_ENQUEUE_TIME",
@@ -90,7 +90,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
       // again but only up to the highest write ID include in this compaction job.
       //highestWriteId will be NULL in upgrade scenarios
       String deleteQuery = """
-          DELETE FROM "COMPLETED_TXN_COMPONENTS" WHERE "CTC_DATABASE" = :db AND "CTC_TABLE" = :table
+          DELETE FROM "COMPLETED_TXN_COMPONENTS" WHERE "CTC_CATALOG" = :cat AND "CTC_DATABASE" = :db AND "CTC_TABLE" = :table
           """;
       if (info.partName != null) {
         deleteQuery += """ 
@@ -103,6 +103,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
             """;
       }
       param = new MapSqlParameterSource()
+          .addValue("cat", info.catName)
           .addValue("db", info.dbname)
           .addValue("table", info.tableName)
           .addValue("writeId", info.highestWriteId);
@@ -134,6 +135,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
      */
     MapSqlParameterSource params = new MapSqlParameterSource()
         .addValue("state", TxnStatus.ABORTED.getSqlConst(), Types.CHAR)
+        .addValue("cat", info.catName)
         .addValue("db", info.dbname)
         .addValue("table", info.tableName)
         .addValue("partition", info.partName, Types.VARCHAR);
@@ -143,7 +145,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
         WHERE "TC_TXNID" IN (
             SELECT "TXN_ID" FROM "TXNS" WHERE "TXN_STATE" = :state
           )
-          AND "TC_DATABASE" = :db AND "TC_TABLE" = :table
+          AND "TC_CATALOG" = :cat AND "TC_DATABASE" = :db AND "TC_TABLE" = :table
           AND (:partition is NULL OR "TC_PARTITION" = :partition)
           AND "TC_WRITEID" %s
         """;
@@ -177,11 +179,12 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
         """;
     if (!info.isAbortedTxnCleanup()) {
       deleteQuery += """
-          OR ("CQ_DATABASE" = :db AND "CQ_TABLE" = :table
+          OR ("CQ_CATALOG" = :cat AND "CQ_DATABASE" = :db AND "CQ_TABLE" = :table
             AND (:partition is NULL OR "CQ_PARTITION" = :partition)
             AND "CQ_TYPE" = :type)
           """;
-      params.addValue("db", info.dbname)
+      params.addValue("cat", info.catName)
+          .addValue("db", info.dbname)
           .addValue("table", info.tableName)
           .addValue("partition", info.partName, Types.VARCHAR)
           .addValue("type", Character.toString(TxnStore.ABORT_TXN_CLEANUP_TYPE), Types.CHAR);

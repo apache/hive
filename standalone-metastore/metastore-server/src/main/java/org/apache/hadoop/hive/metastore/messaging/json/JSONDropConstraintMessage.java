@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONDropConstraintMessage extends DropConstraintMessage {
 
   @JsonProperty
-  String server, servicePrincipal, dbName, tableName, constraintName;
+  String server, servicePrincipal, catName, dbName, tableName, constraintName;
 
   @JsonProperty
   Long timestamp;
@@ -40,11 +40,12 @@ public class JSONDropConstraintMessage extends DropConstraintMessage {
   public JSONDropConstraintMessage() {
   }
 
-  public JSONDropConstraintMessage(String server, String servicePrincipal, String dbName,
+  public JSONDropConstraintMessage(String server, String servicePrincipal, String catName, String dbName,
       String tableName, String constraintName, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.timestamp = timestamp;
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.constraintName = constraintName;
@@ -58,6 +59,11 @@ public class JSONDropConstraintMessage extends DropConstraintMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return catName;
   }
 
   @Override

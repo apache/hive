@@ -287,7 +287,12 @@ public interface TxnStore extends Configurable {
           throws MetaException;
 
   @RetrySemantics.ReadOnly
+  @Deprecated
   long getTxnIdForWriteId(String dbName, String tblName, long writeId)
+      throws MetaException;
+
+  @RetrySemantics.ReadOnly
+  long getTxnIdForWriteId(String catName, String dbName, String tblName, long writeId)
       throws MetaException;
 
   @SqlRetry
@@ -939,7 +944,24 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.ReadOnly
   @SqlRetry
   @Transactional(POOL_COMPACTOR)
+  @Deprecated
   CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
+                                                 CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Returns ACID metrics related info for a specific resource and metric type. If no record is found matching the
+   * filter criteria, null will be returned.
+   * @param dbName name of database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, can be null
+   * @param type type of the delta metric, non-null
+   * @return instance of delta metrics info, can be null
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  @SqlRetry
+  @Transactional(POOL_COMPACTOR)
+  CompactionMetricsData getCompactionMetricsData(String catName, String dbName, String tblName, String partitionName,
                                                  CompactionMetricsData.MetricType type) throws MetaException;
 
   /**
@@ -953,8 +975,24 @@ public interface TxnStore extends Configurable {
   @SqlRetry
   @Transactional(POOL_COMPACTOR)
   @RetrySemantics.SafeToRetry
+  @Deprecated
   void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException;
+
+  /**
+   * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
+   * @param catName name of the catalog, non-null
+   * @param dbName name of the database, non-null
+   * @param tblName name of the table, non-null
+   * @param partitionName name of the partition, non-null
+   * @param type type of the delta metric, non-null
+   * @throws MetaException
+   */
+  @SqlRetry
+  @Transactional(POOL_COMPACTOR)
+  @RetrySemantics.SafeToRetry
+  void removeCompactionMetricsData(String catName, String dbName, String tblName, String partitionName,
+                                   CompactionMetricsData.MetricType type) throws MetaException;
 
   /**
    * Returns the top ACID metrics from each type {@link CompactionMetricsData.MetricType}

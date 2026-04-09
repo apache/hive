@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONCreateFunctionMessage extends CreateFunctionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, functionObjJson;
+  String server, servicePrincipal, cat, db, functionObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -45,6 +45,7 @@ public class JSONCreateFunctionMessage extends CreateFunctionMessage {
   public JSONCreateFunctionMessage(String server, String servicePrincipal, Function fn, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = fn.getCatName();
     this.db = fn.getDbName();
     this.timestamp = timestamp;
     try {
@@ -53,6 +54,11 @@ public class JSONCreateFunctionMessage extends CreateFunctionMessage {
       throw new IllegalArgumentException("Could not serialize Function object", ex);
     }
     checkValid();
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

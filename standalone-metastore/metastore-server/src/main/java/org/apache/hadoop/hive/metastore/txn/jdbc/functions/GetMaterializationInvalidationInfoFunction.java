@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -122,12 +123,13 @@ public class GetMaterializationInvalidationInfoFunction implements Transactional
         queryCompactionQueue.append("OR");
       }
       String[] names = TxnUtils.getDbTableName(fullyQualifiedName);
-      assert (names.length == 2);
-      queryUpdateDelete.append(" (\"CTC_DATABASE\"=? AND \"CTC_TABLE\"=?");
-      queryCompletedCompactions.append(" (\"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
-      queryCompactionQueue.append(" (\"CQ_DATABASE\"=? AND \"CQ_TABLE\"=?");
+      assert (names.length == 3);
+      queryUpdateDelete.append(" (\"CTC_CATALOG\"=? AND \"CTC_DATABASE\"=? AND \"CTC_TABLE\"=?");
+      queryCompletedCompactions.append(" (\"CC_CATALOG\"=? AND \"CC_DATABASE\"=? AND \"CC_TABLE\"=?");
+      queryCompactionQueue.append(" (\"CQ_CATALOG\"=? AND \"CQ_DATABASE\"=? AND \"CQ_TABLE\"=?");
       params.add(names[0]);
       params.add(names[1]);
+      params.add(names[2]);
       queryUpdateDelete.append(" AND (\"CTC_WRITEID\" > " + tblValidWriteIdList.getHighWatermark());
       queryCompletedCompactions.append(" AND (\"CC_HIGHEST_WRITE_ID\" > " + tblValidWriteIdList.getHighWatermark());
       queryUpdateDelete.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :

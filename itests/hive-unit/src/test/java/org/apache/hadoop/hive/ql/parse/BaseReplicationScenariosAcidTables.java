@@ -355,6 +355,7 @@ public class BaseReplicationScenariosAcidTables {
                                                      List<Long> txns, HiveConf primaryConf) throws Throwable {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest();
     rqst.setDbName(primaryDbName);
+    rqst.setCatName(primaryCatName);
     List<Long> lockIds = new ArrayList<>();
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       rqst.setTableName(entry.getKey());
@@ -373,17 +374,17 @@ public class BaseReplicationScenariosAcidTables {
         lockIds.add(txnHandler.lock(lockRequest).getLockid());
       }
     }
-    verifyWriteIdsForTables(tables, primaryConf, primaryDbName);
+    verifyWriteIdsForTables(tables, primaryConf, PRIMARY_CAT_NAME, primaryDbName);
     return lockIds;
   }
 
-  void verifyWriteIdsForTables(Map<String, Long> tables, HiveConf conf, String dbName)
+  void verifyWriteIdsForTables(Map<String, Long> tables, HiveConf conf, String catName, String dbName)
           throws Throwable {
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_TO_WRITE_ID"),
                           entry.getValue().longValue(),
                           TestTxnDbUtil.countQueryAgent(conf,
-          "select count(*) from TXN_TO_WRITE_ID where t2w_database = '"
+          "select count(*) from TXN_TO_WRITE_ID where t2w_catalog = '" + catName.toLowerCase() + "' and t2w_database = '"
                     + dbName.toLowerCase()
                     + "' and t2w_table = '" + entry.getKey() + "'"));
     }
@@ -411,25 +412,26 @@ public class BaseReplicationScenariosAcidTables {
         "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
   }
 
-  void verifyNextId(Map<String, Long> tables, String dbName, HiveConf conf) throws Throwable {
+  void verifyNextId(Map<String, Long> tables, String catName, String dbName, HiveConf conf) throws Throwable {
     // Verify the next write id
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       String[] nextWriteId =
               TestTxnDbUtil.queryToString(conf,
-                      "select nwi_next from NEXT_WRITE_ID where  nwi_database = '"
+                      "select nwi_next from NEXT_WRITE_ID where  nwi_catalog = '"
+                              + catName.toLowerCase() + "' and nwi_database = '"
                               + dbName.toLowerCase() + "' and nwi_table = '"
                               + entry.getKey() + "'").split("\n");
       Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), entry.getValue() + 1);
     }
   }
 
-  void verifyCompactionQueue(Map<String, Long> tables, String dbName, HiveConf conf)
+  void verifyCompactionQueue(Map<String, Long> tables, String catName, String dbName, HiveConf conf)
           throws Throwable {
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"),
                           entry.getValue().longValue(),
                           TestTxnDbUtil.countQueryAgent(conf,
-                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + dbName
+                    "select count(*) from COMPACTION_QUEUE where cq_catalog = '" + catName + "' and cq_database = '" + dbName
                             + "' and cq_table = '" + entry.getKey() + "'"));
     }
   }

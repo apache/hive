@@ -30,10 +30,11 @@ public class AddWriteIdsToTxnToWriteIdCommand implements ParameterizedBatchComma
 
   private final List<Object[]> params;
 
-  public AddWriteIdsToTxnToWriteIdCommand(String dbName, String tableName, long writeId, List<Long> txnIds, List<TxnToWriteId> txnToWriteIds) {
+  public AddWriteIdsToTxnToWriteIdCommand(String catName, String dbName, String tableName, long writeId,
+                                          List<Long> txnIds, List<TxnToWriteId> txnToWriteIds) {
     this.params = new ArrayList<>();
     for (long txnId : txnIds) {
-      params.add(new Object[]{ txnId, dbName, tableName, writeId });
+      params.add(new Object[]{ txnId, catName, dbName, tableName, writeId });
       txnToWriteIds.add(new TxnToWriteId(txnId, writeId));
       writeId++;
     }
@@ -42,7 +43,7 @@ public class AddWriteIdsToTxnToWriteIdCommand implements ParameterizedBatchComma
   
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) {
-    return "INSERT INTO \"TXN_TO_WRITE_ID\" (\"T2W_TXNID\",  \"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?)";
+    return "INSERT INTO \"TXN_TO_WRITE_ID\" (\"T2W_TXNID\",  \"T2W_CATALOG\", \"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?, ?)";
   }
 
   @Override
@@ -56,7 +57,8 @@ public class AddWriteIdsToTxnToWriteIdCommand implements ParameterizedBatchComma
       ps.setLong(1, (Long)argument[0]);
       ps.setString(2, argument[1].toString());
       ps.setString(3, argument[2].toString());
-      ps.setLong(4, (Long)argument[3]);
+      ps.setString(4, argument[3].toString());
+      ps.setLong(5, (Long)argument[4]);
     };
   }
 

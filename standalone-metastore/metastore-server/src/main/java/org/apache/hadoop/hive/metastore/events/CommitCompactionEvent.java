@@ -35,24 +35,26 @@ public class CommitCompactionEvent extends ListenerEvent {
   private final Long txnId;
   private final Long compactionId;
   private final CompactionType type;
+  private final String catname;
   private final String dbname;
   private final String tableName;
   private final String partName;
 
   public CommitCompactionEvent(Long txnId, CompactionInfo ci) {
-    this(txnId, ci.id, ci.type, ci.dbname, ci.tableName, ci.partName, null);
+    this(txnId, ci.id, ci.type, ci.catName, ci.dbname, ci.tableName, ci.partName, null);
   }
 
   public CommitCompactionEvent(Long txnId, CompactionInfo ci, IHMSHandler handler) {
-    this(txnId, ci.id, ci.type, ci.dbname, ci.tableName, ci.partName, handler);
+    this(txnId, ci.id, ci.type, ci.catName, ci.dbname, ci.tableName, ci.partName, handler);
   }
 
-  public CommitCompactionEvent(Long txnId, Long compactionId, CompactionType type, String dbname, String tableName,
-      String partName, IHMSHandler handler) {
+  public CommitCompactionEvent(Long txnId, Long compactionId, CompactionType type, String catname, String dbname,
+                               String tableName, String partName, IHMSHandler handler) {
     super(true, handler);
     this.txnId = txnId;
     this.compactionId = compactionId;
     this.type = type;
+    this.catname = catname;
     this.dbname = dbname;
     this.tableName = tableName;
     this.partName = partName;
@@ -68,6 +70,10 @@ public class CommitCompactionEvent extends ListenerEvent {
 
   public CompactionType getType() {
     return type;
+  }
+
+  public String getCatName() {
+    return catname;
   }
 
   public String getDbname() {

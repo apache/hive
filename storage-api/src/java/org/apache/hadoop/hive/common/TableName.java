@@ -132,6 +132,10 @@ public class TableName implements Serializable {
     return db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
   }
 
+  public String getQualified() {
+    return cat + DatabaseName.CAT_DB_TABLE_SEPARATOR + db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table;
+  }
+
   /**
    * Get the name in `db`.`table` escaped format, if db is not empty, otherwise pass only the table name.
    */

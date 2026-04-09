@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor.handler;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -214,6 +215,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     addDeltaFileWithTxnComponents(t, null, 2, false);
 
     CompactionRequest cr = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    cr.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(cr);
 
     // Run compaction
@@ -261,6 +263,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     addDeltaFileWithTxnComponents(t, null, 2, false);
 
     CompactionRequest cr = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    cr.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(cr);
 
     // Run compaction
@@ -357,7 +360,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     runInitiator(conf);
     // Initiator must not add anything to compaction_queue
     String compactionQueuePresence = "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " +
-            " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+            " WHERE \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
     assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
 
@@ -372,10 +375,10 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
     assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_COMPACTIONS\" " +
-            " WHERE \"CC_DATABASE\" = '" + dbName+ "' AND \"CC_TABLE\" = '" + tableName + "' AND \"CC_PARTITION\"" +
+            " WHERE \"CC_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CC_DATABASE\" = '" + dbName+ "' AND \"CC_TABLE\" = '" + tableName + "' AND \"CC_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL")));
     assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\" " +
-            " WHERE \"CTC_DATABASE\" = '" + dbName+ "' AND \"CTC_TABLE\" = '" + tableName + "' AND \"CTC_PARTITION\"" +
+            " WHERE \"CTC_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CTC_DATABASE\" = '" + dbName+ "' AND \"CTC_TABLE\" = '" + tableName + "' AND \"CTC_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL")));
 
     List<Path> directories = getDirectories(conf, t, null);
@@ -417,11 +420,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().getFirst();
-    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertTrue(scre.getCatName().equals(Warehouse.DEFAULT_CATALOG_NAME) && scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
-    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+    String whereClause = " WHERE \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
@@ -465,11 +468,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().getFirst();
-    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertTrue(scre.getCatName().equals(Warehouse.DEFAULT_CATALOG_NAME) && scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
-    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+    String whereClause = " WHERE \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
@@ -522,11 +525,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().getFirst();
-    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertTrue(scre.getCatName().equals(Warehouse.DEFAULT_CATALOG_NAME) && scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
-    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+    String whereClause = " WHERE \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
@@ -590,11 +593,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().getFirst();
-    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertTrue(scre.getCatName().equals(Warehouse.DEFAULT_CATALOG_NAME) && scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
-    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+    String whereClause = " WHERE \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
@@ -657,11 +660,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().getFirst();
-    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertTrue(scre.getCatName().equals(Warehouse.DEFAULT_CATALOG_NAME) && scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing first retry"));
-    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+    String whereClause = " WHERE \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
@@ -725,11 +728,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().getFirst();
-    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertTrue(scre.getCatName().equals(Warehouse.DEFAULT_CATALOG_NAME) && scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
-    String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
+    String whereClause = " WHERE \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' AND \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
     assertEquals(Integer.toString(0), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)

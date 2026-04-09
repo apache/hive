@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
 
   @JsonProperty
-  private String server, servicePrincipal, dbName, tableName;
+  private String server, servicePrincipal, catName, dbName, tableName;
 
   @JsonProperty
   private List<Long> txnIdList, writeIdList;
@@ -50,7 +50,7 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
   }
 
   public JSONAllocWriteIdMessage(String server, String servicePrincipal,
-                                 List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, Long timestamp) {
+                                 List<TxnToWriteId> txnToWriteIdList, String catName, String dbName, String tableName, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.timestamp = timestamp;
@@ -61,6 +61,7 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
       this.writeIdList.add(txnToWriteId.getWriteId());
     }
     this.tableName = tableName;
+    this.catName = catName;
     this.dbName = dbName;
     this.txnToWriteIdList = txnToWriteIdList;
   }
@@ -73,6 +74,11 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return catName;
   }
 
   @Override

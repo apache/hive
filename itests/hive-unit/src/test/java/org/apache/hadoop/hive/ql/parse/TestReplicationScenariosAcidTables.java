@@ -1564,7 +1564,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     verifyAllOpenTxnsAborted(txns, primaryConf);
     //Release the locks
     releaseLocks(txnHandler, lockIds);
-    verifyNextId(tables, primaryDbName, primaryConf);
+    verifyNextId(tables, PRIMARY_CAT_NAME, primaryDbName, primaryConf);
 
     // Bootstrap load which should also replicate the aborted write ids on both tables.
     HiveConf replicaConf = replica.getConf();
@@ -1580,20 +1580,20 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[] {"10", "11"});
 
     // Verify if HWM is properly set after REPL LOAD
-    verifyNextId(tables, replicatedDbName, replicaConf);
+    verifyNextId(tables, PRIMARY_CAT_NAME, replicatedDbName, replicaConf);
 
     // Verify if all the aborted write ids are replicated to the replicated DB
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       entry.setValue((long) numTxns);
     }
-    verifyWriteIdsForTables(tables, replicaConf, replicatedDbName);
+    verifyWriteIdsForTables(tables, replicaConf, PRIMARY_CAT_NAME, replicatedDbName);
 
     // Verify if entries added in COMPACTION_QUEUE for each table/partition
     // t1-> 1 entry and t2-> 2 entries (1 per partition)
     tables.clear();
     tables.put("t1", 1L);
     tables.put("t2", 2L);
-    verifyCompactionQueue(tables, replicatedDbName, replicaConf);
+    verifyCompactionQueue(tables, PRIMARY_CAT_NAME, replicatedDbName, replicaConf);
   }
 
   @Test
@@ -1693,7 +1693,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInPrimary = new HashMap<>();
     tablesInPrimary.put("t1", 1L);
     tablesInPrimary.put("t2", 2L);
-    verifyNextId(tablesInPrimary, primaryDbName, primaryConf);
+    verifyNextId(tablesInPrimary, PRIMARY_CAT_NAME, primaryDbName, primaryConf);
 
     // Bootstrap load which should not replicate the write ids on both tables as they are on different db.
     HiveConf replicaConf = replica.getConf();
@@ -1709,13 +1709,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       .verifyResults(new String[]{"10", "11"});
 
     // Verify if HWM is properly set after REPL LOAD
-    verifyNextId(tablesInPrimary, replicatedDbName, replicaConf);
+    verifyNextId(tablesInPrimary, PRIMARY_CAT_NAME, replicatedDbName, replicaConf);
 
     // Verify if none of the write ids are not replicated to the replicated DB as they belong to diff db
     for (Map.Entry<String, Long> entry : tablesInPrimary.entrySet()) {
       entry.setValue((long) 0);
     }
-    verifyWriteIdsForTables(tablesInPrimary, replicaConf, replicatedDbName);
+    verifyWriteIdsForTables(tablesInPrimary, replicaConf, PRIMARY_CAT_NAME, replicatedDbName);
     //Abort the txns
     txnHandler.abortTxns(new AbortTxnsRequest(txns));
     verifyAllOpenTxnsAborted(txns, primaryConf);
@@ -1777,7 +1777,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Map<String, Long> tablesInPrimary = new HashMap<>();
     tablesInPrimary.put("t1", 1L);
     tablesInPrimary.put("t2", 2L);
-    verifyNextId(tablesInPrimary, primaryDbName, primaryConf);
+    verifyNextId(tablesInPrimary, PRIMARY_CAT_NAME, primaryDbName, primaryConf);
 
     // Bootstrap load which should not replicate the write ids on both tables as they are on different db.
     HiveConf replicaConf = replica.getConf();
@@ -1793,13 +1793,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       .verifyResults(new String[] {"10", "11"});
 
     // Verify if HWM is properly set after REPL LOAD
-    verifyNextId(tablesInPrimary, replicatedDbName, replicaConf);
+    verifyNextId(tablesInPrimary, PRIMARY_CAT_NAME, replicatedDbName, replicaConf);
 
     // Verify if none of the write ids are not replicated to the replicated DB as they belong to diff db
     for(Map.Entry<String, Long> entry : tablesInPrimary.entrySet()) {
       entry.setValue((long) 0);
     }
-    verifyWriteIdsForTables(tablesInPrimary, replicaConf, replicatedDbName);
+    verifyWriteIdsForTables(tablesInPrimary, replicaConf, PRIMARY_CAT_NAME, replicatedDbName);
     //Abort the txns
     txnHandler.abortTxns(new AbortTxnsRequest(txns));
     verifyAllOpenTxnsAborted(txns, primaryConf);
@@ -1853,7 +1853,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     verifyAllOpenTxnsNotAborted(txns, primaryConf);
     // After bootstrap dump, all the opened txns should be aborted as it belongs to db under replication. Verify it.
     verifyAllOpenTxnsAborted(txnsSameDb, primaryConf);
-    verifyNextId(tablesInPrimDb, primaryDbName, primaryConf);
+    verifyNextId(tablesInPrimDb, PRIMARY_CAT_NAME, primaryDbName, primaryConf);
 
     // Bootstrap load which should replicate the write ids on both tables as they are on same db and
     // not on different db.
@@ -1870,13 +1870,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       .verifyResults(new String[] {"10", "11"});
 
     // Verify if HWM is properly set after REPL LOAD
-    verifyNextId(tablesInPrimDb, replicatedDbName, replicaConf);
+    verifyNextId(tablesInPrimDb, PRIMARY_CAT_NAME, replicatedDbName, replicaConf);
 
     // Verify if only the write ids belonging to primary db are replicated to the replicated DB.
     for(Map.Entry<String, Long> entry : tablesInPrimDb.entrySet()) {
       entry.setValue((long) numTxns);
     }
-    verifyWriteIdsForTables(tablesInPrimDb, replicaConf, replicatedDbName);
+    verifyWriteIdsForTables(tablesInPrimDb, replicaConf, PRIMARY_CAT_NAME, replicatedDbName);
     //Abort the txns for secondary db
     txnHandler.abortTxns(new AbortTxnsRequest(txns));
     verifyAllOpenTxnsAborted(txns, primaryConf);

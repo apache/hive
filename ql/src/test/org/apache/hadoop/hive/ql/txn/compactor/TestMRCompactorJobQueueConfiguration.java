@@ -53,7 +53,8 @@ public class TestMRCompactorJobQueueConfiguration {
     Table tbl = createPersonTable();
     tbl.setParameters(input.tableProperties);
     MRCompactor compactor = new MRCompactor(null);
-    CompactionInfo ci = new CompactionInfo(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MAJOR);
+    CompactionInfo ci = new CompactionInfo(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), null,
+        CompactionType.MAJOR);
     ci.properties = new StringableMap(input.compactionProperties).toString();
     HiveConf conf = new HiveConf();
     input.confProperties.forEach(conf::set);

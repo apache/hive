@@ -1137,6 +1137,7 @@ struct WriteEventInfo {
     5: optional string partition,
     6: optional string tableObj, // repl txn task does not need table object for commit
     7: optional string partitionObj,
+    8: optional string catalog = "hive",
 }
 
 struct ReplLastIdInfo {
@@ -1174,11 +1175,12 @@ struct ReplTblWriteIdStateRequest {
     4: required string dbName,
     5: required string tableName,
     6: optional list<string> partNames,
+    7: optional string catName = "hive",
 }
 
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
 struct GetValidWriteIdsRequest {
-    1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
+    1: required list<string> fullTableNames, // Full table names of format <cat_name>.<db_name>.<table_name>
     2: optional string validTxnList, // Valid txn list string wrt the current txn of the caller
     3: optional i64 writeId, //write id to be used to get the current txn id
 }
@@ -1216,6 +1218,7 @@ struct AllocateTableWriteIdsRequest {
     // If false, reuse previously allocate writeIds for txnIds. If true, remove older txnId to writeIds mappings
     // and regenerate (this is useful during re-compilation when we need to ensure writeIds are regenerated)
     6: optional bool reallocate = false;
+    7: optional string catName = "hive",
 }
 
 struct AllocateTableWriteIdsResponse {
@@ -1225,6 +1228,7 @@ struct AllocateTableWriteIdsResponse {
 struct MaxAllocatedTableWriteIdRequest {
     1: required string dbName,
     2: required string tableName,
+    3: optional string catName = "hive",
 }
 struct MaxAllocatedTableWriteIdResponse {
     1: required i64 maxWriteId,
@@ -1233,6 +1237,7 @@ struct SeedTableWriteIdsRequest {
     1: required string dbName,
     2: required string tableName,
     3: required i64 seedWriteId,
+    4: optional string catName = "hive",
 }
 struct SeedTxnIdRequest {
     1: required i64 seedTxnId,
@@ -1344,6 +1349,7 @@ struct CompactionRequest {
     9: optional string poolName
     10: optional i32 numberOfBuckets
     11: optional string orderByClause;
+    12: optional string catName = "hive",
 }
 
 struct CompactionInfoStruct {
@@ -1366,6 +1372,7 @@ struct CompactionInfoStruct {
     17: optional string poolname
     18: optional i32 numberOfBuckets
     19: optional string orderByClause;
+    20: optional string catName = "hive",
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1386,6 +1393,7 @@ struct CompactionMetricsDataStruct {
     5: required i32 metricvalue
     6: required i32 version
     7: required i32 threshold
+    8: optional string catName = "hive",
 }
 
 struct CompactionMetricsDataResponse {
@@ -1397,6 +1405,7 @@ struct CompactionMetricsDataRequest {
     2: required string tblName,
     3: optional string partitionName
     4: required CompactionMetricsMetricType type
+    5: optional string catName = "hive",
 }
 
 struct CompactionResponse {
@@ -1415,7 +1424,8 @@ struct ShowCompactRequest {
     6: optional CompactionType type,
     7: optional string state,
     8: optional i64 limit,
-    9: optional string order
+    9: optional string order,
+    10: optional string catName = "hive",
 }
 
 struct ShowCompactResponseElement {
@@ -1442,8 +1452,8 @@ struct ShowCompactResponseElement {
     21: optional i64 nextTxnId,
     22: optional i64 txnId,
     23: optional i64 commitTime,
-    24: optional i64 hightestWriteId
-
+    24: optional i64 hightestWriteId,
+    25: optional string catName = "hive",
 }
 
 struct ShowCompactResponse {
@@ -1471,6 +1481,7 @@ struct GetLatestCommittedCompactionInfoRequest {
     2: required string tablename,
     3: optional list<string> partitionnames,
     4: optional i64 lastCompactionId,
+    5: optional string catName = "hive",
 }
 
 struct GetLatestCommittedCompactionInfoResponse {
@@ -1489,7 +1500,8 @@ struct AddDynamicPartitions {
     3: required string dbname,
     4: required string tablename,
     5: required list<string> partitionnames,
-    6: optional DataOperationType operationType = DataOperationType.UNSET
+    6: optional DataOperationType operationType = DataOperationType.UNSET,
+    7: optional string catName = "hive",
 }
 
 struct BasicTxnInfo {
@@ -1589,6 +1601,7 @@ struct WriteNotificationLogRequest {
     4: required string table,
     5: required InsertEventRequestData fileInfo,
     6: optional list<string> partitionVals,
+    7: optional string cat = "hive",
 }
 
 struct WriteNotificationLogResponse {
@@ -2538,7 +2551,8 @@ struct Package {
 struct GetAllWriteEventInfoRequest {
   1: required i64 txnId,
   2: optional string dbName,
-  3: optional string tableName
+  3: optional string tableName,
+  4: optional string catName = "hive"
 }
 
 struct DeleteColumnStatisticsRequest {
@@ -3392,6 +3406,7 @@ const string BUCKET_COUNT         = "bucket_count",
 const string FIELD_TO_DIMENSION   = "field_to_dimension",
 const string IF_PURGE             = "ifPurge",
 const string META_TABLE_NAME      = "name",
+const string META_TABLE_CAT       = "cat",
 const string META_TABLE_DB        = "db",
 const string META_TABLE_LOCATION  = "location",
 const string META_TABLE_SERDE     = "serde",

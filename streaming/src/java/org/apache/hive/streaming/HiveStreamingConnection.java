@@ -127,6 +127,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   }
 
   // fields populated from builder
+  private String catalog;
   private String database;
   private String table;
   private List<String> staticPartitionValues;
@@ -156,6 +157,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   private Runnable onShutdownRunner;
 
   private HiveStreamingConnection(Builder builder) throws StreamingException {
+    this.catalog = builder.catalog.toLowerCase();
     this.database = builder.database.toLowerCase();
     this.table = builder.table.toLowerCase();
     this.staticPartitionValues = builder.staticPartitionValues;
@@ -217,6 +219,7 @@ public class HiveStreamingConnection implements StreamingConnection {
   }
 
   public static class Builder {
+    private String catalog;
     private String database;
     private String table;
     private List<String> staticPartitionValues;
@@ -230,6 +233,17 @@ public class HiveStreamingConnection implements StreamingConnection {
     private boolean manageTransactions = true;
     private Table tableObject;
     private boolean isPartitioned;
+
+    /**
+     * Specify catalog to use for streaming connection.
+     *
+     * @param catalog - cat name
+     * @return - builder
+     */
+    public Builder withCatalog(final String catalog) {
+      this.catalog = catalog;
+      return this;
+    }
 
     /**
      * Specify database to use for streaming connection.
@@ -371,6 +385,9 @@ public class HiveStreamingConnection implements StreamingConnection {
      * @return - hive streaming connection
      */
     public HiveStreamingConnection connect() throws StreamingException {
+      if (catalog == null) {
+        throw new StreamingException("Catalog cannot be null for streaming connection");
+      }
       if (database == null) {
         throw new StreamingException("Database cannot be null for streaming connection");
       }
@@ -906,6 +923,10 @@ public class HiveStreamingConnection implements StreamingConnection {
 
   public String getUsername() {
     return username;
+  }
+
+  public String getCatalog() {
+    return catalog;
   }
 
   public String getDatabase() {

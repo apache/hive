@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslHelper;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
@@ -3132,6 +3133,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
       throws TException {
+    replTableWriteIdState(validWriteIdList, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partNames);
+  }
+
+  @Override
+  public void replTableWriteIdState(String validWriteIdList, String catName, String dbName, String tableName,
+                                    List<String> partNames)
+      throws TException {
     String user;
     try {
       user = UserGroupInformation.getCurrentUser().getUserName();
@@ -3150,6 +3158,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
     ReplTblWriteIdStateRequest rqst
         = new ReplTblWriteIdStateRequest(validWriteIdList, user, hostName, dbName, tableName);
+    rqst.setCatName(catName);
     if (partNames != null) {
       rqst.setPartNames(partNames);
     }
@@ -3158,18 +3167,30 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   @Override
   public long allocateTableWriteId(long txnId, String dbName, String tableName, boolean shouldRealloc) throws TException {
-    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName, shouldRealloc).get(0).getWriteId();
+    return allocateTableWriteId(txnId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, shouldRealloc);
+  }
+
+  @Override
+  public long allocateTableWriteId(long txnId, String catName, String dbName, String tableName, boolean shouldRealloc) throws TException {
+    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), catName, dbName, tableName,
+        shouldRealloc).get(0).getWriteId();
   }
 
 
   @Override
   public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException {
-    return allocateTableWriteIdsBatch(txnIds, dbName, tableName, false);
+    return allocateTableWriteIdsBatch(txnIds, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, false);
   }
 
-  private List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName,
+  @Override
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String catname, String dbName, String tableName) throws TException {
+    return allocateTableWriteIdsBatch(txnIds, catname, dbName, tableName, false);
+  }
+
+  private List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String catName, String dbName, String tableName,
       boolean shouldRealloc) throws TException {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setCatName(catName);
     rqst.setTxnIds(txnIds);
     rqst.setReallocate(shouldRealloc);
     return allocateTableWriteIdsBatchIntr(rqst);
@@ -3178,7 +3199,14 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
       String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
+    return replAllocateTableWriteIdsBatch(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, replPolicy, srcTxnToWriteIdList);
+  }
+
+  @Override
+  public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String catName, String dbName, String tableName,
+                                                           String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setCatName(catName);
     rqst.setReplPolicy(replPolicy);
     rqst.setSrcTxnToWriteIdList(srcTxnToWriteIdList);
     return allocateTableWriteIdsBatchIntr(rqst);
@@ -3190,12 +3218,26 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   @Override
   public long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
-    return client.get_max_allocated_table_write_id(new MaxAllocatedTableWriteIdRequest(dbName, tableName)).getMaxWriteId();
+    return getMaxAllocatedWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName);
+  }
+
+  @Override
+  public long getMaxAllocatedWriteId(String catName, String dbName, String tableName) throws TException {
+    MaxAllocatedTableWriteIdRequest rqst = new MaxAllocatedTableWriteIdRequest(dbName, tableName);
+    rqst.setCatName(catName);
+    return client.get_max_allocated_table_write_id(rqst).getMaxWriteId();
   }
 
   @Override
   public void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
-    client.seed_write_id(new SeedTableWriteIdsRequest(dbName, tableName, seedWriteId));
+    seedWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, seedWriteId);
+  }
+
+  @Override
+  public void seedWriteId(String catName, String dbName, String tableName, long seedWriteId) throws TException {
+    SeedTableWriteIdsRequest rqst = new SeedTableWriteIdsRequest(dbName, tableName, seedWriteId);
+    rqst.setCatName(catName);
+    client.seed_write_id(rqst);
   }
 
   @Override
@@ -3260,13 +3302,21 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       GetLatestCommittedCompactionInfoRequest request) throws TException {
     GetLatestCommittedCompactionInfoResponse response = client.get_latest_committed_compaction_info(request);
     return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isClientFilterEnabled, filterHook,
-        getDefaultCatalog(conf), request.getDbname(), request.getTablename(), response);
+        request.getCatName(), request.getDbname(), request.getTablename(), response);
   }
 
   @Override
+  @Deprecated
   public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
       List<String> partNames, DataOperationType operationType) throws TException {
+    addDynamicPartitions(txnId, writeId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partNames, operationType);
+  }
+
+  @Override
+  public void addDynamicPartitions(long txnId, long writeId, String catName, String dbName, String tableName,
+                                   List<String> partNames, DataOperationType operationType) throws TException {
     AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames);
+    adp.setCatName(catName);
     adp.setOperationType(operationType);
     client.add_dynamic_partitions(adp);
   }

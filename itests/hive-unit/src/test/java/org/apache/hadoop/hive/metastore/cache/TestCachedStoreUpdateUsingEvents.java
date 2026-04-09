@@ -814,13 +814,14 @@ public class TestCachedStoreUpdateUsingEvents {
 
   private List<TxnToWriteId> allocateWriteIds(List<Long> txnIds, String dbName, String tblName) throws Throwable {
     AllocateTableWriteIdsRequest allocateTableWriteIdsRequest = new AllocateTableWriteIdsRequest(dbName, tblName);
+    allocateTableWriteIdsRequest.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     allocateTableWriteIdsRequest.setTxnIds(txnIds);
     return hmsHandler.allocate_table_write_ids(allocateTableWriteIdsRequest).getTxnToWriteIds();
   }
 
   private String getValidWriteIds(String dbName, String tblName) throws Throwable {
     GetValidWriteIdsRequest validWriteIdsRequest = new GetValidWriteIdsRequest(
-            Collections.singletonList(TableName.getDbTable(dbName, tblName)));
+            Collections.singletonList(TableName.getQualified(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName)));
     GetValidWriteIdsResponse validWriteIdsResponse = hmsHandler.get_valid_write_ids(validWriteIdsRequest);
     return TxnCommonUtils.createValidReaderWriteIdList(validWriteIdsResponse.
             getTblValidWriteIds().get(0)).writeToString();

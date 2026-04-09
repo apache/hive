@@ -177,6 +177,11 @@ public class TableDesc implements Serializable, Cloneable {
     return properties.getProperty(hive_metastoreConstants.META_TABLE_DB);
   }
 
+  @Explain(displayName = "catalog name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatName() {
+    return properties.getProperty(hive_metastoreConstants.META_TABLE_CAT);
+  }
+
   @Explain(displayName = "input format")
   public String getInputFileFormatClassName() {
     return getInputFileFormatClass().getName();

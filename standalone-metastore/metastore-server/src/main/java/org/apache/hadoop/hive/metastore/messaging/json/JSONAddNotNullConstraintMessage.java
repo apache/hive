@@ -69,6 +69,11 @@ public class JSONAddNotNullConstraintMessage extends AddNotNullConstraintMessage
   }
 
   @Override
+  public String getCat() {
+    return null;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }

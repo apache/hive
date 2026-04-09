@@ -52,28 +52,30 @@ public class GetValidWriteIdsForTableFunction implements TransactionalFunction<T
   @Override
   public TableValidWriteIds execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     String[] names = TxnUtils.getDbTableName(fullTableName);
-    assert (names.length == 2);
+    assert (names.length == 3);
 
     // Find the writeId high watermark based upon txnId high watermark. If found, then, need to
     // traverse through all write Ids less than writeId HWM to make exceptions list.
     // The writeHWM = min(NEXT_WRITE_ID.nwi_next-1, max(TXN_TO_WRITE_ID.t2w_writeid under txnHwm))
     long writeIdHwm = Objects.requireNonNull(jdbcResource.getJdbcTemplate().query(
         "SELECT MAX(\"T2W_WRITEID\") FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" <= :txnHwm "
-            + " AND \"T2W_DATABASE\" = :db AND \"T2W_TABLE\" = :table",
+            + " AND \"T2W_CATALOG\" = :cat AND \"T2W_DATABASE\" = :db AND \"T2W_TABLE\" = :table",
         new MapSqlParameterSource()
             .addValue("txnHwm", validTxnList.getHighWatermark())
-            .addValue("db", names[0])
-            .addValue("table", names[1]), new HwmExtractor()));
+            .addValue("cat", names[0])
+            .addValue("db", names[1])
+            .addValue("table", names[2]), new HwmExtractor()));
 
     // If no writeIds allocated by txns under txnHwm, then find writeHwm from NEXT_WRITE_ID.
     if (writeIdHwm <= 0) {
       // Need to subtract 1 as nwi_next would be the next write id to be allocated but we need highest
       // allocated write id.
       writeIdHwm = Objects.requireNonNull(jdbcResource.getJdbcTemplate().query(
-          "SELECT \"NWI_NEXT\" -1 FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = :db AND \"NWI_TABLE\" = :table",
+          "SELECT \"NWI_NEXT\" -1 FROM \"NEXT_WRITE_ID\" WHERE \"NWI_CATALOG\" = :cat AND \"NWI_DATABASE\" = :db AND \"NWI_TABLE\" = :table",
           new MapSqlParameterSource()
-              .addValue("db", names[0])
-              .addValue("table", names[1]), new HwmExtractor()));
+              .addValue("cat", names[0])
+              .addValue("db", names[1])
+              .addValue("table", names[2]), new HwmExtractor()));
     }
 
     final List<Long> invalidWriteIdList = new ArrayList<>();
@@ -88,11 +90,12 @@ public class GetValidWriteIdsForTableFunction implements TransactionalFunction<T
     // using binary search.
     jdbcResource.getJdbcTemplate().query(
         "SELECT \"T2W_TXNID\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_WRITEID\" <= :writeIdHwm" +
-            " AND \"T2W_DATABASE\" = :db AND \"T2W_TABLE\" = :table ORDER BY \"T2W_WRITEID\" ASC",
+            " AND \"T2W_CATALOG\" = :cat AND \"T2W_DATABASE\" = :db AND \"T2W_TABLE\" = :table ORDER BY \"T2W_WRITEID\" ASC",
         new MapSqlParameterSource()
             .addValue("writeIdHwm", writeIdHwm)
-            .addValue("db", names[0])
-            .addValue("table", names[1]), rs -> {
+            .addValue("cat", names[0])
+            .addValue("db", names[1])
+            .addValue("table", names[2]), rs -> {
           while (rs.next()) {
             long txnId = rs.getLong(1);
             long writeId = rs.getLong(2);

@@ -60,7 +60,7 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
         " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(databaseProduct) + " - \"CQ_RETRY_RETENTION\" - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
 
     String queryStr =
-        " \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
+        " \"CQ_ID\", \"cq1\".\"CQ_CATALOG\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
             "  \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\", " +
             "  \"CQ_NEXT_TXN_ID\"";
     if (TxnHandler.ConfVars.useMinHistoryWriteId()) {
@@ -69,11 +69,12 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
     queryStr +=
         "  FROM \"COMPACTION_QUEUE\" \"cq1\" " +
             "INNER JOIN (" +
-            "  SELECT MIN(\"CQ_HIGHEST_WRITE_ID\") \"MIN_WRITE_ID_HWM\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\"" +
+            "  SELECT MIN(\"CQ_HIGHEST_WRITE_ID\") \"MIN_WRITE_ID_HWM\", \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\"" +
             "  FROM \"COMPACTION_QUEUE\""
             + whereClause +
-            "  GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"cq2\" " +
-            "ON \"cq1\".\"CQ_DATABASE\" = \"cq2\".\"CQ_DATABASE\""+
+            "  GROUP BY \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"cq2\" " +
+            "ON \"cq1\".\"CQ_CATALOG\" = \"cq2\".\"CQ_CATALOG\""+
+            "  AND \"cq1\".\"CQ_DATABASE\" = \"cq2\".\"CQ_DATABASE\""+
             "  AND \"cq1\".\"CQ_TABLE\" = \"cq2\".\"CQ_TABLE\""+
             "  AND (\"cq1\".\"CQ_PARTITION\" = \"cq2\".\"CQ_PARTITION\"" +
             "    OR \"cq1\".\"CQ_PARTITION\" IS NULL AND \"cq2\".\"CQ_PARTITION\" IS NULL)" +
@@ -82,10 +83,11 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
     if (TxnHandler.ConfVars.useMinHistoryWriteId()) {
       queryStr +=
           "LEFT JOIN (" +
-              "  SELECT MIN(\"MH_WRITEID\") \"MIN_OPEN_WRITE_ID\", \"MH_DATABASE\", \"MH_TABLE\"" +
+              "  SELECT MIN(\"MH_WRITEID\") \"MIN_OPEN_WRITE_ID\", \"MH_CATALOG\", \"MH_DATABASE\", \"MH_TABLE\"" +
               "  FROM \"MIN_HISTORY_WRITE_ID\"" +
-              "  GROUP BY \"MH_DATABASE\", \"MH_TABLE\") \"hwm\" " +
-              "ON \"cq1\".\"CQ_DATABASE\" = \"hwm\".\"MH_DATABASE\"" +
+              "  GROUP BY \"MH_CATALOG\", \"MH_DATABASE\", \"MH_TABLE\") \"hwm\" " +
+              "ON \"cq1\".\"CQ_CATALOG\" = \"hwm\".\"MH_CATALOG\"" +
+              "  AND \"cq1\".\"CQ_DATABASE\" = \"hwm\".\"MH_DATABASE\"" +
               "  AND \"cq1\".\"CQ_TABLE\" = \"hwm\".\"MH_TABLE\"";
 
       whereClause += " AND (\"CQ_HIGHEST_WRITE_ID\" < \"MIN_OPEN_WRITE_ID\"-1 OR \"MIN_OPEN_WRITE_ID\" IS NULL)";
@@ -110,17 +112,18 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
     while (rs.next()) {
       CompactionInfo info = new CompactionInfo();
       info.id = rs.getLong(1);
-      info.dbname = rs.getString(2);
-      info.tableName = rs.getString(3);
-      info.partName = rs.getString(4);
-      info.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0));
-      info.runAs = rs.getString(6);
-      info.highestWriteId = rs.getLong(7);
-      info.properties = rs.getString(8);
-      info.retryRetention = rs.getInt(9);
-      info.nextTxnId = rs.getLong(10);
+      info.catName = rs.getString(2);
+      info.dbname = rs.getString(3);
+      info.tableName = rs.getString(4);
+      info.partName = rs.getString(5);
+      info.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(6).charAt(0));
+      info.runAs = rs.getString(7);
+      info.highestWriteId = rs.getLong(8);
+      info.properties = rs.getString(9);
+      info.retryRetention = rs.getInt(10);
+      info.nextTxnId = rs.getLong(11);
       if (TxnHandler.ConfVars.useMinHistoryWriteId()) {
-        long value = rs.getLong(11);
+        long value = rs.getLong(12);
         info.minOpenWriteId = !rs.wasNull() ? value : Long.MAX_VALUE;
       }
       infos.add(info);

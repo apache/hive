@@ -30,11 +30,13 @@ import java.sql.SQLException;
 public class TxnIdForWriteIdHandler implements QueryHandler<Long> {
   
   private final long writeId;
+  private final String catName;
   private final String dbName;
   private final String tableName;
 
-  public TxnIdForWriteIdHandler(long writeId, String dbName, String tableName) {
+  public TxnIdForWriteIdHandler(long writeId, String catName, String dbName, String tableName) {
     this.writeId = writeId;
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
   }
@@ -42,13 +44,14 @@ public class TxnIdForWriteIdHandler implements QueryHandler<Long> {
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return "SELECT \"T2W_TXNID\" FROM \"TXN_TO_WRITE_ID\" WHERE"
-        + " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_WRITEID\" = " + writeId;
+        + " \"T2W_CATALOG\" = ? AND \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_WRITEID\" = " + writeId;
   }
 
   @Override
   public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
         .addValue("writeId", writeId)
+        .addValue("catName", catName)
         .addValue("dbName", dbName)
         .addValue("tableName", tableName);
   }

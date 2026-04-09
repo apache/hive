@@ -96,6 +96,7 @@ public class TestCompactionTxnHandler {
   @Test
   public void testFindNextToCompact() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     long now = System.currentTimeMillis();
@@ -114,6 +115,7 @@ public class TestCompactionTxnHandler {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     assertEquals(1, compacts.size());
     ShowCompactResponseElement c = compacts.get(0);
+    assertEquals(Warehouse.DEFAULT_CATALOG_NAME, c.getCatName());
     assertEquals("foo", c.getDbname());
     assertEquals("bar", c.getTablename());
     assertEquals("ds=today", c.getPartitionname());
@@ -127,10 +129,12 @@ public class TestCompactionTxnHandler {
   @Test
   public void testFindNextToCompact2() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
 
     rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=yesterday");
     txnHandler.compact(rqst);
 
@@ -173,6 +177,7 @@ public class TestCompactionTxnHandler {
   @Test
   public void testMarkCompacted() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
@@ -187,6 +192,7 @@ public class TestCompactionTxnHandler {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     assertEquals(1, compacts.size());
     ShowCompactResponseElement c = compacts.get(0);
+    assertEquals(Warehouse.DEFAULT_CATALOG_NAME, c.getCatName());
     assertEquals("foo", c.getDbname());
     assertEquals("bar", c.getTablename());
     assertEquals("ds=today", c.getPartitionname());
@@ -198,6 +204,7 @@ public class TestCompactionTxnHandler {
   @Test
   public void testFindNextToClean() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
@@ -219,6 +226,7 @@ public class TestCompactionTxnHandler {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     assertEquals(1, compacts.size());
     ShowCompactResponseElement c = compacts.get(0);
+    assertEquals(Warehouse.DEFAULT_CATALOG_NAME, c.getCatName());
     assertEquals("foo", c.getDbname());
     assertEquals("bar", c.getTablename());
     assertEquals("ds=today", c.getPartitionname());
@@ -230,6 +238,7 @@ public class TestCompactionTxnHandler {
   @Test
   public void testMarkCleaned() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
@@ -261,6 +270,7 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String partitionName = "ds=today";
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
@@ -279,9 +289,10 @@ public class TestCompactionTxnHandler {
     final String dbName = "foo";
     final String tableName = "bar";
     final String errorMessage = "Dummy error";
-    addSucceededCompaction(dbName, tableName, null, CompactionType.MINOR);
-    addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, null, CompactionType.MINOR);
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, null, errorMessage);
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
     GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
@@ -312,9 +323,10 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String partitionName = "ds=today";
     final String errorMessage = "Dummy error";
-    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
-    addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partitionName, CompactionType.MINOR);
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
     rqst.addToPartitionnames(partitionName);
@@ -328,7 +340,7 @@ public class TestCompactionTxnHandler {
     assertEquals(CompactionType.MINOR, lci.getType());
 
     final String anotherPartitionName = "ds=yesterday";
-    addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, anotherPartitionName, errorMessage);
+    addWaitingForCleaningCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, anotherPartitionName, errorMessage);
     rqst.addToPartitionnames(anotherPartitionName);
     response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
@@ -360,9 +372,10 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String partitionName = "ds=today";
     final String errorMessage = "Dummy error";
-    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
-    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partitionName, CompactionType.MINOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partitionName, CompactionType.MINOR);
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
     rqst.addToPartitionnames(partitionName);
@@ -376,7 +389,7 @@ public class TestCompactionTxnHandler {
     assertEquals(partitionName, lci.getPartitionname());
     assertEquals(CompactionType.MINOR, lci.getType());
 
-    addWaitingForCleaningCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+    addWaitingForCleaningCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertNotNull(response);
@@ -392,9 +405,10 @@ public class TestCompactionTxnHandler {
     final String dbName = "foo";
     final String tableName = "bar";
     final String partitionName = "ds=today";
-    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
-    addSucceededCompaction(dbName, tableName, partitionName, CompactionType.MINOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partitionName, CompactionType.MINOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partitionName, CompactionType.MINOR);
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
     rqst.addToPartitionnames(partitionName);
@@ -430,13 +444,14 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String errorMessage = "Dummy error";
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setDbname(dbName);
     rqst.setTablename(tableName);
     GetLatestCommittedCompactionInfoResponse response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertEquals(0, response.getCompactionsSize());
 
-    addFailedCompaction(dbName, tableName, CompactionType.MINOR, null, errorMessage);
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, null, errorMessage);
     response = txnHandler.getLatestCommittedCompactionInfo(rqst);
 
     assertEquals(0, response.getCompactionsSize());
@@ -451,6 +466,7 @@ public class TestCompactionTxnHandler {
     final String status = "failed";
     final String errorMessage = "Dummy error";
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
@@ -480,7 +496,7 @@ public class TestCompactionTxnHandler {
 
     // Add more failed compactions so that the total is exactly COMPACTOR_INITIATOR_FAILED_THRESHOLD
     for (int i = 1; i < MetastoreConf.getIntVar(conf, COMPACTOR_INITIATOR_FAILED_THRESHOLD); i++) {
-      addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+      addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     }
     // Now checkFailedCompactions() will return true
     assertTrue(txnHandler.checkFailedCompactions(ci));
@@ -489,22 +505,23 @@ public class TestCompactionTxnHandler {
     assertFalse(txnHandler.checkFailedCompactions(ci));
     MetastoreConf.setTimeVar(conf, COMPACTOR_INITIATOR_FAILED_RETRY_TIME, 7, TimeUnit.DAYS);
     // Check the output of show compactions
-    checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
+    checkShowCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partitionName, status, errorMessage);
     // Now add enough failed compactions to ensure purgeCompactionHistory() will attempt delete;
     // HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE is enough for this.
     // But we also want enough to tickle the code in TxnUtils.buildQueryWithINClauseStrings()
     // so that it produces multiple queries. For that we need at least 290.
     for (int i = 0 ; i < 300; i++) {
-      addFailedCompaction(dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
+      addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, partitionName, errorMessage);
     }
-    checkShowCompaction(dbName, tableName, partitionName, status, errorMessage);
+    checkShowCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partitionName, status, errorMessage);
     txnHandler.purgeCompactionHistory();
   }
 
-  private void checkShowCompaction(String dbName, String tableName, String partition,
+  private void checkShowCompaction(String catName, String dbName, String tableName, String partition,
       String status, String errorMessage) throws MetaException {
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
     showCompactResponse.getCompacts().forEach(e -> {
+      assertEquals(catName, e.getCatName());
       assertEquals(dbName, e.getDbname());
       assertEquals(tableName, e.getTablename());
       assertEquals(partition, e.getPartitionname());
@@ -513,11 +530,12 @@ public class TestCompactionTxnHandler {
     });
   }
 
-  private void addFailedCompaction(String dbName, String tableName, CompactionType type,
+  private void addFailedCompaction(String catName, String dbName, String tableName, CompactionType type,
       String partitionName, String errorMessage) throws MetaException {
     CompactionRequest rqst;
     CompactionInfo ci;
     rqst = new CompactionRequest(dbName, tableName, type);
+    rqst.setCatName(catName);
     if (partitionName != null) {
       rqst.setPartitionname(partitionName);
     }
@@ -528,8 +546,9 @@ public class TestCompactionTxnHandler {
     txnHandler.markFailed(ci);
   }
 
-  private void addSucceededCompaction(String dbName, String tableName, String partitionName, CompactionType type) throws MetaException {
+  private void addSucceededCompaction(String catName, String dbName, String tableName, String partitionName, CompactionType type) throws MetaException {
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
+    rqst.setCatName(catName);
     CompactionInfo ci;
     if (partitionName != null) {
       rqst.setPartitionname(partitionName);
@@ -540,9 +559,10 @@ public class TestCompactionTxnHandler {
     txnHandler.markCleaned(ci);
   }
 
-  private void addWaitingForCleaningCompaction(String dbName, String tableName, CompactionType type,
+  private void addWaitingForCleaningCompaction(String catName, String dbName, String tableName, CompactionType type,
       String partitionName, String errorMessage) throws MetaException {
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, type);
+    rqst.setCatName(catName);
     CompactionInfo ci;
     if (partitionName != null) {
       rqst.setPartitionname(partitionName);
@@ -554,17 +574,17 @@ public class TestCompactionTxnHandler {
     txnHandler.markCompacted(ci);
   }
 
-  private void addDidNotInitiateCompaction(String dbName, String tableName, String partitionName,
+  private void addDidNotInitiateCompaction(String catName, String dbName, String tableName, String partitionName,
           CompactionType type, String errorMessage) throws MetaException {
-    CompactionInfo ci = new CompactionInfo(dbName, tableName, partitionName, type);
+    CompactionInfo ci = new CompactionInfo(catName, dbName, tableName, partitionName, type);
     ci.errorMessage = errorMessage;
     ci.id = 0;
     txnHandler.markFailed(ci);
   }
 
-  private void addRefusedCompaction(String dbName, String tableName, String partitionName,
+  private void addRefusedCompaction(String catName, String dbName, String tableName, String partitionName,
                                            CompactionType type, String errorMessage) throws MetaException {
-    CompactionInfo ci = new CompactionInfo(dbName, tableName, partitionName, type);
+    CompactionInfo ci = new CompactionInfo(catName, dbName, tableName, partitionName, type);
     ci.errorMessage = errorMessage;
     ci.id = 0;
     txnHandler.markRefused(ci);
@@ -579,43 +599,44 @@ public class TestCompactionTxnHandler {
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_REFUSED, 2);
     txnHandler.setConf(conf);
 
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
     String dbName = "default";
     String tableName = "tpch";
     String part1 = "(p=1)";
     String part2 = "(p=2)";
 
     // 3 successful compactions on p=1
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, CompactionType.MAJOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, CompactionType.MAJOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, CompactionType.MAJOR);
 
     // 3 failed on p=1
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part1, "message");
     //4 failed on p=2
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part2, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part2, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part2, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part2, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part2, "message");
 
     // 3 did not initiate on p=1
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addDidNotInitiateCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addDidNotInitiateCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addDidNotInitiateCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
 
     // 3 refused on p=1
-    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
 
-    countCompactionsInHistory(dbName, tableName, part1, 3, 3, 3, 3);
-    countCompactionsInHistory(dbName, tableName, part2, 0, 4, 0, 0);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, 3, 3, 3, 3);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part2, 0, 4, 0, 0);
 
     txnHandler.purgeCompactionHistory();
 
-    countCompactionsInHistory(dbName, tableName, part1, 2, 2, 2, 2);
-    countCompactionsInHistory(dbName, tableName, part2, 0, 2, 0, 0);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, 2, 2, 2, 2);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part2, 0, 2, 0, 0);
   }
 
   @Test
@@ -627,58 +648,60 @@ public class TestCompactionTxnHandler {
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, 1, TimeUnit.MILLISECONDS);
     txnHandler.setConf(conf);
 
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
     String dbName = "default";
     String tableName = "tpch";
     String part1 = "(p=1)";
 
-    addFailedCompaction(dbName, tableName, CompactionType.MINOR, part1, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
-    addRefusedCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MINOR);
-    addFailedCompaction(dbName, tableName, CompactionType.MINOR, part1, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
-    addRefusedCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, part1, "message");
+    addDidNotInitiateCompaction(catName, dbName, tableName, part1, CompactionType.MINOR, "message");
+    addRefusedCompaction(catName, dbName, tableName, part1, CompactionType.MINOR, "message");
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, CompactionType.MINOR);
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MINOR, part1, "message");
+    addDidNotInitiateCompaction(catName, dbName, tableName, part1, CompactionType.MINOR, "message");
+    addRefusedCompaction(catName, dbName, tableName, part1, CompactionType.MINOR, "message");
 
-    countCompactionsInHistory(dbName, tableName, part1, 1, 2, 2, 2);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, 1, 2, 2, 2);
 
     txnHandler.purgeCompactionHistory();
 
     // the oldest 3 compactions should be cleaned
-    countCompactionsInHistory(dbName, tableName, part1, 1, 1, 1, 1);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, 1, 1, 1, 1);
 
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, CompactionType.MAJOR);
 
     txnHandler.purgeCompactionHistory();
 
     // only 2 succeeded compactions should be left
-    countCompactionsInHistory(dbName, tableName, part1, 2, 0, 0, 0);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, 2, 0, 0, 0);
 
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MINOR);
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addDidNotInitiateCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, CompactionType.MINOR);
 
     // succeeded minor compaction shouldn't cause cleanup, but the oldest succeeded will be cleaned up
     txnHandler.purgeCompactionHistory();
-    countCompactionsInHistory(dbName, tableName, part1, 2, 1, 1, 1);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, 2, 1, 1, 1);
 
-    addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
-    addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
-    addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
+    addFailedCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, CompactionType.MAJOR, part1, "message");
+    addDidNotInitiateCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(catName, dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addSucceededCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, CompactionType.MAJOR);
 
     // only 2 succeeded compactions should be left
     txnHandler.purgeCompactionHistory();
-    countCompactionsInHistory(dbName, tableName, part1, 2, 0, 0, 0);
-    checkShowCompaction(dbName, tableName, part1, "succeeded", null);
+    countCompactionsInHistory(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, 2, 0, 0, 0);
+    checkShowCompaction(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, part1, "succeeded", null);
   }
 
-  private void countCompactionsInHistory(String dbName, String tableName, String partition,
+  private void countCompactionsInHistory(String catName, String dbName, String tableName, String partition,
           int expectedSucceeded, int expectedFailed, int expectedDidNotInitiate, int expextedRefused)
           throws MetaException {
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> filteredToPartition = resp.getCompacts().stream()
-            .filter(e -> e.getDbname().equals(dbName) && e.getTablename().equals(tableName) &&
+            .filter(e -> e.getCatName().equals(catName) && e.getDbname().equals(dbName) &&
+                e.getTablename().equals(tableName) &&
                     (partition == null || partition.equals(e.getPartitionname()))).collect(Collectors.toList());
 
     assertEquals(expectedSucceeded, filteredToPartition.stream().filter(e -> e.getState().equals(TxnStore.SUCCEEDED_RESPONSE)).count());
@@ -690,6 +713,7 @@ public class TestCompactionTxnHandler {
   @Test
   public void testRevokeTimedOutWorkers() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(rqst);
     rqst = new CompactionRequest("foo", "baz", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -755,6 +779,7 @@ public class TestCompactionTxnHandler {
 
     //simulate prev failed compaction
     CompactionRequest rqst = new CompactionRequest("mydb", "mytable", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     txnHandler.markFailed(ci);
@@ -770,7 +795,7 @@ public class TestCompactionTxnHandler {
   public void testMarkCleanedCleansTxnsAndTxnComponents()
       throws Exception {
     long txnid = openTxn();
-    long mytableWriteId = allocateTableWriteIds("mydb", "mytable", txnid);
+    long mytableWriteId = allocateTableWriteIds(Warehouse.DEFAULT_CATALOG_NAME, "mydb", "mytable", txnid);
     
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
@@ -796,7 +821,7 @@ public class TestCompactionTxnHandler {
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
 
     txnid = openTxn();
-    long fooWriteId = allocateTableWriteIds("mydb", "foo", txnid);
+    long fooWriteId = allocateTableWriteIds(Warehouse.DEFAULT_CATALOG_NAME, "mydb", "foo", txnid);
     
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
@@ -825,6 +850,7 @@ public class TestCompactionTxnHandler {
 
     // Now clean them and check that they are removed from the count.
     CompactionRequest rqst = new CompactionRequest("mydb", "mytable", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(rqst);
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
@@ -852,6 +878,7 @@ public class TestCompactionTxnHandler {
     assertEquals(3, txnList.getOpen_txnsSize());
 
     rqst = new CompactionRequest("mydb", "foo", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("bar");
     txnHandler.compact(rqst);
     assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
@@ -879,6 +906,7 @@ public class TestCompactionTxnHandler {
 
   @Test
   public void addDynamicPartitions() throws Exception {
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
     String dbName = "default";
     String tableName = "adp_table";
     OpenTxnsResponse openTxns = txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
@@ -886,6 +914,7 @@ public class TestCompactionTxnHandler {
 
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
     rqst.setTxnIds(openTxns.getTxn_ids());
+    rqst.setCatName(catName);
     AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
     assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
@@ -904,6 +933,7 @@ public class TestCompactionTxnHandler {
 
     AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName,
       Arrays.asList("ds=yesterday", "ds=today"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(dop);
     txnHandler.addDynamicPartitions(adp);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
@@ -930,6 +960,7 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String partitionName = "ds=today";
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partitionName);
     long before = System.currentTimeMillis();
     txnHandler.compact(rqst);
@@ -953,6 +984,7 @@ public class TestCompactionTxnHandler {
     final String tableName = "bar";
     final String partitionName = "ds=today";
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partitionName);
     long before = System.currentTimeMillis();
     txnHandler.compact(rqst);
@@ -1001,8 +1033,8 @@ public class TestCompactionTxnHandler {
   public void testFindNextToClean_limitFetchSize() throws Exception {
     MetastoreConf.setLongVar(conf, COMPACTOR_FETCH_SIZE, 1);
 
-    createAReadyToCleanCompaction("foo", "bar", "ds=today", CompactionType.MINOR);
-    createAReadyToCleanCompaction("foo2", "bar2", "ds=today", CompactionType.MINOR);
+    createAReadyToCleanCompaction(Warehouse.DEFAULT_CATALOG_NAME, "foo", "bar", "ds=today", CompactionType.MINOR);
+    createAReadyToCleanCompaction(Warehouse.DEFAULT_CATALOG_NAME, "foo2", "bar2", "ds=today", CompactionType.MINOR);
 
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
 
@@ -1061,15 +1093,17 @@ public class TestCompactionTxnHandler {
     return txns.get(0);
   }
   
-  private long allocateTableWriteIds (String dbName, String tblName, long txnid) throws Exception {
+  private long allocateTableWriteIds (String catName, String dbName, String tblName, long txnid) throws Exception {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    rqst.setCatName(catName);
     rqst.setTxnIds(Collections.singletonList(txnid));
     AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     return writeIds.getTxnToWriteIds().get(0).getWriteId();
   }
 
-  private void createAReadyToCleanCompaction(String dbName, String tableName, String partitionName, CompactionType compactionType) throws MetaException {
+  private void createAReadyToCleanCompaction(String catName, String dbName, String tableName, String partitionName, CompactionType compactionType) throws MetaException {
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, compactionType);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
 

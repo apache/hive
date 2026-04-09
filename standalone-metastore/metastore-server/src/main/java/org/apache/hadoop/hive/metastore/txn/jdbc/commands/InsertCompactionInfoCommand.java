@@ -37,13 +37,13 @@ public class InsertCompactionInfoCommand implements ParameterizedCommand {
   //language=SQL
   private static final String INSERT =
       "INSERT INTO \"COMPLETED_COMPACTIONS\" " +
-          "   (\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", " +
+          "   (\"CC_ID\", \"CC_CATALOG\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", " +
           "   \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", " +
           "   \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", " +
           "   \"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\"," +
           "   \"CC_NEXT_TXN_ID\", \"CC_TXN_ID\", \"CC_COMMIT_TIME\", \"CC_POOL_NAME\", \"CC_NUMBER_OF_BUCKETS\", " +
           "   \"CC_ORDER_BY\") " +
-          "   VALUES(:id,:dbname,:tableName,:partName,:state,:type,:properties,:workerId,:start,:endTime," +
+          "   VALUES(:id,:catName, :dbname,:tableName,:partName,:state,:type,:properties,:workerId,:start,:endTime," +
           "    :runAs,:highestWriteId,:metaInfo,:hadoopJobId,:errorMessage,:enqueueTime,:workerVersion,:initiatorId," +
           "    :initiatorVersion,:nextTxnId,:txnId,:commitTime,:poolName,:numberOfBuckets,:orderByClause)";
 
@@ -68,6 +68,7 @@ public class InsertCompactionInfoCommand implements ParameterizedCommand {
     try {
       return new MapSqlParameterSource()
           .addValue("id", ci.id)
+          .addValue("catName", ci.catName)
           .addValue("dbname", ci.dbname)
           .addValue("tableName", ci.tableName)
           .addValue("partName", ci.partName)

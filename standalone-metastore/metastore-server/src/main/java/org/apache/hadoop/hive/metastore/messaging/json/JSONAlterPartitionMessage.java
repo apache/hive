@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, cat, db, table, tableType, tableObjJson;
 
   @JsonProperty
   String isTruncateOp;
@@ -58,6 +58,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
       Partition partitionObjBefore, Partition partitionObjAfter, boolean isTruncateOp, Long writeId, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = tableObj.getCatName();
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
     this.tableType = tableObj.getTableType();
@@ -83,6 +84,11 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

@@ -27,6 +27,7 @@ public class CompactionMetricsDataConverter {
 
   public static CompactionMetricsDataStruct dataToStruct(CompactionMetricsData data) throws MetaException {
     CompactionMetricsDataStruct struct = new CompactionMetricsDataStruct();
+    struct.setCatName(data.getCatName());
     struct.setDbname(data.getDbName());
     struct.setTblname(data.getTblName());
     struct.setPartitionname(data.getPartitionName());
@@ -39,6 +40,7 @@ public class CompactionMetricsDataConverter {
 
   public static CompactionMetricsData structToData(CompactionMetricsDataStruct struct) throws MetaException {
     return new CompactionMetricsData.Builder()
+        .catName(struct.getCatName())
         .dbName(struct.getDbname())
         .tblName(struct.getTblname())
         .partitionName(struct.getPartitionname())

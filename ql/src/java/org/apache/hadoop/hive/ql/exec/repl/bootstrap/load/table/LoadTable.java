@@ -89,10 +89,11 @@ public class LoadTable {
     if (event.shouldNotReplicate()) {
       return tracker;
     }
+    String catName = tableContext.catName;
     String dbName = tableContext.dbNameToLoadIn; //this can never be null or empty;
     // Create table associated with the import
     // Executed if relevant, and used to contain all the other details about the table if not.
-    ImportTableDesc tableDesc = event.tableDesc(dbName);
+    ImportTableDesc tableDesc = event.tableDesc(catName, dbName);
     Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
 
     if (isSecondFailover) {
@@ -211,8 +212,8 @@ public class LoadTable {
     Task<?> parentTask = createTableTask;
     if (replicationSpec.isTransactionalTableDump()) {
       List<String> partNames = isPartitioned(tblDesc) ? event.partitions(tblDesc) : null;
-      ReplTxnWork replTxnWork = new ReplTxnWork(tblDesc.getDatabaseName(), tblDesc.getTableName(), partNames,
-              replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE,
+      ReplTxnWork replTxnWork = new ReplTxnWork(tblDesc.getCatName(), tblDesc.getDatabaseName(), tblDesc.getTableName(),
+          partNames, replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE,
               (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
       Task<?> replTxnTask = TaskFactory.get(replTxnWork, context.hiveConf);
       parentTask.addDependentTask(replTxnTask);

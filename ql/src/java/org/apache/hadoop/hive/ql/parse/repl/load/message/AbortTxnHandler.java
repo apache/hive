@@ -58,7 +58,7 @@ public class AbortTxnHandler extends AbstractMessageHandler {
     }
 
     Task<ReplTxnWork> abortTxnTask = TaskFactory.get(
-        new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName, null,
+        new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.catName, context.dbName, null,
                 msg.getTxnId(), ReplTxnWork.OperationType.REPL_ABORT_TXN, context.eventOnlyReplicationSpec(),
                 context.getDumpDirectory(), context.getMetricCollector()),
         context.hiveConf

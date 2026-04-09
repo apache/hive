@@ -73,7 +73,7 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
       handle = mutexAPI.acquireLock(TxnStore.MUTEX_KEY.CompactionScheduler.name());
 
       GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(
-          Collections.singletonList(getFullTableName(rqst.getDbname(), rqst.getTablename())));
+          Collections.singletonList(getFullTableName(rqst.getCatName(), rqst.getDbname(), rqst.getTablename())));
       final ValidCompactorWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
           new GetValidWriteIdsFunction(request, openTxnTimeOutMillis).execute(jdbcResource).getTblValidWriteIds().get(0));
 
@@ -85,11 +85,12 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
       Pair<Long, String> existing = npJdbcTemplate.query(
           "SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE (\"CQ_STATE\" IN(:states) OR" +
               " (\"CQ_STATE\" = :readyForCleaningState AND \"CQ_HIGHEST_WRITE_ID\" = :highestWriteId)) AND" +
-              " \"CQ_DATABASE\"= :dbName AND \"CQ_TABLE\"= :tableName AND ((:partition is NULL AND \"CQ_PARTITION\" IS NULL) OR \"CQ_PARTITION\" = :partition)",
+              " \"CQ_CATALOG\"= :catName AND \"CQ_DATABASE\"= :dbName AND \"CQ_TABLE\"= :tableName AND ((:partition is NULL AND \"CQ_PARTITION\" IS NULL) OR \"CQ_PARTITION\" = :partition)",
           new MapSqlParameterSource()
               .addValue("states", Arrays.asList(Character.toString(INITIATED_STATE), Character.toString(WORKING_STATE)))
               .addValue("readyForCleaningState", READY_FOR_CLEANING, Types.VARCHAR)
               .addValue("highestWriteId", tblValidWriteIds.getHighWatermark())
+              .addValue("catName", rqst.getCatName())
               .addValue("dbName", rqst.getDbname())
               .addValue("tableName", rqst.getTablename())
               .addValue("partition", rqst.getPartitionname(), Types.VARCHAR),
@@ -101,8 +102,8 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
           });
       if (existing != null) {
         String state = CompactionState.fromSqlConst(existing.getValue()).toString();
-        LOG.info("Ignoring request to compact {}/{}/{} since it is already {} with id={}", rqst.getDbname(),
-            rqst.getTablename(), rqst.getPartitionname(), state, existing.getKey());
+        LOG.info("Ignoring request to compact {}/{}/{}/{} since it is already {} with id={}", rqst.getCatName(),
+            rqst.getDbname(), rqst.getTablename(), rqst.getPartitionname(), state, existing.getKey());
         CompactionResponse resp = new CompactionResponse(-1, REFUSED_RESPONSE, false);
         resp.setErrormessage("Compaction is already scheduled with state='" + state + "' and id=" + existing.getKey());
         return resp;

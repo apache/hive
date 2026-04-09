@@ -32,7 +32,7 @@ import java.util.List;
 public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFunction<List<CompactionMetricsData>> {
 
   private static final String NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY =
-      "\"CMC_DATABASE\", \"CMC_TABLE\", \"CMC_PARTITION\", \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM " +
+      "\"CMC_CATALOG\", \"CMC_DATABASE\", \"CMC_TABLE\", \"CMC_PARTITION\", \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM " +
           "\"COMPACTION_METRICS_CACHE\" WHERE \"CMC_METRIC_TYPE\" = :type ORDER BY \"CMC_METRIC_VALUE\" DESC";
   
   private final int limit;
@@ -66,12 +66,13 @@ public class TopCompactionMetricsDataPerTypeFunction implements TransactionalFun
     @Override
     public CompactionMetricsData mapRow(ResultSet rs, int rowNum) throws SQLException {
       return builder
-          .dbName(rs.getString(1))
-          .tblName(rs.getString(2))
-          .partitionName(rs.getString(3))
+          .catName(rs.getString(1))
+          .dbName(rs.getString(2))
+          .tblName(rs.getString(3))
+          .partitionName(rs.getString(4))
           .metricType(type)
-          .metricValue(rs.getInt(4))
-          .version(rs.getInt(5))
+          .metricValue(rs.getInt(5))
+          .version(rs.getInt(6))
           .build();
     }
   }

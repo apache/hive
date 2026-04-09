@@ -361,6 +361,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ReplicationMetricCollector metricCollector = initReplicationLoadMetricCollector(loadPath.toString(), replScope.getDbName(), dmd);
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
+                replScope.getCatName(),
                 replScope.getDbName(),
                 dmd.getReplScope(),
                 queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),

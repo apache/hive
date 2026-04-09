@@ -69,6 +69,11 @@ public class JSONAddDefaultConstraintMessage extends AddDefaultConstraintMessage
   }
 
   @Override
+  public String getCat() {
+    return null;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }

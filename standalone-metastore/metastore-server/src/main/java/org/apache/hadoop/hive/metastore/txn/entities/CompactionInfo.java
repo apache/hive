@@ -45,6 +45,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    *  being resetted. This will be fixed at HIVE-21056.
    */
   public long id;
+  public String catName;
   public String dbname;
   public String tableName;
   public String partName;
@@ -88,14 +89,15 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   private String fullTableName = null;
   private StringableMap propertiesMap;
 
-  public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
+  public CompactionInfo(String catName, String dbname, String tableName, String partName, CompactionType type) {
+    this.catName = catName;
     this.dbname = dbname;
     this.tableName = tableName;
     this.partName = partName;
     this.type = type;
   }
-  public CompactionInfo(long id, String dbname, String tableName, String partName, char state) {
-    this(dbname, tableName, partName, null);
+  public CompactionInfo(long id, String catName, String dbname, String tableName, String partName, char state) {
+    this(catName, dbname, tableName, partName, null);
     this.id = id;
     this.state = state;
   }
@@ -133,7 +135,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
 
   public String getFullTableName() {
     if (fullTableName == null) {
-      StringBuilder buf = new StringBuilder(dbname);
+      StringBuilder buf = new StringBuilder(catName);
+      buf.append('.');
+      buf.append(dbname);
       buf.append('.');
       buf.append(tableName);
       fullTableName = buf.toString();
@@ -165,6 +169,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String toString() {
     return new ToStringBuilder(this)
         .append("id", id)
+        .append("catName", catName)
         .append("dbname", dbname)
         .append("tableName", tableName)
         .append("partName", partName)
@@ -278,7 +283,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr == null) {
       return null;
     }
-    CompactionInfo ci = new CompactionInfo(cr.getDbname(), cr.getTablename(), cr.getPartitionname(), cr.getType());
+    CompactionInfo ci = new CompactionInfo(cr.getCatName(), cr.getDbname(), cr.getTablename(), cr.getPartitionname(),
+        cr.getType());
     ci.id = cr.getId();
     ci.runAs = cr.getRunas();
     ci.properties = cr.getProperties();
@@ -326,6 +332,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       return null;
     }
     CompactionInfoStruct cr = new CompactionInfoStruct(ci.id, ci.dbname, ci.tableName, ci.type);
+    cr.setCatName(ci.catName);
     cr.setPartitionname(ci.partName);
     cr.setRunas(ci.runAs);
     cr.setProperties(ci.properties);

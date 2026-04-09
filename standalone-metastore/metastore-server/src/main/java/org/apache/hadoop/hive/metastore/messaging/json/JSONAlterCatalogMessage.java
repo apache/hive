@@ -51,6 +51,11 @@ public class JSONAlterCatalogMessage extends AlterCatalogMessage {
   }
 
   @Override
+  public String getCat() {
+    return null;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }
