@@ -27,5 +27,5 @@ SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL;
 SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL AND st_prim.x IS NULL;
 
 -- Validate without vectorization
-SET hive.vectorized.execution.enabled=true;
+SET hive.vectorized.execution.enabled=false;
 SELECT * FROM test_parquet_struct_nulls;
