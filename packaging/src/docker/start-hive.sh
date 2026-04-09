@@ -22,6 +22,7 @@ cd "$SCRIPT_DIR"
 MODE="container"
 PROFILE=""
 SCALE=""
+COMPOSE_FILES="docker-compose.yml"
 
 for arg in "$@"; do
   case "$arg" in
@@ -32,6 +33,17 @@ for arg in "$@"; do
       export HIVE_ZOOKEEPER_QUORUM=zookeeper:2181
       export HIVE_LLAP_DAEMON_SERVICE_HOSTS=@llap0
       ;;
+--ozone)
+      COMPOSE_FILES="docker-compose.yml:storage/ozone/docker-compose.yml"
+      # DEFAULT_FS defines the bucket authority
+      export DEFAULT_FS="s3a://hive"
+
+      export HIVE_WAREHOUSE_PATH="/warehouse"
+
+      export S3_ENDPOINT_URL="http://s3.ozone:9878"
+      export AWS_ACCESS_KEY_ID="ozone"
+      export AWS_SECRET_ACCESS_KEY="secret"
+      ;;
     *)
       echo "Unknown option: $arg"
       exit 1
@@ -40,7 +52,8 @@ for arg in "$@"; do
 done
 
 export HIVE_EXECUTION_MODE="$MODE"
+export COMPOSE_FILE="$COMPOSE_FILES"
 
-echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE)"
+echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE, compose_files=$COMPOSE_FILE)"
 
 docker compose $PROFILE up -d $SCALE
