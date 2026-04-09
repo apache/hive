@@ -3048,6 +3048,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final NotNullConstraint nnc = tabMetaData.getNotNullConstraint();
         final PrimaryKeyInfo pkc = tabMetaData.getPrimaryKeyInfo();
 
+        Set<String> alreadyAdded = new HashSet<>();
         for (StructField structField : fields) {
           colName = structField.getFieldName();
           colInfo = new ColumnInfo(
@@ -3056,6 +3057,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   isNullable(colName, nnc, pkc), tableAlias, false);
           colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
           rr.put(tableAlias, colName, colInfo);
+          alreadyAdded.add(colName);
           cInfoLst.add(colInfo);
         }
         // TODO: Fix this
@@ -3065,6 +3067,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 3.2 Add column info corresponding to partition columns
         for (FieldSchema part_col : tabMetaData.getPartCols()) {
           colName = part_col.getName();
+          if (alreadyAdded.contains(colName)) {
+            continue;
+          }
           colInfo = new ColumnInfo(colName,
                   TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()),
                   isNullable(colName, nnc, pkc), tableAlias, true);
