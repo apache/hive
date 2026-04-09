@@ -429,13 +429,13 @@ POSTHOOK: Input: default@small_alltypesorc_b
           },
           {
             "name": "ctimestamp1",
-            "ndv": 0,
+            "ndv": 14,
             "minValue": -28813,
             "maxValue": -28788
           },
           {
             "name": "ctimestamp2",
-            "ndv": 0,
+            "ndv": 17,
             "minValue": -28816,
             "maxValue": -28785
           },
@@ -682,13 +682,13 @@ POSTHOOK: Input: default@small_alltypesorc_b
           },
           {
             "name": "ctimestamp1",
-            "ndv": 0,
+            "ndv": 14,
             "minValue": -28813,
             "maxValue": -28788
           },
           {
             "name": "ctimestamp2",
-            "ndv": 0,
+            "ndv": 17,
             "minValue": -28816,
             "maxValue": -28785
           },
@@ -1690,13 +1690,13 @@ POSTHOOK: Input: default@small_alltypesorc_b
           },
           {
             "name": "ctimestamp1",
-            "ndv": 0,
+            "ndv": 14,
             "minValue": -28813,
             "maxValue": -28788
           },
           {
             "name": "ctimestamp2",
-            "ndv": 0,
+            "ndv": 17,
             "minValue": -28816,
             "maxValue": -28785
           },
@@ -1888,13 +1888,13 @@ POSTHOOK: Input: default@small_alltypesorc_b
           },
           {
             "name": "ctimestamp1",
-            "ndv": 0,
+            "ndv": 14,
             "minValue": -28813,
             "maxValue": -28788
           },
           {
             "name": "ctimestamp2",
-            "ndv": 0,
+            "ndv": 17,
             "minValue": -28816,
             "maxValue": -28785
           },
@@ -2901,13 +2901,13 @@ POSTHOOK: Input: default@small_alltypesorc_b
           },
           {
             "name": "ctimestamp1",
-            "ndv": 0,
+            "ndv": 14,
             "minValue": -28813,
             "maxValue": -28788
           },
           {
             "name": "ctimestamp2",
-            "ndv": 0,
+            "ndv": 17,
             "minValue": -28816,
             "maxValue": -28785
           },
@@ -3104,13 +3104,13 @@ POSTHOOK: Input: default@small_alltypesorc_b
           },
           {
             "name": "ctimestamp1",
-            "ndv": 0,
+            "ndv": 14,
             "minValue": -28813,
             "maxValue": -28788
           },
           {
             "name": "ctimestamp2",
-            "ndv": 0,
+            "ndv": 17,
             "minValue": -28816,
             "maxValue": -28785
           },
@@ -3349,13 +3349,13 @@ POSTHOOK: Input: default@small_alltypesorc_b
           },
           {
             "name": "ctimestamp1",
-            "ndv": 0,
+            "ndv": 14,
             "minValue": -28813,
             "maxValue": -28788
           },
           {
             "name": "ctimestamp2",
-            "ndv": 0,
+            "ndv": 17,
             "minValue": -28816,
             "maxValue": -28785
           },

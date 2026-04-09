@@ -762,7 +762,7 @@
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -1654,7 +1654,7 @@
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -2475,7 +2475,7 @@
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -3187,13 +3187,13 @@
           },
           {
             "name": "s_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 9933,
             "maxValue": 11394
           },
           {
             "name": "s_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10663,
             "maxValue": 11393
           },
@@ -3560,13 +3560,13 @@
           },
           {
             "name": "i_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 10161,
             "maxValue": 11622
           },
           {
             "name": "i_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10891,
             "maxValue": 11621
           },

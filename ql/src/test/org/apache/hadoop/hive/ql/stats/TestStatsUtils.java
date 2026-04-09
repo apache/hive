@@ -35,8 +35,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.Timestamp;
+import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -497,6 +501,68 @@ class TestStatsUtils {
 
     assertEquals(200, colStats.get(0).getNumTrues(), "Known numTrues should be scaled");
     assertEquals(-1, colStats.get(0).getNumFalses(), "Unknown numFalses (-1) should be preserved after scaling");
+  }
+
+  @Test
+  void testGetColStatisticsDateType() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("date_col");
+    cso.setColType(serdeConstants.DATE_TYPE_NAME);
+
+    byte[] bitVectors = new byte[] {1, 2, 3, 4};
+    DateColumnStatsData dateStats = new DateColumnStatsData();
+    dateStats.setNumDVs(100);
+    dateStats.setNumNulls(10);
+    dateStats.setLowValue(new Date(18000)); // days since epoch
+    dateStats.setHighValue(new Date(19000));
+    dateStats.setBitVectors(bitVectors);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setDateStats(dateStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "date_col");
+
+    assertNotNull(cs, "ColStatistics should not be null");
+    assertEquals(100, cs.getCountDistint(), "NumDVs mismatch for DATE");
+    assertEquals(10, cs.getNumNulls(), "NumNulls mismatch for DATE");
+    assertNotNull(cs.getBitVectors(), "BitVectors should not be null for DATE");
+
+    ColStatistics.Range range = cs.getRange();
+    assertNotNull(range, "Range should be created for DATE");
+    assertEquals(18000L, range.minValue.longValue(), "minValue mismatch for DATE");
+    assertEquals(19000L, range.maxValue.longValue(), "maxValue mismatch for DATE");
+  }
+
+  @Test
+  void testGetColStatisticsTimestampType() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("ts_col");
+    cso.setColType(serdeConstants.TIMESTAMP_TYPE_NAME);
+
+    byte[] bitVectors = new byte[] {5, 6, 7, 8};
+    TimestampColumnStatsData tsStats = new TimestampColumnStatsData();
+    tsStats.setNumDVs(200);
+    tsStats.setNumNulls(20);
+    tsStats.setLowValue(new Timestamp(1600000000L));
+    tsStats.setHighValue(new Timestamp(1700000000L));
+    tsStats.setBitVectors(bitVectors);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setTimestampStats(tsStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "ts_col");
+
+    assertNotNull(cs, "ColStatistics should not be null");
+    assertEquals(200, cs.getCountDistint(), "NumDVs mismatch for TIMESTAMP");
+    assertEquals(20, cs.getNumNulls(), "NumNulls mismatch for TIMESTAMP");
+    assertNotNull(cs.getBitVectors(), "BitVectors should not be null for TIMESTAMP");
+
+    ColStatistics.Range range = cs.getRange();
+    assertNotNull(range, "Range should be created for TIMESTAMP");
+    assertEquals(1600000000L, range.minValue.longValue(), "minValue mismatch for TIMESTAMP");
+    assertEquals(1700000000L, range.maxValue.longValue(), "maxValue mismatch for TIMESTAMP");
   }
 
 }

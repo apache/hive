@@ -620,7 +620,7 @@ Warning: Map Join MAPJOIN[213][bigTable=?] in task 'Reducer 9' is a cross produc
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },

@@ -820,6 +820,457 @@
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
+          "date_dim"
+        ],
+        "table:alias": "date_dim",
+        "inputs": [],
+        "rowCount": 73049,
+        "avgRowSize": 347,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "d_date_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "d_date_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "d_date"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_month_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_week_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dow"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_moy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_qoy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_week_seq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 9,
+              "name": "d_day_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 6,
+              "name": "d_quarter_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_holiday"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_weekend"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_following_holiday"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_first_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_last_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_ly"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_lq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_day"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_week"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_month"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_quarter"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_year"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "d_date_sk",
+            "ndv": 67850,
+            "minValue": 2415022,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_date",
+            "ndv": 76511,
+            "minValue": -25566,
+            "maxValue": 47482
+          },
+          {
+            "name": "d_date_id",
+            "ndv": 71022
+          },
+          {
+            "name": "d_month_seq",
+            "ndv": 2439,
+            "minValue": 0,
+            "maxValue": 2400
+          },
+          {
+            "name": "d_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_dow",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "d_moy",
+            "ndv": 12,
+            "minValue": 1,
+            "maxValue": 12
+          },
+          {
+            "name": "d_dom",
+            "ndv": 31,
+            "minValue": 1,
+            "maxValue": 31
+          },
+          {
+            "name": "d_qoy",
+            "ndv": 4,
+            "minValue": 1,
+            "maxValue": 4
+          },
+          {
+            "name": "d_fy_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_fy_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_fy_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_day_name",
+            "ndv": 7
+          },
+          {
+            "name": "d_quarter_name",
+            "ndv": 800
+          },
+          {
+            "name": "d_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_weekend",
+            "ndv": 2
+          },
+          {
+            "name": "d_following_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_first_dom",
+            "ndv": 2332,
+            "minValue": 2415021,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_last_dom",
+            "ndv": 2401,
+            "minValue": 2415020,
+            "maxValue": 2488372
+          },
+          {
+            "name": "d_same_day_ly",
+            "ndv": 67791,
+            "minValue": 2414657,
+            "maxValue": 2487705
+          },
+          {
+            "name": "d_same_day_lq",
+            "ndv": 67904,
+            "minValue": 2414930,
+            "maxValue": 2487978
+          },
+          {
+            "name": "d_current_day",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_week",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_month",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_quarter",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_year",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "BETWEEN",
+            "kind": "BETWEEN",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "literal": false,
+              "type": {
+                "type": "BOOLEAN",
+                "nullable": false
+              }
+            },
+            {
+              "op": {
+                "name": "CAST",
+                "kind": "CAST",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "input": 2,
+                  "name": "$2"
+                }
+              ],
+              "type": {
+                "type": "TIMESTAMP",
+                "nullable": true,
+                "precision": 9
+              }
+            },
+            {
+              "literal": 902188800000,
+              "type": {
+                "type": "TIMESTAMP",
+                "nullable": false,
+                "precision": 9
+              }
+            },
+            {
+              "literal": 904780800000,
+              "type": {
+                "type": "TIMESTAMP",
+                "nullable": false,
+                "precision": 9
+              }
+            }
+          ]
+        },
+        "rowCount": 18262.25
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 18262.25
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 6,
+              "name": "$6"
+            },
+            {
+              "input": 11,
+              "name": "$11"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "5",
+          "8"
+        ],
+        "rowCount": 3.2010116463629865E22
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
           "item"
         ],
         "table:alias": "item",
@@ -1013,13 +1464,13 @@
           },
           {
             "name": "i_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 10161,
             "maxValue": 11622
           },
           {
             "name": "i_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10891,
             "maxValue": 11621
           },
@@ -1106,7 +1557,7 @@
         ]
       },
       {
-        "id": "7",
+        "id": "11",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1133,7 +1584,7 @@
         "rowCount": 231000
       },
       {
-        "id": "8",
+        "id": "12",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "i_item_sk"
@@ -1147,7 +1598,7 @@
         "rowCount": 231000
       },
       {
-        "id": "9",
+        "id": "13",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1161,8 +1612,8 @@
               "name": "$0"
             },
             {
-              "input": 11,
-              "name": "$11"
+              "input": 12,
+              "name": "$12"
             }
           ]
         },
@@ -1170,13 +1621,13 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "5",
-          "8"
+          "9",
+          "12"
         ],
-        "rowCount": 4.048973649522101E23
+        "rowCount": 1.1091505354647748E27
       },
       {
-        "id": "10",
+        "id": "14",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -1430,7 +1881,7 @@
         ]
       },
       {
-        "id": "11",
+        "id": "15",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1456,7 +1907,7 @@
         "rowCount": 345
       },
       {
-        "id": "12",
+        "id": "16",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "p_promo_sk"
@@ -1470,7 +1921,7 @@
         "rowCount": 345
       },
       {
-        "id": "13",
+        "id": "17",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1482,457 +1933,6 @@
             {
               "input": 2,
               "name": "$2"
-            },
-            {
-              "input": 12,
-              "name": "$12"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "9",
-          "12"
-        ],
-        "rowCount": 2.095343863627687E25
-      },
-      {
-        "id": "14",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
-        "table": [
-          "default",
-          "date_dim"
-        ],
-        "table:alias": "date_dim",
-        "inputs": [],
-        "rowCount": 73049,
-        "avgRowSize": 347,
-        "rowType": {
-          "fields": [
-            {
-              "type": "BIGINT",
-              "nullable": false,
-              "name": "d_date_sk"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": false,
-              "precision": 2147483647,
-              "name": "d_date_id"
-            },
-            {
-              "type": "DATE",
-              "nullable": true,
-              "name": "d_date"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_month_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_week_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_quarter_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_year"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_dow"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_moy"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_dom"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_qoy"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_fy_year"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_fy_quarter_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_fy_week_seq"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 9,
-              "name": "d_day_name"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 6,
-              "name": "d_quarter_name"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_holiday"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_weekend"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_following_holiday"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_first_dom"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_last_dom"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_same_day_ly"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_same_day_lq"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_day"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_week"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_month"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_quarter"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_year"
-            },
-            {
-              "type": "BIGINT",
-              "nullable": true,
-              "name": "BLOCK__OFFSET__INSIDE__FILE"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 2147483647,
-              "name": "INPUT__FILE__NAME"
-            },
-            {
-              "fields": [
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "writeid"
-                },
-                {
-                  "type": "INTEGER",
-                  "nullable": true,
-                  "name": "bucketid"
-                },
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "rowid"
-                }
-              ],
-              "nullable": true,
-              "name": "ROW__ID"
-            },
-            {
-              "type": "BOOLEAN",
-              "nullable": true,
-              "name": "ROW__IS__DELETED"
-            }
-          ],
-          "nullable": false
-        },
-        "colStats": [
-          {
-            "name": "d_date_sk",
-            "ndv": 67850,
-            "minValue": 2415022,
-            "maxValue": 2488070
-          },
-          {
-            "name": "d_date",
-            "ndv": 0,
-            "minValue": -25566,
-            "maxValue": 47482
-          },
-          {
-            "name": "d_date_id",
-            "ndv": 71022
-          },
-          {
-            "name": "d_month_seq",
-            "ndv": 2439,
-            "minValue": 0,
-            "maxValue": 2400
-          },
-          {
-            "name": "d_week_seq",
-            "ndv": 11297,
-            "minValue": 1,
-            "maxValue": 10436
-          },
-          {
-            "name": "d_quarter_seq",
-            "ndv": 808,
-            "minValue": 1,
-            "maxValue": 801
-          },
-          {
-            "name": "d_year",
-            "ndv": 199,
-            "minValue": 1900,
-            "maxValue": 2100
-          },
-          {
-            "name": "d_dow",
-            "ndv": 7,
-            "minValue": 0,
-            "maxValue": 6
-          },
-          {
-            "name": "d_moy",
-            "ndv": 12,
-            "minValue": 1,
-            "maxValue": 12
-          },
-          {
-            "name": "d_dom",
-            "ndv": 31,
-            "minValue": 1,
-            "maxValue": 31
-          },
-          {
-            "name": "d_qoy",
-            "ndv": 4,
-            "minValue": 1,
-            "maxValue": 4
-          },
-          {
-            "name": "d_fy_year",
-            "ndv": 199,
-            "minValue": 1900,
-            "maxValue": 2100
-          },
-          {
-            "name": "d_fy_quarter_seq",
-            "ndv": 808,
-            "minValue": 1,
-            "maxValue": 801
-          },
-          {
-            "name": "d_fy_week_seq",
-            "ndv": 11297,
-            "minValue": 1,
-            "maxValue": 10436
-          },
-          {
-            "name": "d_day_name",
-            "ndv": 7
-          },
-          {
-            "name": "d_quarter_name",
-            "ndv": 800
-          },
-          {
-            "name": "d_holiday",
-            "ndv": 2
-          },
-          {
-            "name": "d_weekend",
-            "ndv": 2
-          },
-          {
-            "name": "d_following_holiday",
-            "ndv": 2
-          },
-          {
-            "name": "d_first_dom",
-            "ndv": 2332,
-            "minValue": 2415021,
-            "maxValue": 2488070
-          },
-          {
-            "name": "d_last_dom",
-            "ndv": 2401,
-            "minValue": 2415020,
-            "maxValue": 2488372
-          },
-          {
-            "name": "d_same_day_ly",
-            "ndv": 67791,
-            "minValue": 2414657,
-            "maxValue": 2487705
-          },
-          {
-            "name": "d_same_day_lq",
-            "ndv": 67904,
-            "minValue": 2414930,
-            "maxValue": 2487978
-          },
-          {
-            "name": "d_current_day",
-            "ndv": 1
-          },
-          {
-            "name": "d_current_week",
-            "ndv": 1
-          },
-          {
-            "name": "d_current_month",
-            "ndv": 2
-          },
-          {
-            "name": "d_current_quarter",
-            "ndv": 2
-          },
-          {
-            "name": "d_current_year",
-            "ndv": 2
-          }
-        ]
-      },
-      {
-        "id": "15",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "BETWEEN",
-            "kind": "BETWEEN",
-            "syntax": "SPECIAL"
-          },
-          "operands": [
-            {
-              "literal": false,
-              "type": {
-                "type": "BOOLEAN",
-                "nullable": false
-              }
-            },
-            {
-              "op": {
-                "name": "CAST",
-                "kind": "CAST",
-                "syntax": "SPECIAL"
-              },
-              "operands": [
-                {
-                  "input": 2,
-                  "name": "$2"
-                }
-              ],
-              "type": {
-                "type": "TIMESTAMP",
-                "nullable": true,
-                "precision": 9
-              }
-            },
-            {
-              "literal": 902188800000,
-              "type": {
-                "type": "TIMESTAMP",
-                "nullable": false,
-                "precision": 9
-              }
-            },
-            {
-              "literal": 904780800000,
-              "type": {
-                "type": "TIMESTAMP",
-                "nullable": false,
-                "precision": 9
-              }
-            }
-          ]
-        },
-        "rowCount": 18262.25
-      },
-      {
-        "id": "16",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "d_date_sk"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          }
-        ],
-        "rowCount": 18262.25
-      },
-      {
-        "id": "17",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 6,
-              "name": "$6"
             },
             {
               "input": 13,
@@ -1947,7 +1947,7 @@
           "13",
           "16"
         ],
-        "rowCount": 5.739854021030209E28
+        "rowCount": 5.73985402103021E28
       },
       {
         "id": "18",
@@ -2182,13 +2182,13 @@
           },
           {
             "name": "s_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 9933,
             "maxValue": 11394
           },
           {
             "name": "s_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10663,
             "maxValue": 11393
           },
@@ -3604,151 +3604,6 @@
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
-            "name": ">",
-            "kind": "GREATER_THAN",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 5,
-              "name": "$5"
-            },
-            {
-              "literal": 50,
-              "type": {
-                "type": "DECIMAL",
-                "nullable": false,
-                "precision": 2,
-                "scale": 0
-              }
-            }
-          ]
-        },
-        "inputs": [
-          "6"
-        ],
-        "rowCount": 231000
-      },
-      {
-        "id": "31",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "i_item_sk"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          }
-        ],
-        "rowCount": 231000
-      },
-      {
-        "id": "32",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 1,
-              "name": "$1"
-            },
-            {
-              "input": 11,
-              "name": "$11"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "29",
-          "31"
-        ],
-        "rowCount": 1.0561256948554074E23
-      },
-      {
-        "id": "33",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 11,
-              "name": "$11"
-            },
-            {
-              "literal": "N",
-              "type": {
-                "type": "CHAR",
-                "nullable": false,
-                "precision": 1
-              }
-            }
-          ]
-        },
-        "inputs": [
-          "10"
-        ],
-        "rowCount": 345
-      },
-      {
-        "id": "34",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "p_promo_sk"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          }
-        ],
-        "rowCount": 345
-      },
-      {
-        "id": "35",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 2,
-              "name": "$2"
-            },
-            {
-              "input": 12,
-              "name": "$12"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "32",
-          "34"
-        ],
-        "rowCount": 5.465450470876733E24
-      },
-      {
-        "id": "36",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
             "name": "BETWEEN",
             "kind": "BETWEEN",
             "syntax": "SPECIAL"
@@ -3798,12 +3653,12 @@
           ]
         },
         "inputs": [
-          "14"
+          "6"
         ],
         "rowCount": 18262.25
       },
       {
-        "id": "37",
+        "id": "31",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_date_sk"
@@ -3817,7 +3672,7 @@
         "rowCount": 18262.25
       },
       {
-        "id": "38",
+        "id": "32",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -3829,6 +3684,151 @@
             {
               "input": 6,
               "name": "$6"
+            },
+            {
+              "input": 11,
+              "name": "$11"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "29",
+          "31"
+        ],
+        "rowCount": 8.349450853191845E21
+      },
+      {
+        "id": "33",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": ">",
+            "kind": "GREATER_THAN",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 5,
+              "name": "$5"
+            },
+            {
+              "literal": 50,
+              "type": {
+                "type": "DECIMAL",
+                "nullable": false,
+                "precision": 2,
+                "scale": 0
+              }
+            }
+          ]
+        },
+        "inputs": [
+          "10"
+        ],
+        "rowCount": 231000
+      },
+      {
+        "id": "34",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "i_item_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 231000
+      },
+      {
+        "id": "35",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 12,
+              "name": "$12"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "32",
+          "34"
+        ],
+        "rowCount": 2.893084720630974E26
+      },
+      {
+        "id": "36",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 11,
+              "name": "$11"
+            },
+            {
+              "literal": "N",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 1
+              }
+            }
+          ]
+        },
+        "inputs": [
+          "14"
+        ],
+        "rowCount": 345
+      },
+      {
+        "id": "37",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "p_promo_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 345
+      },
+      {
+        "id": "38",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
             },
             {
               "input": 13,
@@ -5257,151 +5257,6 @@
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
-            "name": ">",
-            "kind": "GREATER_THAN",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 5,
-              "name": "$5"
-            },
-            {
-              "literal": 50,
-              "type": {
-                "type": "DECIMAL",
-                "nullable": false,
-                "precision": 2,
-                "scale": 0
-              }
-            }
-          ]
-        },
-        "inputs": [
-          "6"
-        ],
-        "rowCount": 231000
-      },
-      {
-        "id": "52",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "i_item_sk"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          }
-        ],
-        "rowCount": 231000
-      },
-      {
-        "id": "53",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 0,
-              "name": "$0"
-            },
-            {
-              "input": 11,
-              "name": "$11"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "50",
-          "52"
-        ],
-        "rowCount": 2.6510288818530387E22
-      },
-      {
-        "id": "54",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 11,
-              "name": "$11"
-            },
-            {
-              "literal": "N",
-              "type": {
-                "type": "CHAR",
-                "nullable": false,
-                "precision": 1
-              }
-            }
-          ]
-        },
-        "inputs": [
-          "10"
-        ],
-        "rowCount": 345
-      },
-      {
-        "id": "55",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "p_promo_sk"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          }
-        ],
-        "rowCount": 345
-      },
-      {
-        "id": "56",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 2,
-              "name": "$2"
-            },
-            {
-              "input": 12,
-              "name": "$12"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "53",
-          "55"
-        ],
-        "rowCount": 1.3719074463589475E24
-      },
-      {
-        "id": "57",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
             "name": "BETWEEN",
             "kind": "BETWEEN",
             "syntax": "SPECIAL"
@@ -5451,12 +5306,12 @@
           ]
         },
         "inputs": [
-          "14"
+          "6"
         ],
         "rowCount": 18262.25
       },
       {
-        "id": "58",
+        "id": "52",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_date_sk"
@@ -5470,7 +5325,7 @@
         "rowCount": 18262.25
       },
       {
-        "id": "59",
+        "id": "53",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -5482,6 +5337,151 @@
             {
               "input": 6,
               "name": "$6"
+            },
+            {
+              "input": 11,
+              "name": "$11"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "50",
+          "52"
+        ],
+        "rowCount": 2.0958334284684263E21
+      },
+      {
+        "id": "54",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": ">",
+            "kind": "GREATER_THAN",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 5,
+              "name": "$5"
+            },
+            {
+              "literal": 50,
+              "type": {
+                "type": "DECIMAL",
+                "nullable": false,
+                "precision": 2,
+                "scale": 0
+              }
+            }
+          ]
+        },
+        "inputs": [
+          "10"
+        ],
+        "rowCount": 231000
+      },
+      {
+        "id": "55",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "i_item_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 231000
+      },
+      {
+        "id": "56",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 12,
+              "name": "$12"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "53",
+          "55"
+        ],
+        "rowCount": 7.262062829643098E25
+      },
+      {
+        "id": "57",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 11,
+              "name": "$11"
+            },
+            {
+              "literal": "N",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 1
+              }
+            }
+          ]
+        },
+        "inputs": [
+          "14"
+        ],
+        "rowCount": 345
+      },
+      {
+        "id": "58",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "p_promo_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 345
+      },
+      {
+        "id": "59",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
             },
             {
               "input": 13,
@@ -5496,7 +5496,7 @@
           "56",
           "58"
         ],
-        "rowCount": 3.7581175143403033E27
+        "rowCount": 3.758117514340303E27
       },
       {
         "id": "60",
@@ -5715,13 +5715,13 @@
           },
           {
             "name": "web_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 10089,
             "maxValue": 11550
           },
           {
             "name": "web_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10819,
             "maxValue": 11549
           },
@@ -5873,7 +5873,7 @@
           "59",
           "61"
         ],
-        "rowCount": 4.735228068068782E28
+        "rowCount": 4.735228068068781E28
       },
       {
         "id": "63",
@@ -5977,7 +5977,7 @@
             ]
           }
         ],
-        "rowCount": 4.735228068068782E28
+        "rowCount": 4.735228068068781E28
       },
       {
         "id": "64",
@@ -6041,7 +6041,7 @@
             "name": null
           }
         ],
-        "rowCount": 4.735228068068782E27
+        "rowCount": 4.735228068068781E27
       },
       {
         "id": "65",
@@ -6096,7 +6096,7 @@
             "name": "$3"
           }
         ],
-        "rowCount": 4.735228068068782E27
+        "rowCount": 4.735228068068781E27
       },
       {
         "id": "66",
