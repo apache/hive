@@ -318,12 +318,12 @@ public class VectorizedColumnReaderTestBase {
       g.append("e", doubleVal);
 
       if (i % 2 != 0 || i % 3 != 0) {
-        Group some_null_g = group.addGroup("struct_field_some_null");
+        Group structFieldWithNulls = group.addGroup("struct_field_some_null");
         if (i % 2 != 0) {
-          some_null_g.append("f", intVal);
+          structFieldWithNulls.append("f", intVal);
         }
         if (i % 3 != 0) {
-          some_null_g.append("g", doubleVal);
+          structFieldWithNulls.append("g", doubleVal);
         }
       }
       Group mapGroup = group.addGroup("map_field");
