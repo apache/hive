@@ -17,8 +17,8 @@
 """
 Natural Language to SQL agent for Apache Hive Beeline.
 
-Spawns the Metastore MCP Server as a subprocess, connects as an MCP client,
-and uses LangChain + Claude to discover schema and generate HiveQL.
+Connects to the Metastore MCP Server (via SSE or stdio) to discover schema,
+then uses LangChain + Claude to generate HiveQL.
 Prints only the generated SQL to stdout.
 """
 
@@ -30,36 +30,46 @@ import re
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.client.sse import sse_client
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
 
 
-async def get_schema_via_mcp(mcp_server_script, database):
-    """Spawn the Metastore MCP server and call get_table_schema_sql tool."""
+async def _call_schema_tool(session, database):
+    """Call get_table_schema_sql on an initialized MCP session."""
+    result = await session.call_tool(
+        'get_table_schema_sql',
+        arguments={'database': database}
+    )
+    schema_text = ''
+    for content in result.content:
+        if hasattr(content, 'text'):
+            schema_text += content.text
+    return schema_text
+
+
+async def get_schema_via_sse(mcp_server_url, database):
+    """Connect to a running MCP server via SSE and get schema."""
+    async with sse_client(mcp_server_url) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            return await _call_schema_tool(session, database)
+
+
+async def get_schema_via_stdio(mcp_server_script, database):
+    """Spawn the Metastore MCP server as a subprocess and get schema."""
     metastore_url = os.environ.get('METASTORE_REST_URL', 'http://localhost:9001/iceberg')
 
     server_params = StdioServerParameters(
         command='python3',
-        args=[mcp_server_script],
+        args=[mcp_server_script, '--transport', 'stdio'],
         env={**os.environ, 'METASTORE_REST_URL': metastore_url},
     )
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
-
-            # Call the get_table_schema_sql tool
-            result = await session.call_tool(
-                'get_table_schema_sql',
-                arguments={'database': database}
-            )
-
-            # Extract text content from the result
-            schema_text = ''
-            for content in result.content:
-                if hasattr(content, 'text'):
-                    schema_text += content.text
-            return schema_text
+            return await _call_schema_tool(session, database)
 
 
 def generate_sql(schema_info, nl_query, database):
@@ -104,35 +114,41 @@ SCHEMA:
 
 
 async def async_main(args):
-    # Locate the MCP server script
-    # Try HIVE_HOME first, then relative to source tree
-    hive_home = os.environ.get('HIVE_HOME', '')
-    candidates = [
-        os.path.join(hive_home, 'scripts', 'metastore', 'mcp-server',
-                     'metastore_mcp_server.py'),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     '..', 'metastore', 'mcp-server', 'metastore_mcp_server.py'),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     '..', '..', '..', 'standalone-metastore', 'metastore-tools',
-                     'mcp-server', 'metastore_mcp_server.py'),
-    ]
-    mcp_server_script = None
-    for candidate in candidates:
-        candidate = os.path.normpath(candidate)
-        if os.path.exists(candidate):
-            mcp_server_script = candidate
-            break
+    mcp_server_url = os.environ.get('MCP_SERVER_URL', '')
 
-    if mcp_server_script is None:
-        print(f'Warning: MCP server not found in any known location',
-              file=sys.stderr)
-        schema_info = '(Schema not available - MCP server not found)'
-    else:
+    if mcp_server_url:
+        # Connect to remote MCP server via SSE
         try:
-            schema_info = await get_schema_via_mcp(mcp_server_script, args.database)
+            schema_info = await get_schema_via_sse(mcp_server_url, args.database)
         except Exception as e:
-            print(f'Warning: MCP schema discovery failed: {e}', file=sys.stderr)
+            print(f'Warning: MCP SSE connection failed: {e}', file=sys.stderr)
             schema_info = '(Schema not available)'
+    else:
+        # Fall back to spawning MCP server as subprocess
+        # In the source tree: beeline/scripts/nlsql/ -> standalone-metastore/metastore-tools/mcp-server/
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        source_root = os.path.join(script_dir, '..', '..', '..')
+        candidates = [
+            os.path.join(source_root, 'standalone-metastore', 'metastore-tools',
+                         'mcp-server', 'metastore_mcp_server.py'),
+        ]
+        mcp_server_script = None
+        for candidate in candidates:
+            candidate = os.path.normpath(candidate)
+            if os.path.exists(candidate):
+                mcp_server_script = candidate
+                break
+
+        if mcp_server_script is None:
+            print('Warning: MCP server not found in any known location',
+                  file=sys.stderr)
+            schema_info = '(Schema not available - MCP server not found)'
+        else:
+            try:
+                schema_info = await get_schema_via_stdio(mcp_server_script, args.database)
+            except Exception as e:
+                print(f'Warning: MCP schema discovery failed: {e}', file=sys.stderr)
+                schema_info = '(Schema not available)'
 
     # Generate SQL
     try:
@@ -151,14 +167,14 @@ def main():
                         help='Natural language query')
     parser.add_argument('--database', default='default',
                         help='Current database name')
-    parser.add_argument('--mcp-url',
+    parser.add_argument('--metastore-url',
                         default=os.environ.get('METASTORE_REST_URL',
                                                'http://localhost:9001/iceberg'),
-                        help='Metastore REST Catalog URL (including path prefix)')
+                        help='Metastore Iceberg REST Catalog URL (stdio fallback only)')
     args = parser.parse_args()
 
-    # Set env var so the MCP server picks it up
-    os.environ['METASTORE_REST_URL'] = args.mcp_url.rstrip('/')
+    # Set env var so the MCP server picks it up (stdio fallback)
+    os.environ['METASTORE_REST_URL'] = args.metastore_url.rstrip('/')
 
     asyncio.run(async_main(args))
 

@@ -1219,9 +1219,8 @@ public class Commands {
     }
 
     // ANSI colors
-    String CYAN = "\u001B[36m";
     String RED = "\u001B[31m";
-    String GREEN = "\u001B[32m";
+    String CYAN = "\u001B[36m";
     String BOLD = "\u001B[1m";
     String DIM = "\u001B[2m";
     String RESET = "\u001B[0m";
@@ -1241,21 +1240,22 @@ public class Commands {
       }
 
       // HMS REST Catalog URL (configurable via METASTORE_REST_URL env var)
-      String mcpUrl = System.getenv("METASTORE_REST_URL");
-      if (mcpUrl == null || mcpUrl.isEmpty()) {
-        mcpUrl = "http://localhost:9001/iceberg";
+      String metastoreUrl = System.getenv("METASTORE_REST_URL");
+      if (metastoreUrl == null || metastoreUrl.isEmpty()) {
+        metastoreUrl = "http://localhost:9001/iceberg";
       }
 
       ProcessBuilder pb = new ProcessBuilder(
           "python3", scriptPath,
           "--query", nlQuery,
           "--database", database,
-          "--mcp-url", mcpUrl
+          "--metastore-url", metastoreUrl
       );
       // Pass through environment variables for LLM configuration
       Map<String, String> env = pb.environment();
       String[] envKeys = {"ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN",
-          "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "METASTORE_REST_URL"};
+          "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "METASTORE_REST_URL",
+          "MCP_SERVER_URL"};
       for (String key : envKeys) {
         String val = System.getenv(key);
         if (val != null) {

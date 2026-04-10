@@ -348,16 +348,6 @@
       <outputDirectory>scripts/nlsql</outputDirectory>
     </fileSet>
 
-    <!-- metastore MCP server -->
-    <fileSet>
-      <directory>${project.parent.basedir}/standalone-metastore/metastore-tools/mcp-server</directory>
-      <fileMode>755</fileMode>
-      <includes>
-        <include>**/*</include>
-      </includes>
-      <outputDirectory>scripts/metastore/mcp-server</outputDirectory>
-    </fileSet>
-
     <!-- hcatalog bin -->
     <fileSet>
       <directory>${project.parent.basedir}/hcatalog/bin</directory>

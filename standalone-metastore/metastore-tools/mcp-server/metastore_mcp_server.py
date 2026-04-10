@@ -182,8 +182,16 @@ if __name__ == "__main__":
                         default=os.environ.get("METASTORE_REST_URL",
                                                "http://localhost:9001/iceberg"),
                         help="Metastore REST Catalog URL")
+    parser.add_argument("--transport", default="sse",
+                        choices=["sse", "stdio"],
+                        help="MCP transport (default: sse)")
+    parser.add_argument("--port", type=int,
+                        default=int(os.environ.get("MCP_SERVER_PORT", "3000")),
+                        help="Port for SSE transport (default: 3000)")
     args = parser.parse_args()
     METASTORE_URL = args.metastore_url.rstrip("/")
-    os.environ["METASTORE_REST_URL"] = METASTORE_URL
 
-    mcp.run()
+    if args.transport == "sse":
+        mcp.settings.host = "0.0.0.0"
+        mcp.settings.port = args.port
+    mcp.run(transport=args.transport)

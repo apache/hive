@@ -53,12 +53,16 @@ services:
         -Djavax.jdo.option.ConnectionUserName=hive
         -Djavax.jdo.option.ConnectionPassword=password
 
+      MCP_SERVER_ENABLED: 'true'
+      MCP_SERVER_PORT: '3000'
+
       S3_ENDPOINT_URL: "${S3_ENDPOINT_URL}"
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
     ports:
         - '9001:9001'
         - '9083:9083'
+        - '3000:3000'
     volumes:
         - warehouse:/opt/hive/data/warehouse
         - type: bind

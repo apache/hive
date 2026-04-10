@@ -135,6 +135,16 @@ if [[ "${SKIP_SCHEMA_INIT}" == "false" && ( "${SERVICE_NAME}" == "hiveserver2" |
   initialize_hive
 fi
 
+# Start Metastore MCP Server as a sidecar process if enabled
+if [ "${MCP_SERVER_ENABLED:-false}" == "true" ] && [ "${SERVICE_NAME}" == "metastore" ]; then
+  MCP_PORT="${MCP_SERVER_PORT:-3000}"
+  MCP_METASTORE_URL="${METASTORE_REST_URL:-http://localhost:9001/iceberg}"
+  echo "Starting Metastore MCP Server on port ${MCP_PORT}..."
+  python3.11 "$HIVE_HOME/scripts/metastore/mcp-server/metastore_mcp_server.py" \
+    --transport sse --port "${MCP_PORT}" \
+    --metastore-url "${MCP_METASTORE_URL}" &
+fi
+
 if [ "${SERVICE_NAME}" == "hiveserver2" ]; then
   export HADOOP_CLASSPATH="$TEZ_HOME/*:$TEZ_HOME/lib/*:$HADOOP_CLASSPATH"
   exec "$HIVE_HOME/bin/hive" --skiphadoopversion --skiphbasecp --service "$SERVICE_NAME"

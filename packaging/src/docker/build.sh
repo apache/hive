@@ -123,6 +123,7 @@ cp "$CACHE_DIR/apache-tez-$TEZ_VERSION-bin.tar.gz" "$WORK_DIR/"
 cp -R "$SOURCE_DIR/packaging/src/docker/conf" "$WORK_DIR/"
 cp -R "$SOURCE_DIR/packaging/src/docker/entrypoint.sh" "$WORK_DIR/"
 cp    "$SOURCE_DIR/packaging/src/docker/Dockerfile" "$WORK_DIR/"
+cp -R "$SOURCE_DIR/standalone-metastore/metastore-tools/mcp-server" "$WORK_DIR/"
 docker build \
         "$WORK_DIR" \
         -f "$WORK_DIR/Dockerfile" \

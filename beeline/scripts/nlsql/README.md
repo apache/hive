@@ -5,17 +5,19 @@ Converts natural language queries to HiveQL using an LLM, then executes them aut
 ## Prerequisites
 
 - Python 3.10+
-- A running Hive Metastore with the Iceberg REST Catalog endpoint enabled
 - An Anthropic API key or compatible LLM gateway
+- A running Hive Metastore (Docker Compose or standalone)
 
 ## Installation
 
-Install Python dependencies for both the nlsql agent and the Metastore MCP server:
+Install the nlsql Python dependencies:
 
 ```bash
 pip install -r $HIVE_HOME/scripts/nlsql/requirements.txt
-pip install -r $HIVE_HOME/scripts/metastore/mcp-server/requirements.txt
 ```
+
+For the stdio fallback (non-Docker), also install the MCP server dependencies — see
+[Local (stdio)](#local-stdio--fallback) below.
 
 ## Configuration
 
@@ -25,7 +27,6 @@ Set the following environment variables before starting Beeline:
 export ANTHROPIC_BASE_URL="https://api.anthropic.com"   # or your gateway URL
 export ANTHROPIC_AUTH_TOKEN="your-token"                 # or use ANTHROPIC_API_KEY
 export ANTHROPIC_MODEL="claude-sonnet-4-20250514"        # optional, this is the default
-export METASTORE_REST_URL="http://localhost:9001/iceberg" # optional, this is the default
 ```
 
 | Variable | Default | Description |
@@ -34,22 +35,46 @@ export METASTORE_REST_URL="http://localhost:9001/iceberg" # optional, this is th
 | `ANTHROPIC_MODEL` | `claude-sonnet-4-20250514` | Model to use for SQL generation |
 | `ANTHROPIC_AUTH_TOKEN` | _(none)_ | Auth token for the LLM API |
 | `ANTHROPIC_API_KEY` | _(none)_ | Fallback if `ANTHROPIC_AUTH_TOKEN` is not set |
-| `METASTORE_REST_URL` | `http://localhost:9001/iceberg` | Metastore Iceberg REST Catalog URL |
 
-### Metastore REST Catalog
+## MCP Server Connection
 
-The Metastore must have the Iceberg REST Catalog endpoint enabled. Add to `metastore-site.xml`:
+The nlsql agent connects to the Metastore MCP Server to discover schema. There are two modes:
 
-```xml
-<property>
-  <name>metastore.catalog.servlet.port</name>
-  <value>9001</value>
-</property>
-<property>
-  <name>metastore.catalog.servlet.auth</name>
-  <value>none</value>
-</property>
+### Docker (SSE) — recommended
+
+When running Hive via Docker Compose, the MCP server runs as a sidecar process inside
+the metastore container, exposed on port 3000. Set `MCP_SERVER_URL` to connect:
+
+```bash
+export MCP_SERVER_URL="http://localhost:3000/sse"
 ```
+
+No additional setup is needed — the Docker image includes the MCP server and its
+Python dependencies.
+
+### Local (stdio) — fallback
+
+If `MCP_SERVER_URL` is not set, the agent falls back to spawning the MCP server as
+a local subprocess via stdio. This requires the MCP server script available locally
+and a running Metastore with the Iceberg REST Catalog endpoint enabled.
+
+The agent searches for `metastore_mcp_server.py` in the source tree at
+`standalone-metastore/metastore-tools/mcp-server/` (relative to the repo root).
+
+Install the MCP server Python dependencies:
+```bash
+pip install -r path/to/mcp-server/requirements.txt
+```
+
+Configure the metastore REST catalog URL:
+```bash
+export METASTORE_REST_URL="http://localhost:9001/iceberg"
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MCP_SERVER_URL` | _(none)_ | MCP server SSE endpoint (e.g. `http://localhost:3000/sse`) |
+| `METASTORE_REST_URL` | `http://localhost:9001/iceberg` | HMS REST Catalog URL (only used in stdio fallback) |
 
 ## Usage
 
@@ -64,7 +89,7 @@ beeline> !nlsql which tables have more than 1 million rows
 ```
 
 The agent will:
-1. Discover the schema of the current database via the Metastore MCP server
+1. Discover the schema of the current database via the Metastore MCP Server
 2. Send the schema and your natural language query to the LLM
 3. Display the generated SQL
 4. Execute it against HiveServer2
@@ -78,7 +103,9 @@ The agent will:
 Beeline (Java) -- spawns Python subprocess
   |
   v
-nlsql_agent.py -- spawns MCP server subprocess, gets schema, calls LLM
+nlsql_agent.py
+  |-- MCP_SERVER_URL set? --> connects via SSE (http://host:3000/sse)
+  |-- not set?            --> spawns metastore_mcp_server.py via stdio
   |
   v
 metastore_mcp_server.py -- queries HMS Iceberg REST Catalog API

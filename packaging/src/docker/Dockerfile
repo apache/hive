@@ -79,7 +79,7 @@ ARG TEZ_VERSION
 # Install dependencies
 RUN set -ex; \
     microdnf update -y; \
-    microdnf -y install procps gettext; \
+    microdnf -y install procps gettext python3.11 python3.11-pip; \
     microdnf clean all; \
     useradd --no-create-home -s /sbin/nologin -c "" --uid $UID hive
 
@@ -97,8 +97,10 @@ COPY --from=env --chown=hive /opt/apache-tez-$TEZ_VERSION-bin $TEZ_HOME
 
 COPY --chown=hive entrypoint.sh /
 COPY --chown=hive conf $HIVE_HOME/conf
+COPY --chown=hive mcp-server $HIVE_HOME/scripts/metastore/mcp-server
 
-RUN chmod +x /entrypoint.sh && \
+RUN pip3.11 install --no-cache-dir -r $HIVE_HOME/scripts/metastore/mcp-server/requirements.txt && \
+    chmod +x /entrypoint.sh && \
     mkdir -p $HIVE_HOME/data/warehouse && \
     chown hive $HIVE_HOME/data/warehouse && \
     mkdir -p $HIVE_HOME/scratch && \
@@ -108,6 +110,6 @@ RUN chmod +x /entrypoint.sh && \
 
 USER hive
 WORKDIR $HIVE_HOME
-EXPOSE 10000 10002 9083
+EXPOSE 10000 10002 9083 3000
 
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]

@@ -34,28 +34,52 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Standalone
+### SSE transport (default) — for Docker / network access
 
 ```bash
-# Using command-line argument
-python3 metastore_mcp_server.py --metastore-url http://localhost:9001/iceberg
-
-# Using environment variable
-METASTORE_REST_URL=http://localhost:9001/iceberg python3 metastore_mcp_server.py
+python3 metastore_mcp_server.py --port 3000 --metastore-url http://localhost:9001/iceberg
 ```
 
-The server communicates over stdio using the MCP protocol.
+The server listens on `http://0.0.0.0:3000/sse` and accepts MCP client connections over SSE.
+
+### stdio transport — for local subprocess usage
+
+```bash
+python3 metastore_mcp_server.py --transport stdio --metastore-url http://localhost:9001/iceberg
+```
+
+Communicates over stdin/stdout. Used when an MCP client spawns the server as a subprocess.
+
+### Docker
+
+When running Hive via Docker Compose, the MCP server runs automatically as a sidecar
+process inside the metastore container. Set `MCP_SERVER_ENABLED=true` in the metastore
+service environment (already configured in the provided `docker-compose.yml`).
+
+The server is accessible at `http://localhost:3000/sse` from the host.
 
 ### Integration with Claude Desktop / Claude Code
 
-Add to your MCP configuration:
+If the MCP server is running via Docker (SSE), add to your MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "metastore": {
+      "url": "http://localhost:3000/sse"
+    }
+  }
+}
+```
+
+Alternatively, use stdio transport (spawns the server as a subprocess):
 
 ```json
 {
   "mcpServers": {
     "metastore": {
       "command": "python3",
-      "args": ["/path/to/metastore_mcp_server.py"],
+      "args": ["/path/to/metastore_mcp_server.py", "--transport", "stdio"],
       "env": {
         "METASTORE_REST_URL": "http://localhost:9001/iceberg"
       }
@@ -64,19 +88,13 @@ Add to your MCP configuration:
 }
 ```
 
-### Integration with LangChain
+### Python MCP Client Example
 
 ```python
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+from mcp import ClientSession
+from mcp.client.sse import sse_client
 
-server_params = StdioServerParameters(
-    command='python3',
-    args=['metastore_mcp_server.py'],
-    env={'METASTORE_REST_URL': 'http://localhost:9001/iceberg'},
-)
-
-async with stdio_client(server_params) as (read, write):
+async with sse_client("http://localhost:3000/sse") as (read, write):
     async with ClientSession(read, write) as session:
         await session.initialize()
 
@@ -89,11 +107,6 @@ async with stdio_client(server_params) as (read, write):
             arguments={'database': 'default'}
         )
 ```
-
-### Integration with Any MCP-Compatible Client
-
-The server exposes standard MCP tools over stdio. Any MCP client can connect by
-spawning the server as a subprocess and communicating via stdin/stdout.
 
 ## Available Tools
 
@@ -109,3 +122,5 @@ spawning the server as a subprocess and communicating via stdin/stdout.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `METASTORE_REST_URL` | `http://localhost:9001/iceberg` | Metastore Iceberg REST Catalog URL |
+| `MCP_SERVER_PORT` | `3000` | Port for SSE transport |
+| `MCP_SERVER_ENABLED` | `false` | Set to `true` in Docker to start the sidecar |
