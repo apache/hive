@@ -466,25 +466,61 @@ public class HiveStatement implements java.sql.Statement {
 
   private SQLException sqlExceptionForCanceledState(TGetOperationStatusResp statusResp) {
     final String errMsg = statusResp.getErrorMessage();
-    final String fullErrMsg =
-        (errMsg == null || errMsg.isEmpty()) ? QUERY_CANCELLED_MESSAGE : QUERY_CANCELLED_MESSAGE + " " + errMsg;
+    final String fullErrMsg;
+    if (errMsg == null || errMsg.isEmpty()) {
+      fullErrMsg = QUERY_CANCELLED_MESSAGE;
+    } else {
+      fullErrMsg = QUERY_CANCELLED_MESSAGE + " " + errMsg;
+    }
     return new SQLException(fullErrMsg, "01000");
+  }
+
+  /**
+   * One GetOperationStatus response: progress update, Thrift status check, then terminal states.
+   * Extracted to keep {@link #waitForOperationToComplete()} smaller for static analysis (Sonar).
+   */
+  private void processOperationStatusResponse(TGetOperationStatusResp statusResp) throws SQLException {
+    if (!isOperationComplete && inPlaceUpdateStream.isPresent()) {
+      inPlaceUpdateStream.get().update(statusResp.getProgressUpdateResponse());
+    }
+    Utils.verifySuccessWithInfo(statusResp.getStatus());
+    if (!statusResp.isSetOperationState()) {
+      return;
+    }
+    switch (statusResp.getOperationState()) {
+    case CLOSED_STATE:
+    case FINISHED_STATE:
+      isOperationComplete = true;
+      isLogBeingGenerated = false;
+      break;
+    case CANCELED_STATE:
+      throw sqlExceptionForCanceledState(statusResp);
+    case TIMEDOUT_STATE:
+      throw new SQLTimeoutException(sqlTimeoutMessageForTimedOutState(statusResp.getErrorMessage()));
+    case ERROR_STATE:
+      throw new SQLException(statusResp.getErrorMessage(), statusResp.getSqlState(), statusResp.getErrorCode());
+    case UKNOWN_STATE:
+      throw new SQLException("Unknown query", "HY000");
+    case INITIALIZED_STATE:
+    case PENDING_STATE:
+    case RUNNING_STATE:
+      break;
+    }
   }
 
   TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
     TGetOperationStatusResp statusResp = null;
 
     final TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle.get());
-    statusReq.setGetProgressUpdate(inPlaceUpdateStream.isPresent());
+    boolean progressUpdates = inPlaceUpdateStream.isPresent();
+    statusReq.setGetProgressUpdate(progressUpdates);
 
-    // Progress bar is completed if there is nothing to request
-    if (inPlaceUpdateStream.isPresent()) {
+    if (progressUpdates) {
       inPlaceUpdateStream.get().getEventNotifier().progressBarCompleted();
     }
 
     LOG.debug("Waiting on operation to complete: Polling operation status");
 
-    // Poll on the operation status, till the operation is complete
     do {
       try {
         if (Thread.currentThread().isInterrupted()) {
@@ -497,33 +533,7 @@ public class HiveStatement implements java.sql.Statement {
          */
         statusResp = client.GetOperationStatus(statusReq);
         LOG.debug("Status response: {}", statusResp);
-        if (!isOperationComplete && inPlaceUpdateStream.isPresent()) {
-          inPlaceUpdateStream.get().update(statusResp.getProgressUpdateResponse());
-        }
-        Utils.verifySuccessWithInfo(statusResp.getStatus());
-        if (statusResp.isSetOperationState()) {
-          switch (statusResp.getOperationState()) {
-          case CLOSED_STATE:
-          case FINISHED_STATE:
-            isOperationComplete = true;
-            isLogBeingGenerated = false;
-            break;
-          case CANCELED_STATE:
-            throw sqlExceptionForCanceledState(statusResp);
-          case TIMEDOUT_STATE:
-            throw new SQLTimeoutException(sqlTimeoutMessageForTimedOutState(statusResp.getErrorMessage()));
-          case ERROR_STATE:
-            // Get the error details from the underlying exception
-            throw new SQLException(statusResp.getErrorMessage(), statusResp.getSqlState(),
-                statusResp.getErrorCode());
-          case UKNOWN_STATE:
-            throw new SQLException("Unknown query", "HY000");
-          case INITIALIZED_STATE:
-          case PENDING_STATE:
-          case RUNNING_STATE:
-            break;
-          }
-        }
+        processOperationStatusResponse(statusResp);
       } catch (SQLException e) {
         isLogBeingGenerated = false;
         throw e;
@@ -533,8 +543,7 @@ public class HiveStatement implements java.sql.Statement {
       }
     } while (!isOperationComplete);
 
-    // set progress bar to be completed when hive query execution has completed
-    if (inPlaceUpdateStream.isPresent()) {
+    if (progressUpdates) {
       inPlaceUpdateStream.get().getEventNotifier().progressBarCompleted();
     }
     return statusResp;
