@@ -22,7 +22,7 @@ on:
       - ".github/**"
   push:
     branches:
-      - main
+      - master
     paths:
       - ".github/**"
 
