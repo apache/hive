@@ -250,8 +250,10 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         }
       }
       
-      targetTable.getPartCols().forEach(fieldSchema -> values.add(
-          formatter.apply(fieldSchema.getName())));
+      if (!targetTable.hasNonNativePartitionSupport()) {
+        targetTable.getPartCols().forEach(fieldSchema -> values.add(
+            formatter.apply(fieldSchema.getName())));
+      }
     }
     
     protected String getRhsExpValue(String newValue, String alias) {
