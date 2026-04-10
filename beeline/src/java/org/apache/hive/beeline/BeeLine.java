@@ -304,6 +304,8 @@ public class BeeLine implements Closeable {
       new ReflectiveCommandHandler(this, new String[]{"addlocaldrivername"},
           null),
       new ReflectiveCommandHandler(this, new String[]{"delimiter"},
+          null),
+      new ReflectiveCommandHandler(this, new String[]{"nlsql"},
           null)
   };
 

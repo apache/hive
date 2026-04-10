@@ -57,6 +57,7 @@ services:
       AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
     ports:
+        - '9001:9001'
         - '9083:9083'
     volumes:
         - warehouse:/opt/hive/data/warehouse

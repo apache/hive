@@ -76,4 +76,12 @@
         <name>hive.query.results.cache.directory</name>
         <value>${HIVE_QUERY_RESULTS_CACHE_DIRECTORY}</value>
     </property>
+    <property>
+        <name>metastore.catalog.servlet.port</name>
+        <value>9001</value>
+    </property>
+    <property>
+        <name>metastore.catalog.servlet.auth</name>
+        <value>none</value>
+    </property>
 </configuration>

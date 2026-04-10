@@ -133,6 +133,16 @@
       <outputDirectory>licenses</outputDirectory>
     </fileSet>
 
+    <!-- metastore MCP server -->
+    <fileSet>
+      <directory>${project.parent.basedir}/metastore-tools/mcp-server</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/metastore/mcp-server</outputDirectory>
+    </fileSet>
+
   </fileSets>
 
   <files>

@@ -1183,6 +1183,141 @@ public class Commands {
     }
   }
 
+  public boolean nlsql(String line) {
+    if (line == null || line.length() == 0) {
+      return false;
+    }
+
+    if (!line.startsWith("nlsql")) {
+      return false;
+    }
+
+    String nlQuery = line.substring("nlsql".length()).trim();
+    if (nlQuery.isEmpty()) {
+      return beeLine.error("Usage: !nlsql <natural language query>");
+    }
+
+    // Must be connected
+    if (beeLine.getDatabaseConnection() == null || beeLine.getDatabaseConnection().getUrl() == null) {
+      return beeLine.error("Not connected. Use !connect first.");
+    }
+
+    // Locate the Python script
+    String hiveHome = System.getenv("HIVE_HOME");
+    String scriptPath;
+    if (hiveHome != null) {
+      scriptPath = hiveHome + File.separator + "scripts" + File.separator +
+          "nlsql" + File.separator + "nlsql_agent.py";
+    } else {
+      scriptPath = "scripts" + File.separator + "nlsql" + File.separator +
+          "nlsql_agent.py";
+    }
+
+    if (!new File(scriptPath).exists()) {
+      return beeLine.error("nlsql script not found at: " + scriptPath +
+          ". Set HIVE_HOME or ensure the script exists.");
+    }
+
+    // ANSI colors
+    String CYAN = "\u001B[36m";
+    String RED = "\u001B[31m";
+    String GREEN = "\u001B[32m";
+    String BOLD = "\u001B[1m";
+    String DIM = "\u001B[2m";
+    String RESET = "\u001B[0m";
+
+    beeLine.output(DIM + "Generating SQL for: " + RESET + CYAN + nlQuery + RESET);
+
+    try {
+      // Get current database name
+      String database = "default";
+      try {
+        database = beeLine.getDatabaseConnection().getConnection().getSchema();
+        if (database == null || database.isEmpty()) {
+          database = "default";
+        }
+      } catch (Exception e) {
+        // ignore, use default
+      }
+
+      // HMS REST Catalog URL (configurable via METASTORE_REST_URL env var)
+      String mcpUrl = System.getenv("METASTORE_REST_URL");
+      if (mcpUrl == null || mcpUrl.isEmpty()) {
+        mcpUrl = "http://localhost:9001/iceberg";
+      }
+
+      ProcessBuilder pb = new ProcessBuilder(
+          "python3", scriptPath,
+          "--query", nlQuery,
+          "--database", database,
+          "--mcp-url", mcpUrl
+      );
+      // Pass through environment variables for LLM configuration
+      Map<String, String> env = pb.environment();
+      String[] envKeys = {"ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN",
+          "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "METASTORE_REST_URL"};
+      for (String key : envKeys) {
+        String val = System.getenv(key);
+        if (val != null) {
+          env.put(key, val);
+        }
+      }
+
+      pb.redirectErrorStream(false);
+      Process process = pb.start();
+      process.getOutputStream().close();
+
+      // Read stdout (the generated SQL)
+      StringBuilder sqlBuilder = new StringBuilder();
+      try (BufferedReader reader = new BufferedReader(
+          new InputStreamReader(process.getInputStream()))) {
+        String outputLine;
+        while ((outputLine = reader.readLine()) != null) {
+          if (sqlBuilder.length() > 0) {
+            sqlBuilder.append("\n");
+          }
+          sqlBuilder.append(outputLine);
+        }
+      }
+
+      // Read stderr (errors/warnings)
+      StringBuilder errBuilder = new StringBuilder();
+      try (BufferedReader reader = new BufferedReader(
+          new InputStreamReader(process.getErrorStream()))) {
+        String errLine;
+        while ((errLine = reader.readLine()) != null) {
+          errBuilder.append(errLine).append("\n");
+        }
+      }
+
+      int exitCode = process.waitFor();
+      if (exitCode != 0) {
+        beeLine.error("nlsql script failed (exit code " + exitCode + ")");
+        if (errBuilder.length() > 0) {
+          beeLine.error(errBuilder.toString().trim());
+        }
+        return false;
+      }
+
+      String generatedSql = sqlBuilder.toString().trim();
+      if (generatedSql.isEmpty()) {
+        return beeLine.error("nlsql script produced no output");
+      }
+
+      // Display the generated SQL
+      beeLine.output("");
+      beeLine.output(BOLD + RED + generatedSql + RESET);
+      beeLine.output("");
+
+      // Execute the generated SQL through the normal Beeline path
+      return executeInternal(generatedSql, false);
+
+    } catch (Exception e) {
+      beeLine.error("Exception running nlsql: " + e.getMessage());
+      return false;
+    }
+  }
+
   public boolean call(String line) {
     return execute(line, true, false);
   }
