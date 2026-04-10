@@ -87,6 +87,9 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
   protected int definitionLevel;
   protected int repetitionLevel;
 
+  protected int[] currentDefLevels;
+  protected int defLevelIndex = 0;
+
   /**
    * Repetition/Definition/Value readers.
    */
@@ -154,6 +157,9 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
   protected void readRepetitionAndDefinitionLevels() {
     repetitionLevel = repetitionLevelColumn.nextInt();
     definitionLevel = definitionLevelColumn.nextInt();
+    if (currentDefLevels != null && defLevelIndex < currentDefLevels.length) {
+      currentDefLevels[defLevelIndex++] = definitionLevel;
+    }
     valuesRead++;
   }
 
@@ -308,5 +314,10 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
     int nextInt() {
       return 0;
     }
+  }
+
+  @Override
+  public int[] getDefinitionLevels() {
+    return currentDefLevels;
   }
 }

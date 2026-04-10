@@ -317,14 +317,15 @@ public class VectorizedColumnReaderTestBase {
       g.addGroup("nsf").append("c", intVal).append("d", intVal);
       g.append("e", doubleVal);
 
-      Group some_null_g = group.addGroup("struct_field_some_null");
-      if (i % 2 != 0) {
-        some_null_g.append("f", intVal);
+      if (i % 2 != 0 || i % 3 != 0) {
+        Group structFieldWithNulls = group.addGroup("struct_field_some_null");
+        if (i % 2 != 0) {
+          structFieldWithNulls.append("f", intVal);
+        }
+        if (i % 3 != 0) {
+          structFieldWithNulls.append("g", doubleVal);
+        }
       }
-      if (i % 3 != 0) {
-        some_null_g.append("g", doubleVal);
-      }
-
       Group mapGroup = group.addGroup("map_field");
       if (i % 13 != 1) {
         mapGroup.addGroup("map").append("key", binary).append("value", "abc");

@@ -36,4 +36,8 @@ public interface VectorizedColumnReader {
     int total,
     ColumnVector column,
     TypeInfo columnType) throws IOException;
+
+  default int[] getDefinitionLevels() {
+    return null;
+  }
 }
