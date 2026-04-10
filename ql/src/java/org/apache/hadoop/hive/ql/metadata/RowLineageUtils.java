@@ -86,37 +86,23 @@ public class RowLineageUtils {
    * Returns the row lineage virtual columns with the leading comma for string concatenation.
    * Example: {@code ", ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER"}.
    */
-  public static String getRowLineageSelectColumns(boolean rowLineageEnabled) {
-    return rowLineageEnabled
-        ? ", " + VirtualColumn.ROW_LINEAGE_ID.getName() + ", " + VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()
-        : "";
+  public static String getRowLineageColumnsForCompaction() {
+    return ", " + VirtualColumn.ROW_LINEAGE_ID.getName() + ", " + VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName();
   }
 
   /**
    * Enables or disables row lineage for the current query/session context.
    */
-  public static void setRowLineage(Configuration conf, boolean enabled) {
+  private static void setRowLineage(Configuration conf, boolean enabled) {
     SessionStateUtil.addResource(conf, SessionStateUtil.ROW_LINEAGE, enabled);
   }
 
-  private static void setRowLineageConfFlag(Configuration conf, boolean enabled) {
-    if (enabled) {
-      conf.setBoolean(SessionStateUtil.ROW_LINEAGE, true);
-    } else {
-      conf.unset(SessionStateUtil.ROW_LINEAGE);
-    }
-  }
-
-  /**
-   * Enable the row lineage session flag for the current statement execution.
-   * Returns {@code true} if the flag was enabled
-   */
-  public static void enableRowLineage(SessionState sessionState) {
-    setRowLineageConfFlag(sessionState.getConf(), true);
+  public static void enableRowLineage(Configuration conf) {
+    conf.setBoolean(SessionStateUtil.ROW_LINEAGE, true);
   }
 
   public static void disableRowLineage(SessionState sessionState) {
-    setRowLineageConfFlag(sessionState.getConf(), false);
+    sessionState.getConf().setBoolean(SessionStateUtil.ROW_LINEAGE, false);
   }
 
   public static boolean shouldAddRowLineageColumnsForMerge(MergeStatement mergeStatement, Configuration conf) {

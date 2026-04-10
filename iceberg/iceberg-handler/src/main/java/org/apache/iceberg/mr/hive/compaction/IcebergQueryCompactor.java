@@ -70,17 +70,10 @@ public class IcebergQueryCompactor extends QueryCompactor  {
 
     HiveConf conf = new HiveConf(context.getConf());
     CompactionInfo ci = context.getCompactionInfo();
-    org.apache.hadoop.hive.ql.metadata.Table hiveTable =
-        new org.apache.hadoop.hive.ql.metadata.Table(context.getTable());
-    boolean rowLineageEnabled = RowLineageUtils.supportsRowLineage(hiveTable);
-    String compactionQuery = buildCompactionQuery(context, compactTableName, conf, rowLineageEnabled);
+
+    String compactionQuery = buildCompactionQuery(context, compactTableName, conf);
 
     SessionState sessionState = setupQueryCompactionSession(conf, ci, tblProperties);
-
-    if (rowLineageEnabled) {
-      RowLineageUtils.enableRowLineage(sessionState);
-      LOG.debug("Row lineage flag set for compaction of table {}", compactTableName);
-    }
 
     String compactionTarget = "table " + HiveUtils.unparseIdentifier(compactTableName) +
         (ci.partName != null ? ", partition " + HiveUtils.unparseIdentifier(ci.partName) : "");
@@ -98,22 +91,31 @@ public class IcebergQueryCompactor extends QueryCompactor  {
     }
   }
 
-  private String buildCompactionQuery(CompactorContext context, String compactTableName, HiveConf conf,
-      boolean rowLineageEnabled)
+  private String buildCompactionQuery(CompactorContext context, String compactTableName, HiveConf conf)
       throws HiveException {
     CompactionInfo ci = context.getCompactionInfo();
-    String rowLineageColumns = RowLineageUtils.getRowLineageSelectColumns(rowLineageEnabled);
     org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
         context.getTable().getTableName());
     Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
     String orderBy = ci.orderByClause == null ? "" : ci.orderByClause;
     String fileSizePredicate = buildMinorFileSizePredicate(ci, compactTableName, conf, table);
 
+    String columnsList = "*";
+    if (RowLineageUtils.supportsRowLineage(table)) {
+      RowLineageUtils.enableRowLineage(conf);
+      LOG.debug("Row lineage flag set for compaction of table {}", compactTableName);
+      if (ci.isMajorCompaction() && ci.partName == null) {
+        columnsList = buildSelectColumnList(icebergTable, conf) + RowLineageUtils.getRowLineageColumnsForCompaction();
+      } else {
+        columnsList = columnsList + RowLineageUtils.getRowLineageColumnsForCompaction();
+      }
+    }
+
     String compactionQuery = (ci.partName == null) ?
         buildFullTableCompactionQuery(compactTableName, conf, icebergTable,
-            rowLineageColumns, fileSizePredicate, orderBy) :
+            columnsList, fileSizePredicate, orderBy) :
         buildPartitionCompactionQuery(ci, compactTableName, conf, icebergTable,
-            rowLineageColumns, fileSizePredicate, orderBy);
+            columnsList, fileSizePredicate, orderBy);
 
     LOG.info("Compaction query: {}", compactionQuery);
     return compactionQuery;
@@ -139,15 +141,14 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       String compactTableName,
       HiveConf conf,
       Table icebergTable,
-      String rowLineageColumns,
+      String columnsList,
       String fileSizePredicate,
       String orderBy) throws HiveException {
-    String selectColumns = buildSelectColumnList(icebergTable, conf);
 
     if (!icebergTable.spec().isPartitioned()) {
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.FULL_TABLE.name());
-      return String.format("insert overwrite table %1$s select %2$s%3$s from %1$s %4$s %5$s",
-          compactTableName, selectColumns, rowLineageColumns,
+      return String.format("insert overwrite table %1$s select %2$s from %1$s %3$s %4$s",
+          compactTableName, columnsList,
           fileSizePredicate == null ? "" : "where " + fileSizePredicate, orderBy);
     }
 
@@ -156,9 +157,9 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
       // A single filter on a virtual column causes errors during compilation,
       // added another filter on file_path as a workaround.
-      return String.format("insert overwrite table %1$s select %2$s%3$s from %1$s " +
-              "where %4$s != %5$d and %6$s is not null %7$s %8$s",
-          compactTableName, selectColumns, rowLineageColumns,
+      return String.format("insert overwrite table %1$s select %2$s from %1$s " +
+              "where %3$s != %4$d and %5$s is not null %6$s %7$s",
+          compactTableName, columnsList,
           VirtualColumn.PARTITION_SPEC_ID.getName(), icebergTable.spec().specId(),
           VirtualColumn.FILE_PATH.getName(), fileSizePredicate == null ? "" : "and " + fileSizePredicate, orderBy);
     }
@@ -173,7 +174,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       String compactTableName,
       HiveConf conf,
       Table icebergTable,
-      String rowLineageColumns,
+      String columnsList,
       String fileSizePredicate,
       String orderBy) throws HiveException {
     HiveConf.setBoolVar(conf, ConfVars.HIVE_CONVERT_JOIN, false);
@@ -190,9 +191,9 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       throw new HiveException(e);
     }
 
-    return String.format("INSERT OVERWRITE TABLE %1$s SELECT *%2$s FROM %1$s WHERE %3$s IN " +
+    return String.format("INSERT OVERWRITE TABLE %1$s SELECT %2$s FROM %1$s WHERE %3$s IN " +
             "(SELECT FILE_PATH FROM %1$s.FILES WHERE %4$s AND SPEC_ID = %5$d) %6$s %7$s",
-        compactTableName, rowLineageColumns, VirtualColumn.FILE_PATH.getName(), partitionPredicate, spec.specId(),
+        compactTableName, columnsList, VirtualColumn.FILE_PATH.getName(), partitionPredicate, spec.specId(),
         fileSizePredicate == null ? "" : "AND " + fileSizePredicate, orderBy);
   }
 
