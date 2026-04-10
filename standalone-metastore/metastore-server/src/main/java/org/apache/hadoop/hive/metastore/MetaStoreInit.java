@@ -83,7 +83,7 @@ public class MetaStoreInit {
     return false;
   }
 
-  static String getConnectionURL(Configuration conf) {
+  public static String getConnectionURL(Configuration conf) {
     return MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY, "");
   }
 

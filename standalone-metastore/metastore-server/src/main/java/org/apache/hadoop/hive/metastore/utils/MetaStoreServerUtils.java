@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1821,6 +1822,26 @@ public class MetaStoreServerUtils {
       return false;
     }
     return true;
+  }
+
+  public static List<String> getPartValsFromName(Table t, String partName)
+      throws MetaException, InvalidObjectException {
+    if (t == null) {
+      throw new MetaException("Table cannot be null");
+    }
+    // Unescape the partition name
+    LinkedHashMap<String, String> hm = Warehouse.makeSpecFromName(partName);
+
+    List<String> partVals = new ArrayList<>();
+    for (FieldSchema field : t.getPartitionKeys()) {
+      String key = field.getName();
+      String val = hm.get(key);
+      if (val == null) {
+        throw new InvalidObjectException("incomplete partition name - missing " + key);
+      }
+      partVals.add(val);
+    }
+    return partVals;
   }
 
 }

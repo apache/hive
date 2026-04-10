@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.junit.Assert;
 
 /** An implementation for MetaStoreEventListener which checks that the IP Address stored in
@@ -48,7 +49,7 @@ public class IpAddressListener extends MetaStoreEventListener{
   private void checkIpAddress() {
     try {
       String localhostIp = InetAddress.getByName(LOCAL_HOST).getHostAddress();
-      Assert.assertEquals(localhostIp, HMSHandler.getThreadLocalIpAddress());
+      Assert.assertEquals(localhostIp, BaseHandler.getThreadLocalIpAddress());
     } catch (UnknownHostException e) {
       Assert.assertTrue("InetAddress.getLocalHost threw an exception: " + e.getMessage(), false);
     }

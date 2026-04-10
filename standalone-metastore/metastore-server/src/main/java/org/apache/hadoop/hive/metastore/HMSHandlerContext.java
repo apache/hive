@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
@@ -38,7 +39,7 @@ public final class HMSHandlerContext {
   private TxnStore txnStore;
 
   // Thread local HMSHandler used during shutdown to notify meta listeners
-  private HMSHandler hmsHandler;
+  private BaseHandler hmsHandler;
 
   // Thread local configuration is needed as many threads could make changes
   // to the conf using the connection hook
@@ -61,7 +62,7 @@ public final class HMSHandlerContext {
     return Optional.ofNullable(context.get().rawStore);
   }
 
-  public static Optional<HMSHandler> getHMSHandler() {
+  public static Optional<BaseHandler> getHMSHandler() {
     return Optional.ofNullable(context.get().hmsHandler);
   }
 
@@ -96,7 +97,7 @@ public final class HMSHandlerContext {
     context.get().txnStore = txnStore;
   }
 
-  public static void setHMSHandler(HMSHandler hmsHandler) {
+  public static void setHMSHandler(BaseHandler hmsHandler) {
     context.get().hmsHandler = hmsHandler;
   }
 
