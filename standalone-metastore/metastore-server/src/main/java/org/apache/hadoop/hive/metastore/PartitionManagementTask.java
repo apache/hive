@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,7 +60,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   private static final Lock lock = new ReentrantLock();
   // these are just for testing
   private static int completedAttempts;
-  private static int skippedAttempts;
+  /** Atomic: concurrent run() threads may take the tryLock() failure path together. */
+  private static final AtomicInteger skippedAttempts = new AtomicInteger(0);
 
   private Configuration conf;
 
@@ -87,7 +89,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   @Override
   public void run() {
     if (lock.tryLock()) {
-      skippedAttempts = 0;
       String qualifiedTableName = null;
       IMetaStoreClient msc = null;
       try {
@@ -138,8 +139,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       }
       completedAttempts++;
     } else {
-      skippedAttempts++;
-      LOG.info("Lock is held by some other partition discovery task. Skipping this attempt..#{}", skippedAttempts);
+      int skipped = skippedAttempts.incrementAndGet();
+      LOG.info("Lock is held by some other partition discovery task. Skipping this attempt..#{}", skipped);
     }
   }
 
@@ -202,7 +203,14 @@ public class PartitionManagementTask implements MetastoreTaskThread {
 
   @VisibleForTesting
   public static int getSkippedAttempts() {
-    return skippedAttempts;
+    return skippedAttempts.get();
+  }
+
+  /** Reset counters between tests; not for production use. */
+  @VisibleForTesting
+  static void resetCountersForTesting() {
+    completedAttempts = 0;
+    skippedAttempts.set(0);
   }
 
   @VisibleForTesting
