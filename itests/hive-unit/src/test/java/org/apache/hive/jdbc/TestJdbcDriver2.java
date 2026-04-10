@@ -130,9 +130,8 @@ public class TestJdbcDriver2 {
   private static final float floatCompareDelta = 0.0001f;
 
   /**
-   * Exact {@link SQLTimeoutException#getMessage()} for a 1s limit from HS2 / client; see
-   * {@code SQLOperation} and {@code HiveStatement#sqlTimeoutMessageForTimedOutState} (no query id
-   * or timestamp is appended to this text).
+   * Required prefix of {@link SQLTimeoutException#getMessage()} for a 1s limit. HS2 may append
+   * {@code ; Query ID: ...} after the base text from {@code HiveSQLException}.
    */
   private static final String QUERY_TIMED_OUT_AFTER_1_SECONDS = "Query timed out after 1 seconds";
 
@@ -156,6 +155,18 @@ public class TestJdbcDriver2 {
     } catch (SQLException e) {
       LOG.warn("Could not reset hive.query.timeout.seconds after {}", testName.getMethodName(), e);
     }
+  }
+
+  private static void assertTimeoutMessageShowsOneSecond(String context, SQLTimeoutException e) {
+    String msg = e.getMessage();
+    assertNotNull(context + ": message should not be null", msg);
+    assertTrue(
+        context + ": should start with " + QUERY_TIMED_OUT_AFTER_1_SECONDS
+            + " (HS2 may append ; Query ID: ...); actual=" + msg,
+        msg.startsWith(QUERY_TIMED_OUT_AFTER_1_SECONDS));
+    assertFalse(
+        "HIVE-28265: message should not claim 0 seconds: " + msg,
+        msg.contains("after 0 seconds"));
   }
 
   private static Connection getConnection(String prefix, String postfix) throws SQLException {
@@ -2688,11 +2699,8 @@ public class TestJdbcDriver2 {
           + " t2 on t1.under_col = t2.under_col");
       fail("Expecting SQLTimeoutException");
     } catch (SQLTimeoutException e) {
-      assertEquals(
-          "JDBC query timeout (1s) should match HS2/HiveStatement text, e.g. "
-              + QUERY_TIMED_OUT_AFTER_1_SECONDS,
-          QUERY_TIMED_OUT_AFTER_1_SECONDS,
-          e.getMessage());
+      assertTimeoutMessageShowsOneSecond(
+          "JDBC query timeout (1s)", e);
       System.err.println(e.toString());
     } catch (SQLException e) {
       fail("Expecting SQLTimeoutException, but got SQLException: " + e);
@@ -2714,9 +2722,8 @@ public class TestJdbcDriver2 {
   /**
    * When only {@code hive.query.timeout.seconds} applies (no {@link Statement#setQueryTimeout(int)}),
    * the client must still report the real limit in {@link SQLTimeoutException#getMessage()} (before
-   * HIVE-28265 some paths wrongly showed "after 0 seconds"). Expected full message:
-   * {@link #QUERY_TIMED_OUT_AFTER_1_SECONDS} — same string as HS2 uses, with no query id or host
-   * suffix.
+   * HIVE-28265 some paths wrongly showed "after 0 seconds"). Message must begin with
+   * {@link #QUERY_TIMED_OUT_AFTER_1_SECONDS}; HS2 may append {@code ; Query ID: ...}.
    */
   @Test
   public void testQueryTimeoutMessageUsesHiveConf() throws Exception {
@@ -2734,11 +2741,8 @@ public class TestJdbcDriver2 {
           + " t2 on t1.under_col = t2.under_col");
       fail("Expecting SQLTimeoutException");
     } catch (SQLTimeoutException e) {
-      assertEquals(
-          "Session query timeout (1s) should match HS2/HiveStatement text, e.g. "
-              + QUERY_TIMED_OUT_AFTER_1_SECONDS,
-          QUERY_TIMED_OUT_AFTER_1_SECONDS,
-          e.getMessage());
+      assertTimeoutMessageShowsOneSecond(
+          "Session query timeout (1s)", e);
     } catch (SQLException e) {
       fail("Expecting SQLTimeoutException, but got SQLException: " + e);
     }
