@@ -19,11 +19,12 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -78,6 +79,11 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   @Override
   public Configuration getConf() {
     return conf;
+  }
+
+  private static boolean partitionDiscoveryEnabled(Map<String, String> params) {
+    return params != null && params.containsKey(DISCOVER_PARTITIONS_TBLPROPERTY) &&
+            params.get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true");
   }
 
   @Override
