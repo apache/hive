@@ -493,4 +493,25 @@ public class TestSemanticAnalyzer {
 
     Assert.assertEquals(new TreeSet<>(tables), new TreeSet<>(result));
   }
+
+  @Test
+  public void testMaterializeCTEWithCBODisabled() throws Exception {
+    HiveConf testConf = new HiveConf(conf);
+    testConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
+    testConf.setIntVar(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, 2);
+
+    SessionState.start(testConf);
+    Context ctx = new Context(testConf);
+
+    String query = "WITH cte AS (SELECT COUNT(*) as cnt FROM table1) " +
+                   "SELECT * FROM cte UNION ALL SELECT * FROM cte";
+
+    ASTNode astNode = ParseUtils.parse(query, ctx);
+    QueryState queryState = new QueryState.Builder().withHiveConf(testConf).build();
+    BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.get(queryState, astNode);
+    analyzer.initCtx(ctx);
+
+    // This should not throw NPE after the fix
+    analyzer.analyze(astNode, ctx);
+  }
 }
