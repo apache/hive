@@ -694,6 +694,9 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void createCatalog(Catalog cat) throws MetaException {
     LOG.debug("Creating catalog {}", cat);
+
+    ensureCatalogType(cat);
+
     boolean committed = false;
     MCatalog mCat = catToMCat(cat);
     try {
@@ -702,6 +705,29 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
     } finally {
       rollbackAndCleanup(committed, null);
+    }
+  }
+
+  /**
+   * Ensure catalog has a valid type, default to NATIVE if not specified.
+   * Also normalizes the type to lowercase (e.g., "NATIVE" -> "native").
+   */
+  private void ensureCatalogType(Catalog cat) throws MetaException {
+    Map<String, String> parameters = cat.getParameters();
+    if (parameters == null) {
+      parameters = new HashMap<>();
+      cat.setParameters(parameters);
+    }
+
+    String catalogType = parameters.get("type");
+    if (catalogType == null || catalogType.trim().isEmpty()) {
+      parameters.put("type", CatalogUtil.NATIVE);
+    } else {
+      try {
+        parameters.put("type", CatalogUtil.normalizeCatalogType(catalogType));
+      } catch (IllegalArgumentException e) {
+        throw new MetaException("Invalid catalog type: " + catalogType);
+      }
     }
   }
 

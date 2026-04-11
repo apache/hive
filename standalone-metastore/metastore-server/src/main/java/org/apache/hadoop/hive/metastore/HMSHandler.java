@@ -184,12 +184,12 @@ public class HMSHandler extends PrivilegeHandler {
         // One time update issue.  When the new 'hive' catalog is created in an upgrade the
         // script does not know the location of the warehouse.  So we need to update it.
         LOG.info("Setting location of default catalog, as it hasn't been done after upgrade");
-        defaultCat.setLocationUri(wh.getWhRoot().toString());
+        defaultCat.setLocationUri(wh.getWhRoot(DEFAULT_CATALOG_NAME).toString());
         ms.alterCatalog(defaultCat.getName(), defaultCat);
       }
 
     } catch (NoSuchObjectException e) {
-      Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot().toString());
+      Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot(DEFAULT_CATALOG_NAME).toString());
       long time = System.currentTimeMillis() / 1000;
       cat.setCreateTime((int) time);
       cat.setDescription(Warehouse.DEFAULT_CATALOG_COMMENT);

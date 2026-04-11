@@ -79,6 +79,7 @@ public class HMSCatalogFactory {
     if (configUri != null && !configUri.isEmpty()) {
       properties.put("uri", configUri);
     }
+    // TODO catalog. Consider adding new created native catalog warehouse(MetastoreConf.ConfVars.WAREHOUSE_CATALOG) later.
     final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
     if (configWarehouse != null) {
       properties.put("warehouse", configWarehouse);

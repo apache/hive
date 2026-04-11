@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.catalog.create;
 
+import com.google.common.base.Strings;
+import org.apache.hadoop.hive.metastore.CatalogUtil;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
@@ -29,6 +31,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -43,16 +46,19 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
     String catalogName = unescapeIdentifier(root.getChild(0).getText());
-    String locationUrl = unescapeSQLString(root.getChild(1).getChild(0).getText());
-    outputs.add(toWriteEntity(locationUrl));
 
+    String locationUrl = null;
     boolean ifNotExists = false;
     String comment = null;
     Map<String, String> props = null;
 
-    for (int i = 2; i < root.getChildCount(); i++) {
+    for (int i = 1; i < root.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) root.getChild(i);
       switch (childNode.getToken().getType()) {
+        case HiveParser.TOK_CATALOGLOCATION:
+          locationUrl = unescapeSQLString(childNode.getChild(0).getText());
+          outputs.add(toWriteEntity(locationUrl));
+          break;
         case HiveParser.TOK_IFNOTEXISTS:
           ifNotExists = true;
           break;
@@ -67,10 +73,31 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    // Initialize props if null, and set default type to native if not specified
+    if (props == null) {
+      props = new HashMap<>();
+    }
+    checkCatalogType(props);
+
     CreateCatalogDesc desc = new CreateCatalogDesc(catalogName, comment, locationUrl, ifNotExists, props);
     Catalog catalog = new Catalog(catalogName, locationUrl);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     outputs.add(new WriteEntity(catalog, WriteEntity.WriteType.DDL_NO_LOCK));
+  }
+
+  private static void checkCatalogType(Map<String, String> props) throws SemanticException {
+    String catalogType = props.get("type");
+    // Set default type to native if not specified
+    if (Strings.isNullOrEmpty(catalogType)) {
+      props.put("type", CatalogUtil.NATIVE);
+      return;
+    }
+    // Normalize and validate catalog type (fail fast on invalid input)
+    try {
+      props.put("type", CatalogUtil.normalizeCatalogType(catalogType));
+    } catch (IllegalArgumentException e) {
+      throw new SemanticException(String.format("type '%s' is not valid", catalogType));
+    }
   }
 }
