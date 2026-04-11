@@ -789,8 +789,9 @@ import org.junit.Test;
         "set hive.support.concurrency = false;\n"
             + "set hive.server2.logging.operation.level=execution;\n"
             + "select count(*) from " + tableName + ";\n";
-    // Check for part of log message as well as part of progress information
-    final String EXPECTED_PATTERN = "ELAPSED TIME";
+    // HS2 may log "ELAPSED TIME" (legacy); Beeline may print row timing or Driver logs "Time taken:" on stderr.
+    final String EXPECTED_PATTERN =
+        "(ELAPSED TIME|row selected \\([0-9]+\\.[0-9]+ seconds\\)|Time taken:)";
     final String UNEXPECTED_PATTERN = "(?=Reducer 2\\:).*(?=Map 1\\:)";
     testScriptFile(SCRIPT_TEXT, getBaseArgs(miniHS2.getBaseJdbcURL()), OutStream.ERR,
         Arrays.asList(
