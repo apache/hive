@@ -125,7 +125,7 @@ public class Partition implements Serializable {
   public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
       Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
     List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : tbl.getPartCols()) {
+    for (FieldSchema field : tbl.getEffectivePartCols()) {
       String val = partSpec.get(field.getName());
       if (val == null || val.isEmpty()) {
         throw new HiveException("partition spec is invalid; field "
@@ -174,7 +174,7 @@ public class Partition implements Serializable {
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
             Path partPath = new Path(table.getDataLocation(),
-                Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
+                Warehouse.makePartName(table.getEffectivePartCols(), tPartition.getValues()));
             tPartition.getSd().setLocation(partPath.toString());
           }
         }
@@ -201,7 +201,7 @@ public class Partition implements Serializable {
 
   public String getName() {
     try {
-      return Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
+      return Warehouse.makePartName(table.getEffectivePartCols(), tPartition.getValues());
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
@@ -544,7 +544,7 @@ public class Partition implements Serializable {
   public void setValues(Map<String, String> partSpec)
       throws HiveException {
     List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : table.getPartCols()) {
+    for (FieldSchema field : table.getEffectivePartCols()) {
       String val = partSpec.get(field.getName());
       if (val == null) {
         throw new HiveException(
