@@ -23,7 +23,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -512,7 +511,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
     // Partition spec was already validated by caller when create TableSpec object.
     // So, need not validate inpPartSpec here.
-    List<FieldSchema> parts = table.hasNonNativePartitionSupport() ? Collections.emptyList() : table.getPartCols();
+    List<FieldSchema> parts = table.getPartCols();
     if (tableTree.getChildCount() >= 2) {
       ASTNode partSpecNode = (ASTNode) tableTree.getChild(1);
       inpPartSpec = new HashMap<>(partSpecNode.getChildCount());

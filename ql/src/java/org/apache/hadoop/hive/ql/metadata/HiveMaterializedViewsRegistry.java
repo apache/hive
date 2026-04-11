@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -430,7 +429,7 @@ public final class HiveMaterializedViewsRegistry {
 
     // 1.2 Add column info corresponding to partition columns
     ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
-    for (FieldSchema part_col : viewTable.getPartCols()) {
+    for (FieldSchema part_col : viewTable.getEffectivePartCols()) {
       colName = part_col.getName();
       colInfo = new ColumnInfo(colName,
           TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), null, true);
