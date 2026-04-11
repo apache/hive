@@ -521,7 +521,7 @@ public class PartitionPruner extends Transform {
   }
 
   private static List<PrimitiveTypeInfo> extractPartColTypes(Table tab) {
-    List<FieldSchema> pCols = tab.getPartCols();
+    List<FieldSchema> pCols = tab.getEffectivePartCols();
     List<PrimitiveTypeInfo> partColTypeInfos = new ArrayList<>(pCols.size());
     for (FieldSchema pCol : pCols) {
       partColTypeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(pCol.getType()));

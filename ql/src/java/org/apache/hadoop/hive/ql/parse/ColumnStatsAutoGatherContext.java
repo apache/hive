@@ -84,7 +84,7 @@ public class ColumnStatsAutoGatherContext {
     this.origCtx = ctx;
     columns = tbl.getCols();
     // current behaviour intact until we have getCols() giving only non-partition columns for non native tables as well
-    partitionColumns = tbl.hasNonNativePartitionSupport() ? new ArrayList<>() : tbl.getPartCols();
+    partitionColumns = tbl.getPartCols();
   }
 
   public List<LoadFileDesc> getLoadFileWork() {
