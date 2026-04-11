@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -56,6 +57,10 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   public static final String DISCOVER_PARTITIONS_TBLPROPERTY = "discover.partitions";
   public static final String PARTITION_RETENTION_PERIOD_TBLPROPERTY = "partition.retention.period";
   private static final Lock lock = new ReentrantLock();
+  // these are just for testing
+  private static int completedAttempts;
+  /** Atomic: concurrent run() threads may take the tryLock() failure path together. */
+  private static final AtomicInteger SKIPPED_ATTEMPTS = new AtomicInteger(0);
 
   private Configuration conf;
 
@@ -73,11 +78,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   @Override
   public Configuration getConf() {
     return conf;
-  }
-
-  private static boolean partitionDiscoveryEnabled(Map<String, String> params) {
-    return params != null && params.containsKey(DISCOVER_PARTITIONS_TBLPROPERTY) &&
-            params.get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true");
   }
 
   @Override
@@ -131,8 +131,10 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         }
         lock.unlock();
       }
+      completedAttempts++;
     } else {
-      LOG.info("Lock is held by some other partition discovery task. Skipping this attempt.");
+      int skipped = SKIPPED_ATTEMPTS.incrementAndGet();
+      LOG.info("Lock is held by some other partition discovery task. Skipping this attempt..#{}", skipped);
     }
   }
 
@@ -193,4 +195,20 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     }
   }
 
+  @VisibleForTesting
+  public static int getSkippedAttempts() {
+    return SKIPPED_ATTEMPTS.get();
+  }
+
+  /** Reset counters between tests; not for production use. */
+  @VisibleForTesting
+  static void resetCountersForTesting() {
+    completedAttempts = 0;
+    SKIPPED_ATTEMPTS.set(0);
+  }
+
+  @VisibleForTesting
+  public static int getCompletedAttempts() {
+    return completedAttempts;
+  }
 }
