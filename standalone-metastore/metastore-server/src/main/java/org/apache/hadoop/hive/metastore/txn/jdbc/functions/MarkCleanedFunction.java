@@ -50,7 +50,13 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
   public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = jdbcResource.getJdbcTemplate();
     MapSqlParameterSource param;
-    if (!info.isAbortedTxnCleanup() && !info.isSoftDelete()) {
+    if (info.isSoftDelete()) {
+      // Remove compaction queue record and return
+      removeCompactionAndAbortRetryEntries(info, jdbcTemplate);
+      return null;
+    }
+
+    if (!info.isAbortedTxnCleanup()) {
       param = new MapSqlParameterSource()
           .addValue("id", info.id)
           .addValue("succeeded", Character.toString(SUCCEEDED_STATE), Types.CHAR);
@@ -84,10 +90,6 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
      * the retry metadata, so that abort cleanup is retried again (an optimistic retry approach).
      */
     removeCompactionAndAbortRetryEntries(info, jdbcTemplate);
-
-    if (info.isSoftDelete()) {
-      return null;
-    }
 
     if (!info.isAbortedTxnCleanup()) {
       // Remove entries from completed_txn_components as well, so we don't start looking there
@@ -179,7 +181,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
     String deleteQuery = """
         DELETE FROM "COMPACTION_QUEUE" WHERE "CQ_ID" = :id
         """;
-    if (!info.isAbortedTxnCleanup() && !info.isSoftDelete()) {
+    if (!info.isAbortedTxnCleanup()) {
       deleteQuery += """
           OR ("CQ_DATABASE" = :db AND "CQ_TABLE" = :table
             AND (:partition is NULL OR "CQ_PARTITION" = :partition)

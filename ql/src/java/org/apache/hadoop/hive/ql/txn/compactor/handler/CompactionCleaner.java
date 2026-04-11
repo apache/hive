@@ -158,7 +158,6 @@ class CompactionCleaner extends TaskHandler {
           cleanUsingAcidDir(ci, t, path, cleanerWaterMark);
         }
       } else {
-        ci.setSoftDelete(true);
         cleanUsingLocation(ci, location, false);
       }
     } catch (Exception e) {
@@ -199,6 +198,7 @@ class CompactionCleaner extends TaskHandler {
       deleted = fsRemover.clean(getCleaningRequestBasedOnLocation(ci, path));
     }
     if (!deleted.isEmpty()) {
+      ci.setSoftDelete(true);
       txnHandler.markCleaned(ci);
     } else {
       txnHandler.clearCleanerStart(ci);
