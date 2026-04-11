@@ -431,7 +431,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
                      HiveConf conf, String onClauseAsString) {
       this.onClause = onClause;
       allTargetTableColumns.addAll(targetTable.getCols());
-      allTargetTableColumns.addAll(targetTable.getPartCols());
+      allTargetTableColumns.addAll(targetTable.getEffectivePartCols());
       this.targetTableNameInSourceQuery = unescapeIdentifier(targetTableNameInSourceQuery);
       this.conf = conf;
       this.onClauseAsString = onClauseAsString;

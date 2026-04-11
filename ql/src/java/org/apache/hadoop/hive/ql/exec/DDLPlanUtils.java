@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -294,7 +293,7 @@ public class DDLPlanUtils {
    */
   private Map<String, PrimitiveObjectInspector.PrimitiveCategory> getPartitionColumnToPrimitiveCategory(Partition pt) {
     Map<String, PrimitiveObjectInspector.PrimitiveCategory> resultMap = new HashMap<>();
-    for (FieldSchema schema: pt.getTable().getPartCols()) {
+    for (FieldSchema schema: pt.getTable().getEffectivePartCols()) {
       resultMap.put(
           schema.getName(),
           ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(schema.getType())).getPrimitiveCategory()
@@ -976,7 +975,7 @@ public class DDLPlanUtils {
   }
 
   private String getPartitionsForView(Table table) {
-    List<FieldSchema> partitionKeys = table.getPartCols();
+    List<FieldSchema> partitionKeys = table.getEffectivePartCols();
     if (partitionKeys.isEmpty()) {
       return "";
     }
