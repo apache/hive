@@ -149,7 +149,7 @@ public final class PartitionUtils {
   }
 
   private static String tablePartitionColNames(Table table) {
-    List<FieldSchema> partCols = table.getPartCols();
+    List<FieldSchema> partCols = table.getEffectivePartCols();
     return String.join("/", partCols.toString());
   }
 

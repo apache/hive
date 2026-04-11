@@ -91,7 +91,7 @@ public class DummyPartition extends Partition {
     values = new ArrayList<>();
 
     // TODO (HIVE-29413): Refactor to a generic getPartCols() implementation
-    for (FieldSchema fs : table.getPartCols()) {
+    for (FieldSchema fs : table.getEffectivePartCols()) {
       String val = partSpec.get(fs.getName());
       values.add(val);
     }

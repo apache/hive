@@ -130,7 +130,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void getColumnsNoColumnPath(Table table, Partition partition, List<FieldSchema> cols) throws HiveException {
     cols.addAll(partition == null || table.getTableType() == TableType.VIRTUAL_VIEW ?
         table.getCols() : partition.getCols());
-    if (!desc.isFormatted() && !table.hasNonNativePartitionSupport()) {
+    if (!desc.isFormatted()) {
       cols.addAll(table.getPartCols());
     }
 
