@@ -19,12 +19,11 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -61,7 +60,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   // these are just for testing
   private static int completedAttempts;
   /** Atomic: concurrent run() threads may take the tryLock() failure path together. */
-  private static final AtomicInteger skippedAttempts = new AtomicInteger(0);
+  private static final AtomicInteger SKIPPED_ATTEMPTS = new AtomicInteger(0);
 
   private Configuration conf;
 
@@ -79,11 +78,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   @Override
   public Configuration getConf() {
     return conf;
-  }
-
-  private static boolean partitionDiscoveryEnabled(Map<String, String> params) {
-    return params != null && params.containsKey(DISCOVER_PARTITIONS_TBLPROPERTY) &&
-            params.get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true");
   }
 
   @Override
@@ -139,7 +133,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       }
       completedAttempts++;
     } else {
-      int skipped = skippedAttempts.incrementAndGet();
+      int skipped = SKIPPED_ATTEMPTS.incrementAndGet();
       LOG.info("Lock is held by some other partition discovery task. Skipping this attempt..#{}", skipped);
     }
   }
@@ -203,14 +197,14 @@ public class PartitionManagementTask implements MetastoreTaskThread {
 
   @VisibleForTesting
   public static int getSkippedAttempts() {
-    return skippedAttempts.get();
+    return SKIPPED_ATTEMPTS.get();
   }
 
   /** Reset counters between tests; not for production use. */
   @VisibleForTesting
   static void resetCountersForTesting() {
     completedAttempts = 0;
-    skippedAttempts.set(0);
+    SKIPPED_ATTEMPTS.set(0);
   }
 
   @VisibleForTesting
