@@ -3067,8 +3067,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 3.2 Add column info corresponding to partition columns
         for (FieldSchema part_col : tabMetaData.getPartCols()) {
           colName = part_col.getName();
-          if (alreadyAdded.contains(colName)) {
-            continue;
+          if (tabMetaData.hasNonNativePartitionSupport()) {
+            break;
           }
           colInfo = new ColumnInfo(colName,
                   TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()),
