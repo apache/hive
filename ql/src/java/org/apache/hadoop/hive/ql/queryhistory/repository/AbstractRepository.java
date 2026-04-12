@@ -85,13 +85,12 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
       db = hive.getDatabase(QUERY_HISTORY_DB_NAME);
       if (db == null) {
         LOG.warn("Database ({}) for query history table hasn't been found, auto-creating one", QUERY_HISTORY_DB_NAME);
-        db = new Database();
-        // TODO catalog. The Hive Query History functionality is currently limited to the default catalog.
-        db.setCatalogName(getDefaultCatalog(conf));
-        db.setName(QUERY_HISTORY_DB_NAME);
-        String location = getDatabaseLocation(db);
+        // TODO catalog. The Hive Query History functionality is currently limited to the default catalog. Depend on HIVE-29561
         db = new Database(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_DB_COMMENT,
-            location, null);
+            null, null);
+        db.setCatalogName(getDefaultCatalog(conf));
+        String location = getDatabaseLocation(db);
+        db.setLocationUri(location);
         hive.createDatabase(db, false);
       }
       return db;

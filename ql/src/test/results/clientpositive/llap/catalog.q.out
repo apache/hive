@@ -3,10 +3,10 @@ PREHOOK: type: SHOWCATALOGS
 POSTHOOK: query: SHOW CATALOGS
 POSTHOOK: type: SHOWCATALOGS
 hive
-PREHOOK: query: CREATE CATALOG test_cat COMMENT 'Hive test catalog' PROPERTIES('type'='NATIVE')
+PREHOOK: query: CREATE CATALOG test_cat COMMENT 'Hive test catalog'
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:test_cat
-POSTHOOK: query: CREATE CATALOG test_cat COMMENT 'Hive test catalog' PROPERTIES('type'='NATIVE')
+POSTHOOK: query: CREATE CATALOG test_cat COMMENT 'Hive test catalog'
 POSTHOOK: type: CREATECATALOG
 POSTHOOK: Output: catalog:test_cat
 PREHOOK: query: DESC CATALOG test_cat

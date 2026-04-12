@@ -50,7 +50,7 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
     String locationUrl = null;
     boolean ifNotExists = false;
     String comment = null;
-    Map<String, String> props = null;
+    Map<String, String> props = new HashMap<>();
 
     for (int i = 1; i < root.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) root.getChild(i);
@@ -73,10 +73,7 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    // Initialize props if null, and set default type to native if not specified
-    if (props == null) {
-      props = new HashMap<>();
-    }
+    // Set default type to hive if not specified
     checkCatalogType(props);
 
     CreateCatalogDesc desc = new CreateCatalogDesc(catalogName, comment, locationUrl, ifNotExists, props);
@@ -87,15 +84,10 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static void checkCatalogType(Map<String, String> props) throws SemanticException {
-    String catalogType = props.get("type");
-    // Set default type to native if not specified
-    if (Strings.isNullOrEmpty(catalogType)) {
-      props.put("type", CatalogUtil.NATIVE);
-      return;
-    }
+    String catalogType = props.get(CatalogUtil.TYPE);
     // Normalize and validate catalog type (fail fast on invalid input)
     try {
-      props.put("type", CatalogUtil.normalizeCatalogType(catalogType));
+      props.put(CatalogUtil.TYPE, CatalogUtil.normalizeCatalogType(catalogType));
     } catch (IllegalArgumentException e) {
       throw new SemanticException(String.format("type '%s' is not valid", catalogType));
     }

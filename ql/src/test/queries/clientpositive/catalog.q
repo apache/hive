@@ -8,13 +8,13 @@ dfs -mkdir -p hdfs:///tmp/test_cat;
 SHOW CATALOGS;
 
 -- CREATE with comment and default location
-CREATE CATALOG test_cat COMMENT 'Hive test catalog' PROPERTIES('type'='NATIVE');
+CREATE CATALOG test_cat COMMENT 'Hive test catalog';
 
 -- DESCRIBE
 DESC CATALOG test_cat;
 
 -- CREATE INE already exists
-CREATE CATALOG IF NOT EXISTS test_cat LOCATION 'hdfs:///tmp/test_cat' PROPERTIES('type'='native');
+CREATE CATALOG IF NOT EXISTS test_cat LOCATION 'hdfs:///tmp/test_cat';
 SHOW CATALOGS;
 
 -- DROP
@@ -22,7 +22,7 @@ DROP CATALOG test_cat;
 SHOW CATALOGS;
 
 -- CREATE INE doesn't exist
-CREATE CATALOG IF NOT EXISTS test_cat LOCATION 'hdfs:///tmp/test_cat' COMMENT 'Hive test catalog' PROPERTIES('type'='native');
+CREATE CATALOG IF NOT EXISTS test_cat LOCATION 'hdfs:///tmp/test_cat' COMMENT 'Hive test catalog' PROPERTIES('type'='hive');
 SHOW CATALOGS;
 
 -- DROP IE exists
@@ -33,7 +33,7 @@ SHOW CATALOGS;
 DROP CATALOG IF EXISTS test_cat;
 
 -- SHOW
-CREATE CATALOG test_cat LOCATION 'hdfs:///tmp/test_cat' COMMENT 'Hive test catalog' PROPERTIES('type'='native');
+CREATE CATALOG test_cat LOCATION 'hdfs:///tmp/test_cat' COMMENT 'Hive test catalog' PROPERTIES('type'='hive');
 SHOW CATALOGS;
 
 -- SHOW pattern

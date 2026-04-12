@@ -18,27 +18,25 @@
 
 package org.apache.hadoop.hive.metastore;
 
-public class CatalogUtil {
-    // Catalog type constants
-    public static final String NATIVE = "native";
-    public static final String ICEBERG = "iceberg";
+import com.google.common.base.Strings;
 
+public class CatalogUtil {
+    public static final String TYPE = "type";
+
+    // Supported Catalog types
     public enum CatalogType {
-        NATIVE,
+        HIVE,
         ICEBERG
     }
 
     /**
-     * Check if the given catalog type name is valid.
-     * @param name catalog type name (case-insensitive)
+     * Check if the given catalog type is valid.
+     * @param type catalog type (case-insensitive)
      * @return true if valid, false otherwise
      */
-    public static boolean isValidCatalogType(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return false;
-        }
+    public static boolean isValidCatalogType(String type) {
         try {
-            CatalogType.valueOf(name.toUpperCase().trim());
+            CatalogType.valueOf(type.toUpperCase().trim());
             return true;
         } catch (IllegalArgumentException e) {
             return false;
@@ -47,18 +45,19 @@ public class CatalogUtil {
 
     /**
      * Normalize catalog type to standard lowercase format.
-     * @param name catalog type name (case-insensitive)
+     * @param type catalog type (case-insensitive)
      * @return normalized catalog type in lowercase
      * @throws IllegalArgumentException if the catalog type is null, empty, or invalid
      */
-    public static String normalizeCatalogType(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Catalog type cannot be null or empty");
+    public static String normalizeCatalogType(String type) {
+        if (Strings.isNullOrEmpty(type)) {
+            // Set default type to hive if not specified
+            return CatalogType.HIVE.name();
         }
-        if (!isValidCatalogType(name)) {
-            throw new IllegalArgumentException("Invalid catalog type: " + name);
+        if (!isValidCatalogType(type)) {
+            throw new IllegalArgumentException("Invalid catalog type: " + type);
         }
-        return name.trim().toLowerCase();
+        return type.trim().toLowerCase();
     }
 }
 

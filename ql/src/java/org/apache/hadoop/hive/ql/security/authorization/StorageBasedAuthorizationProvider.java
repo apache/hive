@@ -133,7 +133,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     try {
       initWh();
       // TODO catalog. Need to determine auth root path based on catalog name.
-      //  Not sure how to get catalog name yet. Use getWhRoot(String) instead.
+      //  If the catalog name is available, use `wh.getWhRoot(catName)` to obtain the auth path. Depend on HIVE-29562
       root = wh.getWhRoot();
       // When we have some path in outputs, we should check access on that path, usually happens when
       // we have HiveOperation.CREATEDATABASE query with some location

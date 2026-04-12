@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -83,7 +84,7 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
   private void makeLocationQualified(Database database) throws HiveException {
     String catalogName = database.getCatalogName().toLowerCase();
     String dbName = database.getName().toLowerCase();
-    boolean isDefaultCatalog = Warehouse.DEFAULT_CATALOG_NAME.equalsIgnoreCase(catalogName);
+    boolean isDefaultCatalog = HiveUtils.isDefaultCatalog(catalogName, context.getConf());
 
     // -------- External location --------
     if (database.isSetLocationUri()) {

@@ -720,14 +720,10 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     String catalogType = parameters.get("type");
-    if (catalogType == null || catalogType.trim().isEmpty()) {
-      parameters.put("type", CatalogUtil.NATIVE);
-    } else {
-      try {
-        parameters.put("type", CatalogUtil.normalizeCatalogType(catalogType));
-      } catch (IllegalArgumentException e) {
-        throw new MetaException("Invalid catalog type: " + catalogType);
-      }
+    try {
+      parameters.put("type", CatalogUtil.normalizeCatalogType(catalogType));
+    } catch (IllegalArgumentException e) {
+      throw new MetaException("Invalid catalog type: " + catalogType);
     }
   }
 

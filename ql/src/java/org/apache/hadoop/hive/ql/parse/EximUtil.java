@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -391,7 +392,7 @@ public class EximUtil {
     try {
       String catName = database.getCatalogName();
       String dbName = database.getName().toLowerCase();
-      boolean isDefaultCatalog = Warehouse.DEFAULT_CATALOG_NAME.equals(catName);
+      boolean isDefaultCatalog = HiveUtils.isDefaultCatalog(catName, conf);
 
       // external warehouse root
       String whLocation = MetastoreConf.getVar(conf,
