@@ -39,5 +39,9 @@ explain cbo
 alter materialized view mat1 rebuild;
 
 alter materialized view mat1 rebuild;
+select * from mat1;
 
+insert into tbl_ice values (20, 'twenty', 30);
+
+alter materialized view mat1 rebuild;
 select * from mat1;
