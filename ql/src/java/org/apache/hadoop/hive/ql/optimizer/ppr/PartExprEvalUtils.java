@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -51,7 +50,7 @@ public class PartExprEvalUtils {
    * @throws HiveException
    */
   static public Object evalExprWithPart(ExprNodeDesc expr, Partition p) throws HiveException {
-    LinkedHashMap<String, String> partSpec = p.getSpec();
+    Map<String, String> partSpec = p.getSpec();
     Properties partProps = p.getSchema();
     
     String[] partKeyTypes;
@@ -59,8 +58,8 @@ public class PartExprEvalUtils {
       if (!partSpec.keySet().containsAll(expr.getCols())) {
         return null;
       }
-      partKeyTypes = p.getTable().getStorageHandler().getPartitionKeys(p.getTable()).stream()
-          .map(FieldSchema::getType).toArray(String[]::new);
+      partKeyTypes = p.getTable().getEffectivePartCols().stream().map(FieldSchema::getType)
+          .toArray(String[]::new);
     } else {
       String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
       partKeyTypes = pcolTypes.trim().split(":");
@@ -104,7 +103,7 @@ public class PartExprEvalUtils {
       ExprNodeDesc expr, List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos) throws HiveException {
     // Create the row object
-    List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
+    List<ObjectInspector> partObjectInspectors = new ArrayList<>();
     for (int i = 0; i < partColumnNames.size(); i++) {
       partObjectInspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
         partColumnTypeInfos.get(i)));

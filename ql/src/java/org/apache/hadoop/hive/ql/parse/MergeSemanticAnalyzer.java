@@ -229,7 +229,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
                                                    String deleteExtraPredicate) throws SemanticException {
     assert whenMatchedUpdateClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedUpdateClause).getType() == HiveParser.TOK_UPDATE;
-    Map<String, String> newValuesMap = new HashMap<>(targetTable.getAllCols().size());
+    Map<String, String> newValuesMap = HashMap.newHashMap(targetTable.getAllCols().size());
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
     //columns being updated -> update expressions; "setRCols" (last param) is null because we use actual expressions
     //before re-parsing, i.e. they are known to SemanticAnalyzer logic
@@ -302,7 +302,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
         "Unexpected node type found: " + whenClause.getType() + addParseInfo(whenClause);
       whenClauses.add(whenClause);
     }
-    if (whenClauses.size() <= 0) {
+    if (whenClauses.isEmpty()) {
       //Futureproofing: the parser will actually not allow this
       throw new SemanticException("Must have at least 1 WHEN clause in MERGE statement");
     }
@@ -498,11 +498,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
     private void addColumn2Table(String tableName, String columnName) {
       tableName = tableName.toLowerCase(); //normalize name for mapping
       tableNamesFound.add(tableName);
-      List<String> cols = table2column.get(tableName);
-      if (cols == null) {
-        cols = new ArrayList<>();
-        table2column.put(tableName, cols);
-      }
+      List<String> cols = table2column.computeIfAbsent(tableName, k -> new ArrayList<>());
       //we want to preserve 'columnName' as it was in original input query so that rewrite
       //looks as much as possible like original query
       cols.add(columnName);
@@ -525,7 +521,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
       }
       StringBuilder sb = new StringBuilder();
       for (String col : targetCols) {
-        if (sb.length() > 0) {
+        if (!sb.isEmpty()) {
           sb.append(" AND ");
         }
         //but preserve table name in SQL
@@ -604,17 +600,15 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
   }
 
   protected boolean isAliased(ASTNode n) {
-    switch (n.getType()) {
-      case HiveParser.TOK_TABREF:
-        return findTabRefIdxs(n)[0] != 0;
-      case HiveParser.TOK_TABNAME:
-        return false;
-      case HiveParser.TOK_SUBQUERY:
+    return switch (n.getType()) {
+      case HiveParser.TOK_TABREF -> findTabRefIdxs(n)[0] != 0;
+      case HiveParser.TOK_TABNAME -> false;
+      case HiveParser.TOK_SUBQUERY -> {
         assert n.getChildCount() > 1 : "Expected Derived Table to be aliased";
-        return true;
-      default:
-        throw raiseWrongType("TOK_TABREF|TOK_TABNAME", n);
-    }
+        yield true;
+      }
+      default -> throw raiseWrongType("TOK_TABREF|TOK_TABNAME", n);
+    };
   }
 
   /**
