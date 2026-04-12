@@ -1767,7 +1767,7 @@ public class Vectorizer implements PhysicalPlanResolver {
            * allColumnNameList and allTypeInfoList variables -- into the data and partition columns.
            */
 
-          LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
+          Map<String, String> partSpec = partDesc.getPartSpec();
           if (partSpec != null && partSpec.size() > 0) {
             partitionColumnCount = partSpec.size();
             dataColumnCount = dataAndPartColumnCount - partitionColumnCount;

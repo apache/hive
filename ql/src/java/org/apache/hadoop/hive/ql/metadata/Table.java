@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,6 +50,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -58,7 +61,6 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -102,6 +104,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
  */
 public class Table implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Table");
@@ -111,6 +114,7 @@ public class Table implements Serializable {
   /**
    * These fields are all cached fields.  The information comes from tTable.
    */
+  private List<FieldSchema> cachedPartCols;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
@@ -119,8 +123,6 @@ public class Table implements Serializable {
   private transient HiveStorageHandler storageHandler;
   private transient StorageHandlerInfo storageHandlerInfo;
   private transient MaterializedViewMetadata materializedViewMetadata;
-
-  private List<FieldSchema> cachedPartCols;
 
   private TableSpec tableSpec;
 
@@ -221,7 +223,6 @@ public class Table implements Serializable {
    */
   public void setTTable(org.apache.hadoop.hive.metastore.api.Table tTable) {
     this.tTable = tTable;
-    clearCachedPartCols();
   }
 
   /**
@@ -233,11 +234,11 @@ public class Table implements Serializable {
     {
       sd.setSerdeInfo(new SerDeInfo());
       sd.setNumBuckets(-1);
-      sd.setBucketCols(new ArrayList<String>());
-      sd.setCols(new ArrayList<FieldSchema>());
-      sd.setParameters(new HashMap<String, String>());
-      sd.setSortCols(new ArrayList<Order>());
-      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.setBucketCols(new ArrayList<>());
+      sd.setCols(new ArrayList<>());
+      sd.setParameters(new HashMap<>());
+      sd.setSortCols(new ArrayList<>());
+      sd.getSerdeInfo().setParameters(new HashMap<>());
       // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does
       // not support a table with no columns.
       sd.getSerdeInfo().setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
@@ -247,17 +248,17 @@ public class Table implements Serializable {
       sd.setInputFormat(SequenceFileInputFormat.class.getName());
       sd.setOutputFormat(HiveSequenceFileOutputFormat.class.getName());
       SkewedInfo skewInfo = new SkewedInfo();
-      skewInfo.setSkewedColNames(new ArrayList<String>());
-      skewInfo.setSkewedColValues(new ArrayList<List<String>>());
-      skewInfo.setSkewedColValueLocationMaps(new HashMap<List<String>, String>());
+      skewInfo.setSkewedColNames(new ArrayList<>());
+      skewInfo.setSkewedColValues(new ArrayList<>());
+      skewInfo.setSkewedColValueLocationMaps(new HashMap<>());
       sd.setSkewedInfo(skewInfo);
     }
 
     org.apache.hadoop.hive.metastore.api.Table t = new org.apache.hadoop.hive.metastore.api.Table();
     {
       t.setSd(sd);
-      t.setPartitionKeys(new ArrayList<FieldSchema>());
-      t.setParameters(new HashMap<String, String>());
+      t.setPartitionKeys(new ArrayList<>());
+      t.setParameters(new HashMap<>());
       t.setTableType(TableType.MANAGED_TABLE.toString());
       t.setDbName(databaseName);
       t.setTableName(tableName);
@@ -410,7 +411,7 @@ public class Table implements Serializable {
     this.storageHandlerInfo = storageHandlerInfo;
   }
 
-  final public Class<? extends InputFormat> getInputFormatClass() {
+  public final Class<? extends InputFormat> getInputFormatClass() {
     if (inputFormatClass == null) {
       try {
         String className = tTable.getSd().getInputFormat();
@@ -430,7 +431,7 @@ public class Table implements Serializable {
     return inputFormatClass;
   }
 
-  final public Class<? extends OutputFormat> getOutputFormatClass() {
+  public final Class<? extends OutputFormat> getOutputFormatClass() {
     if (outputFormatClass == null) {
       try {
         String className = tTable.getSd().getOutputFormat();
@@ -464,7 +465,7 @@ public class Table implements Serializable {
    * Marker SemanticException, so that processing that allows for table validation failures
    * and appropriately handles them can recover from these types of SemanticExceptions
    */
-  public class ValidationFailureSemanticException extends SemanticException{
+  public static class ValidationFailureSemanticException extends SemanticException{
     public ValidationFailureSemanticException(String s) {
       super(s);
     }
@@ -534,9 +535,9 @@ public class Table implements Serializable {
     return Enum.valueOf(TableType.class, tTable.getTableType());
   }
 
-  public ArrayList<StructField> getFields() {
+  public List<StructField> getFields() {
 
-    ArrayList<StructField> fields = new ArrayList<StructField>();
+    List<StructField> fields = new ArrayList<>();
     try {
       Deserializer decoder = getDeserializer();
 
@@ -611,6 +612,10 @@ public class Table implements Serializable {
     return partKeys;
   }
 
+  /**
+   * Returns partition columns, consulting the storage handler for non-native tables (e.g. Iceberg)
+   * where partition columns are not stored in the metastore.
+   */
   public List<FieldSchema> getEffectivePartCols() {
     if (cachedPartCols != null) {
       return cachedPartCols;
@@ -621,10 +626,6 @@ public class Table implements Serializable {
       cachedPartCols = getPartCols();
     }
     return cachedPartCols;
-  }
-
-  private void clearCachedPartCols() {
-    cachedPartCols = null;
   }
 
   private boolean isTableTypeSet() {
@@ -642,8 +643,7 @@ public class Table implements Serializable {
   }
 
   public List<String> getPartColNames() {
-    return getEffectivePartCols().stream().map(FieldSchema::getName)
-      .collect(Collectors.toList());
+    return getEffectivePartCols().stream().map(FieldSchema::getName).toList();
   }
 
   public boolean hasNonNativePartitionSupport() {
@@ -701,7 +701,7 @@ public class Table implements Serializable {
     Map<List<String>, String> mappings = tTable.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
-      mappings = new HashMap<List<String>, String>();
+      mappings = new HashMap<>();
       tTable.getSd().getSkewedInfo().setSkewedColValueLocationMaps(mappings);
     }
 
@@ -711,7 +711,7 @@ public class Table implements Serializable {
 
   public Map<List<String>, String> getSkewedColValueLocationMaps() {
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColValueLocationMaps() : new HashMap<List<String>, String>();
+        .getSkewedColValueLocationMaps() : new HashMap<>();
   }
 
   public void setSkewedColValues(List<List<String>> skewedValues) {
@@ -720,7 +720,7 @@ public class Table implements Serializable {
 
   public List<List<String>> getSkewedColValues(){
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColValues() : new ArrayList<List<String>>();
+        .getSkewedColValues() : new ArrayList<>();
   }
 
   public void setSkewedColNames(List<String> skewedColNames) {
@@ -729,7 +729,7 @@ public class Table implements Serializable {
 
   public List<String> getSkewedColNames() {
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColNames() : new ArrayList<String>();
+        .getSkewedColNames() : new ArrayList<>();
   }
 
   public SkewedInfo getSkewedInfo() {
@@ -791,15 +791,13 @@ public class Table implements Serializable {
    * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
-    ArrayList<FieldSchema> allCols = new ArrayList<>();
-    allCols.addAll(getCols());
+    ArrayList<FieldSchema> allCols = new ArrayList<>(getCols());
     allCols.addAll(getPartCols());
     return allCols;
   }
 
   public void setPartCols(List<FieldSchema> partCols) {
     tTable.setPartitionKeys(partCols);
-    clearCachedPartCols();
   }
 
   public String getCatName() {
@@ -1039,12 +1037,12 @@ public class Table implements Serializable {
    *          Use the information from this partition.
    * @return Partition name to value mapping.
    */
-  public LinkedHashMap<String, String> createSpec(
+  public Map<String, String> createSpec(
       org.apache.hadoop.hive.metastore.api.Partition tp) {
 
     List<FieldSchema> fsl = getEffectivePartCols();
     List<String> tpl = tp.getValues();
-    LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>(fsl.size());
+    Map<String, String> spec = LinkedHashMap.newLinkedHashMap(fsl.size());
     for (int i = 0; i < fsl.size(); i++) {
       FieldSchema fs = fsl.get(i);
       String value = tpl.get(i);
