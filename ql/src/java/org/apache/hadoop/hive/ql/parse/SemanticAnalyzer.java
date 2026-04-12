@@ -12039,10 +12039,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       // Hack!! - refactor once the metadata APIs with types are ready
       // Finally add the partitioning columns
-      for (FieldSchema part_col : tab.getPartCols()) {
-        LOG.trace("Adding partition col: " + part_col);
-        rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
-            TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
+      for (FieldSchema partCol : tab.getPartCols()) {
+        LOG.trace("Adding partition col: " + partCol);
+        rwsch.put(alias, partCol.getName(), new ColumnInfo(partCol.getName(),
+            TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true));
       }
 
       // put virtual columns into RowResolver.
