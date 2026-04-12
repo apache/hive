@@ -605,15 +605,17 @@ class TextDescTableFormatter extends DescTableFormatter {
       for (DefaultConstraintCol column : columns) {
         String[] fields = new String[3];
         fields[0] = "Column Name:" + column.colName;
-        fields[1] = "Initial Default Value:" + getColumnDefaults(fieldsNode, column.colName, "initial-default");
-        fields[2] = "Write Default Value:" + getColumnDefaults(fieldsNode, column.colName, "write-default");
+        fields[1] = "Initial Default Value:" +
+            getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "initial-default");
+        fields[2] = "Write Default Value:" +
+            getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "write-default");
         formatOutput(fields, constraintsInfo);
       }
     }
     constraintsInfo.append(LINE_DELIM);
   }
 
-  private String getColumnDefaults(JsonNode node, String colName, String defaultType) {
+  private String getIcebergColumnDefaultsFromSchema(JsonNode node, String colName, String defaultType) {
     if (node == null || colName == null) {
       return StringUtils.EMPTY;
     }
@@ -622,7 +624,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (node.isArray()) {
       targetNode = null;
       for (JsonNode field : node) {
-        if (field.has("name") && colName.equalsIgnoreCase(field.get("name").asText())) {
+        if (colName.equalsIgnoreCase(field.path("name").asText(null))) {
           targetNode = field;
           break;
         }
@@ -631,39 +633,37 @@ class TextDescTableFormatter extends DescTableFormatter {
 
     if (targetNode == null) {
       return StringUtils.EMPTY;
-    } else if (targetNode.has(defaultType)) {
-      JsonNode defaultNode = targetNode.get(defaultType);
-      if (defaultNode.isTextual()) {
-        return quoteString(defaultNode.asText());
-      }
-      return defaultNode.asText();
     }
 
-    // In case of struct, extract defaults recursively from its nested fields
-    JsonNode typeNode = targetNode.get("type");
-    if (typeNode != null && typeNode.isObject() && typeNode.has("type") &&
-        "struct".equalsIgnoreCase(typeNode.get("type").asText())) {
-      JsonNode structFields = typeNode.get("fields");
-      if (structFields != null && structFields.isArray()) {
-        List<String> fieldDefaults = new ArrayList<>();
-        boolean hasDefaults = false;
-        for (JsonNode childField : structFields) {
-          String childName = childField.has("name") ? childField.get("name").asText() : "";
-          String childDefault = getColumnDefaults(childField, childName, defaultType);
-          if (childDefault != null && !childDefault.isEmpty()) {
-            hasDefaults = true;
-            fieldDefaults.add(childName + ":" + childDefault);
-          } else {
-            fieldDefaults.add(childName + ":");
-          }
-        }
+    JsonNode defaultNode = targetNode.path(defaultType);
+    if (!defaultNode.isMissingNode()) {
+      return defaultNode.isTextual() ? quoteString(defaultNode.asText()) : defaultNode.asText();
+    }
+    return extractStructDefaults(targetNode, defaultType);
+  }
 
-        if (hasDefaults) {
-          return quoteString(String.join(",", fieldDefaults));
-        }
+  private String extractStructDefaults(JsonNode targetNode, String defaultType) {
+    JsonNode typeNode = targetNode.path("type");
+    JsonNode structFields = typeNode.path("fields");
+
+    if (!typeNode.isObject() || !"struct".equalsIgnoreCase(typeNode.path("type").asText(null)) ||
+        !structFields.isArray()) {
+      return StringUtils.EMPTY;
+    }
+
+    List<String> fieldDefaults = new ArrayList<>();
+    boolean hasDefaults = false;
+    for (JsonNode childField : structFields) {
+      String childName = childField.path("name").asText("");
+      String childDefault = getIcebergColumnDefaultsFromSchema(childField, childName, defaultType);
+      if (StringUtils.isNotEmpty(childDefault)) {
+        hasDefaults = true;
+        fieldDefaults.add(childName + ":" + childDefault);
+      } else {
+        fieldDefaults.add(childName + ":");
       }
     }
-    return StringUtils.EMPTY;
+    return hasDefaults ? quoteString(String.join(",", fieldDefaults)) : StringUtils.EMPTY;
   }
 
   private static String quoteString(String input) {
