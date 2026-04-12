@@ -82,7 +82,7 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     return new TableCacheTag(tableName);
   }
 
-  public static final CacheTag build(String tableName, LinkedHashMap<String, String> partDescMap) {
+  public static final CacheTag build(String tableName, Map<String, String> partDescMap) {
     if (StringUtils.isEmpty(tableName) || partDescMap == null || partDescMap.isEmpty()) {
       throw new IllegalArgumentException();
     }
