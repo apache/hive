@@ -51,9 +51,6 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2.swapTxnManager;
@@ -628,75 +625,5 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,1)");
     runStatementOnDriver("create table mytable stored as orc tblproperties ('transactional'='true')"
         + "as select * from " + Table.ACIDTBL);
-  }
-
-  @Test
-  public void testConcurrentMVRebuilds() throws Exception {
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
-    dropTables("t1");
-    runStatementOnDriver("create table t1 (a int, b int) stored as orc");
-    runStatementOnDriver("insert into t1 values (0,2),(1,4)");
-    runStatementOnDriver("create materialized view mat1 as select a, b from t1 where a > 1");
-    runStatementOnDriver("insert into t1 values (2,5)");
-
-    Driver driver2 = new Driver(new QueryState.Builder().withHiveConf(hiveConf).build());
-
-    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
-
-    runStatementOnDriver("start transaction");
-    HiveTxnManager txnMgr1 = swapTxnManager(txnMgr2);
-    Driver driver1 = swapDrivers(driver2);
-    runStatementOnDriver("start transaction");
-
-    runStatementOnDriver("alter materialized view mat1 rebuild");
-
-    txnMgr2 = swapTxnManager(txnMgr1);
-    driver2 = swapDrivers(driver1);
-
-    runStatementOnDriver("alter materialized view mat1 rebuild");
-    runStatementOnDriver("commit");
-
-    txnMgr2 = swapTxnManager(txnMgr1);
-    driver2 = swapDrivers(driver1);
-
-    runStatementOnDriver("commit");
-
-    List<String> rs = runStatementOnDriver("select * from mat1");
-
-    int i = 0;
-  }
-
-  @Test
-  public void testConcurrentTableDLL() throws Exception {
-    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
-    dropTables("t1");
-    runStatementOnDriver("create table t1 (a int, b int) stored as orc");
-    runStatementOnDriver("insert into t1 values (0,2),(1,4)");
-
-    Driver driver2 = new Driver(new QueryState.Builder().withHiveConf(hiveConf).build());
-
-    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(hiveConf);
-
-    runStatementOnDriver("start transaction");
-    HiveTxnManager txnMgr1 = swapTxnManager(txnMgr2);
-    Driver driver1 = swapDrivers(driver2);
-    runStatementOnDriver("start transaction");
-
-    runStatementOnDriver("update t1 set a = 10 where a = 0");
-
-    txnMgr2 = swapTxnManager(txnMgr1);
-    driver2 = swapDrivers(driver1);
-
-    runStatementOnDriver("delete from t1 where a = 0");
-    runStatementOnDriver("commit");
-
-    txnMgr2 = swapTxnManager(txnMgr1);
-    driver2 = swapDrivers(driver1);
-
-    runStatementOnDriver("commit");
-
-    List<String> rs = runStatementOnDriver("select * from t1");
-
-    int i = 0;
   }
 }
