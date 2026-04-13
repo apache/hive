@@ -19,14 +19,15 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,8 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
+import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -74,6 +77,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isDatabaseRemote;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -113,7 +117,8 @@ public class GetTableHandler<R, T> extends
       List<Table> tables = getTableObjects(getTablesRequest);
       return new GetTableResult(tables, true);
     } else if (req instanceof GetTableNamesRequest getTableNames) {
-      return new GetTableResult(getTableNames(getTableNames), true);
+      return getTableNames.forTableMeta ? new GetTableResult(getTableMeta(getTableNames), true) :
+          new GetTableResult(getTableNames(getTableNames), true);
     }
     throw new UnsupportedOperationException(req + " not yet implemented");
   }
@@ -385,6 +390,71 @@ public class GetTableHandler<R, T> extends
     return (client != null && client.isSetValues() && client.getValues().contains(value));
   }
 
+  private List<TableMeta> getTableMeta(GetTableNamesRequest getNamesReq) throws TException {
+    String catName = getNamesReq.catName;
+    String dbname = getNamesReq.dbName;
+    List<String> tblTypes = null;
+    if (getNamesReq.tableType != null) {
+      tblTypes = Arrays.asList(getNamesReq.tableType.split(","));
+    }
+    List<TableMeta> t = ms.getTableMeta(catName, dbname, getNamesReq.pattern, tblTypes);
+    t = FilterUtils.filterTableMetasIfEnabled(filterHook != null, filterHook, t);
+    return filterReadableTables(catName, t);
+  }
+
+  /**
+   * filters out the table meta for which read database access is not granted
+   * @param catName catalog name
+   * @param tableMetas list of table metas
+   * @return filtered list of table metas
+   * @throws RuntimeException
+   * @throws NoSuchObjectException
+   */
+  private List<TableMeta> filterReadableTables(String catName, List<TableMeta> tableMetas)
+      throws RuntimeException, NoSuchObjectException {
+    List<TableMeta> finalT = new ArrayList<>();
+    Map<String, Boolean> databaseNames = new HashMap();
+    for (TableMeta tableMeta : tableMetas) {
+      String fullDbName = prependCatalogToDbName(catName, tableMeta.getDbName(), conf);
+      if (databaseNames.get(fullDbName) == null) {
+        boolean isExecptionThrown = false;
+        try {
+          fireReadDatabasePreEvent(fullDbName);
+        } catch (MetaException e) {
+          isExecptionThrown = true;
+        }
+        databaseNames.put(fullDbName, isExecptionThrown);
+      }
+      if (!databaseNames.get(fullDbName)) {
+        finalT.add(tableMeta);
+      }
+    }
+    return finalT;
+  }
+
+  /**
+   * Fire a pre-event for read database operation, if there are any
+   * pre-event listeners registered
+   */
+  private void fireReadDatabasePreEvent(final String name)
+      throws MetaException, RuntimeException, NoSuchObjectException {
+    Supplier<PreEventContext> supplier = () -> {
+      String[] parsedDbName = parseDbName(name, conf);
+      Database db = null;
+      try {
+        db = handler.get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+        if (db == null) {
+          throw new NoSuchObjectException("Database: " + name + " not found");
+        }
+      } catch(MetaException | NoSuchObjectException e) {
+        throw new RuntimeException(e);
+      }
+      return new PreReadDatabaseEvent(db, handler);
+    };
+    ((HMSHandler) handler).firePreEvent(supplier);
+  }
+
+
   private List<String> getTableNames(GetTableNamesRequest getNamesReq) throws TException {
     String catName = getNamesReq.catName;
     String dbname = getNamesReq.dbName;
@@ -396,6 +466,7 @@ public class GetTableHandler<R, T> extends
     } catch (Exception e) {
       throw newMetaException(e);
     }
+
     List<String> names;
     if (getNamesReq.filter != null) {
       names = ms.listTableNamesByFilter(catName, dbname, getNamesReq.filter, getNamesReq.limit);
@@ -437,6 +508,7 @@ public class GetTableHandler<R, T> extends
     private String pattern;
     private String tableType;
     private short limit;
+    private boolean forTableMeta;
     private GetTableNamesRequest(String catalog, String database) {
       this.catName = catalog;
       this.dbName = database;
@@ -467,6 +539,11 @@ public class GetTableHandler<R, T> extends
 
     public GetTableNamesRequest byPattern(String pattern) {
       return byType(null, pattern);
+    }
+
+    public GetTableNamesRequest forTableMeta() {
+      this.forTableMeta = true;
+      return this;
     }
   }
 
