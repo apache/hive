@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.llap.cache;
 
 import com.google.common.base.Function;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.junit.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +33,7 @@ public class TestFileCache {
     ConcurrentHashMap<Object, FileCache<Object>> cache = new ConcurrentHashMap<>();
     Object fileKey = 1234L;
     Function<Void, Object> f = a -> new Object();
-    CacheTag tag = CacheTag.build("test_table");
+    CacheTag tag = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "test_db.test_table");
 
     FileCache<Object> result = FileCache.getOrAddFileSubCache(cache, fileKey, f, tag);
 

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.io.DiskRangeList;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.IllegalCacheConfigurationException;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
@@ -249,7 +250,7 @@ public class TestOrcMetadataCache {
     Path path = new Path("../data/files/alltypesorc");
     Configuration jobConf = new Configuration();
     Configuration daemonConf = new Configuration();
-    CacheTag tag = CacheTag.build("test-table");
+    CacheTag tag = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "test-db.test-table");
     OrcTail uncached = OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, null);
     jobConf.set(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname, "true");
     OrcTail cached = OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, null);
@@ -270,7 +271,7 @@ public class TestOrcMetadataCache {
     Path path = new Path("../data/files/alltypesorc");
     Configuration jobConf = new Configuration();
     Configuration daemonConf = new Configuration();
-    CacheTag tag = CacheTag.build("test-table");
+    CacheTag tag = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "test-db.test-table");
     FileSystem fs = FileSystem.get(daemonConf);
     FileStatus fileStatus = fs.getFileStatus(path);
     OrcTail uncached = OrcEncodedDataReader.getOrcTailForPath(fileStatus.getPath(), jobConf, tag, daemonConf, cache, new SyntheticFileId(fileStatus));
@@ -294,7 +295,7 @@ public class TestOrcMetadataCache {
     Path path = new Path("../data/files/alltypesorc");
     Configuration jobConf = new Configuration();
     Configuration daemonConf = new Configuration();
-    CacheTag tag = CacheTag.build("test-table");
+    CacheTag tag = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "test-db.test-table");
     OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, cache, new SyntheticFileId(path, 100, 100));
     jobConf.set(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname, "true");
     Exception ex = null;
@@ -337,19 +338,23 @@ public class TestOrcMetadataCache {
     // below is of length 65
     ByteBuffer bb2 = ByteBuffer.wrap("-large-meta-data-content-large-meta-data-content-large-meta-data-".getBytes());
 
-    LlapBufferOrBuffers table1Buffers1 = cache.putFileMetadata(fn1, bb, CacheTag.build("default.table1"), isStopped);
+    LlapBufferOrBuffers table1Buffers1 = cache.putFileMetadata(fn1, bb,
+        CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "default.table1"), isStopped);
     assertNotNull(table1Buffers1.getSingleLlapBuffer());
 
-    LlapBufferOrBuffers table1Buffers2 = cache.putFileMetadata(fn2, bb2, CacheTag.build("default.table1"), isStopped);
+    LlapBufferOrBuffers table1Buffers2 = cache.putFileMetadata(fn2, bb2,
+        CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "default.table1"), isStopped);
     assertNotNull(table1Buffers2.getMultipleLlapBuffers());
     assertEquals(2, table1Buffers2.getMultipleLlapBuffers().length);
 
     // Case for when metadata consists of just 1 buffer (most of the realworld cases)
     ByteBuffer bb3 = ByteBuffer.wrap("small-meta-data-content-for-otherFile".getBytes());
-    LlapBufferOrBuffers table2Buffers1 = cache.putFileMetadata(fn3, bb3, CacheTag.build("default.table2"), isStopped);
+    LlapBufferOrBuffers table2Buffers1 = cache.putFileMetadata(fn3, bb3,
+        CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "default.table2"), isStopped);
     assertNotNull(table2Buffers1.getSingleLlapBuffer());
 
-    Predicate<CacheTag> predicate = tag -> "default.table1".equals(tag.getTableName());
+    Predicate<CacheTag> predicate = tag ->
+        (Warehouse.DEFAULT_CATALOG_NAME + ".default.table1").equals(tag.getTableName());
 
     // Simulating eviction on some buffers
     table1Buffers2.getMultipleLlapBuffers()[1].decRef();

@@ -324,9 +324,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     if (LOG.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder();
       sb.append(markedBytes).append(" bytes marked for eviction from LLAP cache buffers that belong to table(s): ");
-      for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
-        sb.append(table).append(" ");
-      }
+      request.getEntities().forEach((catalogdb, tables) ->
+          tables.forEach((table, partitions) ->
+            sb.append(catalogdb.catalog()).append(".").append(catalogdb.database())
+                .append(".").append(table).append(" "))
+      );
       sb.append(" Duration: ").append(time).append(" ms");
       LOG.debug(sb.toString());
     }

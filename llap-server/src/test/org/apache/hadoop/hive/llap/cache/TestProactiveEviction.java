@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,9 @@ import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.ProactiveEviction.Request;
 import org.apache.hadoop.hive.llap.ProactiveEviction.Request.Builder;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EvictEntityRequestProto;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+import org.apache.hadoop.hive.metastore.Warehouse;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -104,6 +107,148 @@ public class TestProactiveEviction {
       sb.append(request.isTagMatch(TEST_TAGS[i]) ? '1' : '0');
     }
     assertEquals(expected, sb.toString());
+  }
+
+  /**
+   * Verifies that passing an explicit catalog produces correct matching via isTagMatch.
+   * TEST_TAGS all belong to the default catalog, so requests for a different catalog must not match.
+   */
+  @Test
+  public void testCatalogAwareCacheTagAndRequestMatching() {
+    // Default catalog matches as expected.
+    assertMatchOnTags(Builder.create().addDb("fx"), "111111111111000000");
+    assertMatchOnTags(Builder.create().addTable("fx", "futures"), "000001111000000000");
+    assertMatchOnTags(Builder.create().addPartitionOfATable("fx", "futures",
+            buildParts("ccy", "JPY")), "000000110000000000");
+    assertMatchOnTags(Builder.create().addTable("fixedincome", "bonds"), "000000000000000110");
+    assertMatchOnTags(Builder.create().addPartitionOfATable("fx", "rates",
+            buildParts("from", "EUR", "to", "HUF")), "000010000000000000");
+
+    // Non-default catalog: CacheTag now carries catalog info, so none of the TEST_TAGS
+    // (all default-catalog) should match requests targeting a different catalog.
+    assertMatchOnTags(Builder.create().addDb("custom_catalog", "fx"), "000000000000000000");
+    assertMatchOnTags(Builder.create().addTable("custom_catalog", "equity", "prices"),
+        "000000000000000000");
+    assertMatchOnTags(Builder.create().addPartitionOfATable(
+        "custom_catalog", "equity", "prices", buildParts("ex", "NYSE")),
+        "000000000000000000");
+  }
+
+  /**
+   * Verifies that catalog_name is serialized into the proto and correctly restored via fromProtoRequest.
+   */
+  @Test
+  public void testProtoRoundTripPreservesCatalog() {
+    // Default catalog is always serialized into the proto.
+    Request defaultCatRequest = Builder.create().addDb("testdb").build();
+    List<EvictEntityRequestProto> protos = defaultCatRequest.toProtoRequests();
+    assertEquals(1, protos.size());
+    EvictEntityRequestProto proto = protos.get(0);
+    assertEquals(Warehouse.DEFAULT_CATALOG_NAME, proto.getCatalogName());
+    assertEquals("testdb", proto.getDbName());
+
+    Request roundTripped = Builder.create().fromProtoRequest(proto).build();
+    assertTrue(roundTripped.hasDatabaseName(Warehouse.DEFAULT_CATALOG_NAME, "testdb"));
+
+    // Custom catalog is also preserved.
+    Request customCatRequest = Builder.create().addTable("spark_catalog", "salesdb", "orders").build();
+    protos = customCatRequest.toProtoRequests();
+    assertEquals(1, protos.size());
+    proto = protos.get(0);
+    assertEquals("spark_catalog", proto.getCatalogName());
+    assertEquals("salesdb", proto.getDbName());
+
+    roundTripped = Builder.create().fromProtoRequest(proto).build();
+    assertTrue(roundTripped.hasDatabaseName("spark_catalog", "salesdb"));
+  }
+
+  /**
+   * Verifies that entities in different catalogs are independently scoped even when they share
+   * the same DB name, and that getSingleCatalogName/getSingleDbName return null when multiple
+   * catalog-DB pairs are present.
+   */
+  @Test
+  public void testMultiCatalogBuilderScoping() {
+    // Two different catalogs, each with the same DB name but different tables.
+    Request request = Builder.create()
+        .addTable("catalog_a", "shared_db", "table_a")
+        .addTable("catalog_b", "shared_db", "table_b")
+        .build();
+
+    assertEquals(2, request.getEntities().size());
+    assertTrue(request.getEntities().containsKey(new Request.CatalogDb("catalog_a", "shared_db")));
+    assertTrue(request.getEntities().containsKey(new Request.CatalogDb("catalog_b", "shared_db")));
+
+    // catalog_a only knows about table_a.
+    assertTrue(request.getEntities().get(new Request.CatalogDb("catalog_a", "shared_db")).containsKey("table_a"));
+    assertFalse(request.getEntities().get(new Request.CatalogDb("catalog_a", "shared_db")).containsKey("table_b"));
+
+    // catalog_b only knows about table_b.
+    assertTrue(request.getEntities().get(new Request.CatalogDb("catalog_b", "shared_db")).containsKey("table_b"));
+    assertFalse(request.getEntities().get(new Request.CatalogDb("catalog_b", "shared_db")).containsKey("table_a"));
+  }
+
+  /**
+   * Verifies that multiple tables and partitions added to the same catalog+DB are merged
+   * into a single catalog entry (no duplication).
+   */
+  @Test
+  public void testSameCatalogMultipleEntitiesMergedCorrectly() {
+    Request request = Builder.create()
+        .addTable("mydb", "table1")
+        .addTable("mydb", "table2")
+        .addPartitionOfATable("mydb", "table3", buildParts("dt", "2024-01-01"))
+        .addPartitionOfATable("mydb", "table3", buildParts("dt", "2024-01-02"))
+        .build();
+
+    assertTrue(request.hasDatabaseName(Warehouse.DEFAULT_CATALOG_NAME, "mydb"));
+    // One catalog, one DB, three tables.
+    assertEquals(1, request.getEntities().size());
+    assertEquals(3, request.getEntities()
+        .get(new Request.CatalogDb(Warehouse.DEFAULT_CATALOG_NAME, "mydb")).size());
+    // table3 has two partition specs.
+    assertEquals(2, request.getEntities()
+        .get(new Request.CatalogDb(Warehouse.DEFAULT_CATALOG_NAME, "mydb")).get("table3").size());
+  }
+
+  /**
+   * Verifies that CacheTag catalog information is correctly used to isolate eviction between catalogs.
+   * A request targeting catalog A must not evict buffers that belong to catalog B, even when the
+   * DB and table names are identical.
+   */
+  @Test
+  public void testCatalogIsolationInIsTagMatch() {
+    CacheTag defaultCatalogTag = cacheTagBuilder("fx.rates", "from=USD", "to=HUF");
+    CacheTag otherCatalogTag = cacheTagBuilder("other_catalog.fx.rates", "from=USD", "to=HUF");
+
+    // Request for the default catalog's "fx" DB matches only default-catalog tags.
+    Request defaultCatalogRequest = Builder.create()
+        .fromProtoRequest(Builder.create()
+            .addDb("fx")
+            .build().toProtoRequests().get(0))
+        .build();
+    assertTrue(defaultCatalogRequest.isTagMatch(defaultCatalogTag));
+    assertFalse("Must not evict buffers belonging to other_catalog",
+        defaultCatalogRequest.isTagMatch(otherCatalogTag));
+
+    // Request for a different catalog matches only tags from that catalog.
+    Request otherCatalogRequest = Builder.create()
+        .fromProtoRequest(Builder.create()
+            .addDb("other_catalog", "fx")
+            .build().toProtoRequests().get(0))
+        .build();
+    assertTrue(otherCatalogRequest.isTagMatch(otherCatalogTag));
+    assertFalse("Must not evict buffers belonging to the default catalog",
+        otherCatalogRequest.isTagMatch(defaultCatalogTag));
+
+    // A request for a DB that doesn't exist in the tags must not match, regardless of catalog.
+    Request noMatchRequest = Builder.create()
+        .fromProtoRequest(Builder.create()
+            .addDb("any_catalog", "nonexistent_db")
+            .build().toProtoRequests().get(0))
+        .build();
+    assertFalse(noMatchRequest.isTagMatch(defaultCatalogTag));
+    assertFalse(noMatchRequest.isTagMatch(otherCatalogTag));
   }
 
   @Test

@@ -147,7 +147,8 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
       DDLUtils.addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
       if (llapEvictRequestBuilder != null) {
-        llapEvictRequestBuilder.addPartitionOfATable(tableName.getDb(), tableName.getTable(), partition.getSpec());
+        llapEvictRequestBuilder.addPartitionOfATable(
+            tableName.getCat(), tableName.getDb(), tableName.getTable(), partition.getSpec());
       }
     }
 

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
@@ -140,7 +141,6 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
 
   @Override
   public CacheTag getTag() {
-    // We don't care about these.
-    return CacheTag.build("OrcEstimates");
+    return CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "OrcEstimates");
   }
 }
