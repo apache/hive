@@ -69,7 +69,9 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -2172,6 +2174,79 @@ public abstract class BaseSemanticAnalyzer {
     // will keep calling setSqlKind(HiveOperation.INSERT), so this null-check prevents overwrite
     if (queryState.getSqlKind() == null) {
       queryState.setSqlKind(sqlKind);
+    }
+  }
+
+  /**
+   * Returns the sink operator for query plans that produce one.
+   * @return the sink operator, or throws if not supported
+   */
+  public Operator<?> getSinkOp() {
+    throw new UnsupportedOperationException(
+        "getSinkOp not supported for " + getClass().getSimpleName());
+  }
+
+  /**
+   * Accepts CTE context from another analyzer for CTE materialization.
+   * @param aliasToCTEs the CTE alias to clause mapping to import
+   */
+  public void acceptCTEContext(Map<String, CTEClause> aliasToCTEs) {
+    throw new UnsupportedOperationException(
+        "acceptCTEContext not supported for " + getClass().getSimpleName());
+  }
+
+  /**
+   * Returns the table descriptor created during analysis (e.g., for CTAS or CTE materialization).
+   * @return the created table descriptor, or throws if not supported
+   */
+  public CreateTableDesc getCreatedTableDesc() {
+    throw new UnsupportedOperationException(
+        "getCreatedTableDesc not supported for " + getClass().getSimpleName());
+  }
+
+  /**
+   * Represents a Common Table Expression (CTE) clause.
+   */
+  public class CTEClause {
+    public CTEClause(String alias, ASTNode cteNode, ASTNode withColList) {
+      this.alias = alias;
+      this.cteNode = cteNode;
+      this.withColList = withColList;
+    }
+
+    public String alias;
+    public ASTNode cteNode;
+    public ASTNode withColList;
+    public boolean materialize;
+    public int reference;
+    public QBExpr qbExpr;
+    public List<CTEClause> parents = new ArrayList<CTEClause>();
+
+    // materialized
+    public BaseSemanticAnalyzer source;
+
+    public List<Task<?>> getTasks() {
+      return source == null ? null : source.rootTasks;
+    }
+
+    public List<CTEClause> asExecutionOrder() {
+      List<CTEClause> execution = new ArrayList<CTEClause>();
+      asExecutionOrder(new HashSet<CTEClause>(), execution);
+      return execution;
+    }
+
+    public void asExecutionOrder(Set<CTEClause> visited, List<CTEClause> execution) {
+      for (CTEClause parent : parents) {
+        if (visited.add(parent)) {
+          parent.asExecutionOrder(visited, execution);
+        }
+      }
+      execution.add(this);
+    }
+
+    @Override
+    public String toString() {
+      return alias == null ? "<root>" : alias;
     }
   }
 }

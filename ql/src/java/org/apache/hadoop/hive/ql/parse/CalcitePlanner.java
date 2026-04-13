@@ -144,7 +144,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableAnalyzer;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -1049,51 +1048,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @Override
   boolean continueJoinMerge() {
     return !(runCBO && disableSemJoinReordering);
-  }
-
-  @Override
-  Table materializeCTE(String cteName, CTEClause cte) throws HiveException {
-
-    ASTNode createTable = new ASTNode(new ClassicToken(HiveParser.TOK_CREATETABLE));
-
-    ASTNode tableName = new ASTNode(new ClassicToken(HiveParser.TOK_TABNAME));
-    tableName.addChild(new ASTNode(new ClassicToken(HiveParser.Identifier, cteName)));
-
-    ASTNode temporary = new ASTNode(new ClassicToken(HiveParser.KW_TEMPORARY, MATERIALIZATION_MARKER));
-
-    createTable.addChild(tableName);
-    createTable.addChild(temporary);
-    createTable.addChild(cte.cteNode);
-
-    CreateTableAnalyzer analyzer = new CreateTableAnalyzer(queryState);
-    analyzer.initCtx(ctx);
-    analyzer.init(false);
-
-    // should share cte contexts
-    analyzer.aliasToCTEs.putAll(aliasToCTEs);
-
-    HiveOperation operation = queryState.getHiveOperation();
-    try {
-      analyzer.analyzeInternal(createTable);
-    } finally {
-      queryState.setCommandType(operation);
-    }
-
-    Table table = analyzer.tableDesc.toTable(conf);
-    Path location = table.getDataLocation();
-    try {
-      location.getFileSystem(conf).mkdirs(location);
-    } catch (IOException e) {
-      throw new HiveException(e);
-    }
-    table.setMaterializedTable(true);
-
-    LOG.info(cteName + " will be materialized into " + location);
-    cte.source = analyzer;
-
-    ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp()));
-
-    return table;
   }
 
   @Override

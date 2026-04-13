@@ -137,6 +137,16 @@ public class CreateTableAnalyzer extends CalcitePlanner {
     return analyzeAndResolveChildTree(child, plannerCtx);
   }
 
+  @Override
+  public void acceptCTEContext(Map<String, CTEClause> aliasToCTEs) {
+    this.aliasToCTEs.putAll(aliasToCTEs);
+  }
+
+  @Override
+  public CreateTableDesc getCreatedTableDesc() {
+    return getQB().getTableDesc();
+  }
+
   /**
    * Checks to see if given partition columns has DEFAULT or CHECK constraints (whether ENABLED or DISABLED)
    *  Or has NOT NULL constraints (only ENABLED)

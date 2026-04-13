@@ -117,7 +117,7 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.misc.hooks.InsertCommitHookDesc;
-import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.preinsert.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableUnsetPropertiesDesc;
@@ -1440,47 +1440,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return writeEntities;
   }
 
-  class CTEClause {
-    CTEClause(String alias, ASTNode cteNode, ASTNode withColList) {
-      this.alias = alias;
-      this.cteNode = cteNode;
-      this.withColList = withColList;
-    }
-    String alias;
-    ASTNode cteNode;
-    ASTNode withColList;
-    boolean materialize;
-    int reference;
-    QBExpr qbExpr;
-    List<CTEClause> parents = new ArrayList<CTEClause>();
-
-    // materialized
-    SemanticAnalyzer source;
-
-    List<Task<?>> getTasks() {
-      return source == null ? null : source.rootTasks;
-    }
-
-    List<CTEClause> asExecutionOrder() {
-      List<CTEClause> execution = new ArrayList<CTEClause>();
-      asExecutionOrder(new HashSet<CTEClause>(), execution);
-      return execution;
-    }
-
-    void asExecutionOrder(Set<CTEClause> visited, List<CTEClause> execution) {
-      for (CTEClause parent : parents) {
-        if (visited.add(parent)) {
-          parent.asExecutionOrder(visited, execution);
-        }
-      }
-      execution.add(this);
-    }
-
-    @Override
-    public String toString() {
-      return alias == null ? "<root>" : alias;
-    }
-  }
 
   private List<Task<?>> getRealTasks(CTEClause cte) {
     if (cte == rootClause) {
@@ -1569,12 +1528,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createTable.addChild(temporary);
     createTable.addChild(cte.cteNode);
 
-    CreateTableAnalyzer analyzer = new CreateTableAnalyzer(queryState);
+    BaseSemanticAnalyzer analyzer = DDLSemanticAnalyzerFactory.getAnalyzer(createTable, queryState);
     analyzer.initCtx(ctx);
     analyzer.init(false);
 
     // should share cte contexts
-    analyzer.aliasToCTEs.putAll(aliasToCTEs);
+    analyzer.acceptCTEContext(aliasToCTEs);
 
     HiveOperation operation = queryState.getHiveOperation();
     try {
@@ -1583,7 +1542,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryState.setCommandType(operation);
     }
 
-    Table table = analyzer.tableDesc.toTable(conf);
+    Table table = analyzer.getCreatedTableDesc().toTable(conf);
     Path location = table.getDataLocation();
     try {
       location.getFileSystem(conf).mkdirs(location);
@@ -15459,7 +15418,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return viewAliasToInput;
   }
 
-  public Operator getSinkOp() {
+  @Override
+  public Operator<?> getSinkOp() {
     return sinkOp;
   }
 
