@@ -2181,7 +2181,7 @@ public abstract class BaseSemanticAnalyzer {
    * Returns the sink operator for query plans that produce one.
    * @return the sink operator, or throws if not supported
    */
-  public Operator<?> getSinkOp() {
+  public Operator getSinkOp() {
     throw new UnsupportedOperationException(
         "getSinkOp not supported for " + getClass().getSimpleName());
   }
@@ -2204,38 +2204,34 @@ public abstract class BaseSemanticAnalyzer {
         "getCreatedTableDesc not supported for " + getClass().getSimpleName());
   }
 
-  /**
-   * Represents a Common Table Expression (CTE) clause.
-   */
-  public class CTEClause {
-    public CTEClause(String alias, ASTNode cteNode, ASTNode withColList) {
+  static class CTEClause {
+    CTEClause(String alias, ASTNode cteNode, ASTNode withColList) {
       this.alias = alias;
       this.cteNode = cteNode;
       this.withColList = withColList;
     }
-
-    public String alias;
-    public ASTNode cteNode;
-    public ASTNode withColList;
-    public boolean materialize;
-    public int reference;
-    public QBExpr qbExpr;
-    public List<CTEClause> parents = new ArrayList<CTEClause>();
+    String alias;
+    ASTNode cteNode;
+    ASTNode withColList;
+    boolean materialize;
+    int reference;
+    QBExpr qbExpr;
+    List<CTEClause> parents = new ArrayList<CTEClause>();
 
     // materialized
-    public BaseSemanticAnalyzer source;
+    BaseSemanticAnalyzer source;
 
-    public List<Task<?>> getTasks() {
+    List<Task<?>> getTasks() {
       return source == null ? null : source.rootTasks;
     }
 
-    public List<CTEClause> asExecutionOrder() {
+    List<CTEClause> asExecutionOrder() {
       List<CTEClause> execution = new ArrayList<CTEClause>();
       asExecutionOrder(new HashSet<CTEClause>(), execution);
       return execution;
     }
 
-    public void asExecutionOrder(Set<CTEClause> visited, List<CTEClause> execution) {
+    void asExecutionOrder(Set<CTEClause> visited, List<CTEClause> execution) {
       for (CTEClause parent : parents) {
         if (visited.add(parent)) {
           parent.asExecutionOrder(visited, execution);

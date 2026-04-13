@@ -138,11 +138,6 @@ public class CreateTableAnalyzer extends CalcitePlanner {
   }
 
   @Override
-  public void acceptCTEContext(Map<String, CTEClause> aliasToCTEs) {
-    this.aliasToCTEs.putAll(aliasToCTEs);
-  }
-
-  @Override
   public CreateTableDesc getCreatedTableDesc() {
     return getQB().getTableDesc();
   }

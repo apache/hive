@@ -15419,8 +15419,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  public Operator<?> getSinkOp() {
+  public Operator getSinkOp() {
     return sinkOp;
+  }
+
+  @Override
+  public void acceptCTEContext(Map<String, CTEClause> aliasToCTEs) {
+    this.aliasToCTEs.putAll(aliasToCTEs);
   }
 
   protected enum MaterializationRebuildMode {
