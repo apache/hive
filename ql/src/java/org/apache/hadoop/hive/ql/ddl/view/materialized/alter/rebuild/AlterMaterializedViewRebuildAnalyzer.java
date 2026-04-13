@@ -33,12 +33,16 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
+import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
@@ -202,6 +206,23 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
           tableName.getEscapedNotEmptyDbTable(), viewText);
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
       this.ctx.addSubContext(ctx);
+
+      if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(table)) {
+        // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a
+        // given time, as otherwise we might produce incorrect results if incremental maintenance is triggered.
+        HiveTxnManager txnManager = getTxnMgr();
+        LockState state;
+        try {
+          state = txnManager.acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(tableName.getCat(),
+              tableName.getDb(), tableName.getTable(), txnManager.getCurrentTxnId())).getState();
+        } catch (LockException e) {
+          throw new SemanticException("Exception acquiring lock for rebuilding the materialized view", e);
+        }
+        if (state != LockState.ACQUIRED) {
+          throw new SemanticException(
+              "Another process is rebuilding the materialized view " + tableName.getNotEmptyDbTable());
+        }
+      }
     } catch (Exception e) {
       throw new SemanticException(e);
     }
