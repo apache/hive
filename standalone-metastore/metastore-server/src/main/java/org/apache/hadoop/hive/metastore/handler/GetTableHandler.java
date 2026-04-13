@@ -27,9 +27,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -84,8 +86,8 @@ public class GetTableHandler<R, T> extends
   private MetaStoreFilterHook filterHook;
   private Configuration conf;
   private boolean isInTest;
-  GetTableHandler(IHMSHandler handler, boolean async, GetTableReq request) {
-    super(handler, async, request);
+  GetTableHandler(IHMSHandler handler, GetTableReq request) {
+    super(handler, false, request);
   }
 
   @Override
@@ -407,13 +409,12 @@ public class GetTableHandler<R, T> extends
     }
     if (filterHook != null && !names.isEmpty()) {
       String tables = String.join("|", names);
-      List<TableMeta> filteredTableMetas = ms.getTableMeta(catName, dbname, tables, null);
-      if (filteredTableMetas == null || filteredTableMetas.isEmpty()) {
+      List<TableMeta> tableMetas = ms.getTableMeta(catName, dbname, tables, null);
+      if (tableMetas == null || tableMetas.isEmpty()) {
         return new ArrayList<>();
       }
-      Set<String> filtered = filteredTableMetas.stream().map(TableMeta::getTableName).collect(Collectors.toSet());
-      List<String> result = names.stream().filter(filtered::contains).toList();
-      names = new ArrayList<>(result);
+      List<TableMeta> filteredTableMetas = FilterUtils.filterTableMetasIfEnabled(filterHook != null, filterHook, tableMetas);
+      return filteredTableMetas.stream().map(TableMeta::getTableName).collect(Collectors.toList());
     }
     return names;
   }
@@ -473,18 +474,56 @@ public class GetTableHandler<R, T> extends
 
   }
 
-  public static Table getTable(IHMSHandler handler, GetTableRequest request, boolean rawTable)
+  public static <T, R> List<T> getTables(Runnable preHook, IHMSHandler handler, R req,
+      Consumer<Pair<List<T>, Exception>> postHook) throws TException {
+    if (preHook != null) {
+      preHook.run();
+    }
+    List<T> tables = null;
+    Exception ex = null;
+    try {
+      GetTableReq<R> internalRequest = new GetTableReq<>(req);
+      GetTableHandler<GetTableRequest, T> getTablesHandler =
+          AbstractRequestHandler.offer(handler, internalRequest);
+      tables = getTablesHandler.getResult().result();
+      return tables;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).defaultTException();
+    } finally {
+      if (postHook != null) {
+        Pair<List<T>, Exception> result = Pair.of(tables, ex);
+        postHook.accept(result);
+      }
+    }
+  }
+
+  public static Table getTable(Runnable preHook,
+      IHMSHandler handler, GetTableRequest request, boolean rawTable,
+      Consumer<Pair<Table, Exception>> postHook)
       throws NoSuchObjectException, MetaException {
+    if (preHook != null) {
+      preHook.run();
+    }
+    Table t = null;
+    Exception ex = null;
     try {
       GetTableReq<GetTableRequest> internalRequest = new GetTableReq<>(request);
       internalRequest.rawTable = rawTable;
       GetTableHandler<GetTableRequest, Table> getTableHandler =
           AbstractRequestHandler.offer(handler, internalRequest);
       List<Table> tables = getTableHandler.getResult().result();
-      return tables.getFirst();
+      t = tables.getFirst();
+      return t;
     } catch (Exception e) {
+      ex = e;
       throw handleException(e).throwIfInstance(NoSuchObjectException.class, MetaException.class)
           .defaultMetaException();
+    } finally {
+      if (postHook != null) {
+        Pair<Table, Exception> result = Pair.of(t, ex);
+        postHook.accept(result);
+      }
     }
   }
 }
