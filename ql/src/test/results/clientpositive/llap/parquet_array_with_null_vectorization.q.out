@@ -1,0 +1,238 @@
+PREHOOK: query: CREATE TABLE test_parquet_array_nulls_bool (
+    id INT,
+    arr_prim ARRAY<BOOLEAN>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_array_nulls_bool
+POSTHOOK: query: CREATE TABLE test_parquet_array_nulls_bool (
+    id INT,
+    arr_prim ARRAY<BOOLEAN>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_array_nulls_bool
+PREHOOK: query: INSERT INTO test_parquet_array_nulls_bool VALUES
+    (1, array(CAST(NULL AS BOOLEAN), CAST(NULL AS BOOLEAN))),
+    (2, if(1=0, array(true, false), null)),
+    (3, array(true, CAST(NULL AS BOOLEAN))),
+    (4, array(true, false))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_array_nulls_bool
+POSTHOOK: query: INSERT INTO test_parquet_array_nulls_bool VALUES
+    (1, array(CAST(NULL AS BOOLEAN), CAST(NULL AS BOOLEAN))),
+    (2, if(1=0, array(true, false), null)),
+    (3, array(true, CAST(NULL AS BOOLEAN))),
+    (4, array(true, false))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_array_nulls_bool
+POSTHOOK: Lineage: test_parquet_array_nulls_bool.arr_prim SCRIPT []
+POSTHOOK: Lineage: test_parquet_array_nulls_bool.id SCRIPT []
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_bool
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_bool
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_bool
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_bool
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+3	[true,null]
+4	[true,false]
+PREHOOK: query: CREATE TABLE test_parquet_array_nulls_double (
+    id INT,
+    arr_prim ARRAY<DOUBLE>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_array_nulls_double
+POSTHOOK: query: CREATE TABLE test_parquet_array_nulls_double (
+    id INT,
+    arr_prim ARRAY<DOUBLE>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_array_nulls_double
+PREHOOK: query: INSERT INTO test_parquet_array_nulls_double
+SELECT 1, array(CAST(NULL AS DOUBLE), CAST(NULL AS DOUBLE))
+UNION ALL
+SELECT 2, CAST(NULL AS ARRAY<DOUBLE>)
+UNION ALL
+SELECT 3, array(CAST(3.3 AS DOUBLE), CAST(NULL AS DOUBLE))
+UNION ALL
+SELECT 4, array(CAST(4.4 AS DOUBLE), CAST(5.5 AS DOUBLE))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_array_nulls_double
+POSTHOOK: query: INSERT INTO test_parquet_array_nulls_double
+SELECT 1, array(CAST(NULL AS DOUBLE), CAST(NULL AS DOUBLE))
+UNION ALL
+SELECT 2, CAST(NULL AS ARRAY<DOUBLE>)
+UNION ALL
+SELECT 3, array(CAST(3.3 AS DOUBLE), CAST(NULL AS DOUBLE))
+UNION ALL
+SELECT 4, array(CAST(4.4 AS DOUBLE), CAST(5.5 AS DOUBLE))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_array_nulls_double
+POSTHOOK: Lineage: test_parquet_array_nulls_double.arr_prim SCRIPT []
+POSTHOOK: Lineage: test_parquet_array_nulls_double.id SCRIPT []
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_double
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_double
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+3	[3.3,null]
+4	[4.4,5.5]
+PREHOOK: query: CREATE TABLE test_parquet_array_nulls_varchar (
+    id INT,
+    arr_prim ARRAY<VARCHAR(20)>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_array_nulls_varchar
+POSTHOOK: query: CREATE TABLE test_parquet_array_nulls_varchar (
+    id INT,
+    arr_prim ARRAY<VARCHAR(20)>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_array_nulls_varchar
+PREHOOK: query: INSERT INTO test_parquet_array_nulls_varchar
+SELECT 1, array(CAST(NULL AS VARCHAR(20)), CAST(NULL AS VARCHAR(20)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_array_nulls_varchar
+POSTHOOK: query: INSERT INTO test_parquet_array_nulls_varchar
+SELECT 1, array(CAST(NULL AS VARCHAR(20)), CAST(NULL AS VARCHAR(20)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_array_nulls_varchar
+POSTHOOK: Lineage: test_parquet_array_nulls_varchar.arr_prim EXPRESSION []
+POSTHOOK: Lineage: test_parquet_array_nulls_varchar.id SIMPLE []
+PREHOOK: query: INSERT INTO test_parquet_array_nulls_varchar
+SELECT 2, CAST(NULL AS ARRAY<VARCHAR(20)>)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_array_nulls_varchar
+POSTHOOK: query: INSERT INTO test_parquet_array_nulls_varchar
+SELECT 2, CAST(NULL AS ARRAY<VARCHAR(20)>)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_array_nulls_varchar
+POSTHOOK: Lineage: test_parquet_array_nulls_varchar.arr_prim SIMPLE []
+POSTHOOK: Lineage: test_parquet_array_nulls_varchar.id SIMPLE []
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_varchar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_varchar
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_varchar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_varchar
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+PREHOOK: query: CREATE TABLE test_parquet_array_nulls_float (
+    id INT,
+    arr_prim ARRAY<FLOAT>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_array_nulls_float
+POSTHOOK: query: CREATE TABLE test_parquet_array_nulls_float (
+    id INT,
+    arr_prim ARRAY<FLOAT>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_array_nulls_float
+PREHOOK: query: INSERT INTO test_parquet_array_nulls_float
+SELECT 1, array(CAST(NULL AS FLOAT), CAST(NULL AS FLOAT))
+UNION ALL
+SELECT 2, CAST(NULL AS ARRAY<FLOAT>)
+UNION ALL
+SELECT 3, array(CAST(3.3 AS FLOAT), CAST(NULL AS FLOAT))
+UNION ALL
+SELECT 4, array(CAST(4.4 AS FLOAT), CAST(5.5 AS FLOAT))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_array_nulls_float
+POSTHOOK: query: INSERT INTO test_parquet_array_nulls_float
+SELECT 1, array(CAST(NULL AS FLOAT), CAST(NULL AS FLOAT))
+UNION ALL
+SELECT 2, CAST(NULL AS ARRAY<FLOAT>)
+UNION ALL
+SELECT 3, array(CAST(3.3 AS FLOAT), CAST(NULL AS FLOAT))
+UNION ALL
+SELECT 4, array(CAST(4.4 AS FLOAT), CAST(5.5 AS FLOAT))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_array_nulls_float
+POSTHOOK: Lineage: test_parquet_array_nulls_float.arr_prim SCRIPT []
+POSTHOOK: Lineage: test_parquet_array_nulls_float.id SCRIPT []
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_float
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_float
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_float
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_float
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+3	[3.3,null]
+4	[4.4,5.5]
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_bool
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_bool
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_bool
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_bool
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+3	[true,null]
+4	[true,false]
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_double
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_double
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+3	[3.3,null]
+4	[4.4,5.5]
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_varchar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_varchar
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_varchar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_varchar
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+PREHOOK: query: SELECT * FROM test_parquet_array_nulls_float
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_array_nulls_float
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_array_nulls_float
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_array_nulls_float
+#### A masked pattern was here ####
+1	[null,null]
+2	NULL
+3	[3.3,null]
+4	[4.4,5.5]
