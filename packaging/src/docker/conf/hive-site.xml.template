@@ -17,6 +17,14 @@
 -->
 <configuration>
     <property>
+      <name>hive.support.concurrency</name>
+      <value>true</value>
+    </property>
+    <property>
+      <name>hive.txn.manager</name>
+      <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
+    </property>
+    <property>
         <name>hive.server2.enable.doAs</name>
         <value>false</value>
     </property>
@@ -39,6 +47,10 @@
     <property>
         <name>hive.exec.submit.local.task.via.child</name>
         <value>false</value>
+    </property>
+    <property>
+      <name>hive.compactor.crud.query.based</name>
+      <value>true</value>
     </property>
     <property>
         <name>hive.compactor.worker.threads</name>
