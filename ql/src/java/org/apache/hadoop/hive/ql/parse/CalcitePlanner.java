@@ -131,7 +131,6 @@ import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.calcite.util.Pair;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.CteSuggesterType;
