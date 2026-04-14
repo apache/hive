@@ -20,10 +20,8 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -77,27 +75,15 @@ public class HMSCatalogServlet extends HttpServlet {
               context.path(),
               context.queryParams(),
               context.body(),
-              handle(response));
+              response);
 
       if (responseBody != null) {
         RESTObjectMapper.mapper().writeValue(response.getWriter(), responseBody);
       }
     } catch (RuntimeException | IOException e) {
-      // should be a RESTException but not able to see them through dependencies
       LOG.error("Error processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
-  }
-
-  private Consumer<ErrorResponse> handle(HttpServletResponse response) {
-    return errorResponse -> {
-      response.setStatus(errorResponse.code());
-      try {
-        RESTObjectMapper.mapper().writeValue(response.getWriter(), errorResponse);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    };
   }
 
   public static class ServletRequestContext {
