@@ -16,7 +16,7 @@ TBLPROPERTIES ('format-version'='3');
 
 INSERT INTO ice_parq (id) VALUES (1);
 
-ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25);
 
@@ -33,7 +33,7 @@ TBLPROPERTIES ('format-version'='3');
 
 INSERT INTO ice_orc (id) VALUES (1);
 
-ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25);
 

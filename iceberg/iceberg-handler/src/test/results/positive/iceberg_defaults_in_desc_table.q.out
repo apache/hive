@@ -20,13 +20,13 @@ POSTHOOK: query: INSERT INTO ice_parq (id) VALUES (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_parq
-PREHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+PREHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@ice_parq
 PREHOOK: Output: default@ice_parq
-POSTHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+POSTHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
@@ -139,13 +139,13 @@ POSTHOOK: query: INSERT INTO ice_orc (id) VALUES (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_orc
-PREHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+PREHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+POSTHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
   name STRING DEFAULT 'unknown',
   age INT DEFAULT 25)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
