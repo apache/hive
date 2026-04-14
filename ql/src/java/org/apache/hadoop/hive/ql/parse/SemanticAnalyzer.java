@@ -1440,6 +1440,47 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return writeEntities;
   }
 
+  class CTEClause {
+    CTEClause(String alias, ASTNode cteNode, ASTNode withColList) {
+      this.alias = alias;
+      this.cteNode = cteNode;
+      this.withColList = withColList;
+    }
+    String alias;
+    ASTNode cteNode;
+    ASTNode withColList;
+    boolean materialize;
+    int reference;
+    QBExpr qbExpr;
+    List<CTEClause> parents = new ArrayList<CTEClause>();
+
+    // materialized
+    SemanticAnalyzer source;
+
+    List<Task<?>> getTasks() {
+      return source == null ? null : source.rootTasks;
+    }
+
+    List<CTEClause> asExecutionOrder() {
+      List<CTEClause> execution = new ArrayList<CTEClause>();
+      asExecutionOrder(new HashSet<CTEClause>(), execution);
+      return execution;
+    }
+
+    void asExecutionOrder(Set<CTEClause> visited, List<CTEClause> execution) {
+      for (CTEClause parent : parents) {
+        if (visited.add(parent)) {
+          parent.asExecutionOrder(visited, execution);
+        }
+      }
+      execution.add(this);
+    }
+
+    @Override
+    public String toString() {
+      return alias == null ? "<root>" : alias;
+    }
+  }
 
   private List<Task<?>> getRealTasks(CTEClause cte) {
     if (cte == rootClause) {
@@ -1528,12 +1569,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createTable.addChild(temporary);
     createTable.addChild(cte.cteNode);
 
-    BaseSemanticAnalyzer analyzer = DDLSemanticAnalyzerFactory.getAnalyzer(createTable, queryState);
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) DDLSemanticAnalyzerFactory.getAnalyzer(createTable, queryState);
     analyzer.initCtx(ctx);
     analyzer.init(false);
 
     // should share cte contexts
-    analyzer.acceptCTEContext(aliasToCTEs);
+    analyzer.aliasToCTEs.putAll(aliasToCTEs);
 
     HiveOperation operation = queryState.getHiveOperation();
     try {
@@ -1542,7 +1583,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryState.setCommandType(operation);
     }
 
-    Table table = analyzer.getCreatedTableDesc().toTable(conf);
+    Table table = analyzer.tableDesc.toTable(conf);
     Path location = table.getDataLocation();
     try {
       location.getFileSystem(conf).mkdirs(location);
@@ -15418,14 +15459,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return viewAliasToInput;
   }
 
-  @Override
   public Operator getSinkOp() {
     return sinkOp;
-  }
-
-  @Override
-  public void acceptCTEContext(Map<String, CTEClause> aliasToCTEs) {
-    this.aliasToCTEs.putAll(aliasToCTEs);
   }
 
   protected enum MaterializationRebuildMode {
