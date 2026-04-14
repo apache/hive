@@ -1416,16 +1416,12 @@ public class HMSHandler extends PrivilegeHandler {
   }
 
   @Override
-  public List<ExtendedTableInfo> get_tables_ext(final GetTablesExtRequest req) throws MetaException {
+  public List<ExtendedTableInfo> get_tables_ext(final GetTablesExtRequest req) throws TException {
     req.setCatalog(req.isSetCatalog() ? req.getCatalog() : getDefaultCatalog(conf));
-    try {
-      return GetTableHandler.getTables(
-          () -> startTableFunction("get_tables_ext", req.getCatalog(), req.getDatabase(), req.getTableNamePattern()),
-          this, req,
-          t -> endFunction("get_tables_ext", t.getLeft() != null, t.getRight()));
-    } catch (Exception e) {
-      throw handleException(e).defaultMetaException();
-    }
+    return GetTableHandler.getTables(
+        () -> startTableFunction("get_tables_ext", req.getCatalog(), req.getDatabase(), req.getTableNamePattern()),
+        this, req,
+        t -> endFunction("get_tables_ext", t.getLeft() != null, t.getRight()));
   }
 
   @Override
@@ -1440,17 +1436,13 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public List<TableMeta> get_table_meta(String dbnames, String tblNames, List<String> tblTypes)
-      throws MetaException, NoSuchObjectException {
+      throws TException {
     String[] parsedDbName = parseDbName(dbnames, conf);
-    try {
-      return GetTableHandler.getTables(
-          () -> startTableFunction("get_table_metas", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames),
-          this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbnames, conf)
-              .byType(tblTypes != null ? String.join(",", tblTypes) : null, tblNames).forTableMeta(),
-          t -> endFunction("get_table_metas", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
-    } catch (Exception e) {
-      throw handleException(e).defaultMetaException();
-    }
+    return GetTableHandler.getTables(
+        () -> startTableFunction("get_table_metas", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbnames, conf)
+            .byType(tblTypes != null ? String.join(",", tblTypes) : null, tblNames).forTableMeta(),
+        t -> endFunction("get_table_metas", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
   }
 
   /**
@@ -1472,23 +1464,15 @@ public class HMSHandler extends PrivilegeHandler {
    *         are retrievable from the database specified by "dbnames."
    *         There is no guarantee of the order of the returned tables.
    *         If there are duplicate names, only one instance of the table will be returned.
-   * @throws MetaException
-   * @throws InvalidOperationException
-   * @throws UnknownDBException
+   * @throws TException
    */
   @Override
   public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
-    try {
-      List<Table> tables = GetTableHandler.getTables(
-          () -> startMultiTableFunction("get_multi_table", req.getDbName(), req.getTblNames()),
-          this, req,
-          t ->  endFunction("get_multi_table", t.getLeft() != null, t.getRight(), join(req.getTblNames(), ",")));
-      return new GetTablesResult(tables);
-    } catch (Exception e) {
-      throw handleException(e)
-          .throwIfInstance(MetaException.class, InvalidOperationException.class, UnknownDBException.class)
-          .defaultMetaException();
-    }
+    List<Table> tables = GetTableHandler.getTables(
+        () -> startMultiTableFunction("get_multi_table", req.getDbName(), req.getTblNames()),
+        this, req,
+        t ->  endFunction("get_multi_table", t.getLeft() != null, t.getRight(), join(req.getTblNames(), ",")));
+    return new GetTablesResult(tables);
   }
 
   @Override
@@ -1499,17 +1483,11 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public List<String> get_table_names_by_filter(
       final String dbName, final String filter, final short maxTables)
-      throws MetaException, InvalidOperationException, UnknownDBException {
-    try {
-      return GetTableHandler.getTables(
-          () -> startFunction("get_table_names_by_filter", ": db = " + dbName + ", filter = " + filter),
-          this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbName, conf).byFilter(filter, maxTables),
-          t -> endFunction("get_table_names_by_filter", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
-    } catch (Exception e) {
-      throw handleException(e)
-          .throwIfInstance(MetaException.class, InvalidOperationException.class, UnknownDBException.class)
-          .defaultMetaException();
-    }
+      throws TException {
+    return GetTableHandler.getTables(
+        () -> startFunction("get_table_names_by_filter", ": db = " + dbName + ", filter = " + filter),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbName, conf).byFilter(filter, maxTables),
+        t -> endFunction("get_table_names_by_filter", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
   }
 
   @Override
@@ -1989,7 +1967,7 @@ public class HMSHandler extends PrivilegeHandler {
       return resps.getFirst();
     } catch (Exception e) {
       ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class).defaultMetaException();
+      throw handleException(e).defaultMetaException();
     } finally {
       endFunction("get_partition_values", ex == null, ex, tableName.toString());
     }
@@ -2174,27 +2152,19 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public List<String> get_tables(final String dbname, final String pattern)
-      throws MetaException {
-    try {
-      return GetTableHandler.getTables(() -> startFunction("get_tables", ": db=" + dbname + " pat=" + pattern),
-          this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byPattern(pattern),
-          t -> endFunction("get_tables", t.getLeft() != null, t.getRight()));
-    } catch (Exception e) {
-      throw handleException(e).defaultMetaException();
-    }
+      throws TException {
+    return GetTableHandler.getTables(() -> startFunction("get_tables", ": db=" + dbname + " pat=" + pattern),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byPattern(pattern),
+        t -> endFunction("get_tables", t.getLeft() != null, t.getRight()));
   }
 
   @Override
   public List<String> get_tables_by_type(final String dbname, final String pattern, final String tableType)
-      throws MetaException {
-    try {
-      return GetTableHandler.getTables(
-          () -> startFunction("get_tables_by_type", ": db=" + dbname + " pat=" + pattern + ",type=" + tableType),
-          this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byType(tableType, pattern),
-          t ->  endFunction("get_tables_by_type", t.getLeft() != null, t.getRight()));
-    } catch (Exception e) {
-      throw handleException(e).defaultMetaException();
-    }
+      throws TException {
+    return GetTableHandler.getTables(
+        () -> startFunction("get_tables_by_type", ": db=" + dbname + " pat=" + pattern + ",type=" + tableType),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byType(tableType, pattern),
+        t ->  endFunction("get_tables_by_type", t.getLeft() != null, t.getRight()));
   }
 
   @Override
@@ -2235,14 +2205,10 @@ public class HMSHandler extends PrivilegeHandler {
   }
 
   @Override
-  public List<String> get_all_tables(final String dbname) throws MetaException {
-    try {
-      return GetTableHandler.getTables(() -> startFunction("get_all_tables", ": db=" + dbname),
-          this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf),
-          t -> endFunction("get_all_tables", t.getLeft() != null, t.getRight()));
-    } catch (Exception e) {
-      throw handleException(e).defaultMetaException();
-    }
+  public List<String> get_all_tables(final String dbname) throws TException {
+    return GetTableHandler.getTables(() -> startFunction("get_all_tables", ": db=" + dbname),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf),
+        t -> endFunction("get_all_tables", t.getLeft() != null, t.getRight()));
   }
 
   private List<FieldSchema> get_fields_with_environment_context_core(String db, String tableName, final EnvironmentContext envContext)

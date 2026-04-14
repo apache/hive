@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HMSHandler;
@@ -262,9 +263,19 @@ public class GetTableHandler<R, T> extends
 
   private List<Table> getTableObjects(GetTablesRequest req) throws TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-    Database database = handler.get_database_core(catName, req.getDbName());
-    if (isDatabaseRemote(database)) {
-      return getRemoteTableObjectsInternal(req.getDbName(), req.getTblNames(), req.getTablesPattern());
+    String dbName = req.getDbName();
+    if (dbName == null || dbName.isEmpty()) {
+      throw new UnknownDBException("DB name is null or empty");
+    }
+    try {
+      Database database = handler.get_database_core(catName, dbName);
+      if (isDatabaseRemote(database)) {
+        return getRemoteTableObjectsInternal(database, req.getTblNames(), req.getTablesPattern());
+      }
+    } catch (NoSuchObjectException nse) {
+      // The caller consumes UnknownDBException other than NoSuchObjectException
+      // in case database doesn't exist
+      throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, dbName));
     }
     return getTableObjectsInternal(req);
   }
@@ -279,26 +290,20 @@ public class GetTableHandler<R, T> extends
     return filteredTables;
   }
 
-  private List<Table> getRemoteTableObjectsInternal(String dbname, List<String> tableNames, String pattern) throws MetaException {
-    String[] parsedDbName = parseDbName(dbname, conf);
+  private List<Table> getRemoteTableObjectsInternal(Database db, List<String> tableNames, String pattern) throws MetaException {
     try {
-      // retrieve tables from remote database
-      Database db = handler.get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
       List<Table> tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(null);
-
       // filtered out undesired tables
       if (tableNames != null) {
         tables = filterTablesByName(tables, tableNames);
       }
-
       // set remote tables' local hive database reference
       for (Table table : tables) {
-        table.setDbName(dbname);
+        table.setDbName(db.getName());
       }
-
       return FilterUtils.filterTablesIfEnabled(filterHook != null, filterHook, tables);
     } catch (Exception e) {
-      LOG.warn("Unexpected exception while getting table(s) in remote database " + dbname , e);
+      LOG.warn("Unexpected exception while getting table(s) in remote database " + db.getName() , e);
       if (isInTest) {
         // ignore the exception
         return new ArrayList<Table>();
@@ -327,9 +332,6 @@ public class GetTableHandler<R, T> extends
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     List<Table> tables = new ArrayList<>();
     int tableBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-    if (dbName == null || dbName.isEmpty()) {
-      throw new UnknownDBException("DB name is null or empty");
-    }
     List<String> tableNames = req.getTblNames();
     if(req.getTablesPattern() != null) {
       tables = ms.getTableObjectsByName(catName, dbName, tableNames, projectionsSpec, req.getTablesPattern());
@@ -458,13 +460,21 @@ public class GetTableHandler<R, T> extends
   private List<String> getTableNames(GetTableNamesRequest getNamesReq) throws TException {
     String catName = getNamesReq.catName;
     String dbname = getNamesReq.dbName;
+    Database database = null;
     try {
-      Database database = handler.get_database_core(catName, dbname);
-      if (isDatabaseRemote(database)) {
+      database = handler.get_database_core(catName, dbname);
+    } catch (NoSuchObjectException nse) {
+      throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, dbname));
+    }
+    if (isDatabaseRemote(database)) {
+      try {
+        handler.get_dataconnector_core(database.getConnector_name());
         return DataConnectorProviderFactory.getDataConnectorProvider(database).getTableNames();
+      } catch (NoSuchObjectException nse) {
+        // @TODO when the connector is dropped, we should drop the remote database as well
+        // Return an empty list
+        return new ArrayList<>();
       }
-    } catch (Exception e) {
-      throw newMetaException(e);
     }
 
     List<String> names;
