@@ -1440,8 +1440,9 @@ public class HMSHandler extends PrivilegeHandler {
     String[] parsedDbName = parseDbName(dbnames, conf);
     return GetTableHandler.getTables(
         () -> startTableFunction("get_table_metas", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames),
-        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbnames, conf)
-            .byType(tblTypes != null ? String.join(",", tblTypes) : null, tblNames).forTableMeta(),
+        this,
+        GetTableHandler.GetTableNamesRequest.forTableMeta(dbnames, conf)
+            .byType(tblTypes != null && !tblTypes.isEmpty()? String.join(",", tblTypes) : null, tblNames),
         t -> endFunction("get_table_metas", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
   }
 
@@ -1822,24 +1823,30 @@ public class HMSHandler extends PrivilegeHandler {
     String catName = dropPartitionReq.isSetCatName() ? dropPartitionReq.getCatName() : getDefaultCatalog(conf);
     String tbl_name = dropPartitionReq.getTblName();
     List<String> part_vals = dropPartitionReq.getPartVals();
-    Table t = getMS().getTable(catName, dbName, tbl_name, null);
-    if (t == null) {
-      throw new NoSuchObjectException(dbName + "." + tbl_name + " table not found");
+    try {
+      Table t = getMS().getTable(catName, dbName, tbl_name, null);
+      if (t == null) {
+        throw new NoSuchObjectException(dbName + "." + tbl_name + " table not found");
+      }
+      List<String> partNames = new ArrayList<>();
+      if (part_vals == null || part_vals.isEmpty()) {
+        part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
+      }
+      partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
+      LOG.info("drop_partition_req partition values: {}, table: {}", part_vals,
+          new TableName(catName, dbName, tbl_name));
+      RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
+      DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
+      request.setCatName(catName);
+      request.setIfExists(false);
+      request.setNeedResult(false);
+      request.setDeleteData(dropPartitionReq.isDeleteData());
+      request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
+      drop_partitions_req(request);
+    } catch (Exception e) {
+      handleException(e).convertIfInstance(InvalidObjectException.class, NoSuchObjectException.class)
+          .rethrowException(e);
     }
-    List<String> partNames = new ArrayList<>();
-    if (part_vals == null || part_vals.isEmpty()) {
-      part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
-    }
-    partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
-    LOG.info("drop_partition_req partition values: {}, table: {}", part_vals, new TableName(catName, dbName, tbl_name));
-    RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
-    DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
-    request.setCatName(catName);
-    request.setIfExists(false);
-    request.setNeedResult(false);
-    request.setDeleteData(dropPartitionReq.isDeleteData());
-    request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
-    drop_partitions_req(request);
     return true;
   }
 
@@ -2206,9 +2213,18 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public List<String> get_all_tables(final String dbname) throws TException {
-    return GetTableHandler.getTables(() -> startFunction("get_all_tables", ": db=" + dbname),
-        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf),
-        t -> endFunction("get_all_tables", t.getLeft() != null, t.getRight()));
+    try {
+      return GetTableHandler.getTables(() -> startFunction("get_all_tables", ": db=" + dbname), this,
+          GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf),
+          t -> endFunction("get_all_tables", t.getLeft() != null, t.getRight()));
+    } catch (UnknownDBException ude) {
+      String[] parsedDbName = parseDbName(dbname, conf);
+      if (StringUtils.isEmpty(parsedDbName[DB_NAME])) {
+        throw new MetaException(ude.getMessage());
+      }
+      // should throw the exception instead? in our tests we return an empty list if dbName is valid
+      return Collections.emptyList();
+    }
   }
 
   private List<FieldSchema> get_fields_with_environment_context_core(String db, String tableName, final EnvironmentContext envContext)

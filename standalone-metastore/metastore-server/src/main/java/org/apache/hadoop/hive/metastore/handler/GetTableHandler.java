@@ -463,7 +463,8 @@ public class GetTableHandler<R, T> extends
     try {
       Database database = handler.get_database_core(catName, dbname);
       if (isDatabaseRemote(database)) {
-        return DataConnectorProviderFactory.getDataConnectorProvider(database).getTableNames();
+        List<String> ret = DataConnectorProviderFactory.getDataConnectorProvider(database).getTableNames();
+        return FilterUtils.filterTableNamesIfEnabled(filterHook != null, filterHook, catName, dbname, ret);
       }
     } catch (NoSuchObjectException nse) {
       throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, dbname));
@@ -543,9 +544,20 @@ public class GetTableHandler<R, T> extends
       return byType(null, pattern);
     }
 
-    public GetTableNamesRequest forTableMeta() {
-      this.forTableMeta = true;
-      return this;
+    public static GetTableNamesRequest forTableMeta(String dbName, Configuration configuration) {
+      // get_table_meta accepts null database name
+      String catName;
+      String database = null;
+      if (dbName == null) {
+        catName = getDefaultCatalog(configuration);
+      } else {
+        String[] parsedDbName = parseDbName(dbName, configuration);
+        catName = parsedDbName[CAT_NAME];
+        database = parsedDbName[DB_NAME];
+      }
+      GetTableNamesRequest req = new GetTableNamesRequest(catName, database);
+      req.forTableMeta = true;
+      return req;
     }
   }
 
@@ -553,7 +565,8 @@ public class GetTableHandler<R, T> extends
 
   }
 
-  public static <T, R> List<T> getTables(Runnable preHook, IHMSHandler handler, R req,
+  public static <T, R> List<T> getTables(Runnable preHook,
+      IHMSHandler handler, R req,
       Consumer<Pair<List<T>, Exception>> postHook) throws TException {
     if (preHook != null) {
       preHook.run();
