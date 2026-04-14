@@ -1471,7 +1471,7 @@ public class HMSHandler extends PrivilegeHandler {
     List<Table> tables = GetTableHandler.getTables(
         () -> startMultiTableFunction("get_multi_table", req.getDbName(), req.getTblNames()),
         this, req,
-        t ->  endFunction("get_multi_table", t.getLeft() != null, t.getRight(), join(req.getTblNames(), ",")));
+        t -> endFunction("get_multi_table", t.getLeft() != null, t.getRight(), join(req.getTblNames(), ",")));
     return new GetTablesResult(tables);
   }
 

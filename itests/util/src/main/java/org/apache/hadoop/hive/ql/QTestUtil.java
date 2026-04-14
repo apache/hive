@@ -55,6 +55,10 @@ import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.io.QTestFetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsRequest;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsResponse;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
@@ -355,6 +359,31 @@ public class QTestUtil {
     }
   }
 
+  public void clearConnectorsCreatedInTests() throws Exception {
+    if (System.getenv(QTEST_LEAVE_FILES) != null) {
+      return;
+    }
+    conf.set("hive.metastore.filter.hook", "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl");
+    db = Hive.get(conf);
+
+    GetDatabaseObjectsRequest request = new GetDatabaseObjectsRequest();
+    request.setPattern("*");
+    GetDatabaseObjectsResponse response = db.getMSC().get_databases_req(request);
+    if (response != null && response.getDatabasesSize() > 0) {
+      for (Database database : response.getDatabases()) {
+        if (database.getType() == DatabaseType.REMOTE) {
+          db.dropDatabase(database.getName(), true, true);
+        }
+      }
+    }
+    List<String> connectors = db.getAllDataConnectorNames();
+    if (connectors != null) {
+      for (String connectorName : connectors) {
+        db.dropDataConnector(connectorName, true);
+      }
+    }
+  }
+
   /**
    * Clear out any side effects of running tests
    */
@@ -482,6 +511,7 @@ public class QTestUtil {
     Utilities.clearWorkMap(conf);
     NotificationEventPoll.shutdown();
     QueryResultsCache.cleanupInstance();
+    clearConnectorsCreatedInTests();
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();

@@ -460,21 +460,13 @@ public class GetTableHandler<R, T> extends
   private List<String> getTableNames(GetTableNamesRequest getNamesReq) throws TException {
     String catName = getNamesReq.catName;
     String dbname = getNamesReq.dbName;
-    Database database = null;
     try {
-      database = handler.get_database_core(catName, dbname);
+      Database database = handler.get_database_core(catName, dbname);
+      if (isDatabaseRemote(database)) {
+        return DataConnectorProviderFactory.getDataConnectorProvider(database).getTableNames();
+      }
     } catch (NoSuchObjectException nse) {
       throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, dbname));
-    }
-    if (isDatabaseRemote(database)) {
-      try {
-        handler.get_dataconnector_core(database.getConnector_name());
-        return DataConnectorProviderFactory.getDataConnectorProvider(database).getTableNames();
-      } catch (NoSuchObjectException nse) {
-        // @TODO when the connector is dropped, we should drop the remote database as well
-        // Return an empty list
-        return new ArrayList<>();
-      }
     }
 
     List<String> names;
