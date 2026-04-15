@@ -1276,7 +1276,7 @@ public class TestHiveMetastoreTransformer {
       table_params = new StringBuilder();
       table_params.append("key1=val1");
       table_params.append(";");
-      table_params.append("transactional_properties=insert_only");
+      table_params.append("transactional=true;transactional_properties=insert_only");
       tProps.put("PROPERTIES", table_params.toString());
 
       List<String> capabilities = new ArrayList<>();
