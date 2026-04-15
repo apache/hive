@@ -1,0 +1,612 @@
+PREHOOK: query: CREATE TABLE test_stats0 (e decimal(38,10)) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_stats0
+POSTHOOK: query: CREATE TABLE test_stats0 (e decimal(38,10)) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_stats0
+PREHOOK: query: insert into test_stats0 (e) values (0.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats0
+POSTHOOK: query: insert into test_stats0 (e) values (0.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats0
+POSTHOOK: Lineage: test_stats0.e SCRIPT []
+PREHOOK: query: select count(*) from test_stats0 where CAST(e as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_stats0 where CAST(e as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+0
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats0 where CAST(e as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats0 where CAST(e as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats0
+                  filterExpr: CAST( e AS decimal(15,1)) BETWEEN 100 AND 1000 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:e:decimal(38,10), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimalColumnBetween(col 3:decimal(15,1), left 100, right 1000)(children: CastDecimalToDecimal(col 0:decimal(38,10)) -> 3:decimal(15,1))
+                    predicate: CAST( e AS decimal(15,1)) BETWEEN 100 AND 1000 (type: boolean)
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0]
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:bigint
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: e:decimal(38,10)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(15,1)]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from test_stats0 where CAST(e as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_stats0 where CAST(e as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+0
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats0 where CAST(e as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats0 where CAST(e as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats0
+                  filterExpr: CAST( e AS decimal(30,1)) BETWEEN 100 AND 1000 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:e:decimal(38,10), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimalColumnBetween(col 3:decimal(30,1), left 100, right 1000)(children: CastDecimalToDecimal(col 0:decimal(38,10)) -> 3:decimal(30,1))
+                    predicate: CAST( e AS decimal(30,1)) BETWEEN 100 AND 1000 (type: boolean)
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0]
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:bigint
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: e:decimal(38,10)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(30,1)]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from test_stats0 where CAST(e as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_stats0 where CAST(e as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats0
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE TABLE test_stats1 (int_col INT) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_stats1
+POSTHOOK: query: CREATE TABLE test_stats1 (int_col INT) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_stats1
+PREHOOK: query: insert into test_stats1 (int_col) values (0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats1
+POSTHOOK: query: insert into test_stats1 (int_col) values (0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats1
+POSTHOOK: Lineage: test_stats1.int_col SCRIPT []
+PREHOOK: query: select count(*) from test_stats1 where CAST(int_col as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_stats1 where CAST(int_col as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+0
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats1 where CAST(int_col as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats1 where CAST(int_col as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats1
+                  filterExpr: CAST( int_col AS decimal(15,1)) BETWEEN 100 AND 1000 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:int_col:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimal64ColumnBetween(col 3:decimal(15,1)/DECIMAL_64, decimal64LeftVal 1000, decimalLeftVal 1000, decimal64RightVal 10000, decimalRightVal 10000)(children: CastLongToDecimal64(col 0:int) -> 3:decimal(15,1)/DECIMAL_64)
+                    predicate: CAST( int_col AS decimal(15,1)) BETWEEN 100 AND 1000 (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0]
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:bigint
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: int_col:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(15,1)/DECIMAL_64]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from test_stats1 where CAST(int_col as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_stats1 where CAST(int_col as DECIMAL(15,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+0
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats1 where CAST(int_col as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from test_stats1 where CAST(int_col as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats1
+                  filterExpr: CAST( int_col AS decimal(30,1)) BETWEEN 100 AND 1000 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:int_col:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimalColumnBetween(col 3:decimal(30,1), left 100, right 1000)(children: CastLongToDecimal(col 0:int) -> 3:decimal(30,1))
+                    predicate: CAST( int_col AS decimal(30,1)) BETWEEN 100 AND 1000 (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: []
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0]
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:bigint
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: int_col:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(30,1)]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from test_stats1 where CAST(int_col as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from test_stats1 where CAST(int_col as DECIMAL(30,1)) BETWEEN 100.0 AND 1000.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats1
+#### A masked pattern was here ####
+0

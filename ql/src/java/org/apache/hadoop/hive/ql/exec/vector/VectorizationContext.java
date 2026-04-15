@@ -1700,6 +1700,16 @@ import com.google.common.annotations.VisibleForTesting;
     return ve;
   }
 
+  /**
+   * Determines whether an expression and its children are compatible with the DECIMAL_64 vectorization execution path.
+   * The method evaluates the expression against known scenarios where DECIMAL_64 is not supported, 
+   * returning false if any incompatibility is found. For UDFs, it handles specific implementations 
+   * (e.g., GenericUDFToDecimal), checks for the @VectorizedExpressionsSupportDecimal64 annotation, 
+   * and recursively verifies all child nodes. If all checks pass, it returns true.
+   * @param exprNodeDesc expression node to be evaluated.
+   * @return true if the expression and its children are DECIMAL_64 compatible, false otherwise.
+   * @throws HiveException
+   */
   private boolean checkExprNodeDescForDecimal64(ExprNodeDesc exprNodeDesc) throws HiveException {
     if (exprNodeDesc instanceof ExprNodeColumnDesc) {
       int colIndex = getInputColumnIndex((ExprNodeColumnDesc) exprNodeDesc);
@@ -1717,6 +1727,10 @@ import com.google.common.annotations.VisibleForTesting;
       GenericUDF udf = ((ExprNodeGenericFuncDesc) exprNodeDesc).getGenericUDF();
       Class<?> udfClass = udf.getClass();
       if (udf instanceof GenericUDFToDecimal) {
+        ExprNodeDesc child = exprNodeDesc.getChildren().get(0);
+        if (isDecimalFamily(child.getTypeString())) {
+          return checkExprNodeDescForDecimal64(child);
+        }
         return true;
       }
       // We have a class-level annotation that says whether the UDF's vectorization expressions
