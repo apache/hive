@@ -18,13 +18,11 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -39,6 +37,7 @@ import org.apache.hadoop.hive.metastore.handler.AppendPartitionHandler;
 import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.GetPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.GetTableHandler;
 import org.apache.hadoop.hive.metastore.handler.PrivilegeHandler;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
@@ -76,7 +75,6 @@ import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.throwMetaException;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
@@ -91,7 +89,6 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
  */
 public class HMSHandler extends PrivilegeHandler {
   public static final Logger LOG = LoggerFactory.getLogger(HMSHandler.class);
-  private final boolean isInTest;
   private StorageSchemaReader storageSchemaReader;
 
   public static final String PARTITION_NUMBER_EXCEED_LIMIT_MSG =
@@ -134,7 +131,6 @@ public class HMSHandler extends PrivilegeHandler {
 
   public HMSHandler(String name, Configuration conf) {
     super(name, conf);
-    isInTest = MetastoreConf.getBoolVar(this.conf, HIVE_IN_TEST);
   }
 
   @Override
@@ -1406,7 +1402,7 @@ public class HMSHandler extends PrivilegeHandler {
     Exception ex = null;
     boolean success = false;
     try {
-      success =  AbstractRequestHandler.offer(this, req).success();
+      success = AbstractRequestHandler.offer(this, req).success();
       return new TruncateTableResponse();
     } catch (Exception e) {
       ex = e;
@@ -1420,149 +1416,34 @@ public class HMSHandler extends PrivilegeHandler {
   }
 
   @Override
-  public List<ExtendedTableInfo> get_tables_ext(final GetTablesExtRequest req) throws MetaException {
-    List<String> tables = new ArrayList<String>();
-    List<ExtendedTableInfo> ret = new ArrayList<ExtendedTableInfo>();
-    String catalog  = req.getCatalog();
-    String database = req.getDatabase();
-    String pattern  = req.getTableNamePattern();
-    List<String> processorCapabilities = req.getProcessorCapabilities();
-    int limit = req.getLimit();
-    String processorId  = req.getProcessorIdentifier();
-    List<Table> tObjects = new ArrayList<>();
-
-    startTableFunction("get_tables_ext", catalog, database, pattern);
-    Exception ex = null;
-    try {
-      tables = getMS().getTables(catalog, database, pattern, null, limit);
-      LOG.debug("get_tables_ext:getTables() returned " + tables.size());
-      tables = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-          catalog, database, tables);
-
-      if (tables.size() > 0) {
-        tObjects = getMS().getTableObjectsByName(catalog, database, tables);
-        LOG.debug("get_tables_ext:getTableObjectsByName() returned " + tObjects.size());
-        if (processorCapabilities == null || processorCapabilities.size() == 0 ||
-            processorCapabilities.contains("MANAGERAWMETADATA")) {
-          LOG.info("Skipping translation for processor with " + processorId);
-        } else {
-          if (transformer != null) {
-            Map<Table, List<String>> retMap = transformer.transform(tObjects, processorCapabilities, processorId);
-
-            for (Map.Entry<Table, List<String>> entry : retMap.entrySet())  {
-              LOG.debug("Table " + entry.getKey().getTableName() + " requires " + Arrays.toString((entry.getValue()).toArray()));
-              ret.add(convertTableToExtendedTable(entry.getKey(), entry.getValue(), req.getRequestedFields()));
-            }
-          } else {
-            for (Table table : tObjects) {
-              ret.add(convertTableToExtendedTable(table, processorCapabilities, req.getRequestedFields()));
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_tables_ext", ret != null, ex);
-    }
-    return ret;
-  }
-
-  private ExtendedTableInfo convertTableToExtendedTable (Table table,
-                                                         List<String> processorCapabilities, int mask) {
-    ExtendedTableInfo extTable = new ExtendedTableInfo(table.getTableName());
-    if ((mask & GetTablesExtRequestFields.ACCESS_TYPE.getValue()) == GetTablesExtRequestFields.ACCESS_TYPE.getValue()) {
-      extTable.setAccessType(table.getAccessType());
-    }
-
-    if ((mask & GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue())
-        == GetTablesExtRequestFields.PROCESSOR_CAPABILITIES.getValue()) {
-      extTable.setRequiredReadCapabilities(table.getRequiredReadCapabilities());
-      extTable.setRequiredWriteCapabilities(table.getRequiredWriteCapabilities());
-    }
-
-    return extTable;
+  public List<ExtendedTableInfo> get_tables_ext(final GetTablesExtRequest req) throws TException {
+    req.setCatalog(req.isSetCatalog() ? req.getCatalog() : getDefaultCatalog(conf));
+    return GetTableHandler.getTables(
+        () -> startTableFunction("get_tables_ext", req.getCatalog(), req.getDatabase(), req.getTableNamePattern()),
+        this, req,
+        t -> endFunction("get_tables_ext", t.getLeft() != null, t.getRight()));
   }
 
   @Override
   public GetTableResult get_table_req(GetTableRequest req) throws MetaException,
       NoSuchObjectException {
     req.setCatName(req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf));
-    return new GetTableResult(getTableInternal(req));
-  }
-
-  /**
-   * This function retrieves table from metastore. If getColumnStats flag is true,
-   * then engine should be specified so the table is retrieve with the column stats
-   * for that engine.
-   */
-  private Table getTableInternal(GetTableRequest getTableRequest) throws MetaException, NoSuchObjectException {
-
-    Preconditions.checkArgument(!getTableRequest.isGetColumnStats() || getTableRequest.getEngine() != null,
-        "To retrieve column statistics with a table, engine parameter cannot be null");
-
-    if (isInTest) {
-      assertClientHasCapability(getTableRequest.getCapabilities(), ClientCapability.TEST_CAPABILITY, "Hive tests",
-          "get_table_req");
-    }
-
-    Table t = null;
-    startTableFunction("get_table", getTableRequest.getCatName(), getTableRequest.getDbName(),
-        getTableRequest.getTblName());
-    Exception ex = null;
-    try {
-      t = get_table_core(getTableRequest);
-      if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
-        assertClientHasCapability(getTableRequest.getCapabilities(), ClientCapability.INSERT_ONLY_TABLES,
-            "insert-only tables", "get_table_req");
-      }
-
-      if (CollectionUtils.isEmpty(getTableRequest.getProcessorCapabilities()) || getTableRequest
-          .getProcessorCapabilities().contains("MANAGERAWMETADATA")) {
-        LOG.info("Skipping translation for processor with " + getTableRequest.getProcessorIdentifier());
-      } else {
-        if (transformer != null) {
-          List<Table> tList = new ArrayList<>();
-          tList.add(t);
-          Map<Table, List<String>> ret = transformer
-              .transform(tList, getTableRequest.getProcessorCapabilities(), getTableRequest.getProcessorIdentifier());
-          if (ret.size() > 1) {
-            LOG.warn("Unexpected resultset size:" + ret.size());
-            throw new MetaException("Unexpected result from metadata transformer:return list size is " + ret.size());
-          }
-          t = ret.keySet().iterator().next();
-        }
-      }
-
-      firePreEvent(new PreReadTableEvent(t, this));
-    } catch (MetaException | NoSuchObjectException e) {
-      ex = e;
-      throw e;
-    } finally {
-      endFunction("get_table", t != null, ex, getTableRequest.getTblName());
-    }
-    return t;
+    return new GetTableResult(GetTableHandler.getTable(
+        () -> startTableFunction("get_table", req.getCatName(), req.getDbName(), req.getTblName()),
+        this, req, false,
+        t -> endFunction("get_table", t.getLeft() != null, t.getRight(), req.getTblName())));
   }
 
   @Override
   public List<TableMeta> get_table_meta(String dbnames, String tblNames, List<String> tblTypes)
-      throws MetaException, NoSuchObjectException {
-    List<TableMeta> t = null;
+      throws TException {
     String[] parsedDbName = parseDbName(dbnames, conf);
-    startTableFunction("get_table_metas", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames);
-    Exception ex = null;
-    try {
-      t = getMS().getTableMeta(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames, tblTypes);
-      t = FilterUtils.filterTableMetasIfEnabled(isServerFilterEnabled, filterHook, t);
-      t = filterReadableTables(parsedDbName[CAT_NAME], t);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_table_metas", t != null, ex);
-    }
-    return t;
+    return GetTableHandler.getTables(
+        () -> startTableFunction("get_table_metas", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames),
+        this,
+        GetTableHandler.GetTableNamesRequest.forTableMeta(dbnames, conf)
+            .byType(tblTypes != null && !tblTypes.isEmpty()? String.join(",", tblTypes) : null, tblNames),
+        t -> endFunction("get_table_metas", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
   }
 
   /**
@@ -1572,45 +1453,7 @@ public class HMSHandler extends PrivilegeHandler {
    */
   @Override
   public Table get_table_core(GetTableRequest getTableRequest) throws MetaException, NoSuchObjectException {
-    Preconditions.checkArgument(!getTableRequest.isGetColumnStats() || getTableRequest.getEngine() != null,
-        "To retrieve column statistics with a table, engine parameter cannot be null");
-    String catName = getTableRequest.getCatName();
-    String dbName = getTableRequest.getDbName();
-    String tblName = getTableRequest.getTblName();
-    Database db = null;
-    Table t = null;
-    try {
-      db = get_database_core(catName, dbName);
-    } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
-
-    if (MetaStoreUtils.isDatabaseRemote(db)) {
-      t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(tblName);
-      if (t == null) {
-        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
-      }
-      t.setDbName(dbName);
-      return t;
-    }
-
-    try {
-      t = getMS().getTable(catName, dbName, tblName, getTableRequest.getValidWriteIdList(), getTableRequest.getId());
-      if (t == null) {
-        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName) + " table not found");
-      }
-
-      // If column statistics was requested and is valid fetch it.
-      if (getTableRequest.isGetColumnStats()) {
-        ColumnStatistics colStats = getMS().getTableColumnStatistics(catName, dbName, tblName,
-            StatsSetupConst.getColumnsHavingStats(t.getParameters()), getTableRequest.getEngine(),
-            getTableRequest.getValidWriteIdList());
-        if (colStats != null) {
-          t.setColStats(colStats);
-        }
-      }
-    } catch (Exception e) {
-      throwMetaException(e);
-    }
-    return t;
+    return GetTableHandler.getTable(null, this, getTableRequest, true, null);
   }
 
   /**
@@ -1622,134 +1465,15 @@ public class HMSHandler extends PrivilegeHandler {
    *         are retrievable from the database specified by "dbnames."
    *         There is no guarantee of the order of the returned tables.
    *         If there are duplicate names, only one instance of the table will be returned.
-   * @throws MetaException
-   * @throws InvalidOperationException
-   * @throws UnknownDBException
+   * @throws TException
    */
-
   @Override
   public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
-    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-    if (isDatabaseRemote(req.getDbName())) {
-      return new GetTablesResult(getRemoteTableObjectsInternal(req.getDbName(), req.getTblNames(), req.getTablesPattern()));
-    }
-    return new GetTablesResult(getTableObjectsInternal(catName, req.getDbName(),
-        req.getTblNames(), req.getCapabilities(), req.getProjectionSpec(), req.getTablesPattern()));
-  }
-
-  private List<Table> filterTablesByName(List<Table> tables, List<String> tableNames) {
-    List<Table> filteredTables = new ArrayList<>();
-    for (Table table : tables) {
-      if (tableNames.contains(table.getTableName())) {
-        filteredTables.add(table);
-      }
-    }
-    return filteredTables;
-  }
-
-  private List<Table> getRemoteTableObjectsInternal(String dbname, List<String> tableNames, String pattern) throws MetaException {
-    String[] parsedDbName = parseDbName(dbname, conf);
-    try {
-      // retrieve tables from remote database
-      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      List<Table> tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(null);
-
-      // filtered out undesired tables
-      if (tableNames != null) {
-        tables = filterTablesByName(tables, tableNames);
-      }
-
-      // set remote tables' local hive database reference
-      for (Table table : tables) {
-        table.setDbName(dbname);
-      }
-
-      return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
-    } catch (Exception e) {
-      LOG.warn("Unexpected exception while getting table(s) in remote database " + dbname , e);
-      if (isInTest) {
-        // ignore the exception
-        return new ArrayList<Table>();
-      } else {
-        throw newMetaException(e);
-      }
-    }
-  }
-
-  private List<Table> getTableObjectsInternal(String catName, String dbName,
-                                              List<String> tableNames,
-                                              ClientCapabilities capabilities,
-                                              GetProjectionsSpec projectionsSpec, String tablePattern)
-      throws MetaException, InvalidOperationException, UnknownDBException {
-    if (isInTest) {
-      assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
-          "Hive tests", "get_table_objects_by_name_req");
-    }
-
-    if (projectionsSpec != null) {
-      if (!projectionsSpec.isSetFieldList() && (projectionsSpec.isSetIncludeParamKeyPattern() ||
-          projectionsSpec.isSetExcludeParamKeyPattern())) {
-        throw new InvalidOperationException("Include and Exclude Param key are not supported.");
-      }
-    }
-
-    List<Table> tables = new ArrayList<>();
-    startMultiTableFunction("get_multi_table", dbName, tableNames);
-    Exception ex = null;
-    int tableBatchSize = MetastoreConf.getIntVar(conf,
-        ConfVars.BATCH_RETRIEVE_MAX);
-
-    try {
-      if (dbName == null || dbName.isEmpty()) {
-        throw new UnknownDBException("DB name is null or empty");
-      }
-      RawStore ms = getMS();
-      if(tablePattern != null){
-        tables = ms.getTableObjectsByName(catName, dbName, tableNames, projectionsSpec, tablePattern);
-      }else {
-        if (tableNames == null) {
-          throw new InvalidOperationException(dbName + " cannot find null tables");
-        }
-
-        // The list of table names could contain duplicates. RawStore.getTableObjectsByName()
-        // only guarantees returning no duplicate table objects in one batch. If we need
-        // to break into multiple batches, remove duplicates first.
-        List<String> distinctTableNames = tableNames;
-        if (distinctTableNames.size() > tableBatchSize) {
-          List<String> lowercaseTableNames = new ArrayList<>();
-          for (String tableName : tableNames) {
-            lowercaseTableNames.add(normalizeIdentifier(tableName));
-          }
-          distinctTableNames = new ArrayList<>(new HashSet<>(lowercaseTableNames));
-        }
-
-        int startIndex = 0;
-        // Retrieve the tables from the metastore in batches. Some databases like
-        // Oracle cannot have over 1000 expressions in a in-list
-        while (startIndex < distinctTableNames.size()) {
-          int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
-          tables.addAll(ms.getTableObjectsByName(catName, dbName, distinctTableNames.subList(
-                  startIndex, endIndex), projectionsSpec, tablePattern));
-          startIndex = endIndex;
-        }
-      }
-      for (Table t : tables) {
-        if (t.getParameters() != null && MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
-          assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
-              "insert-only tables", "get_table_req");
-        }
-      }
-
-      tables = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e)
-          .throwIfInstance(MetaException.class, InvalidOperationException.class, UnknownDBException.class)
-          .defaultMetaException();
-    } finally {
-      endFunction("get_multi_table", tables != null, ex, join(tableNames, ","));
-    }
-    return tables;
+    List<Table> tables = GetTableHandler.getTables(
+        () -> startMultiTableFunction("get_multi_table", req.getDbName(), req.getTblNames()),
+        this, req,
+        t -> endFunction("get_multi_table", t.getLeft() != null, t.getRight(), join(req.getTblNames(), ",")));
+    return new GetTablesResult(tables);
   }
 
   @Override
@@ -1757,54 +1481,14 @@ public class HMSHandler extends PrivilegeHandler {
     getMS().updateCreationMetadata(catName, dbName, tableName, cm);
   }
 
-  private void assertClientHasCapability(ClientCapabilities client,
-                                         ClientCapability value, String what, String call) throws MetaException {
-    if (!doesClientHaveCapability(client, value)) {
-      throw new MetaException("Your client does not appear to support " + what + ". To skip"
-          + " capability checks, please set " + ConfVars.CAPABILITY_CHECK.toString()
-          + " to false. This setting can be set globally, or on the client for the current"
-          + " metastore session. Note that this may lead to incorrect results, data loss,"
-          + " undefined behavior, etc. if your client is actually incompatible. You can also"
-          + " specify custom client capabilities via " + call + " API.");
-    }
-  }
-
-  private boolean doesClientHaveCapability(ClientCapabilities client, ClientCapability value) {
-    if (!MetastoreConf.getBoolVar(getConf(), ConfVars.CAPABILITY_CHECK)) {
-      return true;
-    }
-    return (client != null && client.isSetValues() && client.getValues().contains(value));
-  }
-
   @Override
   public List<String> get_table_names_by_filter(
       final String dbName, final String filter, final short maxTables)
-      throws MetaException, InvalidOperationException, UnknownDBException {
-    List<String> tables = null;
-    startFunction("get_table_names_by_filter", ": db = " + dbName + ", filter = " + filter);
-    Exception ex = null;
-    String[] parsedDbName = parseDbName(dbName, conf);
-    try {
-      if (parsedDbName[CAT_NAME] == null || parsedDbName[CAT_NAME].isEmpty() ||
-          parsedDbName[DB_NAME] == null || parsedDbName[DB_NAME].isEmpty()) {
-        throw new UnknownDBException("DB name is null or empty");
-      }
-      if (filter == null) {
-        throw new InvalidOperationException(filter + " cannot apply null filter");
-      }
-      tables = getMS().listTableNamesByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], filter, maxTables);
-      tables = FilterUtils.filterTableNamesIfEnabled(
-          isServerFilterEnabled, filterHook, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tables);
-
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e)
-          .throwIfInstance(MetaException.class, InvalidOperationException.class, UnknownDBException.class)
-          .defaultMetaException();
-    } finally {
-      endFunction("get_table_names_by_filter", tables != null, ex, join(tables, ","));
-    }
-    return tables;
+      throws TException {
+    return GetTableHandler.getTables(
+        () -> startFunction("get_table_names_by_filter", ": db = " + dbName + ", filter = " + filter),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbName, conf).byFilter(filter, maxTables),
+        t -> endFunction("get_table_names_by_filter", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
   }
 
   @Override
@@ -2136,20 +1820,21 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public boolean drop_partition_req(final DropPartitionRequest dropPartitionReq) throws TException {
     String dbName = dropPartitionReq.getDbName();
-    String catName = dropPartitionReq.getCatName();
+    String catName = dropPartitionReq.isSetCatName() ? dropPartitionReq.getCatName() : getDefaultCatalog(conf);
     String tbl_name = dropPartitionReq.getTblName();
     List<String> part_vals = dropPartitionReq.getPartVals();
     try {
       Table t = getMS().getTable(catName, dbName, tbl_name, null);
       if (t == null) {
-        throw new InvalidObjectException(dbName + "." + tbl_name + " table not found");
+        throw new NoSuchObjectException(dbName + "." + tbl_name + " table not found");
       }
       List<String> partNames = new ArrayList<>();
       if (part_vals == null || part_vals.isEmpty()) {
         part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
       }
       partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
-      LOG.info("drop_partition_req partition values: {}", part_vals);
+      LOG.info("drop_partition_req partition values: {}, table: {}", part_vals,
+          new TableName(catName, dbName, tbl_name));
       RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
       DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
       request.setCatName(catName);
@@ -2289,7 +1974,7 @@ public class HMSHandler extends PrivilegeHandler {
       return resps.getFirst();
     } catch (Exception e) {
       ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class).defaultMetaException();
+      throw handleException(e).defaultMetaException();
     } finally {
       endFunction("get_partition_values", ex == null, ex, tableName.toString());
     }
@@ -2474,86 +2159,19 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public List<String> get_tables(final String dbname, final String pattern)
-      throws MetaException {
-    startFunction("get_tables", ": db=" + dbname + " pat=" + pattern);
-
-    List<String> ret = null;
-    Exception ex = null;
-    String[] parsedDbName = parseDbName(dbname, conf);
-    try {
-      if (isDatabaseRemote(dbname)) {
-        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-        return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
-      }
-    } catch (Exception e) {
-      throw newMetaException(e);
-    }
-
-    try {
-      ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
-      if(ret !=  null && !ret.isEmpty()) {
-        List<Table> tableInfo = new ArrayList<>();
-        tableInfo = getMS().getTableObjectsByName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
-        tableInfo = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tableInfo);// tableInfo object has the owner information of the table which is being passed to FilterUtils.
-        ret = new ArrayList<>();
-        for (Table tbl : tableInfo) {
-          ret.add(tbl.getTableName());
-        }
-      }
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_tables", ret != null, ex);
-    }
-    return ret;
+      throws TException {
+    return GetTableHandler.getTables(() -> startFunction("get_tables", ": db=" + dbname + " pat=" + pattern),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byPattern(pattern),
+        t -> endFunction("get_tables", t.getLeft() != null, t.getRight()));
   }
 
   @Override
   public List<String> get_tables_by_type(final String dbname, final String pattern, final String tableType)
-      throws MetaException {
-    startFunction("get_tables_by_type", ": db=" + dbname + " pat=" + pattern + ",type=" + tableType);
-
-    List<String> ret = null;
-    Exception ex = null;
-    String[] parsedDbName = parseDbName(dbname, conf);
-    try {
-      ret = getTablesByTypeCore(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern, tableType);
-      ret = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_tables_by_type", ret != null, ex);
-    }
-    return ret;
-  }
-
-  private List<String> getTablesByTypeCore(final String catName, final String dbname,
-                                           final String pattern, final String tableType) throws MetaException {
-    startFunction("getTablesByTypeCore", ": catName=" + catName +
-        ": db=" + dbname + " pat=" + pattern + ",type=" + tableType);
-
-    List<String> ret = null;
-    Exception ex = null;
-    Database db = null;
-    try {
-      db = get_database_core(catName, dbname);
-      if (MetaStoreUtils.isDatabaseRemote(db)) {
-        return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
-      }
-    } catch (Exception e) { /* ignore */ }
-
-    try {
-      ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType), -1);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("getTablesByTypeCore", ret != null, ex);
-    }
-    return ret;
+      throws TException {
+    return GetTableHandler.getTables(
+        () -> startFunction("get_tables_by_type", ": db=" + dbname + " pat=" + pattern + ",type=" + tableType),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byType(tableType, pattern),
+        t ->  endFunction("get_tables_by_type", t.getLeft() != null, t.getRight()));
   }
 
   @Override
@@ -2594,35 +2212,19 @@ public class HMSHandler extends PrivilegeHandler {
   }
 
   @Override
-  public List<String> get_all_tables(final String dbname) throws MetaException {
-    startFunction("get_all_tables", ": db=" + dbname);
-
-    List<String> ret = null;
-    Exception ex = null;
-    String[] parsedDbName = parseDbName(dbname, conf);
+  public List<String> get_all_tables(final String dbname) throws TException {
     try {
-      if (isDatabaseRemote(dbname)) {
-        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-        return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
+      return GetTableHandler.getTables(() -> startFunction("get_all_tables", ": db=" + dbname), this,
+          GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf),
+          t -> endFunction("get_all_tables", t.getLeft() != null, t.getRight()));
+    } catch (UnknownDBException ude) {
+      String[] parsedDbName = parseDbName(dbname, conf);
+      if (StringUtils.isEmpty(parsedDbName[DB_NAME])) {
+        throw new MetaException(ude.getMessage());
       }
-    } catch (Exception e) { /* ignore */ }
-
-    try {
-      if (isServerFilterEnabled) {
-        List<TableMeta> filteredTableMetas = get_table_meta(dbname, "*", null);
-        ret = filteredTableMetas.stream()
-            .map(TableMeta::getTableName)
-            .collect(Collectors.toList());
-      } else {
-        ret = getMS().getAllTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      }
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_all_tables", ret != null, ex);
+      // should throw the exception instead? in our tests we return an empty list if dbName is valid
+      return Collections.emptyList();
     }
-    return ret;
   }
 
   private List<FieldSchema> get_fields_with_environment_context_core(String db, String tableName, final EnvironmentContext envContext)

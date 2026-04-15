@@ -61,7 +61,7 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 // Collect get partitions APIs together
 @SuppressWarnings({"unchecked", "rawtypes"})
 @RequestHandler(requestBody = GetPartitionsHandler.GetPartitionsRequest.class)
-public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPartitionsHandler.GetPartitionsRequest<Req>,
+public class GetPartitionsHandler<R, T> extends AbstractRequestHandler<GetPartitionsHandler.GetPartitionsRequest<R>,
     GetPartitionsHandler.GetPartitionsResult<T>> {
   private static final Logger LOG = LoggerFactory.getLogger(GetPartitionsHandler.class);
   private static final String NO_FILTER_STRING = "";
@@ -99,7 +99,7 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
 
   @Override
   protected GetPartitionsResult execute() throws TException, IOException {
-    Req req = request.getReq();
+    R req = request.getReq();
     if (req instanceof PartitionValuesRequest pvq) {
       return getPartitionValues(pvq);
     } else if (req instanceof GetPartitionsByNamesRequest gpbr) {
@@ -113,7 +113,7 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
     } else if (req instanceof GetPartitionsPsWithAuthRequest gpar) {
       return getPartitionsByVals(gpar);
     }
-    throw new UnsupportedOperationException("Not yet implemented");
+    throw new UnsupportedOperationException(req + " not yet implemented");
   }
 
   private GetPartitionsResult getPartitionsByVals(GetPartitionsPsWithAuthRequest gpar) throws TException {
@@ -341,23 +341,23 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
     }
   }
 
-  public static class GetPartitionsRequest<Req> extends TAbstractBase {
+  public static class GetPartitionsRequest<R> extends TAbstractBase {
     private final TableName tableName;
     private final boolean fetchPartNames;
-    private final Req req;
+    private final R req;
 
-    public GetPartitionsRequest(Req req, TableName tableName,
+    public GetPartitionsRequest(R req, TableName tableName,
         boolean fetchPartNames) {
       this.tableName = tableName;
       this.fetchPartNames = fetchPartNames;
       this.req = req;
     }
 
-    public GetPartitionsRequest(Req req, TableName tableName) {
+    public GetPartitionsRequest(R req, TableName tableName) {
       this(req, tableName, false);
     }
 
-    public Req getReq() {
+    public R getReq() {
       return req;
     }
 
@@ -424,16 +424,16 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
     }
   }
 
-  public static <Req> GetPartitionsResult<Partition> getPartitionsResult(
+  public static <R> GetPartitionsResult<Partition> getPartitionsResult(
       Consumer<TableName> preHook,
       Consumer<Pair<GetPartitionsResult, Exception>> postHook,
-      IHMSHandler handler, TableName tableName, Req req) throws TException {
+      IHMSHandler handler, TableName tableName, R req) throws TException {
     GetPartitionsResult result = null;
     Exception ex = null;
     try {
       GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(req, tableName);
       preHook.accept(tableName);
-      GetPartitionsHandler<Req, Partition> getPartsHandler =
+      GetPartitionsHandler<R, Partition> getPartsHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       result = getPartsHandler.getResult();
       return result;
@@ -445,15 +445,15 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
     }
   }
 
-  public static <Req> GetPartitionsResult<String> getPartitionNames(Consumer<TableName> preExecutor,
+  public static <R> GetPartitionsResult<String> getPartitionNames(Consumer<TableName> preExecutor,
       Consumer<Pair<GetPartitionsResult, Exception>> postConsumer, IHMSHandler handler, TableName tableName,
-      Req req) throws TException {
+      R req) throws TException {
     Exception ex = null;
     GetPartitionsResult result = null;
     try {
       preExecutor.accept(tableName);
       GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(req, tableName, true);
-      GetPartitionsHandler<Req, String> getPartNamesHandler =
+      GetPartitionsHandler<R, String> getPartNamesHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       result = getPartNamesHandler.getResult();
       return result;
