@@ -222,6 +222,8 @@ public class GetTableHandler<R, T> extends
    * This function retrieves table from metastore. If getColumnStats flag is true,
    * then engine should be specified so the table is retrieve with the column stats
    * for that engine.
+   * This method is slightly different from {@link #getTable(GetTableRequest)}, it retrieves the table stored as it is
+   * without transformation and access check, and is called inside the Metastore service.
    */
   private Table getTableCore(GetTableRequest getTableRequest) throws MetaException, NoSuchObjectException {
     Preconditions.checkArgument(!getTableRequest.isGetColumnStats() || getTableRequest.getEngine() != null,
