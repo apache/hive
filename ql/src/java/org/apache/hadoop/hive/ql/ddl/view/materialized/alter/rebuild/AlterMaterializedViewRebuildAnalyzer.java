@@ -179,6 +179,24 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
     super.analyzeInternal(rewrittenAST);
+
+    if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(mvTable)) {
+      // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a
+      // given time, as otherwise we might produce incorrect results if incremental maintenance is triggered.
+      HiveTxnManager txnManager = getTxnMgr();
+      LockState state;
+      try {
+        state = txnManager.acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(tableName.getCat(),
+            tableName.getDb(), tableName.getTable(), txnManager.getCurrentTxnId())).getState();
+      } catch (LockException e) {
+        throw new SemanticException("Exception acquiring lock for rebuilding the materialized view", e);
+      }
+      if (state != LockState.ACQUIRED) {
+        throw new SemanticException(
+            "Another process is rebuilding the materialized view " + tableName.getNotEmptyDbTable());
+      }
+    }
+
     queryState.setCommandType(HiveOperation.ALTER_MATERIALIZED_VIEW_REBUILD);
   }
 
@@ -206,23 +224,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
           tableName.getEscapedNotEmptyDbTable(), viewText);
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
       this.ctx.addSubContext(ctx);
-
-      if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(table)) {
-        // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a
-        // given time, as otherwise we might produce incorrect results if incremental maintenance is triggered.
-        HiveTxnManager txnManager = getTxnMgr();
-        LockState state;
-        try {
-          state = txnManager.acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(tableName.getCat(),
-              tableName.getDb(), tableName.getTable(), txnManager.getCurrentTxnId())).getState();
-        } catch (LockException e) {
-          throw new SemanticException("Exception acquiring lock for rebuilding the materialized view", e);
-        }
-        if (state != LockState.ACQUIRED) {
-          throw new SemanticException(
-              "Another process is rebuilding the materialized view " + tableName.getNotEmptyDbTable());
-        }
-      }
     } catch (Exception e) {
       throw new SemanticException(e);
     }
