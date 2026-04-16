@@ -1812,7 +1812,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         setSqlKind(SqlKind.INSERT);
 
       case HiveParser.TOK_DESTINATION:
-        ctx_1.dest = this.ctx.getDestNamePrefix(ast, qb).toString() + ctx_1.nextNum;
+        ctx_1.dest = ctx.getDestNamePrefix(ast, qb).toString() + ctx_1.nextNum;
         ctx_1.nextNum++;
         boolean isTmpFileDest = false;
         if (ast.getChildCount() > 0 && ast.getChild(0) instanceof ASTNode) {
@@ -7460,7 +7460,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return input;
     }
 
-      if (updating(dest) && isCBOExecuted() && this.ctx.getOperation() != Context.Operation.MERGE) {
+      if (updating(dest) && isCBOExecuted() && ctx.getOperation() != Context.Operation.MERGE) {
       // for UPDATE statements CBO already added and pushed down the constraints
       return input;
     }
@@ -7510,10 +7510,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           Path resultCacheTopDir = instance.getCacheDirPath();
           String dirName = UUID.randomUUID().toString();
           Path resultDir = new Path(resultCacheTopDir, dirName);
-          this.ctx.setFsResultCacheDirs(resultDir);
+          ctx.setFsResultCacheDirs(resultDir);
           return resultDir;
         } else {
-          instance.setSafeDir(defaultPath.toString());
+          ctx.setCacheSafeWriteSourceDir(defaultPath.toString());
         }
       }
     }
@@ -12854,7 +12854,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           List<String> colNames;
           List<String> colTypes;
-          if (this.ctx.isCboSucceeded() && this.columnAccessInfo != null &&
+          if (ctx.isCboSucceeded() && this.columnAccessInfo != null &&
               (colNames = this.columnAccessInfo.getTableToColumnAllAccessMap().get(table.getCompleteName())) != null) {
             Map<String, String> colNameToType = table.getAllCols().stream()
                 .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
@@ -13276,7 +13276,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 3. Deduce Resultset Schema
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.DEDUCE_RESULTSET_SCHEMA);
-    if ((forViewCreation || createVwDesc != null) && !this.ctx.isCboSucceeded()) {
+    if ((forViewCreation || createVwDesc != null) && !ctx.isCboSucceeded()) {
       resultSchema = convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
     } else {
       // resultSchema will be null if

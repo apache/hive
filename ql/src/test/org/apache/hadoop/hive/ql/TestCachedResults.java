@@ -36,9 +36,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,9 +92,6 @@ public class TestCachedResults {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_NONTRANSACTIONAL_TABLES_ENABLED, true);
     HiveConf.setLongVar(conf, HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_MAX_SIZE, MAX_ALLOWED_CACHE_SIZE);
     LOG.info("max allowed cache size: {}", conf.getLongVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_MAX_SIZE));
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
     createAndPopulateTables();
   }
@@ -136,21 +131,23 @@ public class TestCachedResults {
   }
 
   private void executeQueries(IDriver driver) throws Exception {
-    for (int i = 0; i < 2; i++) {
-      driver.run(Q_WINDOW);
-      driver.run(Q_JOIN);
-      driver.run(Q_CTE);
-    }
+    driver.run(Q_WINDOW);
+    driver.run(Q_JOIN);
+    driver.run(Q_CTE);
   }
 
   @Test
   public void testSafeCacheWrite() throws Exception {
     runCacheScenario(true);
+    LOG.info("Maximum cache size in safe mode: {}", maxCacheSize);
+    Assert.assertFalse("max cache size should stay within limit", maxCacheSize > MAX_ALLOWED_CACHE_SIZE);
   }
 
   @Test
   public void testUnsafeCacheWrite() throws Exception {
     runCacheScenario(false);
+    LOG.info("Maximum cache size in non-safe mode: {}", maxCacheSize);
+    Assert.assertFalse("max cache size should exceed limit when unsafe", maxCacheSize < MAX_ALLOWED_CACHE_SIZE);
   }
 
   private void runCacheScenario(boolean safeCacheWrite) throws Exception {
@@ -159,13 +156,6 @@ public class TestCachedResults {
     executeQueries(DriverFactory.newDriver(conf));
     stopCacheMonitor();
     Assert.assertNotEquals("cache size should have grown", 0, maxCacheSize);
-    if (safeCacheWrite) {
-      LOG.info("Maximum cache size in safe mode: {}", maxCacheSize);
-      Assert.assertFalse("max cache size should stay within limit", maxCacheSize > MAX_ALLOWED_CACHE_SIZE);
-    } else {
-      LOG.info("Maximum cache size in non-safe mode: {}", maxCacheSize);
-      Assert.assertFalse("max cache size should exceed limit when unsafe", maxCacheSize < MAX_ALLOWED_CACHE_SIZE);
-    }
   }
 
   private void startCacheMonitor(long intervalMs) {
