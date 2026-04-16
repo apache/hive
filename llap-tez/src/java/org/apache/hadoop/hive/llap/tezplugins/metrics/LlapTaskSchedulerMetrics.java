@@ -53,7 +53,7 @@ import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
  */
 @Metrics(about = "Llap Task Scheduler Metrics", context = "scheduler")
 public class LlapTaskSchedulerMetrics implements MetricsSource {
-  private static final ConcurrentHashMap<String, LlapTaskSchedulerMetrics> INSTANCES =
+  private static final ConcurrentHashMap<String, LlapTaskSchedulerMetrics> METRICS =
       new ConcurrentHashMap<>();
 
   private final String name;
@@ -106,12 +106,16 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
     this.registry.tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME).tag(SessionId, sessionId);
   }
 
-  public static LlapTaskSchedulerMetrics create(String displayName, String sessionId) {
-    return INSTANCES.computeIfAbsent(displayName, name -> {
+  public static LlapTaskSchedulerMetrics create(String displayName, String metricsSessionId) {
+    return METRICS.computeIfAbsent(displayName, name -> {
       MetricsSystem ms = LlapMetricsSystem.instance();
-      JvmMetrics jm = JvmMetrics.initSingleton(MetricsUtils.METRICS_PROCESS_NAME, sessionId);
+      // TODO: HIVE-29569: Cleanup usage of llap.daemon.metrics.sessionid
+      // Using different displayNames within the same JVM can still trigger an issue even after fixing HIVE-29566,
+      // however it has not been observed in practice (including tests).
+      // This highlights the need to clean up this area.
+      JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, metricsSessionId, ms);
       return ms.register(name, "Llap Task Scheduler Metrics",
-          new LlapTaskSchedulerMetrics(name, jm, sessionId));
+          new LlapTaskSchedulerMetrics(name, jm, metricsSessionId));
     });
   }
 
