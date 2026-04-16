@@ -107,6 +107,12 @@ public class Context {
   // keeps track of result cache dir for the query, later cleaned up by context cleanup
   private Path fsResultCacheDirs = null;
 
+  /**
+   * When HIVE_QUERY_RESULTS_SAFE_CACHE_WRITE_ENABLED is true, the absolute path prefix under which
+   * execution wrote fetchable result files.
+   */
+  private String cacheSafeWriteSourceDir;
+
   private Configuration conf;
   protected int pathid = 10000;
   private int moveTaskId = 0;
@@ -452,6 +458,7 @@ public class Context {
     this.scratchDirPermission = ctx.scratchDirPermission;
     this.fsScratchDirs.putAll(ctx.fsScratchDirs);
     this.fsResultCacheDirs = ctx.fsResultCacheDirs;
+    this.cacheSafeWriteSourceDir = ctx.cacheSafeWriteSourceDir;
     this.conf = ctx.conf;
     this.pathid = ctx.pathid;
     this.explainConfig = ctx.explainConfig;
@@ -490,6 +497,14 @@ public class Context {
 
   public Path getFsResultCacheDirs() {
     return this.fsResultCacheDirs;
+  }
+
+  public void setCacheSafeWriteSourceDir(String cacheSafeWriteSourceDir) {
+    this.cacheSafeWriteSourceDir = cacheSafeWriteSourceDir;
+  }
+
+  public String getCacheSafeWriteSourceDir() {
+    return cacheSafeWriteSourceDir;
   }
 
   public Map<LoadTableDesc, WriteEntity> getLoadTableOutputMap() {

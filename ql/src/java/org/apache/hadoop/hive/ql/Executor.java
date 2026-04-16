@@ -227,6 +227,7 @@ public class Executor {
       CacheEntry pendingCacheEntry =
           QueryResultsCache.getInstance().addToCache(driverContext.getCacheUsage().getQueryInfo(), txnWriteIdList);
       if (pendingCacheEntry != null) {
+        pendingCacheEntry.setSafeSourceDir(context.getCacheSafeWriteSourceDir());
         // Update cacheUsage to reference the pending entry.
         this.driverContext.getCacheUsage().setCacheEntry(pendingCacheEntry);
       }
@@ -436,7 +437,7 @@ public class Executor {
 
       CacheEntry cacheEntry = driverContext.getCacheUsage().getCacheEntry();
       boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(cacheEntry,
-          driverContext.getPlan().getFetchTask().getWork());
+          driverContext.getPlan().getFetchTask().getWork(), driverContext.getConf());
       LOG.info("savedToCache: {} ({})", savedToCache, cacheEntry);
       if (savedToCache) {
         useFetchFromCache(driverContext.getCacheUsage().getCacheEntry());
