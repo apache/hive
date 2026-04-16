@@ -243,7 +243,10 @@ public class HiveTableUtil {
           config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
           StringUtils.isNotBlank(location)) {
       String type = config.get(InputFormatConfig.TABLE_TYPE);
-      if (HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equals(type)) {
+      if ("iceberg".equals(
+            HiveConf.getVar(config, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION)
+          ) && HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equals(type)) {
+
         location += Catalogs.MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX;
       }
       table = readTableObjectFromFile(location, config);

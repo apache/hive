@@ -161,8 +161,15 @@ public class IcebergTableUtil {
               return v;
             });
 
-    if (TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType()) ||
-        TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType())) {
+    if (
+          "iceberg".equals(
+              HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION)
+          ) &&
+          (
+            TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType()) ||
+            TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType())
+          )
+    ) {
       return getMaterializedView(configuration, hmsTable, skipCache).getStorageTable();
     }
 

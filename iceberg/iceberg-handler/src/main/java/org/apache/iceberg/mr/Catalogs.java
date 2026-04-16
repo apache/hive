@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -306,10 +307,14 @@ public final class Catalogs {
           Configuration conf, Properties props, String viewOriginalText, String viewExpandedText,
           CreationMetadata creationMetadata) {
 
+    boolean isExternalMaterializedView = "iceberg".equals(
+        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION));
+
     Schema schema = schema(props);
     PartitionSpec spec = spec(props, schema);
     String location = props.getProperty(LOCATION);
-    String storageTableLocation = location + MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX;
+    String storageTableLocation = location +
+        (isExternalMaterializedView ? MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX : "");
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
@@ -323,7 +328,8 @@ public final class Catalogs {
     ViewCatalog viewCatalog = (ViewCatalog) catalog.get();
 
     Map<String, String> map = filterIcebergTableProperties(props);
-    String storageTableIdentifier = name + MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX;
+    String storageTableIdentifier = name +
+        (isExternalMaterializedView ? MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX : "");
     Table storageTable = catalog.get().buildTable(TableIdentifier.parse(storageTableIdentifier), schema)
             .withPartitionSpec(spec).withLocation(storageTableLocation).withProperties(map).withSortOrder(sortOrder)
             .create();

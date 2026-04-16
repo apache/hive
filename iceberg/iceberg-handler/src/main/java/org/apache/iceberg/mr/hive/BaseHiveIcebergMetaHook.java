@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -560,12 +559,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
           case EXTERNAL_TABLE:
           case MATERIALIZED_VIEW:
             tbl = IcebergTableUtil.getTable(conf, hmsTable);
-            formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+            formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
             break;
 
           case EXTERNAL_MATERIALIZED_VIEW:
             Catalogs.MaterializedView mv = IcebergTableUtil.getMaterializedView(conf, hmsTable, false);
-            formatVersion = String.valueOf(((BaseTable) mv.getStorageTable()).operations().current().formatVersion());
+            formatVersion = String.valueOf(TableUtil.formatVersion(mv.getStorageTable()));
 
             hmsTable.setViewOriginalText(mv.getView().properties().get(Catalogs.MATERIALIZED_VIEW_ORIGINAL_TEXT));
             hmsTable.setViewExpandedText(mv.getView().sqlFor("hive").sql());
