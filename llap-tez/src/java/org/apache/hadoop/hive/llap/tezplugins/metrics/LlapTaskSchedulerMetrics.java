@@ -31,6 +31,8 @@ import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerIn
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
@@ -51,6 +53,9 @@ import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
  */
 @Metrics(about = "Llap Task Scheduler Metrics", context = "scheduler")
 public class LlapTaskSchedulerMetrics implements MetricsSource {
+  private static final ConcurrentHashMap<String, LlapTaskSchedulerMetrics> INSTANCES =
+      new ConcurrentHashMap<>();
+
   private final String name;
   private final JvmMetrics jvmMetrics;
   private final String sessionId;
@@ -102,10 +107,12 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   }
 
   public static LlapTaskSchedulerMetrics create(String displayName, String sessionId) {
-    MetricsSystem ms = LlapMetricsSystem.instance();
-    JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
-    return ms.register(displayName, "Llap Task Scheduler Metrics",
-        new LlapTaskSchedulerMetrics(displayName, jm, sessionId));
+    return INSTANCES.computeIfAbsent(displayName, name -> {
+      MetricsSystem ms = LlapMetricsSystem.instance();
+      JvmMetrics jm = JvmMetrics.initSingleton(MetricsUtils.METRICS_PROCESS_NAME, sessionId);
+      return ms.register(name, "Llap Task Scheduler Metrics",
+          new LlapTaskSchedulerMetrics(name, jm, sessionId));
+    });
   }
 
   @Override
