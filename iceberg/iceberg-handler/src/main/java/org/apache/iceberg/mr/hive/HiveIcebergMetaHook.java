@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -194,8 +195,13 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       Table table;
       if (metadataLocation != null) {
         table = Catalogs.registerTable(conf, tableProperties, metadataLocation);
-      } else if ("MATERIALIZED_VIEW".equals(hmsTable.getTableType()) ||
-          "EXTERNAL_MATERIALIZED_VIEW".equals(hmsTable.getTableType())) {
+      } else if (
+          "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION)) &&
+            (
+              "MATERIALIZED_VIEW".equals(hmsTable.getTableType()) ||
+              "EXTERNAL_MATERIALIZED_VIEW".equals(hmsTable.getTableType())
+            )
+      ) {
         Catalogs.MaterializedView mv =
                 Catalogs.createMaterializedView(
                         conf,

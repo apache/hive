@@ -148,9 +148,9 @@ public interface HiveOperationsBase {
 
   static void validateTableIsIcebergView(Table table, String fullName) {
     String tableTypeProp = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
+
     NoSuchIcebergViewException.check(
             (TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(table.getTableType()) ||
-                    TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType()) ||
                     TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType())) &&
                     ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
         "Not an iceberg view: %s (type=%s) (tableType=%s)",
