@@ -44,4 +44,22 @@ public class TestLlapTaskSchedulerMetrics {
         "session-2");
     assertNotNull(second);
   }
+
+  /**
+   * Verifies that creating metrics with different display names does not fail.
+   * Each unique display name triggers a new source registration, but JvmMetrics must only be
+   * registered once regardless of display name — otherwise the second call would throw
+   * {@code MetricsException: Metrics source JvmMetrics already exists!}.
+   */
+  @Test
+  public void testCreateWithDifferentDisplayNamesIsIdempotent() {
+    LlapTaskSchedulerMetrics first = LlapTaskSchedulerMetrics.create("LlapTaskSchedulerMetrics-host1",
+        "session-1");
+    assertNotNull(first);
+
+    // Must not throw MetricsException: Metrics source JvmMetrics already exists!
+    LlapTaskSchedulerMetrics second = LlapTaskSchedulerMetrics.create("LlapTaskSchedulerMetrics-host2",
+        "session-2");
+    assertNotNull(second);
+  }
 }

@@ -106,16 +106,12 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
     this.registry.tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME).tag(SessionId, sessionId);
   }
 
-  public static LlapTaskSchedulerMetrics create(String displayName, String metricsSessionId) {
+  public static LlapTaskSchedulerMetrics create(String displayName, String sessionId) {
     return METRICS.computeIfAbsent(displayName, name -> {
       MetricsSystem ms = LlapMetricsSystem.instance();
-      // TODO: HIVE-29569: Cleanup usage of llap.daemon.metrics.sessionid
-      // Using different displayNames within the same JVM can still trigger an issue even after fixing HIVE-29566,
-      // however it has not been observed in practice (including tests).
-      // This highlights the need to clean up this area.
-      JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, metricsSessionId, ms);
+      JvmMetrics jm = JvmMetrics.initSingleton(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
       return ms.register(name, "Llap Task Scheduler Metrics",
-          new LlapTaskSchedulerMetrics(name, jm, metricsSessionId));
+          new LlapTaskSchedulerMetrics(name, jm, sessionId));
     });
   }
 
