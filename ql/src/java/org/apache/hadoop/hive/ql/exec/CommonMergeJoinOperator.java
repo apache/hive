@@ -27,6 +27,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordSource;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.SkewedJoinMonitor;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.SkewedMergeJoinMonitor;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
@@ -40,7 +43,6 @@ import org.apache.hadoop.hive.ql.exec.tez.RecordSource;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -97,6 +99,10 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient NullOrdering nullOrdering;
   transient private boolean shortcutUnmatchedRows;
 
+  transient SkewedJoinMonitor skewedMergeJoinMonitor;
+  transient String[] joinSkewKeyColumns;
+  transient String[] joinSkewTableAliases;
+
   /** Kryo ctor. */
   protected CommonMergeJoinOperator() {
     super();
@@ -138,6 +144,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_BUCKET_CACHE_SIZE);
     shortcutUnmatchedRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_JOIN_SHORTCUT_UNMATCHED_ROWS);
+
+    skewedMergeJoinMonitor = SkewedMergeJoinMonitor.createSkewedJoinMonitor(
+        HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_THRESHOLD),
+        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_ABORT),
+        HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_CHECK_INTERVAL), maxAlias);
+
+    initSkewJoinNames(maxAlias);
 
     if (oldVar != 100) {
       bucketSize = oldVar;
@@ -220,6 +233,23 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     }
 
     return retval;
+  }
+
+  private void initSkewJoinNames(int maxAlias) {
+    joinSkewKeyColumns = new String[maxAlias];
+    joinSkewTableAliases = new String[maxAlias];
+
+    String[] descKeyNames = conf.getSkewJoinKeyNames();
+    String[] descTableAliases = conf.getSkewJoinTableAliases();
+
+    for (int pos = 0; pos < maxAlias; pos++) {
+      joinSkewKeyColumns[pos] =
+          (descKeyNames != null && pos < descKeyNames.length && descKeyNames[pos] != null) ? descKeyNames[pos]
+              : "unknown";
+      joinSkewTableAliases[pos] =
+          (descTableAliases != null && pos < descTableAliases.length && descTableAliases[pos] != null)
+              ? descTableAliases[pos] : "unknown";
+    }
   }
 
   @Override
@@ -322,6 +352,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     assert !nextKeyGroup;
     candidateStorage[tag].addRow(value);
+
+    skewedMergeJoinMonitor.checkMergeJoinSkew(alias, candidateStorage[tag].rowCount(),
+        joinSkewKeyColumns[alias], joinSkewTableAliases[alias]);
   }
 
   private void emitUnmatchedRows(int tag, boolean force) throws HiveException {
