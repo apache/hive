@@ -21,6 +21,7 @@ package org.apache.iceberg.rest;
 
 import com.google.common.base.Preconditions;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -69,6 +70,7 @@ import org.apache.iceberg.rest.responses.ListNamespacesResponse;
 import org.apache.iceberg.rest.responses.ListTablesResponse;
 import org.apache.iceberg.rest.responses.LoadTableResponse;
 import org.apache.iceberg.rest.responses.LoadViewResponse;
+import org.apache.iceberg.rest.responses.HMSCacheStatsResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
@@ -78,6 +80,7 @@ import org.apache.iceberg.util.PropertyUtil;
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements RESTClient {
+  private static final String V1_CACHE_STATS = "v1/cache/stats";
   private static final Splitter SLASH = Splitter.on('/');
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
@@ -136,7 +139,8 @@ public class HMSCatalogAdapter implements RESTClient {
     CREATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEWS, CreateViewRequest.class),
     UPDATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW, UpdateTableRequest.class),
     RENAME_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW_RENAME, RenameTableRequest.class),
-    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW);
+    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW),
+    CACHE_STATS(HTTPMethod.GET, V1_CACHE_STATS);
 
     private final HTTPMethod method;
     private final int requiredLength;
@@ -208,6 +212,14 @@ public class HMSCatalogAdapter implements RESTClient {
     public Class<? extends RESTRequest> requestClass() {
       return requestClass;
     }
+  }
+
+  private HMSCacheStatsResponse cacheStats() {
+    Map<String, Number> stats = Collections.emptyMap();
+    if (catalog instanceof HMSCachingCatalog hmsCatalog) {
+      stats = hmsCatalog.cacheStats();
+    }
+    return castResponse(HMSCacheStatsResponse.class, new HMSCacheStatsResponse(stats));
   }
 
   private ConfigResponse config() {
@@ -409,82 +421,34 @@ public class HMSCatalogAdapter implements RESTClient {
   @SuppressWarnings({"MethodLength", "unchecked"})
   private <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body) {
-    switch (route) {
-      case CONFIG:
-        return (T) config();
-
-      case LIST_NAMESPACES:
-        return (T) listNamespaces(vars);
-
-      case CREATE_NAMESPACE:
-        return (T) createNamespace(body);
-
-      case NAMESPACE_EXISTS:
-        return (T) namespaceExists(vars);
-
-      case LOAD_NAMESPACE:
-        return (T) loadNamespace(vars);
-
-      case DROP_NAMESPACE:
-        return (T) dropNamespace(vars);
-
-      case UPDATE_NAMESPACE:
-        return (T) updateNamespace(vars, body);
-
-      case LIST_TABLES:
-        return (T) listTables(vars);
-
-      case CREATE_TABLE:
-        return (T) createTable(vars, body);
-
-      case DROP_TABLE:
-        return (T) dropTable(vars);
-
-      case TABLE_EXISTS:
-        return (T) tableExists(vars);
-
-      case LOAD_TABLE:
-        return (T) loadTable(vars);
-
-      case REGISTER_TABLE:
-        return (T) registerTable(vars, body);
-
-      case UPDATE_TABLE:
-        return (T) updateTable(vars, body);
-
-      case RENAME_TABLE:
-        return (T) renameTable(body);
-
-      case REPORT_METRICS:
-        return (T) reportMetrics(body);
-
-      case COMMIT_TRANSACTION:
-        return (T) commitTransaction(body);
-        
-      case LIST_VIEWS:
-        return (T) listViews(vars);
-
-      case CREATE_VIEW:
-          return (T) createView(vars, body);
-
-      case VIEW_EXISTS:
-        return (T) viewExists(vars);
-
-      case LOAD_VIEW:
-        return (T) loadView(vars);
-
-      case UPDATE_VIEW:
-        return (T) updateView(vars, body);
-        
-      case RENAME_VIEW:
-        return (T) renameView(body);
-        
-      case DROP_VIEW:
-        return (T) dropView(vars);
-
-      default:
-    }
-    return null;
+    return switch (route) {
+      case CONFIG -> (T) config();
+      case LIST_NAMESPACES -> (T) listNamespaces(vars);
+      case CREATE_NAMESPACE -> (T) createNamespace(body);
+      case NAMESPACE_EXISTS -> (T) namespaceExists(vars);
+      case LOAD_NAMESPACE -> (T) loadNamespace(vars);
+      case DROP_NAMESPACE -> (T) dropNamespace(vars);
+      case UPDATE_NAMESPACE -> (T) updateNamespace(vars, body);
+      case LIST_TABLES -> (T) listTables(vars);
+      case CREATE_TABLE -> (T) createTable(vars, body);
+      case DROP_TABLE -> (T) dropTable(vars);
+      case TABLE_EXISTS -> (T) tableExists(vars);
+      case LOAD_TABLE -> (T) loadTable(vars);
+      case REGISTER_TABLE -> (T) registerTable(vars, body);
+      case UPDATE_TABLE -> (T) updateTable(vars, body);
+      case RENAME_TABLE -> (T) renameTable(body);
+      case REPORT_METRICS -> (T) reportMetrics(body);
+      case COMMIT_TRANSACTION -> (T) commitTransaction(body);
+      case LIST_VIEWS -> (T) listViews(vars);
+      case CREATE_VIEW -> (T) createView(vars, body);
+      case VIEW_EXISTS -> (T) viewExists(vars);
+      case LOAD_VIEW -> (T) loadView(vars);
+      case UPDATE_VIEW -> (T) updateView(vars, body);
+      case RENAME_VIEW -> (T) renameView(body);
+      case DROP_VIEW -> (T) dropView(vars);
+      case CACHE_STATS -> (T) cacheStats();
+      default -> null;
+    };
   }
 
 
