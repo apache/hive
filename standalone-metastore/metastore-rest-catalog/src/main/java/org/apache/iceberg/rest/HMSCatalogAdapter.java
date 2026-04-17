@@ -25,6 +25,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
@@ -75,6 +76,7 @@ import org.apache.iceberg.rest.responses.ListNamespacesResponse;
 import org.apache.iceberg.rest.responses.ListTablesResponse;
 import org.apache.iceberg.rest.responses.LoadTableResponse;
 import org.apache.iceberg.rest.responses.LoadViewResponse;
+import org.apache.iceberg.rest.responses.HMSCacheStatsResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
@@ -226,6 +228,14 @@ public class HMSCatalogAdapter implements Closeable {
     public Class<? extends RESTRequest> requestClass() {
       return requestClass;
     }
+  }
+
+  private HMSCacheStatsResponse cacheStats() {
+    Map<String, Number> stats = Collections.emptyMap();
+    if (catalog instanceof HMSCachingCatalog hmsCatalog) {
+      stats = hmsCatalog.cacheStats();
+    }
+    return castResponse(HMSCacheStatsResponse.class, new HMSCacheStatsResponse(stats));
   }
 
   private ConfigResponse config() {
@@ -489,7 +499,7 @@ public class HMSCatalogAdapter implements Closeable {
 
       case COMMIT_TRANSACTION:
         return (T) commitTransaction(body);
-        
+
       case LIST_VIEWS:
         return (T) listViews(vars);
 
@@ -504,10 +514,10 @@ public class HMSCatalogAdapter implements Closeable {
 
       case UPDATE_VIEW:
         return (T) updateView(vars, body);
-        
+
       case RENAME_VIEW:
         return (T) renameView(body);
-        
+
       case DROP_VIEW:
         return (T) dropView(vars);
 
