@@ -21,10 +21,12 @@ package org.apache.iceberg.rest;
 
 import com.github.benmanes.caffeine.cache.Ticker;
 
+import java.lang.ref.SoftReference;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseMetadataTable;
@@ -47,6 +49,7 @@ import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.MetadataLocator;
 import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewBuilder;
+import org.jetbrains.annotations.TestOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +58,21 @@ import org.slf4j.LoggerFactory;
  */
 public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
   protected static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
+
+  private static SoftReference<HMSCachingCatalog> CACHE = new SoftReference<>(null);
+  @TestOnly
+  public static <C extends Catalog> C  getLatestCache(Function<HMSCachingCatalog, C> extractor) {
+    HMSCachingCatalog cache = CACHE.get();
+    if (cache == null) {
+      return null;
+    }
+    return extractor == null ? (C) cache : extractor.apply(cache);
+  }
+
+  @TestOnly
+  public HiveCatalog getCatalog() {
+    return hiveCatalog;
+  }
 
   protected final HiveCatalog hiveCatalog;
   // Metrics counters
@@ -71,6 +89,9 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   public HMSCachingCatalog(HiveCatalog catalog, long expirationMs, boolean caseSensitive, Configuration conf) {
     super(catalog, caseSensitive, expirationMs, Ticker.systemTicker());
     this.hiveCatalog = catalog;
+    if (catalog.getConf().getBoolean("metastore.iceberg.catalog.cache.debug", false)) {
+      CACHE = new SoftReference<>(this);
+    }
   }
 
   /**

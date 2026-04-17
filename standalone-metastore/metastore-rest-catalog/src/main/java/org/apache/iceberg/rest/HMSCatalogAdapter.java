@@ -571,11 +571,15 @@ public class HMSCatalogAdapter implements RESTClient {
 
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
+    int errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);
     errorBuilder
-        .responseCode(EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500))
+        .responseCode(errorCode)
         .withType(exc.getClass().getSimpleName())
-        .withMessage(exc.getMessage())
-        .withStackTrace(exc);
+        .withMessage(exc.getMessage());
+    // avoid exposing stack traces for client errors, but include them for server errors to aid debugging
+    if (errorCode == 500) {
+      errorBuilder.withStackTrace(exc);
+    }
   }
 
   private static Namespace namespaceFromPathVars(Map<String, String> pathVars) {

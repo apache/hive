@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
+import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.rest.responses.ErrorResponse;
 import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
@@ -82,8 +83,13 @@ public class HMSCatalogServlet extends HttpServlet {
       if (responseBody != null) {
         RESTObjectMapper.mapper().writeValue(response.getWriter(), responseBody);
       }
+    } catch (RESTException e) {
+      // A RESTException is thrown by HMSCatalogAdapter.execute() after the error handler has
+      // already written the correct HTTP status and body to the response (e.g. 404, 403).
+      // It is not an unexpected server failure, so log at DEBUG to avoid flooding the console.
+      LOG.debug("REST request resulted in a client error (already handled): {}", e.getMessage());
     } catch (RuntimeException | IOException e) {
-      // should be a RESTException but not able to see them through dependencies
+      // Genuine unexpected server error – log the full stack trace.
       LOG.error("Error processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
