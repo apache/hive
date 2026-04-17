@@ -97,6 +97,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient NullOrdering nullOrdering;
   transient private boolean shortcutUnmatchedRows;
 
+  transient long mergeJoinSkewThreshold;
+  transient boolean mergeJoinSkewAbort;
+
   /** Kryo ctor. */
   protected CommonMergeJoinOperator() {
     super();
@@ -138,6 +141,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_BUCKET_CACHE_SIZE);
     shortcutUnmatchedRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_JOIN_SHORTCUT_UNMATCHED_ROWS);
+
+    mergeJoinSkewThreshold = HiveConf.getLongVar(hconf,
+        HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_THRESHOLD);
+    mergeJoinSkewAbort = HiveConf.getBoolVar(hconf,
+        HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_ABORT);
 
     if (oldVar != 100) {
       bucketSize = oldVar;
@@ -322,6 +330,10 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     assert !nextKeyGroup;
     candidateStorage[tag].addRow(value);
+
+    if (tag == posBigTable) {
+      checkMergeJoinSkew(alias, candidateStorage[tag].rowCount());
+    }
   }
 
   private void emitUnmatchedRows(int tag, boolean force) throws HiveException {
@@ -624,6 +636,23 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     oldRowContainer.clearRows();
     this.candidateStorage[t] = this.nextGroupStorage[t];
     this.nextGroupStorage[t] = oldRowContainer;
+  }
+
+  void checkMergeJoinSkew(byte alias, long rowCount) throws HiveException {
+    if (mergeJoinSkewThreshold <= 0 || rowCount < mergeJoinSkewThreshold) {
+      return;
+    }
+
+    String msg = String.format(
+        "Data skew detected in merge join, "
+        + "table alias %d has accumulated %d rows.",
+        alias, rowCount);
+
+    if (mergeJoinSkewAbort) {
+      throw new HiveException(msg);
+    } else {
+      LOG.warn(msg);
+    }
   }
 
   private boolean processKey(byte alias, List<Object> key) throws HiveException {
