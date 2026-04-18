@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_SPEC_ID
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -220,24 +221,29 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   protected static List<String> getColumnTypes(Table tbl, List<String> colNames) {
     List<String> colTypes = new ArrayList<>();
     List<FieldSchema> cols = tbl.getCols();
-    List<String> copyColNames = new ArrayList<>(colNames);
+    Map<String, String> colTypeMap = new HashMap<>();
 
-    for (String colName : copyColNames) {
-      for (FieldSchema col : cols) {
-        if (colName.equalsIgnoreCase(col.getName())) {
-          String type = col.getType();
-          TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
-          boolean isSupported = ColumnStatsAutoGatherContext.isColumnSupported(typeInfo.getCategory(), () -> typeInfo);
-          if (!isSupported) {
-            logTypeWarning(colName, type);
-            colNames.remove(colName);
-          } else {
-            colTypes.add(type);
-          }
+    for (FieldSchema col : cols) {
+      colTypeMap.put(col.getName().toLowerCase(), col.getType());
+    }
+
+    List<String> nonPrimColNames = new ArrayList<>();
+    for (String colName : colNames) {
+      String type = colTypeMap.get(colName.toLowerCase());
+      if (type != null) {
+        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
+        boolean isSupported = ColumnStatsAutoGatherContext.isColumnSupported(typeInfo.getCategory(), () -> typeInfo);
+        if (!isSupported) {
+          logTypeWarning(colName, type);
+        } else {
+          nonPrimColNames.add(colName);
+          colTypes.add(type);
         }
       }
     }
 
+    colNames.clear();
+    colNames.addAll(nonPrimColNames);
     return colTypes;
   }
 
