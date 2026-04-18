@@ -236,7 +236,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       int numExecutorsConfigured, int waitQueueSizeConfigured, final int[] intervals, int timedWindowAverageDataPoints,
       long timedWindowAverageWindowLength, int simpleAverageWindowDataSize) {
     MetricsSystem ms = LlapMetricsSystem.instance();
-    JvmMetrics jm = JvmMetrics.create(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
+    JvmMetrics jm = JvmMetrics.initSingleton(MetricsUtils.METRICS_PROCESS_NAME, sessionId, ms);
     return ms.register(displayName, "LlapDaemon Executor Metrics",
         new LlapDaemonExecutorMetrics(displayName, jm, sessionId, numExecutorsConfigured, waitQueueSizeConfigured,
             intervals, timedWindowAverageDataPoints, timedWindowAverageWindowLength, simpleAverageWindowDataSize));
