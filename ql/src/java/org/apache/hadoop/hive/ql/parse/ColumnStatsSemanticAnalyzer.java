@@ -227,7 +227,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       colTypeMap.put(col.getName().toLowerCase(), col.getType());
     }
 
-    List<String> nonPrimColNames = new ArrayList<>();
+    List<String> primColNames = new ArrayList<>();
     for (String colName : colNames) {
       String type = colTypeMap.get(colName.toLowerCase());
       if (type != null) {
@@ -236,14 +236,14 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         if (!isSupported) {
           logTypeWarning(colName, type);
         } else {
-          nonPrimColNames.add(colName);
+          primColNames.add(colName);
           colTypes.add(type);
         }
       }
     }
 
     colNames.clear();
-    colNames.addAll(nonPrimColNames);
+    colNames.addAll(primColNames);
     return colTypes;
   }
 
