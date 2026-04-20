@@ -19,7 +19,7 @@ TBLPROPERTIES (
 INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
-  RPAD('x', 8388608, 'x') AS payload;
+  RPAD('x', 16777177, 'x') AS payload;
 
 SELECT LENGTH(payload) FROM tbl_parq;
 
