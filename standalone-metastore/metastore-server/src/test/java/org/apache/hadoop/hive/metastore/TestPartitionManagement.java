@@ -81,7 +81,6 @@ public class TestPartitionManagement {
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
-    PartitionManagementTask.resetCountersForTesting();
   }
 
   @After
