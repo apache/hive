@@ -381,6 +381,41 @@ public class TestJdbcDriver2 {
     con.close();
   }
 
+  /**
+   * Same idea as {@link #testURLWithFetchSize}: drive session behavior from the JDBC URL instead of
+   * only {@link Statement#setQueryTimeout(int)} or an explicit {@code SET}. The timeout is supplied
+   * in the URL query ({@code ?hive_conf_list}) per the driver format
+   * {@code jdbc:hive2://.../db;sess?hive_conf#hive_var}.
+   * <p>
+   * HIVE-28265: {@link SQLTimeoutException#getMessage()} must reflect the configured limit (1s),
+   * not {@code after 0 seconds}.
+   */
+  @Test
+  public void testURLWithHiveQueryTimeoutSeconds() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    // Postfix appends to the query string after test overlay / lock manager settings.
+    Connection con = getConnection(testDbName, "hive.query.timeout.seconds=1");
+    try {
+      Statement stmt1 = con.createStatement();
+      stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+      stmt1.close();
+      Statement stmt = con.createStatement();
+      try {
+        stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
+            + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+            + " t2 on t1.under_col = t2.under_col");
+        fail("Expecting SQLTimeoutException");
+      } catch (SQLTimeoutException e) {
+        assertTimeoutMessageShowsOneSecond("JDBC URL hive.query.timeout.seconds=1 (query string)", e);
+      } catch (SQLException e) {
+        fail("Expecting SQLTimeoutException, but got SQLException: " + e);
+      }
+      stmt.close();
+    } finally {
+      con.close();
+    }
+  }
+
   @Test
   /**
    * Test setting create external purge table by default in jdbc config
