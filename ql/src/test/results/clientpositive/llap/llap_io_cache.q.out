@@ -33,14 +33,14 @@ POSTHOOK: Output: default@tbl_parq
 PREHOOK: query: INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
-  RPAD('x', 8388608, 'x') AS payload
+  RPAD('x', 16777177, 'x') AS payload
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_parq
 POSTHOOK: query: INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
-  RPAD('x', 8388608, 'x') AS payload
+  RPAD('x', 16777177, 'x') AS payload
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_parq
@@ -54,7 +54,7 @@ POSTHOOK: query: SELECT LENGTH(payload) FROM tbl_parq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_parq
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-8388608
+16777177
 PREHOOK: query: SELECT SUM(LENGTH(payload)) FROM tbl_parq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_parq
@@ -63,4 +63,4 @@ POSTHOOK: query: SELECT SUM(LENGTH(payload)) FROM tbl_parq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_parq
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-8388608
+16777177
