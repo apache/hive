@@ -374,11 +374,11 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testURLWithFetchSize() throws SQLException {
-    Connection con = getConnection(testDbName + ";fetchSize=1234", "");
-    Statement stmt = con.createStatement();
+    Connection connectionWithFetchSize = getConnection(testDbName + ";fetchSize=1234", "");
+    Statement stmt = connectionWithFetchSize.createStatement();
     assertEquals(stmt.getFetchSize(), 1234);
     stmt.close();
-    con.close();
+    connectionWithFetchSize.close();
   }
 
   /**
@@ -394,12 +394,12 @@ public class TestJdbcDriver2 {
   public void testURLWithHiveQueryTimeoutSeconds() throws Exception {
     String udfName = SleepMsUDF.class.getName();
     // Postfix appends to the query string after test overlay / lock manager settings.
-    Connection con = getConnection(testDbName, "hive.query.timeout.seconds=1");
+    Connection connectionWithUrlQueryTimeout = getConnection(testDbName, "hive.query.timeout.seconds=1");
     try {
-      Statement stmt1 = con.createStatement();
+      Statement stmt1 = connectionWithUrlQueryTimeout.createStatement();
       stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
       stmt1.close();
-      Statement stmt = con.createStatement();
+      Statement stmt = connectionWithUrlQueryTimeout.createStatement();
       try {
         stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
             + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
@@ -412,7 +412,7 @@ public class TestJdbcDriver2 {
       }
       stmt.close();
     } finally {
-      con.close();
+      connectionWithUrlQueryTimeout.close();
     }
   }
 
@@ -422,13 +422,13 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testCreateTableAsExternal() throws SQLException {
-    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true", "");
-    Statement stmt = con.createStatement();
+    Connection connectionWithExternalLegacy = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true", "");
+    Statement stmt = connectionWithExternalLegacy.createStatement();
     ResultSet res = stmt.executeQuery("set hive.create.as.external.legacy");
     assertTrue("ResultSet is empty", res.next());
     assertEquals("hive.create.as.external.legacy=true", res.getObject(1));
     stmt.close();
-    con.close();
+    connectionWithExternalLegacy.close();
   }
 
   @Test
