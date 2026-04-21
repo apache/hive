@@ -1,0 +1,91 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to you under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Full HiveCluster: All four services with LLAP, TezAM, and external S3 storage
+apiVersion: hive.apache.org/v1alpha1
+kind: HiveCluster
+metadata:
+  name: my-hive
+spec:
+  image: apache/hive:4.3.0-SNAPSHOT
+  imagePullPolicy: IfNotPresent
+
+  metastore:
+    replicas: 1
+    database:
+      type: postgres
+      url: "jdbc:postgresql://postgres:5432/metastore"
+      driver: "org.postgresql.Driver"
+      username: hive
+      passwordSecretRef:
+        name: hive-db-secret
+        key: password
+      driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+    warehouseDir: "s3a://hive/warehouse"
+    configOverrides:
+      metastore.catalog.servlet.port: "9001"
+      metastore.catalog.servlet.auth: "none"
+
+  hiveServer2:
+    replicas: 1
+    serviceType: ClusterIP
+    resources:
+      requestsMemory: "1Gi"
+      limitsMemory: "2Gi"
+    configOverrides:
+      hive.server2.enable.doAs: "false"
+
+  llap:
+    enabled: true
+    replicas: 1
+    executors: 1
+    memoryMb: 1024
+    serviceHosts: "@llap0"
+    resources:
+      requestsMemory: "2Gi"
+      limitsMemory: "3Gi"
+
+  tezAm:
+    enabled: true
+    replicas: 1
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  # S3-compatible storage endpoint (e.g., Ozone via Helm, MinIO, AWS S3)
+  # For Ozone Helm chart setup, see README.md.
+  storage:
+    endpoint: "http://ozone-s3g-rest:9878"
+    bucket: hive
+    accessKey: "ozone"
+    secretKey: "ozone"
+
+  # For production, use Kubernetes Secrets instead of plain-text credentials:
+  #   kubectl create secret generic s3-creds \
+  #     --from-literal=accessKey=AKIA... --from-literal=secretKey=...
+  #   storage:
+  #     endpoint: "https://s3.amazonaws.com"
+  #     bucket: my-bucket
+  #     accessKeySecretRef:
+  #       name: s3-creds
+  #       key: accessKey
+  #     secretKeySecretRef:
+  #       name: s3-creds
+  #       key: secretKey
+
+  # Additional hadoop overrides (applied after auto-injected storage config)
+  hadoop:
+    coreSiteOverrides:
+      fs.s3a.connection.ssl.enabled: "false"
