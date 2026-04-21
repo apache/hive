@@ -238,7 +238,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
         }
     );
 
-    return IcebergTableUtil.convertNameToMetastorePartition(
+    return IcebergTableUtil.convertNameToHivePartition(
         hiveTable, modifiedPartitions);
   }
 
@@ -249,7 +249,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
 
     return relevantSnapshots.stream()
         .map(snapshot -> (Callable<Set<String>>) () ->
-            IcebergTableUtil.getPartitionNames(
+            IcebergCompactionUtil.getPartitionNames(
                 icebergTable,
                 getAffectedFiles(snapshot, icebergTable.io()),
                 latestSpecOnly))

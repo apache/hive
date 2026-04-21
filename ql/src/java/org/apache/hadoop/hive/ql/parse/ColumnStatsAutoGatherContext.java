@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -211,10 +210,10 @@ public class ColumnStatsAutoGatherContext {
     loadFileWork.addAll(sem.getLoadFileWork());
 
     // 4. because there is only one TS for analyze statement, we can get it.
-    if (sem.topOps.values().size() != 1) {
+    if (sem.topOps.size() != 1) {
       throw new SemanticException(
           "ColumnStatsAutoGatherContext is expecting exactly one TS, but finds "
-              + sem.topOps.values().size());
+              + sem.topOps.size());
     }
     Operator<?> operator = sem.topOps.values().iterator().next();
 
@@ -245,10 +244,9 @@ public class ColumnStatsAutoGatherContext {
     OpParseContext inputCtx = sa.opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
     List<ColumnInfo> columns = inputRR.getColumnInfos();
-    List<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
-    List<String> columnNames = new ArrayList<String>();
-    Map<String, ExprNodeDesc> columnExprMap =
-        new HashMap<String, ExprNodeDesc>();
+    List<ExprNodeDesc> colList = new ArrayList<>();
+    List<String> columnNames = new ArrayList<>();
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<>();
     // the column positions in the operator should be like this
     // <----non-partition columns---->|<--static partition columns-->|<--dynamic partition columns-->
     //        ExprNodeColumnDesc      |      ExprNodeConstantDesc    |     ExprNodeColumnDesc

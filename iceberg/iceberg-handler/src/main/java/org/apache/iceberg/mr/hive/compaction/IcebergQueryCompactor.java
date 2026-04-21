@@ -135,7 +135,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       PartitionSpec spec;
       String partitionPredicate;
       try {
-        spec = IcebergTableUtil.getPartitionSpec(icebergTable, ci.partName);
+        spec = IcebergCompactionUtil.getPartitionSpec(icebergTable, ci.partName);
         partitionPredicate = buildPartitionPredicate(ci, spec);
       } catch (MetaException e) {
         throw new HiveException(e);

@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -64,14 +63,14 @@ public final class PartitionUtils {
   public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) {
     // Partition can't have this name
     Set<String> reservedPartitionValues =
-        new HashSet<String>() {{
+        new HashSet<>() {{
           add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
           add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
         }};
 
     // Partition value can't end in this suffix
     Set<String> reservedPartitionSuffixes =
-        new HashSet<String>() {{
+        new HashSet<>() {{
           add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
           add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
           add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
@@ -174,7 +173,7 @@ public final class PartitionUtils {
           throw new SemanticException(e.getMessage(), e);
         }
       } else {
-        parts = new ArrayList<Partition>();
+        parts = new ArrayList<>();
         try {
           Partition p = db.getPartition(table, partitionSpec, false);
           if (p != null) {

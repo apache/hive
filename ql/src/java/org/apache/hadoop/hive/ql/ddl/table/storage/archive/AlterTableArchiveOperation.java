@@ -72,8 +72,8 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
     Path intermediateOriginalDir = AlterTableArchiveUtils.getInterMediateDir(originalDir, context.getConf(),
         ConfVars.METASTORE_INT_ORIGINAL);
 
-    context.getConsole().printInfo("intermediate.archived is " + intermediateArchivedDir.toString());
-    context.getConsole().printInfo("intermediate.original is " + intermediateOriginalDir.toString());
+    context.getConsole().printInfo("intermediate.archived is " + intermediateArchivedDir);
+    context.getConsole().printInfo("intermediate.original is " + intermediateOriginalDir);
 
     checkIfAlreadyArchived(partitionSpecInfo, partitions);
     boolean recovery = isRecovery(intermediateArchivedDir, intermediateOriginalDir);
@@ -139,7 +139,7 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
       }
       return partitionSpecInfo.createPath(table);
     } else {
-      Partition p = partitions.get(0);
+      Partition p = partitions.getFirst();
       // partition can be archived if during recovery
       if (ArchiveUtils.isArchived(p)) {
         return new Path(AlterTableArchiveUtils.getOriginalLocation(p));
@@ -179,7 +179,7 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
     Path tmpPath = new Path(context.getContext().getExternalTmpPath(originalDir), "partlevel");
 
     // Create the Hadoop archive
-    context.getConsole().printInfo("Creating " + ARCHIVE_NAME + " for " + originalDir.toString() + " in " + tmpPath);
+    context.getConsole().printInfo("Creating " + ARCHIVE_NAME + " for " + originalDir + " in " + tmpPath);
     context.getConsole().printInfo("Please wait... (this may take a while)");
     try {
       int maxJobNameLength = context.getConf().getIntVar(HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
@@ -267,7 +267,7 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
     try {
       URI archiveUri = new Path(originalDir, ARCHIVE_NAME).toUri();
       URI originalUri = ArchiveUtils.addSlash(originalDir.toUri());
-      ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(context.getConf(), archiveUri, originalUri);
+      ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(archiveUri, originalUri);
 
       for (Partition partition : partitions) {
         URI originalPartitionUri = ArchiveUtils.addSlash(partition.getDataLocation().toUri());

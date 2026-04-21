@@ -59,7 +59,6 @@ import org.apache.hive.common.util.HiveStringUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,7 +69,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.ALIGNMENT;
@@ -171,13 +169,8 @@ class TextDescTableFormatter extends DescTableFormatter {
       boolean isFormatted, boolean isOutputPadded) throws IOException {
     String partitionData = "";
     if (columnPath == null) {
-      List<FieldSchema> partitionColumns = null;
-      // TODO (HIVE-29413): Refactor to a generic getPartCols() implementation
-      if (table.isPartitioned()) {
-        partitionColumns = table.hasNonNativePartitionSupport() ?
-            table.getStorageHandler().getPartitionKeys(table) :
-            table.getPartCols();
-      }
+      List<FieldSchema> partitionColumns = table.isPartitioned() ? table.getEffectivePartCols() : null;
+
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
@@ -204,13 +197,9 @@ class TextDescTableFormatter extends DescTableFormatter {
   }
 
   private void addFormattedTableData(DataOutputStream out, Table table, Partition partition, boolean isOutputPadded)
-      throws IOException, UnsupportedEncodingException {
-    String formattedTableInfo = null;
-    if (partition != null) {
-      formattedTableInfo = getPartitionInformation(table, partition);
-    } else {
-      formattedTableInfo = getTableInformation(table, isOutputPadded);
-    }
+      throws IOException {
+    String formattedTableInfo = (partition != null) ? getPartitionInformation(table, partition) :
+        getTableInformation(table, isOutputPadded);
 
     if (table.getTableConstraintsInfo().isTableConstraintsInfoNotEmpty()) {
       formattedTableInfo += getConstraintsInformation(table);
@@ -335,24 +324,24 @@ class TextDescTableFormatter extends DescTableFormatter {
         List<String> skewedCoumnNames =
             storageDesc.getSkewedInfo().getSkewedColNames().stream()
               .sorted()
-              .collect(Collectors.toList());
+              .toList();
         formatOutput("Skewed Columns:", skewedCoumnNames.toString(), tableInfo);
       }
 
       if (CollectionUtils.isNotEmpty(storageDesc.getSkewedInfo().getSkewedColValues())) {
         List<List<String>> skewedColumnValues =
             storageDesc.getSkewedInfo().getSkewedColValues().stream()
-              .sorted(new VectorComparator<String>())
-              .collect(Collectors.toList());
+              .sorted(new VectorComparator<>())
+              .toList();
         formatOutput("Skewed Values:", skewedColumnValues.toString(), tableInfo);
       }
 
-      Map<List<String>, String> skewedColMap = new TreeMap<>(new VectorComparator<String>());
+      Map<List<String>, String> skewedColMap = new TreeMap<>(new VectorComparator<>());
       skewedColMap.putAll(storageDesc.getSkewedInfo().getSkewedColValueLocationMaps());
       if (MapUtils.isNotEmpty(skewedColMap)) {
         formatOutput("Skewed Value to Path:", skewedColMap.toString(), tableInfo);
         Map<List<String>, String> truncatedSkewedColMap =
-            new TreeMap<List<String>, String>(new VectorComparator<String>());
+            new TreeMap<>(new VectorComparator<>());
         // walk through existing map to truncate path so that test won't mask it then we can verify location is right
         Set<Entry<List<String>, String>> entries = skewedColMap.entrySet();
         for (Entry<List<String>, String> entry : entries) {
@@ -401,7 +390,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     }
   }
 
-  private class VectorComparator<T extends Comparable<T>>  implements Comparator<List<T>>{
+  private static class VectorComparator<T extends Comparable<T>>  implements Comparator<List<T>>{
     @Override
     public int compare(List<T> listA, List<T> listB) {
       for (int i = 0; i < listA.size() && i < listB.size(); i++) {
@@ -436,7 +425,7 @@ class TextDescTableFormatter extends DescTableFormatter {
 
   private void displayAllParameters(Map<String, String> params, StringBuilder tableInfo, boolean escapeUnicode,
       boolean isOutputPadded) {
-    List<String> keys = new ArrayList<String>(params.keySet());
+    List<String> keys = new ArrayList<>(params.keySet());
     Collections.sort(keys);
     for (String key : keys) {
       String value = params.get(key);
@@ -624,7 +613,7 @@ class TextDescTableFormatter extends DescTableFormatter {
   }
 
   private void addExtendedConstraintData(DataOutputStream out, Table table)
-      throws IOException, UnsupportedEncodingException {
+      throws IOException {
     if (table.getTableConstraintsInfo().isTableConstraintsInfoNotEmpty()) {
       out.write(("Constraints").getBytes(StandardCharsets.UTF_8));
       out.write(Utilities.tabCode);
@@ -656,7 +645,7 @@ class TextDescTableFormatter extends DescTableFormatter {
   }
 
   private void addExtendedStorageData(DataOutputStream out, Table table)
-      throws IOException, UnsupportedEncodingException {
+      throws IOException {
     if (table.getStorageHandlerInfo() != null) {
       out.write(("StorageHandlerInfo").getBytes(StandardCharsets.UTF_8));
       out.write(Utilities.newLineCode);
