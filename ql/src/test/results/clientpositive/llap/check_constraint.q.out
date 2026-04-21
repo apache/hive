@@ -107,21 +107,21 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: int), col2 (type: int), col3 (type: boolean), col4 (type: int), UDFToFloat(col5) (type: float), UDFToLong(col6) (type: bigint)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((((((((- _col0) > -10) is not false and (_col1 > 10) is not false) and _col2 is not null is not false) and _col3 BETWEEN _col0 AND _col1 is not false) and (_col4) IN (23.4, 56.0, 4.0) is not false) and ((_col5 > round(567.6)) and (_col5 < round(1000.4))) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: PARTIAL
                           Reduce Output Operator
                             key expressions: _col0 (type: int)
                             null sort order: a
                             sort order: +
                             Map-reduce partition columns: _col0 (type: int)
-                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: PARTIAL
                             value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: int), _col4 (type: float), _col5 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -131,10 +131,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: boolean), VALUE._col2 (type: int), VALUE._col3 (type: float), VALUE._col4 (type: bigint)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -263,18 +263,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint(((_col0 + null) > 0) is not false) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -369,18 +369,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((GenericUDFTestGetJavaString(_col0) <> 'vin') is not false) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -526,18 +526,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), col2 (type: string), col3 (type: int), CAST( col4 AS DATE) (type: date)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and (_col2 > 0) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -693,18 +693,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), col2 (type: string), col3 (type: int), CAST( col4 AS DATE) (type: date)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and (((_col2 > 0) is not false and (_col1 <> null) is not false) and ((_col2 <= 10000) and (_col1 <> '')) is not false))) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -840,18 +840,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), col2 (type: string), CAST( col3 AS DATE) (type: date), col4 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and (_col3 > 0) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 556 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -988,18 +988,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 192 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), col2 (type: int), col3 (type: float)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 192 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and ((UDFToFloat(_col1) * _col2) > 10) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 192 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 192 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1070,18 +1070,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 296 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), null (type: int), UDFToFloat(col2) (type: float)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 296 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and ((UDFToFloat(_col1) * _col2) > 10) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 296 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 296 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1225,18 +1225,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 232 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: int), UDFToFloat(col2) (type: float), CAST( col3 AS decimal(4,1)) (type: decimal(4,1)), col4 (type: boolean)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 232 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col1 is not null and ((UDFToFloat(_col2) + _col1) < (UDFToFloat(_col0) + (_col0 * _col0))) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 232 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 232 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -3419,18 +3419,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: 127Y (type: tinyint), UDFToLong(col1) (type: bigint)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                         Reduce Output Operator
                           key expressions: _col1 (type: bigint)
                           null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col1 (type: bigint)
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                           value expressions: _col0 (type: tinyint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3440,10 +3440,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: bigint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -3574,21 +3574,21 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: UDFToByte(col1) (type: tinyint), null (type: bigint)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col1) IN (4L, 5L) is not false) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                           Reduce Output Operator
                             key expressions: _col1 (type: bigint)
                             null sort order: a
                             sort order: +
                             Map-reduce partition columns: _col1 (type: bigint)
-                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                             value expressions: _col0 (type: tinyint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3598,10 +3598,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: bigint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -3655,21 +3655,21 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: null (type: tinyint), UDFToLong(col1) (type: bigint)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((_col1) IN (4L, 5L) is not false) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                           Reduce Output Operator
                             key expressions: _col1 (type: bigint)
                             null sort order: a
                             sort order: +
                             Map-reduce partition columns: _col1 (type: bigint)
-                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                             value expressions: _col0 (type: tinyint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -3679,10 +3679,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: bigint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -4017,18 +4017,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), col2 (type: int)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint(((_col0 <> '') and (_col1 > 4)) is not false) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4154,18 +4154,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                       function name: inline
                       Select Operator
                         expressions: col1 (type: string), col2 (type: int)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                         Filter Operator
                           predicate: enforce_constraint((((_col0 <> '') and (_col1 > 4)) is not false and (_col1 < 100) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 188 Basic stats: PARTIAL Column stats: PARTIAL
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -139,18 +139,18 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col6, _col7
-                        Statistics: Num rows: 500 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 98000 Basic stats: COMPLETE Column stats: NONE
                         Limit
                           Number of rows: 2
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col6 (type: string), _col7 (type: int)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               null sort order: 
                               sort order: 
-                              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                               TopN Hash Memory Usage: 0.1
                               value expressions: _col0 (type: string), _col1 (type: int)
                     Select Operator
@@ -158,40 +158,40 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 94000 Basic stats: PARTIAL Column stats: PARTIAL
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col6, _col7
-                          Statistics: Num rows: 500 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 500 Data size: 98000 Basic stats: COMPLETE Column stats: NONE
                           Limit
                             Number of rows: 2
-                            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                             Select Operator
                               expressions: _col6 (type: string), _col7 (type: int)
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                               Reduce Output Operator
                                 null sort order: 
                                 sort order: 
-                                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                                 TopN Hash Memory Usage: 0.1
                                 value expressions: _col0 (type: string), _col1 (type: int)
                     Select Operator
                       Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col6, _col7
-                        Statistics: Num rows: 500 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 98000 Basic stats: COMPLETE Column stats: NONE
                         Limit
                           Number of rows: 2
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                           Select Operator
                             expressions: _col6 (type: string), _col7 (type: int)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                             Reduce Output Operator
                               null sort order: 
                               sort order: 
-                              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                               TopN Hash Memory Usage: 0.1
                               value expressions: _col0 (type: string), _col1 (type: int)
                     Select Operator
@@ -199,22 +199,22 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 500 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 94000 Basic stats: PARTIAL Column stats: PARTIAL
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col6, _col7
-                          Statistics: Num rows: 500 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 500 Data size: 98000 Basic stats: COMPLETE Column stats: NONE
                           Limit
                             Number of rows: 2
-                            Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                             Select Operator
                               expressions: _col6 (type: string), _col7 (type: int)
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                               Reduce Output Operator
                                 null sort order: 
                                 sort order: 
-                                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                                 TopN Hash Memory Usage: 0.1
                                 value expressions: _col0 (type: string), _col1 (type: int)
             Execution mode: llap
@@ -224,20 +224,20 @@ STAGE PLANS:
             Reduce Operator Tree:
               Limit
                 Number of rows: 2
-                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -249,10 +249,10 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 431 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 432 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 431 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -262,20 +262,20 @@ STAGE PLANS:
             Reduce Operator Tree:
               Limit
                 Number of rows: 2
-                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: VALUE._col0 (type: string), VALUE._col1 (type: int)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int)
 
   Stage: Stage-0
