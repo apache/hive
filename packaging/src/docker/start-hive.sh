@@ -44,6 +44,7 @@ for arg in "$@"; do
       export S3_ENDPOINT_URL="http://s3.ozone:9878"
       export AWS_ACCESS_KEY_ID="ozone"
       export AWS_SECRET_ACCESS_KEY="secret"
+      export HADOOP_OPTIONAL_TOOLS="hadoop-aws"
       ;;
     *)
       echo "Unknown option: $arg"

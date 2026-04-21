@@ -153,7 +153,7 @@ function run_tezam {
     exit 1
   fi
   # service_plugins_descriptor.json references org.apache.hadoop.hive.llap.tezplugins.* (hive-llap-tez, etc.)
-  tezam_cp="${HADOOP_CONF_DIR}:${TEZ_CONF_DIR}:${TEZ_SNAPSHOT_HOME}/*:${TEZ_HOME}/*:${TEZ_HOME}/lib/*:${HIVE_HOME}/lib/*:${HADOOP_HOME}/share/hadoop/common/*:${HADOOP_HOME}/share/hadoop/common/lib/*:${HADOOP_HOME}/share/hadoop/yarn/*:${HADOOP_HOME}/share/hadoop/yarn/lib/*:${HADOOP_HOME}/share/hadoop/hdfs/*:${HADOOP_HOME}/share/hadoop/hdfs/lib/*:${HADOOP_HOME}/share/hadoop/mapreduce/*:${HADOOP_HOME}/share/hadoop/mapreduce/lib/*:${HADOOP_CLASSPATH:-}"
+  tezam_cp="${HADOOP_CONF_DIR}:${TEZ_CONF_DIR}:${TEZ_SNAPSHOT_HOME}/*:${TEZ_HOME}/*:${TEZ_HOME}/lib/*:${HIVE_HOME}/lib/*:$("${HADOOP_HOME}/bin/hadoop" classpath)"
 
   local java_bin
   local tezam_java_opts
