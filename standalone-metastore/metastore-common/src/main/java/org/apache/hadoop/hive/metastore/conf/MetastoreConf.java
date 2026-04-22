@@ -72,7 +72,8 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String HIVE_ALTER_HANDLE_CLASS =
       "org.apache.hadoop.hive.metastore.HiveAlterHandler";
-  public static final String MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS =
+  @VisibleForTesting
+  static final String MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask";
   @VisibleForTesting
   static final String METASTORE_TASK_THREAD_CLASS =
@@ -85,21 +86,24 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String EVENT_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
-  public static final String ACID_METRICS_TASK_CLASS =
+  static final String ACID_METRICS_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.metrics.AcidMetricService";
-  public static final String ACID_METRICS_LOGGER_CLASS =
+  static final String ACID_METRICS_LOGGER_CLASS =
       "org.apache.hadoop.hive.metastore.metrics.AcidMetricLogger";
   @VisibleForTesting
   static final String METASTORE_DELEGATION_MANAGER_CLASS =
       "org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager";
-  public static final String ACID_HOUSEKEEPER_SERVICE_CLASS =
+  @VisibleForTesting
+  static final String ACID_HOUSEKEEPER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService";
   @VisibleForTesting
   static final String COMPACTION_HOUSEKEEPER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService";
-  public static final String ACID_TXN_CLEANER_SERVICE_CLASS =
+  @VisibleForTesting
+  static final String ACID_TXN_CLEANER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.service.AcidTxnCleanerService";
-  public static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
+  @VisibleForTesting
+  static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService";
   @VisibleForTesting
   static final String ICEBERG_TABLE_SNAPSHOT_EXPIRY_SERVICE_CLASS =

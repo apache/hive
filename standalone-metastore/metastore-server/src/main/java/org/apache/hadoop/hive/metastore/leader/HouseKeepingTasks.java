@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.leader;
 
 import com.cronutils.utils.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
@@ -69,12 +68,6 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
 
     Collection<String> taskNames =
         MetastoreConf.getStringCollection(configuration, MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY);
-    if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID)) {
-      taskNames.removeAll(ImmutableSet.of(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,
-          MetastoreConf.ACID_HOUSEKEEPER_SERVICE_CLASS,
-          MetastoreConf.ACID_TXN_CLEANER_SERVICE_CLASS,
-          MetastoreConf.MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS));
-    }
     for (String taskName : taskNames) {
       if (CompactionHouseKeeperService.class.getName().equals(taskName) && !isCompactorEnabled) {
         continue;
@@ -91,10 +84,6 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     List<MetastoreTaskThread> alwaysTasks = new ArrayList<>();
     Collection<String> taskNames =
         MetastoreConf.getStringCollection(configuration, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS);
-    if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID)) {
-      taskNames.removeAll(ImmutableSet.of(MetastoreConf.ACID_METRICS_TASK_CLASS,
-          MetastoreConf.ACID_METRICS_LOGGER_CLASS));
-    }
     for (String taskName : taskNames) {
       MetastoreTaskThread task =
           JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
@@ -117,20 +106,19 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     } else {
       tasks = new ArrayList<>(getRemoteOnlyTasks());
     }
-    int poolSize = Math.min(MetastoreConf.getIntVar(configuration,
-        MetastoreConf.ConfVars.THREAD_POOL_SIZE), tasks.size());
-    metastoreTaskThreadPool = Executors.newScheduledThreadPool(poolSize, threadFactory);
-    for (MetastoreTaskThread task : tasks) {
+    tasks.forEach(task -> {
       task.setConf(configuration);
       task.enforceMutex(election.enforceMutex());
-      long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-      if (freq > 0) {
+      if (task.runFrequency(TimeUnit.MILLISECONDS) > 0) {
         runningTasks.add(task);
-        metastoreTaskThreadPool.scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
       }
-    }
-
+    });
+    int poolSize = Math.min(MetastoreConf.getIntVar(configuration,
+        MetastoreConf.ConfVars.THREAD_POOL_SIZE), runningTasks.size());
+    metastoreTaskThreadPool = Executors.newScheduledThreadPool(poolSize, threadFactory);
     runningTasks.forEach(task -> {
+      long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+      metastoreTaskThreadPool.scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
       HiveMetaStore.LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service.");
     });
   }

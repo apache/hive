@@ -103,7 +103,8 @@ public class AcidMetricService implements MetastoreTaskThread {
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_CHECK_INTERVAL, unit);
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID) ?
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_CHECK_INTERVAL, unit) : 0;
   }
 
   @Override
