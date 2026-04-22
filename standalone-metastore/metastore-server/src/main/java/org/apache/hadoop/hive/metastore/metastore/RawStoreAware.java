@@ -20,19 +20,27 @@ package org.apache.hadoop.hive.metastore.metastore;
 
 import javax.jdo.PersistenceManager;
 
+import java.util.Objects;
+
 import org.apache.hadoop.hive.metastore.RawStore;
 
-public interface RawStoreAware {
+public abstract class RawStoreAware {
+  protected RawStore baseStore;
+  protected PersistenceManager pm;
 
-  @MetaDescriptor.NoTransaction
-  void setBaseStore(RawStore store);
+  public void setBaseStore(RawStore store) {
+    this.baseStore = Objects.requireNonNull(store);
+  }
 
-  @MetaDescriptor.NoTransaction
-  void setPersistentManager(PersistenceManager pm);
+  public void setPersistentManager(PersistenceManager manager) {
+    this.pm = Objects.requireNonNull(manager);
+  }
 
-  @MetaDescriptor.NoTransaction
-  RawStore getBaseStore();
+  public RawStore getBaseStore() {
+    return baseStore;
+  }
 
-  @MetaDescriptor.NoTransaction
-  PersistenceManager getPersistentManager();
+  public PersistenceManager getPersistentManager() {
+    return pm;
+  }
 }

@@ -32,13 +32,12 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.metastore.impl.PrivilegeStoreImpl;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDCPrivilege;
 
 @MetaDescriptor(alias = "privilege", defaultImpl = PrivilegeStoreImpl.class)
-public interface PrivilegeStore extends RawStoreAware {
+public interface PrivilegeStore {
   boolean addRole(String rowName, String ownerName)
       throws InvalidObjectException, MetaException, NoSuchObjectException;
 

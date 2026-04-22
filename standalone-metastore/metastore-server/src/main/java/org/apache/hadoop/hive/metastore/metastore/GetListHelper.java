@@ -20,17 +20,16 @@ package org.apache.hadoop.hive.metastore.metastore;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
-public abstract class GetListHelper<T> extends GetHelper<List<T>> {
-  public GetListHelper(RawStoreAware rsa, TableName tableName) throws MetaException {
-    super(rsa, tableName, null);
+public abstract class GetListHelper<A, T> extends GetHelper<A, List<T>> {
+  public GetListHelper(RawStoreAware rsa, A args) throws MetaException {
+    super(rsa, args, null);
   }
 
   public GetListHelper(RawStoreAware rsa,
-      TableName tableName, List<String> fields) throws MetaException {
-    super(rsa, tableName, fields);
+      A args, List<String> fields) throws MetaException {
+    super(rsa, args, fields);
   }
 
   @Override

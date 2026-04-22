@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 
 /** Helper class for getting stuff w/transaction, direct SQL, perf logging, etc. */
 @VisibleForTesting
-public abstract class GetHelper<T> {
+public abstract class GetHelper<A, T> {
   private static final Logger LOG = LoggerFactory.getLogger(GetHelper.class);
   private static final Counter directSqlErrors = Metrics.getRegistry() != null ?
       Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS) : new Counter();
@@ -57,19 +57,19 @@ public abstract class GetHelper<T> {
   protected final PersistenceManager pm;
   private MetaStoreDirectSql directSql;
   protected final List<String> partitionFields;
-  protected final TableName tableName;
+  protected final A argument;
   private boolean success = false;
   protected T results = null;
 
-  public GetHelper(RawStoreAware rsa, TableName tableName) throws MetaException {
-    this(rsa, tableName, null);
+  public GetHelper(RawStoreAware rsa, A args) throws MetaException {
+    this(rsa, args, null);
   }
 
   public GetHelper(RawStoreAware rsa,
-      TableName tableName, List<String> fields) throws MetaException {
+      A args, List<String> fields) throws MetaException {
     this.baseStore = rsa.getBaseStore();
     this.partitionFields = fields;
-    this.tableName = tableName;
+    this.argument = args;
     this.doTrace = LOG.isDebugEnabled();
     this.isInTxn = baseStore.isActiveTransaction();
     this.pm = rsa.getPersistentManager();
@@ -87,17 +87,17 @@ public abstract class GetHelper<T> {
     this.doUseDirectSql = isConfigEnabled && directSql.isCompatibleDatastore();
   }
 
-  protected boolean canUseDirectSql(GetHelper<T> ctx) throws MetaException {
+  protected boolean canUseDirectSql(GetHelper<A, T> ctx) throws MetaException {
     return true; // By default, assume we can user directSQL - that's kind of the point.
   }
 
-  protected boolean canUseJdoQuery(GetHelper<T> ctx) throws MetaException {
+  protected boolean canUseJdoQuery(GetHelper<A, T> ctx) throws MetaException {
     return true;
   }
 
   protected abstract String describeResult();
-  protected abstract T getSqlResult(GetHelper<T> ctx) throws MetaException;
-  protected abstract T getJdoResult(GetHelper<T> ctx)
+  protected abstract T getSqlResult(GetHelper<A, T> ctx) throws MetaException;
+  protected abstract T getJdoResult(GetHelper<A, T> ctx)
       throws MetaException, NoSuchObjectException, InvalidObjectException,
       InvalidInputException;
 
@@ -136,12 +136,12 @@ public abstract class GetHelper<T> {
   private void start(boolean initTable) throws MetaException, NoSuchObjectException {
     start = doTrace ? System.nanoTime() : 0;
     baseStore.openTransaction();
-    if (initTable && (tableName != null)) {
+    if (initTable && (argument != null)) {
       TableStore store = baseStore.unwrap(TableStore.class);
-      table = store.getTable(tableName, null, -1);
+      table = store.getTable((TableName) argument, null, -1);
       if (table == null) {
         throw new NoSuchObjectException(
-            "Specified catalog.database.table does not exist : " + tableName);
+            "Specified catalog.database.table does not exist : " + argument);
       }
     }
     doUseDirectSql = doUseDirectSql && canUseDirectSql(this);
@@ -180,10 +180,10 @@ public abstract class GetHelper<T> {
       baseStore.openTransaction();
       if (table != null) {
         TableStore store = baseStore.unwrap(TableStore.class);
-        table = store.getTable(tableName, null, -1);
+        table = store.getTable((TableName) argument, null, -1);
         if (table == null) {
           throw new NoSuchObjectException(
-              "Specified catalog.database.table does not exist : " + tableName);
+              "Specified catalog.database.table does not exist : " + argument);
         }
       }
     } else {

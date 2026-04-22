@@ -44,13 +44,12 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MTable;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
 import org.apache.hadoop.hive.metastore.metastore.impl.TableStoreImpl;
 import org.apache.thrift.TException;
 
 @MetaDescriptor(alias = "table", defaultImpl = TableStoreImpl.class)
-public interface TableStore extends RawStoreAware {
+public interface TableStore {
 
   void createTable(Table tbl) throws InvalidObjectException,
       MetaException;
