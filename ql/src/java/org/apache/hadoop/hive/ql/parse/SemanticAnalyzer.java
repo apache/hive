@@ -8260,8 +8260,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         && enableColumnStatsCollecting()
         && destinationTable != null
         && (!destinationTable.isNonNative() || destinationTable.getStorageHandler().commitInMoveTask())
-        && !destTableIsTemporary && !destTableIsMaterialization
-        && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
+        && !destTableIsTemporary
+        && !destTableIsMaterialization
+        && ColumnStatsAutoGatherContext.canRunAutogatherStats(destinationTable, fso)) {
       if (destType == QBMetaData.DEST_TABLE) {
         genAutoColumnStatsGatheringPipeline(destinationTable, partSpec, input,
             qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
