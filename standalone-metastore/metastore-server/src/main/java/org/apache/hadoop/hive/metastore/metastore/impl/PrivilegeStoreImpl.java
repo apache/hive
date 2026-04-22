@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.metastore.impl;
 
 import com.google.common.base.Preconditions;
 
-import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -41,7 +39,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -55,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDCPrivilege;
@@ -79,10 +77,8 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.convert;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class PrivilegeStoreImpl implements PrivilegeStore {
+public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore {
   private static final Logger LOG = LoggerFactory.getLogger(PrivilegeStoreImpl.class);
-  private PersistenceManager pm;
-  private RawStore baseStore;
   private Configuration conf;
 
   @Override
@@ -2370,22 +2366,7 @@ public class PrivilegeStoreImpl implements PrivilegeStore {
 
   @Override
   public void setBaseStore(RawStore store) {
-    this.baseStore = Objects.requireNonNull(store);
+    super.setBaseStore(store);
     this.conf = baseStore.getConf();
-  }
-
-  @Override
-  public void setPersistentManager(PersistenceManager pm) {
-    this.pm = Objects.requireNonNull(pm);
-  }
-
-  @Override
-  public RawStore getBaseStore() {
-    return baseStore;
-  }
-
-  @Override
-  public PersistenceManager getPersistentManager() {
-    return pm;
   }
 }

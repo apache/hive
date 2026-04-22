@@ -155,8 +155,7 @@ public class VerifyingObjectStore extends ObjectStore {
       // could be different from that in the datastore.
       // We cannot verify the partitions by getPartitionsByNames now.
       GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(partNames).build();
-      List<Partition> oldParts = getPartitionsByNamesInternal(
-          catName, dbName, tblName, true, true, args);
+      List<Partition> oldParts = unwrap(TableStore.class).getPartitionsByNames(new TableName(catName, dbName, tblName), args);
       if (oldParts.size() != partNames.size()) {
         throw new MetaException("Some partitions to be altered are missing");
       }

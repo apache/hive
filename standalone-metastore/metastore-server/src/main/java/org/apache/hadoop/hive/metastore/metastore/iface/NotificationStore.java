@@ -28,12 +28,11 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
 import org.apache.hadoop.hive.metastore.metastore.impl.NotificationStoreImpl;
 
 @MetaDescriptor(alias = "notification", defaultImpl = NotificationStoreImpl.class)
-public interface NotificationStore extends RawStoreAware {
+public interface NotificationStore {
   /**
    * Get the next notification event.
    * @param rqst Request containing information on the last processed notification.

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.metastore.impl;
 
 import com.google.common.collect.Lists;
 
-import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.datastore.JDOConnection;
 
@@ -31,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -50,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
@@ -63,25 +62,18 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.appendSimpleCondition
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class NotificationStoreImpl implements NotificationStore  {
+public class NotificationStoreImpl extends RawStoreAware implements NotificationStore {
   private static final Logger LOG = LoggerFactory.getLogger(NotificationStoreImpl.class);
-  private RawStore baseStore;
-  private PersistenceManager pm;
   private Configuration conf;
   private SQLGenerator sqlGenerator;
   private MetaStoreDirectSql directSql;
 
   @Override
   public void setBaseStore(RawStore store) {
-    this.baseStore = Objects.requireNonNull(store);
+    super.setBaseStore(store);
     this.conf = baseStore.getConf();
     DatabaseProduct dbType = PersistenceManagerProvider.getDatabaseProduct();
     this.sqlGenerator = new SQLGenerator(dbType, conf);
-  }
-
-  @Override
-  public void setPersistentManager(PersistenceManager persistentManager) {
-    this.pm = Objects.requireNonNull(persistentManager);
   }
 
   @Override
@@ -432,15 +424,5 @@ public class NotificationStoreImpl implements NotificationStore  {
       }
     }
     return writeEventInfoList;
-  }
-
-  @Override
-  public RawStore getBaseStore() {
-    return baseStore;
-  }
-
-  @Override
-  public PersistenceManager getPersistentManager() {
-    return pm;
   }
 }
