@@ -2785,6 +2785,52 @@ public class TestJdbcDriver2 {
   }
 
   /**
+   * Variant of {@link #testQueryTimeoutMessageUsesHiveConf}: the {@code SET} is issued on a
+   * separate, already-closed statement; the timed-out query runs on a brand-new statement with no
+   * {@link Statement#setQueryTimeout(int)} call. The tracked session timeout lives on the
+   * {@link HiveConnection}, so it persists across statement instances and must still drive the
+   * {@link SQLTimeoutException} message correctly. Covers the HIVE-28265 multi-statement scenario.
+   */
+  @Test
+  public void testQueryTimeoutMessagePersistedAcrossStatements() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+    stmt1.close();
+
+    // SET is issued on stmt2, which is then closed – timeout must survive on the connection
+    Statement stmt2 = con.createStatement();
+    stmt2.execute("set hive.query.timeout.seconds=1s");
+    stmt2.close();
+
+    // Brand-new statement, no setQueryTimeout() call – relies solely on the tracked session value
+    Statement stmt = con.createStatement();
+    System.err.println("Executing query (expecting timeout): ");
+    try {
+      stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
+          + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+          + " t2 on t1.under_col = t2.under_col");
+      fail("Expecting SQLTimeoutException");
+    } catch (SQLTimeoutException e) {
+      assertTimeoutMessageShowsOneSecond("SET on closed stmt2, executeQuery on new stmt", e);
+      System.err.println(e.toString());
+    } catch (SQLException e) {
+      fail("Expecting SQLTimeoutException, but got SQLException: " + e);
+      e.printStackTrace();
+    }
+
+    // A fast query must still complete when the per-statement timeout overrides
+    stmt.setQueryTimeout(5);
+    try {
+      stmt.executeQuery("show tables");
+    } catch (SQLException e) {
+      fail("Unexpected SQLException: " + e);
+      e.printStackTrace();
+    }
+    stmt.close();
+  }
+
+  /**
    * Test the non-null value of the Yarn ATS GUID.
    * We spawn 2 threads - one running the query and
    * the other attempting to read the ATS GUID.
