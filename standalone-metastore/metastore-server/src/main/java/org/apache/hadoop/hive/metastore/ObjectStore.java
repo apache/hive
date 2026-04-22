@@ -709,8 +709,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * Ensure catalog has a valid type, default to NATIVE if not specified.
-   * Also normalizes the type to lowercase (e.g., "NATIVE" -> "native").
+   * Ensure catalog has a valid type, default to hive if not specified.
+   * Also normalizes the type to lowercase (e.g., "HIVE" -> "hive").
    */
   private void ensureCatalogType(Catalog cat) throws MetaException {
     Map<String, String> parameters = cat.getParameters();
@@ -719,9 +719,9 @@ public class ObjectStore implements RawStore, Configurable {
       cat.setParameters(parameters);
     }
 
-    String catalogType = parameters.get("type");
+    String catalogType = parameters.get(CatalogUtil.TYPE);
     try {
-      parameters.put("type", CatalogUtil.normalizeCatalogType(catalogType));
+      parameters.put(CatalogUtil.TYPE, CatalogUtil.normalizeCatalogType(catalogType));
     } catch (IllegalArgumentException e) {
       throw new MetaException("Invalid catalog type: " + catalogType);
     }

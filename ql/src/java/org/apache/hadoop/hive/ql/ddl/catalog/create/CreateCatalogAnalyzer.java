@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.catalog.create;
 
-import com.google.common.base.Strings;
 import org.apache.hadoop.hive.metastore.CatalogUtil;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.ql.QueryState;
