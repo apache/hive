@@ -1661,7 +1661,7 @@ public abstract class TestHiveMetaStore {
       }
       assertNotNull(udbe);
       assertTrue("DB not found",
-          udbe.getMessage().contains("There is no database hive.db_that_doesnt_exist"));
+          udbe.getMessage().contains("not find database hive.db_that_doesnt_exist"));
 
       udbe = null;
       try {

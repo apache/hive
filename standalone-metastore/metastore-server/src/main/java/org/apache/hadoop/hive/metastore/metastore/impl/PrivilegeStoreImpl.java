@@ -1309,7 +1309,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
     String catName = normalizeIdentifier(catalog);
     String dbName = normalizeIdentifier(db);
     String tblName = normalizeIdentifier(tableName);
-    return new GetListHelper<HiveObjectPrivilege>(this, new TableName(catName, dbName, tableName)) {
+    return new GetListHelper<TableName, HiveObjectPrivilege>(this, new TableName(catName, dbName, tableName)) {
 
       @Override
       protected String describeResult() {
@@ -1317,13 +1317,13 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
       }
 
       @Override
-      protected List<HiveObjectPrivilege> getSqlResult(GetHelper<List<HiveObjectPrivilege>> ctx)
+      protected List<HiveObjectPrivilege> getSqlResult(GetHelper<TableName, List<HiveObjectPrivilege>> ctx)
           throws MetaException {
         return getDirectSql().getTableAllColumnGrants(catName, dbName, tblName, authorizer);
       }
 
       @Override
-      protected List<HiveObjectPrivilege> getJdoResult(GetHelper<List<HiveObjectPrivilege>> ctx) {
+      protected List<HiveObjectPrivilege> getJdoResult(GetHelper<TableName, List<HiveObjectPrivilege>> ctx) {
         return convertTableCols(listTableAllColumnGrants(catName, dbName, tblName, authorizer));
       }
     }.run(false);
