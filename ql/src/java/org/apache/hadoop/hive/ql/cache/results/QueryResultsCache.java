@@ -672,17 +672,9 @@ public final class QueryResultsCache {
     return true;
   }
 
-  /**
-   * Copies each file from the fetch work into {@code resultDir}, preserving relative paths below
-   * the safe-write prefix. Runs under {@link #rwLock} write lock so cache metadata and filesystem
-   * layout stay consistent with other cache mutations.
-   *
-   * @param destFileStatuses output: destination {@link FileStatus} entries for successfully copied files
-   * @return {@code true} if every file was copied and listed; {@code false} otherwise
-   */
   private boolean copyFetchWorkFilesIntoCacheDirUnderWriteLock(FetchWork fetchWork, Path resultDir,
       FileSystem cacheFs, int safeDirAndSepLen, HiveConf queryConf, Set<FileStatus> destFileStatuses) {
-    final boolean[] succeeded = { true };
+    final boolean[] succeeded = {true};
     withWriteLock(() -> {
       try {
         for (FileStatus fs : fetchWork.getFilesToFetch()) {
@@ -698,6 +690,7 @@ public final class QueryResultsCache {
         }
       } catch (IOException e) {
         LOG.warn("Failed to write cache entry to {}", resultDir, e);
+        succeeded[0] = false;
       }
     });
     return succeeded[0];
