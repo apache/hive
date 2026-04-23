@@ -91,6 +91,15 @@ public class TestParseDefault {
   }
 
   @Test
+  public void testParseCreateViewStoredByIceberg() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "create view v1 stored by iceberg as select * from t", null).getTree();
+    assertTrue(tree.dump(), tree.toStringTree().contains("tok_createview"));
+    assertTrue(tree.dump(), tree.toStringTree().contains("tok_viewmetadataformat"));
+    assertTrue(tree.dump(), tree.toStringTree().contains("iceberg"));
+  }
+
+  @Test
   public void testParseStructFieldNamedDefault() throws Exception {
     ASTNode tree = parseDriver.parse(
             "select col0.default.key from s_n1\n", null).getTree();

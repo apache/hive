@@ -34,12 +34,16 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class CreateViewDesc extends AbstractCreateViewDesc {
   private static final long serialVersionUID = 1L;
 
+  /** HMS table property set when the view is declared with {@code STORED BY ICEBERG} (native Iceberg view). */
+  public static final String ICEBERG_NATIVE_VIEW_PROPERTY = "hive.iceberg.native.view";
+
   private final String comment;
   private final Map<String, String> properties;
   private final List<String> partitionColumnNames;
   private final boolean ifNotExists;
   private final boolean replace;
   private final List<FieldSchema> partitionColumns;
+  private final boolean icebergNativeView;
 
   private ReplicationSpec replicationSpec = null;
   private String ownerName = null;
@@ -47,6 +51,13 @@ public class CreateViewDesc extends AbstractCreateViewDesc {
   public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment, Map<String, String> properties,
       List<String> partitionColumnNames, boolean ifNotExists, boolean replace, String originalText,
       String expandedText, List<FieldSchema> partitionColumns) {
+    this(viewName, schema, comment, properties, partitionColumnNames, ifNotExists, replace, originalText,
+        expandedText, partitionColumns, false);
+  }
+
+  public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment, Map<String, String> properties,
+      List<String> partitionColumnNames, boolean ifNotExists, boolean replace, String originalText,
+      String expandedText, List<FieldSchema> partitionColumns, boolean icebergNativeView) {
     super(viewName, schema, originalText, expandedText);
     this.comment = comment;
     this.properties = properties;
@@ -54,6 +65,7 @@ public class CreateViewDesc extends AbstractCreateViewDesc {
     this.ifNotExists = ifNotExists;
     this.replace = replace;
     this.partitionColumns = partitionColumns;
+    this.icebergNativeView = icebergNativeView;
   }
 
   @Explain(displayName = "partition columns")
@@ -87,6 +99,11 @@ public class CreateViewDesc extends AbstractCreateViewDesc {
   @Explain(displayName = "replace", displayOnlyOnTrue = true)
   public boolean isReplace() {
     return replace;
+  }
+
+  @Explain(displayName = "iceberg native view", displayOnlyOnTrue = true)
+  public boolean isIcebergNativeView() {
+    return icebergNativeView;
   }
 
   /**

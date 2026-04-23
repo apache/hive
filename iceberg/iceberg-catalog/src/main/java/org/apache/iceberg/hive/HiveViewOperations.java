@@ -302,7 +302,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
         tableType().name());
   }
 
-  private String sqlFor(ViewMetadata metadata) {
+  public static String sqlFor(ViewMetadata metadata) {
     SQLViewRepresentation closest = null;
     for (ViewRepresentation representation : metadata.currentVersion().representations()) {
       if (representation instanceof SQLViewRepresentation) {

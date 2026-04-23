@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -47,6 +48,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 @DDLType(types = HiveParser.TOK_CREATEVIEW)
 public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
+  private static final String ICEBERG_STORAGE_HANDLER_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+
   public CreateViewAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -75,6 +78,9 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<String> partitionColumnNames = children.containsKey(HiveParser.TOK_VIEWPARTCOLS) ?
         getColumnNames((ASTNode) children.remove(HiveParser.TOK_VIEWPARTCOLS).getChild(0)) : null;
 
+    ASTNode viewMetadataFormat = children.remove(HiveParser.TOK_VIEWMETADATAFORMAT);
+    boolean icebergNativeView = resolveNativeIcebergView(viewMetadataFormat);
+
     assert children.isEmpty();
 
     if (ifNotExists && orReplace) {
@@ -94,7 +100,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<FieldSchema> partitionColumns = getPartitionColumns(partitionColumnNames);
     setColumnAccessInfo(analyzer.getColumnAccessInfo());
     CreateViewDesc desc = new CreateViewDesc(fqViewName, schema, comment, properties, partitionColumnNames,
-        ifNotExists, orReplace, originalText, expandedText, partitionColumns);
+        ifNotExists, orReplace, originalText, expandedText, partitionColumns, icebergNativeView);
     validateCreateView(desc, analyzer);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
@@ -189,6 +195,29 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<FieldSchema> partitionColumnsCopy = new ArrayList<>(partitionColumns);
     partitionColumns.clear();
     return partitionColumnsCopy;
+  }
+
+  /**
+   * Native Iceberg view when {@code STORED BY iceberg} is present, or when it is omitted and
+   * {@code hive.default.storage.handler.class} is the Iceberg storage handler class.
+   */
+  private boolean resolveNativeIcebergView(ASTNode viewMetadataFormat) throws SemanticException {
+    if (viewMetadataFormat != null) {
+      if (viewMetadataFormat.getChildCount() != 1) {
+        throw new SemanticException("Internal error: expected single handler identifier in view metadata");
+      }
+      String handler = ((ASTNode) viewMetadataFormat.getChild(0)).getText();
+      if (handler == null || !handler.equalsIgnoreCase("iceberg")) {
+        throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
+            "Only STORED BY ICEBERG is supported for native views, got: " + handler));
+      }
+      return true;
+    }
+    String defaultHandler = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER);
+    if (defaultHandler == null || defaultHandler.isEmpty()) {
+      return false;
+    }
+    return ICEBERG_STORAGE_HANDLER_CLASS.equals(defaultHandler.trim());
   }
 
   private void validateCreateView(CreateViewDesc desc, SemanticAnalyzer analyzer) throws SemanticException {

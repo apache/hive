@@ -295,6 +295,7 @@ TOK_CREATEMACRO;
 TOK_DROPMACRO;
 TOK_TEMPORARY;
 TOK_CREATEVIEW;
+TOK_VIEWMETADATAFORMAT;
 TOK_DROPVIEW;
 TOK_ALTERVIEW;
 TOK_ALTERVIEW_PROPERTIES;
@@ -1651,6 +1652,7 @@ createViewStatement
     : KW_CREATE (orReplace)? KW_VIEW (ifNotExists)? name=tableName
         (LPAREN columnNameCommentList RPAREN)? tableComment? viewPartition?
         tablePropertiesPrefixed?
+        (viewMeta=viewMetadataFormat)?
         KW_AS
         selectStatementWithCTE
     -> ^(TOK_CREATEVIEW $name orReplace?
@@ -1659,6 +1661,7 @@ createViewStatement
          tableComment?
          viewPartition?
          tablePropertiesPrefixed?
+         $viewMeta?
          selectStatementWithCTE
         )
     ;
@@ -2052,6 +2055,14 @@ tableFileFormat
       -> ^(TOK_STORAGEHANDLER $genericSpec $serdeprops? ^(TOK_FILEFORMAT_GENERIC $fileformat)?)
       | KW_STORED KW_AS genericSpec=identifier
       -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
+    ;
+
+// Native view metadata: only STORED BY <identifier> (e.g. ICEBERG). No SerDe props or STORED AS tail.
+viewMetadataFormat
+@init { pushMsg("view metadata format", state); }
+@after { popMsg(state); }
+    : KW_STORED KW_BY handlerId=identifier
+    -> ^(TOK_VIEWMETADATAFORMAT $handlerId)
     ;
 
 tableLocation
