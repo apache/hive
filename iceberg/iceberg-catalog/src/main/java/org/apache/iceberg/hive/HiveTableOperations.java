@@ -69,6 +69,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   private final long maxHiveTablePropertySize;
   private final int metadataRefreshMaxRetries;
   private final FileIO fileIO;
+
   private final ClientPool<IMetaStoreClient, TException> metaClients;
 
   protected HiveTableOperations(
@@ -122,6 +123,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
       if ("iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION))) {
         HiveOperationsBase.validateTableOrMVIsIceberg(table, fullName);
+      } else {
+        HiveOperationsBase.validateTableIsIceberg(table, fullName);
       }
 
       metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
