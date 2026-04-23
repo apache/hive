@@ -45,7 +45,7 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
     super(queryState);
   }
 
-  public AbstractFunctionAnalyzer(QueryState queryState, Hive db) throws SemanticException {
+  protected AbstractFunctionAnalyzer(QueryState queryState, Hive db) throws SemanticException {
     super(queryState, db);
   }
 

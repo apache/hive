@@ -53,12 +53,12 @@ import org.junit.jupiter.api.Test;
  * Tests for DropFunctionAnalyzer focusing on the case where the function's JAR resource is
  * unavailable (e.g. deleted from HDFS after the function was registered).
  */
-public class TestDropFunctionAnalyzer {
+class TestDropFunctionAnalyzer {
 
   private HiveConf conf;
 
   @BeforeEach
-  void setUp() throws Exception {
+  void setUp() {
     conf = new HiveConfForTest(getClass());
     SessionState.start(conf);
   }
