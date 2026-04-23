@@ -372,8 +372,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return type == CompactionType.ABORT_TXN_CLEANUP;
   }
 
-  public void setSoftDelete(boolean softDelete) {
-    this.softDelete = softDelete;
+  public CompactionInfo asSoftDeleted() {
+    this.softDelete = true;
+    return this;
   }
 
   public boolean isSoftDelete() {

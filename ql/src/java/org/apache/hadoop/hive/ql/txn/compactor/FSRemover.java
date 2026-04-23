@@ -127,20 +127,21 @@ public class FSRemover {
         deleted.add(dead);
       }
     }
-    removeDatabaseDirIfNecessary(db, cr, fs);
+    removeDbDirIfOrphaned(db, cr, fs);
     return deleted;
   }
 
-  private void removeDatabaseDirIfNecessary(Database db, CleanupRequest cr, FileSystem fs) throws IOException {
+  private void removeDbDirIfOrphaned(Database db, CleanupRequest cr, FileSystem fs) throws IOException {
     if (db != null || !cr.isSoftDelete()) {
       return;
     }
     Path databasePath = new Path(cr.getLocation()).getParent();
-    if (FileUtils.isDirEmpty(fs, databasePath)) {
-      if (cr.isSourceOfReplication()) {
-        replChangeManager.recycle(databasePath, ReplChangeManager.RecycleType.MOVE, cr.isPurge());
-      }
-      FileUtils.deleteDir(fs, databasePath, cr.isPurge(), conf);
+    if (!FileUtils.isDirEmpty(fs, databasePath)) {
+      return;
     }
+    if (cr.isSourceOfReplication()) {
+      replChangeManager.recycle(databasePath, ReplChangeManager.RecycleType.MOVE, cr.isPurge());
+    }
+    FileUtils.deleteDir(fs, databasePath, cr.isPurge(), conf);
   }
 }

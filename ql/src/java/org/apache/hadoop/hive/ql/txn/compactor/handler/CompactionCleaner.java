@@ -198,8 +198,7 @@ class CompactionCleaner extends TaskHandler {
       deleted = fsRemover.clean(getCleaningRequestBasedOnLocation(ci, path));
     }
     if (!deleted.isEmpty()) {
-      ci.setSoftDelete(true);
-      txnHandler.markCleaned(ci);
+      txnHandler.markCleaned(ci.asSoftDeleted());
     } else {
       txnHandler.clearCleanerStart(ci);
     }
