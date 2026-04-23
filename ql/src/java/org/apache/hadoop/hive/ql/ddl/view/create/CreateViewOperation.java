@@ -22,6 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 import java.util.Map;
 
@@ -82,6 +84,10 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
       if (desc.getProperties() != null) {
         oldview.getTTable().getParameters().putAll(desc.getProperties());
       }
+      if (!desc.usesStorageHandler()) {
+        // External logical view is replaced with a native Hive view
+        clearStorageHandlerProp(oldview);
+      }
       oldview.setPartCols(desc.getPartitionColumns());
 
       oldview.checkValidity(null);
@@ -94,6 +100,9 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
     } else {
       // We create new view
       Table view = createViewObject();
+      if (desc.usesStorageHandler()) {
+          pushExternalLogicalViewSessionHints(desc.isReplace(), desc.getIfNotExists());
+      }
       context.getDb().createTable(view, desc.getIfNotExists());
       DDLUtils.addIfAbsentByName(new WriteEntity(view, WriteEntity.WriteType.DDL_NO_LOCK),
           context.getWork().getOutputs());
@@ -103,6 +112,25 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
       context.getQueryState().getLineageState().setLineage(new Path(desc.getViewName()), dc, view.getCols());
     }
     return 0;
+  }
+
+  private void pushExternalLogicalViewSessionHints(boolean replace, boolean ifNotExists) {
+    SessionStateUtil.addResource(context.getConf(), Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE,
+        Boolean.toString(replace));
+    SessionStateUtil.addResource(context.getConf(), Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS,
+        Boolean.toString(ifNotExists));
+  }
+
+  private void clearStorageHandlerProp(Table oldview) {
+    Map<String, String> params = oldview.getParameters();
+    if (params == null) {
+      return;
+    }
+    String fqcn = params.get(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+    if (fqcn == null) {
+      return;
+    }
+    params.remove(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
   }
 
   private Table createViewObject() throws HiveException {
@@ -129,6 +157,13 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
     StorageFormat storageFormat = new StorageFormat(context.getConf());
     storageFormat.fillDefaultStorageFormat(false, false);
 
+    if (desc.usesStorageHandler()) {
+      storageFormat.setStorageHandler(desc.getStorageHandlerClass());
+      view.setProperty(
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
+          desc.getStorageHandlerClass().trim());
+    }
+    
     view.setInputFormatClass(storageFormat.getInputFormat());
     view.setOutputFormatClass(storageFormat.getOutputFormat());
 

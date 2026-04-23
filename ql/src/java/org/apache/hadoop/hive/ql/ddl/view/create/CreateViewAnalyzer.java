@@ -24,7 +24,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -41,12 +44,16 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.StorageFormat;
 
 /**
  * Analyzer for create view commands.
  */
 @DDLType(types = HiveParser.TOK_CREATEVIEW)
 public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
+
+  private static final String VIEW_FORMAT_TABLE_PROPERTY = "view-format";
+
   public CreateViewAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -75,6 +82,14 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<String> partitionColumnNames = children.containsKey(HiveParser.TOK_VIEWPARTCOLS) ?
         getColumnNames((ASTNode) children.remove(HiveParser.TOK_VIEWPARTCOLS).getChild(0)) : null;
 
+    String storageHandlerClassFromTableProps = getViewStorageHandlerClassFromTableProps(properties);
+    String storageHandlerClass = resolveViewStorageHandlerClass(storageHandlerClassFromTableProps);
+
+    if (storageHandlerClassFromTableProps != null && storageHandlerClass == null) {
+      throw new SemanticException(
+          ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.format(storageHandlerClassFromTableProps));
+    }
+
     assert children.isEmpty();
 
     if (ifNotExists && orReplace) {
@@ -94,7 +109,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<FieldSchema> partitionColumns = getPartitionColumns(partitionColumnNames);
     setColumnAccessInfo(analyzer.getColumnAccessInfo());
     CreateViewDesc desc = new CreateViewDesc(fqViewName, schema, comment, properties, partitionColumnNames,
-        ifNotExists, orReplace, originalText, expandedText, partitionColumns);
+        ifNotExists, orReplace, originalText, expandedText, partitionColumns, storageHandlerClass);
     validateCreateView(desc, analyzer);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
@@ -189,6 +204,56 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<FieldSchema> partitionColumnsCopy = new ArrayList<>(partitionColumns);
     partitionColumns.clear();
     return partitionColumnsCopy;
+  }
+
+  /**
+   * Returns the FQCN of the storage handler that should own external logical view metadata, or {@code null} for a
+   * classic HMS virtual view. Uses {@code storageHandlerClassFromTableProps} when non-null (from the 
+   * {@code view-format} table property); otherwise the Hive config {@code hive.default.storage.handler.class}.
+   */
+  private String resolveViewStorageHandlerClass(String storageHandlerClassFromTableProps)
+      throws SemanticException {
+
+    String storageHandlerClassFromConfig =
+        StringUtils.trimToNull(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER));
+
+    String storageHandlerClass =
+        storageHandlerClassFromTableProps != null ? storageHandlerClassFromTableProps : storageHandlerClassFromConfig;
+
+    if (StringUtils.isBlank(storageHandlerClass)) {
+      return null;
+    }
+
+    boolean explicitViewFormat = storageHandlerClassFromTableProps != null;
+    try {
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
+
+      if (storageHandler != null && storageHandler.supportsExternalLogicalViewCatalog()) {
+        return storageHandlerClass;
+      }
+    } catch (HiveException e) {
+
+      if (explicitViewFormat) {
+        throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.format(storageHandlerClass), e);
+      }
+    }
+
+    return null;
+  }
+
+  private static String getViewStorageHandlerClassFromTableProps(Map<String, String> properties) 
+      throws SemanticException {
+    if (properties == null) {
+      return null;
+    }
+    for (Map.Entry<String, String> e : properties.entrySet()) {
+      if (e.getKey() != null
+          && VIEW_FORMAT_TABLE_PROPERTY.equalsIgnoreCase(e.getKey())
+          && StringUtils.isNotBlank(e.getValue())) {
+        return StorageFormat.resolveStorageHandlerClassName(e.getValue().trim());
+      }
+    }
+    return null;
   }
 
   private void validateCreateView(CreateViewDesc desc, SemanticAnalyzer analyzer) throws SemanticException {

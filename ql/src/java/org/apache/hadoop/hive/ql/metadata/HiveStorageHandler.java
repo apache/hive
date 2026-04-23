@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 
 import com.google.common.collect.Maps;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -1026,6 +1027,14 @@ public interface HiveStorageHandler extends Configurable {
 
   default void setMergeTaskDeleteProperties(TableDesc tableDesc) {
     throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
+  }
+
+  /**
+   * @return {@code true} if this handler may store CREATE VIEW text and column metadata in an external catalog
+   *         rather than only as a classic HMS virtual view.
+   */
+  default boolean supportsExternalLogicalViewCatalog() {
+    return false;
   }
 
   default boolean supportsDefaultColumnValues(Map<String, String> tblProps) {

@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -117,6 +118,7 @@ import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
+import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
 import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.hive.MetastoreLock;
 import org.apache.iceberg.hive.NoLock;
@@ -183,6 +185,32 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (BaseHiveIcebergMetaHook.isNativeIcebergLogicalView(hmsTable)) {
+      tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+      if (Catalogs.hiveCatalog(conf, tableProperties)) {
+        boolean replace =
+            Boolean.parseBoolean(
+                SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE).orElse("false"));
+        boolean ifNotExists =
+            Boolean.parseBoolean(
+                SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS)
+                    .orElse("false"));
+        Map<String, String> tblProps =
+            hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
+        String comment = tblProps.get("comment");
+        IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+            conf,
+            hmsTable.getDbName(),
+            hmsTable.getTableName(),
+            hmsTable.getSd().getCols(),
+            hmsTable.getViewExpandedText(),
+            tblProps,
+            comment,
+            replace,
+            ifNotExists);
+      }
+      return;
+    }
     if (icebergTable == null) {
 
       setFileFormat(tableProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
@@ -265,6 +293,15 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
+    if (BaseHiveIcebergMetaHook.isNativeIcebergLogicalView(hmsTable)) {
+      currentAlterTableOp = null;
+      if (commitLock == null) {
+        commitLock = new NoLock();
+      }
+      commitLock.lock();
+      tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+      return;
+    }
     tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
     setupAlterOperationType(hmsTable, context);
     if (AlterTableType.RENAME.equals(currentAlterTableOp)) {
@@ -494,6 +531,23 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       throw new IllegalStateException("Hive commit lock should already be set");
     }
     commitLock.unlock();
+    if (BaseHiveIcebergMetaHook.isNativeIcebergLogicalView(hmsTable)) {
+      tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+      Map<String, String> tblProps =
+          hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
+      String comment = tblProps.get("comment");
+      IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+          conf,
+          hmsTable.getDbName(),
+          hmsTable.getTableName(),
+          hmsTable.getSd().getCols(),
+          hmsTable.getViewExpandedText(),
+          tblProps,
+          comment,
+          true,
+          false);
+      return;
+    }
     if (isTableMigration) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       tableProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));

@@ -161,6 +161,7 @@ public class HMSTablePropertyHelper {
         HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase(Locale.ENGLISH),
         metadata.schema(),
         maxHiveTablePropertySize);
+    parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
     tbl.setParameters(parameters);
   }
 

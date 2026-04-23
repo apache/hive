@@ -33,10 +33,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -44,6 +47,7 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.NullOrder;
@@ -62,6 +66,7 @@ import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
 import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -115,6 +120,16 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     this.conf = conf;
   }
 
+  public static boolean isNativeIcebergLogicalView(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable == null ||
+        hmsTable.getParameters() == null ||
+        !TableType.VIRTUAL_VIEW.toString().equals(hmsTable.getTableType())) {
+      return false;
+    }
+    String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
+    return HiveMetaHook.HIVE_ICEBERG_STORAGE_HANDLER.equals(storageHandler);
+  }
+
   @Override
   public void preCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     CreateTableRequest request = new CreateTableRequest(hmsTable);
@@ -126,6 +141,10 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     org.apache.hadoop.hive.metastore.api.Table hmsTable = request.getTable();
     if (hmsTable.isTemporary()) {
       throw new UnsupportedOperationException("Creation of temporary iceberg tables is not supported.");
+    }
+    if (isNativeIcebergLogicalView(hmsTable)) {
+      preCreateNativeIcebergLogicalView(request);
+      return;
     }
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
@@ -202,6 +221,26 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, tableProperties);
+  }
+
+  private void preCreateNativeIcebergLogicalView(CreateTableRequest request) {
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = request.getTable();
+    this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+
+    if (request.getEnvContext() == null) {
+      request.setEnvContext(new EnvironmentContext());
+    }
+    final EnvironmentContext env = request.getEnvContext();
+    SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE)
+        .ifPresent(v -> env.putToProperties(Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE, v));
+    SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS)
+        .ifPresent(v -> env.putToProperties(Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS, v));
+
+    hmsTable
+        .getParameters()
+        .put(
+            BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+            IcebergNativeLogicalViewSupport.ICEBERG_VIEW_HMS_TABLE_TYPE_VALUE);
   }
 
   /**
@@ -342,7 +381,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
     // do nothing
   }
 
@@ -504,6 +543,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
+        if (isNativeIcebergLogicalView(hmsTable)) {
+          return;
+        }
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
         String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
