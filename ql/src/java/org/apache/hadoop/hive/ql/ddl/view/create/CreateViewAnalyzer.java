@@ -75,6 +75,17 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<String> partitionColumnNames = children.containsKey(HiveParser.TOK_VIEWPARTCOLS) ?
         getColumnNames((ASTNode) children.remove(HiveParser.TOK_VIEWPARTCOLS).getChild(0)) : null;
 
+    ASTNode storageClause = null;
+    for (int storageTokenType : new int[] { HiveParser.TOK_STORAGEHANDLER, HiveParser.TOK_TABLEFILEFORMAT,
+        HiveParser.TOK_FILEFORMAT_GENERIC }) {
+      ASTNode storageClauseCandidate = children.remove(storageTokenType);
+      if (storageClauseCandidate != null) {
+        storageClause = storageClauseCandidate;
+        break;
+      }
+    }
+    boolean icebergNativeView = validateOptionalViewStorageClause(storageClause);
+
     assert children.isEmpty();
 
     if (ifNotExists && orReplace) {
@@ -94,7 +105,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<FieldSchema> partitionColumns = getPartitionColumns(partitionColumnNames);
     setColumnAccessInfo(analyzer.getColumnAccessInfo());
     CreateViewDesc desc = new CreateViewDesc(fqViewName, schema, comment, properties, partitionColumnNames,
-        ifNotExists, orReplace, originalText, expandedText, partitionColumns);
+        ifNotExists, orReplace, originalText, expandedText, partitionColumns, icebergNativeView);
     validateCreateView(desc, analyzer);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
@@ -189,6 +200,40 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<FieldSchema> partitionColumnsCopy = new ArrayList<>(partitionColumns);
     partitionColumns.clear();
     return partitionColumnsCopy;
+  }
+
+  /**
+   * Optional trailing {@code tableFileFormat} on CREATE VIEW: only {@code STORED BY ICEBERG} is allowed
+   * (no serde properties or {@code STORED AS} tail).
+   */
+  private boolean validateOptionalViewStorageClause(ASTNode storageRoot) throws SemanticException {
+    if (storageRoot == null) {
+      return false;
+    }
+    if (storageRoot.getToken().getType() == HiveParser.TOK_TABLEFILEFORMAT
+        || storageRoot.getToken().getType() == HiveParser.TOK_FILEFORMAT_GENERIC) {
+      throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
+          storageRoot.toStringTree()));
+    }
+    if (storageRoot.getToken().getType() != HiveParser.TOK_STORAGEHANDLER) {
+      throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
+          storageRoot.toStringTree()));
+    }
+    if (storageRoot.getChildCount() != 1) {
+      throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
+          "STORED BY ICEBERG views do not support WITH SERDEPROPERTIES or STORED AS"));
+    }
+    ASTNode handlerNode = (ASTNode) storageRoot.getChild(0);
+    if (handlerNode.getToken().getType() == HiveParser.StringLiteral) {
+      throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
+          "STORED BY with string literal handler"));
+    }
+    String handler = handlerNode.getText();
+    if (handler == null || !handler.equalsIgnoreCase("iceberg")) {
+      throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
+          "STORED BY " + handler));
+    }
+    return true;
   }
 
   private void validateCreateView(CreateViewDesc desc, SemanticAnalyzer analyzer) throws SemanticException {

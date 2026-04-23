@@ -1,0 +1,223 @@
+PREHOOK: query: create database ice_native_view_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:ice_native_view_db
+POSTHOOK: query: create database ice_native_view_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:ice_native_view_db
+PREHOOK: query: use ice_native_view_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:ice_native_view_db
+POSTHOOK: query: use ice_native_view_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:ice_native_view_db
+PREHOOK: query: create table src_ice (
+    first_name string, 
+    last_name string
+ )
+partitioned by (dept_id bigint)
+stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:ice_native_view_db
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: create table src_ice (
+    first_name string, 
+    last_name string
+ )
+partitioned by (dept_id bigint)
+stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:ice_native_view_db
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: insert into src_ice values ('fn1','ln1', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: insert into src_ice values ('fn1','ln1', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: insert into src_ice values ('fn2','ln2', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: insert into src_ice values ('fn2','ln2', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: insert into src_ice values ('fn3','ln3', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: insert into src_ice values ('fn3','ln3', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: insert into src_ice values ('fn4','ln4', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: insert into src_ice values ('fn4','ln4', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: insert into src_ice values ('fn5','ln5', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: insert into src_ice values ('fn5','ln5', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: insert into src_ice values ('fn6','ln6', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: insert into src_ice values ('fn6','ln6', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: insert into src_ice values ('fn7','ln7', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: insert into src_ice values ('fn7','ln7', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: update src_ice set last_name = 'ln1a' where first_name='fn1'
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: update src_ice set last_name = 'ln1a' where first_name='fn1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: update src_ice set last_name = 'ln2a' where first_name='fn2'
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: update src_ice set last_name = 'ln2a' where first_name='fn2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: update src_ice set last_name = 'ln3a' where first_name='fn3'
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: update src_ice set last_name = 'ln3a' where first_name='fn3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: update src_ice set last_name = 'ln4a' where first_name='fn4'
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: update src_ice set last_name = 'ln4a' where first_name='fn4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: update src_ice set last_name = 'ln5a' where first_name='fn5'
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: update src_ice set last_name = 'ln5a' where first_name='fn5'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: update src_ice set last_name = 'ln6a' where first_name='fn6'
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: update src_ice set last_name = 'ln6a' where first_name='fn6'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: update src_ice set last_name = 'ln7a' where first_name='fn7'
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: update src_ice set last_name = 'ln7a' where first_name='fn7'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: delete from src_ice where last_name in ('ln1a', 'ln2a', 'ln7a')
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+#### A masked pattern was here ####
+POSTHOOK: query: delete from src_ice where last_name in ('ln1a', 'ln2a', 'ln7a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+#### A masked pattern was here ####
+PREHOOK: query: create view v_ice as select * from src_ice stored by iceberg
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: database:ice_native_view_db
+PREHOOK: Output: ice_native_view_db@v_ice
+POSTHOOK: query: create view v_ice as select * from src_ice stored by iceberg
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: database:ice_native_view_db
+POSTHOOK: Output: ice_native_view_db@v_ice
+POSTHOOK: Lineage: v_ice.dept_id SIMPLE [(src_ice)src_ice.FieldSchema(name:dept_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: v_ice.first_name SIMPLE [(src_ice)src_ice.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: v_ice.last_name SIMPLE [(src_ice)src_ice.FieldSchema(name:last_name, type:string, comment:null), ]
+PREHOOK: query: select * from v_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Input: ice_native_view_db@v_ice
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Input: ice_native_view_db@v_ice
+#### A masked pattern was here ####
+fn3	ln3a	1
+fn4	ln4a	1
+fn5	ln5a	2
+fn6	ln6a	2
+PREHOOK: query: drop view v_ice
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: ice_native_view_db@v_ice
+PREHOOK: Output: ice_native_view_db@v_ice
+POSTHOOK: query: drop view v_ice
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: ice_native_view_db@v_ice
+POSTHOOK: Output: ice_native_view_db@v_ice
+PREHOOK: query: drop table src_ice
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: database:ice_native_view_db
+PREHOOK: Output: ice_native_view_db@src_ice
+POSTHOOK: query: drop table src_ice
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: database:ice_native_view_db
+POSTHOOK: Output: ice_native_view_db@src_ice
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database ice_native_view_db cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:ice_native_view_db
+PREHOOK: Output: database:ice_native_view_db
+POSTHOOK: query: drop database ice_native_view_db cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:ice_native_view_db
+POSTHOOK: Output: database:ice_native_view_db
