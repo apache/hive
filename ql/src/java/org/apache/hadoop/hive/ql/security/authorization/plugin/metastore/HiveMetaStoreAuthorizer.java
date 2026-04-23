@@ -21,29 +21,27 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.HMSHandler;
+import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
-import static org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils.TablePrivilegeLookup;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.*;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
@@ -53,6 +51,23 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.AlterDataConnectorEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.CreateDataConnectorEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.CreateDatabaseEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.CreateFunctionEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.DropDataConnectorEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.DropFunctionEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.ReadDatabaseEvent;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.ReadTableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.DataConnectorFilterContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.DatabaseFilterContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.TableFilterContext;
@@ -70,6 +85,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils.TablePrivilegeLookup;
 
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
@@ -706,7 +723,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   private  boolean isViewType(Table table) {
     String tableType = table.getTableType();
 
-    return TableType.ALL_VIEWS.contains(tableType);
+    return TableType.ALL_VIEWS_STR.contains(tableType);
   }
 
   private String getErrorMessage(PreEventContext preEventContext, String user) {
