@@ -1,0 +1,22 @@
+{
+  "taskSchedulerDescriptors": [
+    {
+      "className": "org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService",
+      "entityName": "LLAP"
+    }
+  ],
+  "containerLauncherDescriptors": [
+    {
+      "className": "org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher",
+      "entityName": "LLAP"
+    }
+  ],
+  "taskCommunicatorDescriptors": [
+    {
+      "className": "org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator",
+      "entityName": "LLAP"
+    }
+  ],
+  "enableContainers": false,
+  "enableUber": false
+}

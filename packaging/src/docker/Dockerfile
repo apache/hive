@@ -75,7 +75,6 @@ ARG UID=1000
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
-
 # Install dependencies
 RUN set -ex; \
     microdnf update -y; \

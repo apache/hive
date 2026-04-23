@@ -132,14 +132,35 @@ services:
       - zookeeper_datalog:/datalog
       - zookeeper_logs:/logs
 
-  #TODO Tez AM container (in the meantime, the HS2(with local Tez AM) + LLAP daemon setup is working properly)
-    # 1. Define and use a Tez AM image from HIVE-29419 or TEZ-4682
-    # 2. Configure TezAM to use Zookeeper Llap Registry to discover the LLAP daemon
-    # 3. Configure HiveServer2 to use the Tez AM Zookeeper Registry to discover the Tez AM
-    #   Prerequisites:
-    #     - tez-api 1.0.0-SNAPSHOT jar injected into HiveSever2 until Tez 1.0.0 is released
-    #     - make HIVE-29477 happen to let HiveServer2 use Tez external sessions
-    # 4. Define hadoop components here to be used by all the containers (working example can be found at TEZ-4682), currently a local volume
+  tezam:
+    profiles:
+      - llap
+    image: apache/hive:${HIVE_VERSION}
+    container_name: tezam
+    hostname: tezam
+    depends_on:
+      - zookeeper
+    restart: on-failure:3
+    environment:
+      USER: hive
+      SERVICE_NAME: 'tezam'
+
+      TEZ_FRAMEWORK_MODE: STANDALONE_ZOOKEEPER
+      TEZ_AM_ZOOKEEPER_QUORUM: zookeeper:2181
+
+      # LLAP daemon discovery
+      HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
+      HIVE_LLAP_DAEMON_SERVICE_HOSTS: '@llap0'
+
+      # Directories shared between HiveServer2 and LLAP daemon
+      HIVE_SCRATCH_DIR: /opt/hive/scratch
+      HIVE_QUERY_RESULTS_CACHE_DIRECTORY: /opt/hive/scratch/_resultscache_
+
+    volumes:
+      - warehouse:/opt/hive/data/warehouse
+      - scratch:/opt/hive/scratch
+    networks:
+      - hive
 
   llapdaemon:
     profiles:

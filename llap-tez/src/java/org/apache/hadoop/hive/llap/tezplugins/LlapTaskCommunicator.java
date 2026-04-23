@@ -257,7 +257,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       int numHandlers =
           HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT);
       String[] portRange =
-          conf.get(HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname)
+          HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT)
               .split("-");
       boolean isHadoopSecurityAuthorizationEnabled = conf.getBoolean(
           CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false);
