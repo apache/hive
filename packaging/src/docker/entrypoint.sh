@@ -147,8 +147,13 @@ function run_tezam {
   export HIVE_HOME="${HIVE_HOME:-/opt/hive}"
   export HADOOP_CONF_DIR="${HADOOP_CONF_DIR:-$HIVE_CONF_DIR}"
   export TEZ_CONF_DIR="${TEZ_CONF_DIR:-$HADOOP_CONF_DIR}"
+  : "${TEZ_SNAPSHOT_HOME:=/opt/tez-snapshot}"
+  if [[ ! -d "${TEZ_SNAPSHOT_HOME}" ]]; then
+    echo "Tez snapshot home not found at ${TEZ_SNAPSHOT_HOME}. Rebuild image to prefetch snapshot artifacts."
+    exit 1
+  fi
   # service_plugins_descriptor.json references org.apache.hadoop.hive.llap.tezplugins.* (hive-llap-tez, etc.)
-  tezam_cp="${HADOOP_CONF_DIR}:${TEZ_CONF_DIR}:${TEZ_HOME}/*:${TEZ_HOME}/lib/*:${HIVE_HOME}/lib/*:${HADOOP_HOME}/share/hadoop/common/*:${HADOOP_HOME}/share/hadoop/common/lib/*:${HADOOP_HOME}/share/hadoop/yarn/*:${HADOOP_HOME}/share/hadoop/yarn/lib/*:${HADOOP_HOME}/share/hadoop/hdfs/*:${HADOOP_HOME}/share/hadoop/hdfs/lib/*:${HADOOP_HOME}/share/hadoop/mapreduce/*:${HADOOP_HOME}/share/hadoop/mapreduce/lib/*:${HADOOP_CLASSPATH:-}"
+  tezam_cp="${HADOOP_CONF_DIR}:${TEZ_CONF_DIR}:${TEZ_SNAPSHOT_HOME}/*:${TEZ_HOME}/*:${TEZ_HOME}/lib/*:${HIVE_HOME}/lib/*:${HADOOP_HOME}/share/hadoop/common/*:${HADOOP_HOME}/share/hadoop/common/lib/*:${HADOOP_HOME}/share/hadoop/yarn/*:${HADOOP_HOME}/share/hadoop/yarn/lib/*:${HADOOP_HOME}/share/hadoop/hdfs/*:${HADOOP_HOME}/share/hadoop/hdfs/lib/*:${HADOOP_HOME}/share/hadoop/mapreduce/*:${HADOOP_HOME}/share/hadoop/mapreduce/lib/*:${HADOOP_CLASSPATH:-}"
 
   local java_bin
   local tezam_java_opts
@@ -178,6 +183,17 @@ if [[ "${SKIP_SCHEMA_INIT}" == "false" && ( "${SERVICE_NAME}" == "hiveserver2" |
 fi
 
 if [ "${SERVICE_NAME}" == "hiveserver2" ]; then
+  TEZ_SNAPSHOT_HOME="${TEZ_SNAPSHOT_HOME:-/opt/tez-snapshot}"
+  # bin/hive prepends all of $HIVE_HOME/lib/*.jar to $HADOOP_CLASSPATH, so any entry
+  # we put first in HADOOP_CLASSPATH ends up after all Hive lib jars.  To get snapshot jars
+  # truly first, symlink them into $HIVE_HOME/lib/ with a "0-" prefix: the for-loop glob in
+  # bin/hive processes jars alphabetically, and ASCII '0' (48) sorts before 'a' (97), so these
+  # symlinks become the very first jars on the classpath (right after the conf dir entries).
+  if ls "${TEZ_SNAPSHOT_HOME}"/*.jar 1>/dev/null 2>&1; then
+    for snap_jar in "${TEZ_SNAPSHOT_HOME}"/*.jar; do
+      ln -sf "$snap_jar" "${HIVE_HOME}/lib/0-$(basename "$snap_jar")"
+    done
+  fi
   export HADOOP_CLASSPATH="$TEZ_HOME/*:$TEZ_HOME/lib/*:$HADOOP_CLASSPATH"
   exec "$HIVE_HOME/bin/hive" --skiphadoopversion --skiphbasecp --service "$SERVICE_NAME"
 elif [ "${SERVICE_NAME}" == "metastore" ]; then

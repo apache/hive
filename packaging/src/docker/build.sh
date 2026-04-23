@@ -20,13 +20,15 @@ set -eux
 HIVE_VERSION=
 HADOOP_VERSION=
 TEZ_VERSION=
+TEZ_SNAPSHOT_VERSION=
 usage() {
     cat <<EOF 1>&2
-Usage: $0 [-h] [-hadoop <Hadoop version>] -tez <Tez release version> [-hive <Hive version>] [-repo <Docker repo>]
+Usage: $0 [-h] [-hadoop <Hadoop version>] -tez <Tez release version> [-tez-snapshot [<Maven snapshot version>]] [-hive <Hive version>] [-repo <Docker repo>]
 Build the Hive Docker image (reused for LLAP too)
 -help                Display help
 -hadoop              Build image with the specified Hadoop version (default: from Maven pom)
 -tez                 Required. Tez release tarball version (apache-tez-\$TEZ_VERSION-bin.tar.gz from archive)
+-tez-snapshot <ver>  Optional. When a snapshot version is given, fetch Tez Maven snapshot jars into the image. With no version, snapshot prefetch is skipped.
 -hive                Build image with the specified Hive version
 -repo                Docker repository
 EOF
@@ -47,6 +49,13 @@ while [ $# -gt 0 ]; do
       shift
       TEZ_VERSION=$1
       shift
+      ;;
+    -tez-snapshot)
+      shift
+      if [ $# -gt 0 ] && [[ "$1" != -* ]]; then
+        TEZ_SNAPSHOT_VERSION=$1
+        shift
+      fi
       ;;
     -hive)
       shift
@@ -135,6 +144,9 @@ DOCKER_BUILD_ARGS=(
   --build-arg "HADOOP_VERSION=$HADOOP_VERSION"
   --build-arg "TEZ_VERSION=$TEZ_VERSION"
 )
+if [ -n "$TEZ_SNAPSHOT_VERSION" ]; then
+  DOCKER_BUILD_ARGS+=(--build-arg "TEZ_SNAPSHOT_VERSION=$TEZ_SNAPSHOT_VERSION")
+fi
 
 docker build \
         "$WORK_DIR" \
