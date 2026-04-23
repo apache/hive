@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -42,6 +43,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
   public AbstractFunctionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
+  }
+
+  public AbstractFunctionAnalyzer(QueryState queryState, Hive db) throws SemanticException {
+    super(queryState, db);
   }
 
   /**

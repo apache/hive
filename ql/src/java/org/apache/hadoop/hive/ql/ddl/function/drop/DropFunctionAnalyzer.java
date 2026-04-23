@@ -24,10 +24,13 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.function.AbstractFunctionAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -41,6 +44,14 @@ public class DropFunctionAnalyzer extends AbstractFunctionAnalyzer {
     super(queryState);
   }
 
+  public DropFunctionAnalyzer(QueryState queryState, Hive db) throws SemanticException {
+    super(queryState, db);
+  }
+
+  protected FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
+    return FunctionRegistry.getFunctionInfo(functionName);
+  }
+
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
     String functionName = root.getChild(0).getText();
@@ -48,12 +59,18 @@ public class DropFunctionAnalyzer extends AbstractFunctionAnalyzer {
     boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
     boolean isTemporary = (root.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
 
-    FunctionInfo info = FunctionRegistry.getFunctionInfo(functionName);
+    FunctionInfo info = getFunctionInfo(functionName);
     if (info == null) {
-      if (throwException) {
+      // getFunctionInfo returns null when the function's JAR resource cannot be loaded (e.g. the
+      // HDFS file was deleted). For permanent functions fall back to a direct metastore lookup so
+      // that an orphaned definition can still be removed without the JAR being present.
+      if (!isTemporary && functionExistsInMetastore(functionName)) {
+        LOG.warn("Function {} has unavailable resources; proceeding with drop using metastore metadata only.",
+            functionName);
+      } else if (throwException) {
         throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
       } else {
-        return; // Fail silently
+        return;
       }
     } else if (info.isBuiltIn()) {
       throw new SemanticException(ErrorMsg.DROP_NATIVE_FUNCTION.getMsg(functionName));
@@ -62,6 +79,17 @@ public class DropFunctionAnalyzer extends AbstractFunctionAnalyzer {
     DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporary, null);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
-    addEntities(functionName, info.getClassName(), isTemporary, null);
+    String className = info != null ? info.getClassName() : null;
+    addEntities(functionName, className, isTemporary, null);
+  }
+
+  private boolean functionExistsInMetastore(String functionName) {
+    try {
+      String[] parts = FunctionUtils.getQualifiedFunctionNameParts(functionName.toLowerCase());
+      db.getFunction(parts[0], parts[1]);
+      return true;
+    } catch (HiveException e) {
+      return false;
+    }
   }
 }
