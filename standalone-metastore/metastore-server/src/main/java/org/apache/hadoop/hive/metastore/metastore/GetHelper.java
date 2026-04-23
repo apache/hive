@@ -73,7 +73,7 @@ public abstract class GetHelper<A, T> {
     this.doTrace = LOG.isDebugEnabled();
     this.isInTxn = baseStore.isActiveTransaction();
     this.pm = rsa.getPersistentManager();
-    this.allowJdo = canUseJdoQuery(this);
+    this.allowJdo = canUseJdoQuery();
 
     boolean isConfigEnabled = MetastoreConf.getBoolVar(baseStore.getConf(),
         MetastoreConf.ConfVars.TRY_DIRECT_SQL);
@@ -87,17 +87,17 @@ public abstract class GetHelper<A, T> {
     this.doUseDirectSql = isConfigEnabled && directSql.isCompatibleDatastore();
   }
 
-  protected boolean canUseDirectSql(GetHelper<A, T> ctx) throws MetaException {
+  protected boolean canUseDirectSql() throws MetaException {
     return true; // By default, assume we can user directSQL - that's kind of the point.
   }
 
-  protected boolean canUseJdoQuery(GetHelper<A, T> ctx) throws MetaException {
+  protected boolean canUseJdoQuery() throws MetaException {
     return true;
   }
 
   protected abstract String describeResult();
-  protected abstract T getSqlResult(GetHelper<A, T> ctx) throws MetaException;
-  protected abstract T getJdoResult(GetHelper<A, T> ctx)
+  protected abstract T getSqlResult() throws MetaException;
+  protected abstract T getJdoResult()
       throws MetaException, NoSuchObjectException, InvalidObjectException,
       InvalidInputException;
 
@@ -109,7 +109,7 @@ public abstract class GetHelper<A, T> {
         try {
           directSql.prepareTxn();
           setTransactionSavePoint(savePoint);
-          this.results = getSqlResult(this);
+          this.results = getSqlResult();
           LOG.debug("Using direct SQL optimization.");
         } catch (Exception ex) {
           handleDirectSqlError(ex, savePoint);
@@ -118,8 +118,8 @@ public abstract class GetHelper<A, T> {
       // Note that this will be invoked in 2 cases:
       //    1) DirectSQL was disabled to start with;
       //    2) DirectSQL threw and was disabled in handleDirectSqlError.
-      if (!doUseDirectSql && canUseJdoQuery(this)) {
-        this.results = getJdoResult(this);
+      if (!doUseDirectSql && canUseJdoQuery()) {
+        this.results = getJdoResult();
         LOG.debug("Not using direct SQL optimization.");
       }
       return commit();
@@ -144,7 +144,7 @@ public abstract class GetHelper<A, T> {
             "Specified catalog.database.table does not exist : " + argument);
       }
     }
-    doUseDirectSql = doUseDirectSql && canUseDirectSql(this);
+    doUseDirectSql = doUseDirectSql && canUseDirectSql();
   }
 
   private void handleDirectSqlError(Exception ex, String savePoint) throws MetaException, NoSuchObjectException {
