@@ -333,13 +333,13 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       }
 
       @Override
-      protected List<String> getSqlResult(GetHelper<TableName, List<String>> ctx) throws MetaException {
+      protected List<String> getSqlResult() throws MetaException {
         return getDirectSql()
             .dropAllPartitionsAndGetLocations(getTable().getId(), baseLocationToNotShow, message);
       }
 
       @Override
-      protected List<String> getJdoResult(GetHelper<TableName, List<String>> ctx)
+      protected List<String> getJdoResult()
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
         Map<String, String> partitionLocations =
             getPartitionLocations(table, baseLocationToNotShow, -1);
@@ -749,13 +749,13 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     if (CollectionUtils.isNotEmpty(mParts)) {
       GetHelper<TableName, Void> helper = new GetHelper<>(this, tableName) {
         @Override
-        protected Void getSqlResult(GetHelper<TableName, Void> ctx) throws MetaException {
+        protected Void getSqlResult() throws MetaException {
           getDirectSql().addPartitions(mParts, mPartPrivilegesList, mPartColPrivilegesList);
           return null;
         }
 
         @Override
-        protected Void getJdoResult(GetHelper<TableName, Void> ctx) {
+        protected Void getJdoResult() {
           List<Object> toPersist = new ArrayList<>(mParts);
           mPartPrivilegesList.forEach(toPersist::addAll);
           mPartColPrivilegesList.forEach(toPersist::addAll);
@@ -909,11 +909,11 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     String tblName = normalizeIdentifier(table.getTable());
     return new GetListHelper<TableName, Partition>(this, table) {
       @Override
-      protected List<Partition> getSqlResult(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected List<Partition> getSqlResult() throws MetaException {
         return getDirectSql().getPartitions(catName, dbName, tblName, args);
       }
       @Override
-      protected List<Partition> getJdoResult(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected List<Partition> getJdoResult() throws MetaException {
         try {
           return convertToParts(catName, dbName, tblName,
               listMPartitions(catName, dbName, tblName, args.getMax()), false, conf, args);
@@ -1136,12 +1136,12 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     String tblName = normalizeIdentifier(tableName.getTable());
     new GetListHelper<TableName, Void>(this, tableName) {
       @Override
-      protected List<Void> getSqlResult(GetHelper<TableName, List<Void>> ctx) throws MetaException {
+      protected List<Void> getSqlResult() throws MetaException {
         getDirectSql().dropPartitionsViaSqlFilter(catName, dbName, tblName, partNames);
         return Collections.emptyList();
       }
       @Override
-      protected List<Void> getJdoResult(GetHelper<TableName, List<Void>> ctx) throws MetaException {
+      protected List<Void> getJdoResult() throws MetaException {
         dropPartitionsViaJdo(catName, dbName, tblName, partNames, new AtomicReference<>());
         return Collections.emptyList();
       }
@@ -1157,17 +1157,17 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       final String cat_name = normalizeIdentifier(catName);
       return new GetListHelper<TableName, String>(this, null) {
         @Override
-        protected boolean canUseDirectSql(GetHelper<TableName, List<String>> ctx) throws MetaException {
+        protected boolean canUseDirectSql() throws MetaException {
           return (pattern == null || pattern.equals(".*"));
         }
 
         @Override
-        protected List<String> getSqlResult(GetHelper<TableName, List<String>> ctx) throws MetaException {
+        protected List<String> getSqlResult() throws MetaException {
           return getDirectSql().getTables(cat_name, db_name, tableType, limit);
         }
 
         @Override
-        protected List<String> getJdoResult(GetHelper<TableName, List<String>> ctx) throws MetaException, NoSuchObjectException {
+        protected List<String> getJdoResult() throws MetaException, NoSuchObjectException {
           return getTablesInternalViaJdo(cat_name, db_name, pattern, tableType, limit);
         }
       }.run(false);
@@ -1426,19 +1426,19 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       private final MetaStoreDirectSql.SqlFilterForPushdown filter = new MetaStoreDirectSql.SqlFilterForPushdown();
 
       @Override
-      protected boolean canUseDirectSql(GetHelper<TableName, List<String>> ctx) throws MetaException {
+      protected boolean canUseDirectSql() throws MetaException {
         return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName,
             partitionKeys, tree, null, filter);
       }
 
       @Override
-      protected List<String> getSqlResult(GetHelper<TableName, List<String>> ctx) throws MetaException {
+      protected List<String> getSqlResult() throws MetaException {
         return getDirectSql().getPartitionNamesViaSql(filter, partitionKeys,
             getDefaultPartitionName(args.getDefaultPartName()), null, args.getMax());
       }
 
       @Override
-      protected List<String> getJdoResult(GetHelper<TableName, List<String>> ctx)
+      protected List<String> getJdoResult()
           throws MetaException, NoSuchObjectException, InvalidObjectException {
         return getPartitionNamesViaOrm(catName, dbName, tblName, tree, null,
             args.getMax(), true, partitionKeys);
@@ -1624,13 +1624,13 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         return result;
       }
       @Override
-      protected List<String> getSqlResult(GetHelper<TableName, List<String>> ctx) throws MetaException {
-        MetaStoreDirectSql.SqlFilterForPushdown filter = new MetaStoreDirectSql.SqlFilterForPushdown(ctx.getTable(), false);
+      protected List<String> getSqlResult() throws MetaException {
+        MetaStoreDirectSql.SqlFilterForPushdown filter = new MetaStoreDirectSql.SqlFilterForPushdown(getTable(), false);
         List<String> partNames = null;
-        Table table = ctx.getTable();
+        Table table = getTable();
         if (exprTree != null) {
           if (getDirectSql().generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
-              ctx.getTable().getPartitionKeys(), exprTree, defaultPartitionName, filter)) {
+              getTable().getPartitionKeys(), exprTree, defaultPartitionName, filter)) {
             partNames = getDirectSql().getPartitionNamesViaSql(filter, table.getPartitionKeys(),
                 defaultPartitionName, order, (int)maxParts);
           }
@@ -1641,19 +1641,18 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         return partNames;
       }
       @Override
-      protected List<String> getJdoResult(
-          GetHelper<TableName, List<String>> ctx) throws MetaException, NoSuchObjectException {
+      protected List<String> getJdoResult() throws MetaException, NoSuchObjectException {
         List<String> result = null;
         if (exprTree != null) {
           try {
             result = getPartitionNamesViaOrm(catName, dbName, tblName, exprTree, order,
-                maxParts, true, ctx.getTable().getPartitionKeys());
+                maxParts, true, getTable().getPartitionKeys());
           } catch (MetaException e) {
             result = null;
           }
         }
         if (result == null) {
-          result = getPartNamesPrunedByExpr(ctx.getTable(), true);
+          result = getPartNamesPrunedByExpr(getTable(), true);
         }
         return result;
       }
@@ -1692,7 +1691,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     boolean isAcidTable = TxnUtils.isAcidTable(mTable.getParameters());
     result.addAll(new GetListHelper<TableName, Partition>(this, tableName) {
       @Override
-      protected List<Partition> getSqlResult(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected List<Partition> getSqlResult() throws MetaException {
         // If we have some sort of expression tree, try SQL filter pushdown.
         if (exprTree != null) {
           MetaStoreDirectSql.SqlFilterForPushdown filter = new MetaStoreDirectSql.SqlFilterForPushdown();
@@ -1712,8 +1711,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       }
 
       @Override
-      protected List<Partition> getJdoResult(
-          GetHelper<TableName, List<Partition>> ctx) throws MetaException, NoSuchObjectException {
+      protected List<Partition> getJdoResult() throws MetaException, NoSuchObjectException {
         // If we have some sort of expression tree, try JDOQL filter pushdown.
         List<Partition> result = null;
         if (exprTree != null) {
@@ -1859,12 +1857,11 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     String tblName = normalizeIdentifier(tableName.getTable());
     return new GetListHelper<TableName, Partition>(this, tableName) {
       @Override
-      protected List<Partition> getSqlResult(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected List<Partition> getSqlResult() throws MetaException {
         return getDirectSql().getPartitionsViaPartNames(catName, dbName, tblName, args);
       }
       @Override
-      protected List<Partition> getJdoResult(
-          GetHelper<TableName, List<Partition>> ctx) throws MetaException, NoSuchObjectException {
+      protected List<Partition> getJdoResult() throws MetaException, NoSuchObjectException {
         return getPartitionsViaOrmFilter(catName, dbName, tblName, false, args);
       }
     }.run(false);
@@ -2005,13 +2002,13 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     }
     return new GetListHelper<TableName, Partition>(this, null) {
       @Override
-      protected List<Partition> getSqlResult(GetHelper<TableName, List<Partition>> ctx)
+      protected List<Partition> getSqlResult()
           throws MetaException {
         return getDirectSql().alterPartitions(table, partNames, newParts, queryWriteIdList);
       }
 
       @Override
-      protected List<Partition> getJdoResult(GetHelper<TableName, List<Partition>> ctx)
+      protected List<Partition> getJdoResult()
           throws MetaException, InvalidObjectException {
         return alterPartitionsViaJdo(table, partNames, newParts, queryWriteIdList);
       }
@@ -2081,18 +2078,17 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       private final MetaStoreDirectSql.SqlFilterForPushdown filter = new MetaStoreDirectSql.SqlFilterForPushdown();
 
       @Override
-      protected boolean canUseDirectSql(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected boolean canUseDirectSql() throws MetaException {
         return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, tree, null, filter);
       }
 
       @Override
-      protected List<Partition> getSqlResult(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected List<Partition> getSqlResult() throws MetaException {
         return getDirectSql().getPartitionsViaSqlFilter(catName, dbName, tblName, filter, isAcidTable, args);
       }
 
       @Override
-      protected List<Partition> getJdoResult(
-          GetHelper<TableName, List<Partition>> ctx) throws MetaException, NoSuchObjectException {
+      protected List<Partition> getJdoResult() throws MetaException, NoSuchObjectException {
         return getPartitionsViaOrmFilter(catName, dbName, tblName, tree, true,
             partitionKeys, isAcidTable, args);
       }
@@ -2132,7 +2128,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       private ExpressionTree tree;
 
       @Override
-      protected boolean canUseDirectSql(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected boolean canUseDirectSql() throws MetaException {
         if (filterSpec.isSetFilterMode() && filterSpec.getFilterMode().equals(PartitionFilterMode.BY_EXPR)) {
           // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
           // if there are more than one filter string we AND them together
@@ -2161,18 +2157,17 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       }
 
       @Override
-      protected List<Partition> getSqlResult(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
-        return getDirectSql().getPartitionsUsingProjectionAndFilterSpec(ctx.getTable(), ctx.getPartitionFields(),
+      protected List<Partition> getSqlResult() throws MetaException {
+        return getDirectSql().getPartitionsUsingProjectionAndFilterSpec(getTable(), getPartitionFields(),
                 includeParamKeyPattern, excludeParamKeyPattern, filterSpec, filter);
       }
 
       @Override
-      protected List<Partition> getJdoResult(
-          GetHelper<TableName, List<Partition>> ctx) throws MetaException {
+      protected List<Partition> getJdoResult() throws MetaException {
         // For single-valued fields we can use setResult() to implement projection of fields but
         // JDO doesn't support multi-valued fields in setResult() so currently JDO implementation
         // fallbacks to full-partition fetch if the requested fields contain multi-valued fields
-        List<String> fieldNames = PartitionProjectionEvaluator.getMPartitionFieldNames(ctx.getPartitionFields());
+        List<String> fieldNames = PartitionProjectionEvaluator.getMPartitionFieldNames(getPartitionFields());
         Map<String, Object> params = new HashMap<>();
         String jdoFilter = null;
         if (filterSpec.isSetFilterMode()) {
@@ -2267,17 +2262,17 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     return new GetListHelper<TableName, Partition>(this, tableName) {
 
       @Override
-      protected List<Partition> getSqlResult(GetHelper<TableName, List<Partition>> ctx) throws MetaException {
-        return getDirectSql().getPartitionsViaSqlPs(ctx.getTable(), args);
+      protected List<Partition> getSqlResult() throws MetaException {
+        return getDirectSql().getPartitionsViaSqlPs(getTable(), args);
       }
 
       @Override
-      protected List<Partition> getJdoResult(GetHelper<TableName, List<Partition>> ctx)
+      protected List<Partition> getJdoResult()
           throws MetaException, NoSuchObjectException {
         List<Partition> result = new ArrayList<>();
         Collection<MPartition> parts = getPartitionPsQueryResults(catName, dbName, tblName,
             args.getPart_vals(), args.getMax(), null);
-        boolean isAcidTable = TxnUtils.isAcidTable(ctx.getTable());
+        boolean isAcidTable = TxnUtils.isAcidTable(getTable());
         for (MPartition o : parts) {
           Partition part = convertToPart(catName, dbName, tblName, o, isAcidTable, conf, args);
           result.add(part);
@@ -2413,17 +2408,16 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       }
 
       @Override
-      protected boolean canUseDirectSql(GetHelper<TableName, Integer> ctx) throws MetaException {
+      protected boolean canUseDirectSql() throws MetaException {
         return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
       }
 
       @Override
-      protected Integer getSqlResult(GetHelper<TableName, Integer> ctx) throws MetaException {
+      protected Integer getSqlResult() throws MetaException {
         return getDirectSql().getNumPartitionsViaSqlFilter(filter);
       }
       @Override
-      protected Integer getJdoResult(
-          GetHelper<TableName, Integer> ctx) throws MetaException, NoSuchObjectException {
+      protected Integer getJdoResult() throws MetaException, NoSuchObjectException {
         return getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
       }
     }.run(false);
@@ -2460,16 +2454,16 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       }
 
       @Override
-      protected Integer getSqlResult(GetHelper<TableName, Integer> ctx) throws MetaException {
-        return getDirectSql().getNumPartitionsViaSqlPs(ctx.getTable(), partVals);
+      protected Integer getSqlResult() throws MetaException {
+        return getDirectSql().getNumPartitionsViaSqlPs(getTable(), partVals);
       }
 
       @Override
-      protected Integer getJdoResult(GetHelper<TableName, Integer> ctx)
+      protected Integer getJdoResult()
           throws MetaException, NoSuchObjectException, InvalidObjectException {
         // size is known since it contains dbName, catName, tblName and partialRegex pattern
         Map<String, String> params = new HashMap<>(4);
-        String filter = getJDOFilterStrForPartitionVals(ctx.getTable(), partVals, params);
+        String filter = getJDOFilterStrForPartitionVals(getTable(), partVals, params);
         try (QueryWrapper query = new QueryWrapper(pm.newQuery(
             "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"))) {
           query.setFilter(filter);
@@ -2890,17 +2884,17 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         return "Affected rows";
       }
       @Override
-      protected Long getSqlResult(GetHelper<TableName, Long> ctx) throws MetaException {
+      protected Long getSqlResult() throws MetaException {
         return getDirectSql().updateTableParam(table, key, expectedValue, newValue);
       }
       @Override
-      protected Long getJdoResult(GetHelper<TableName, Long> ctx)
+      protected Long getJdoResult()
           throws MetaException, NoSuchObjectException, InvalidObjectException {
         throw new UnsupportedOperationException(
             "Cannot update parameter with JDO, make sure direct SQL is enabled");
       }
       @Override
-      protected boolean canUseJdoQuery(GetHelper<TableName, Long> ctx) throws MetaException {
+      protected boolean canUseJdoQuery() throws MetaException {
         return false;
       }
     }.run(false);

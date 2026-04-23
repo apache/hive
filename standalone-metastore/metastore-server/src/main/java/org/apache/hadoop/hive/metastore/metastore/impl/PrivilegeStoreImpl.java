@@ -1317,13 +1317,13 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
       }
 
       @Override
-      protected List<HiveObjectPrivilege> getSqlResult(GetHelper<TableName, List<HiveObjectPrivilege>> ctx)
+      protected List<HiveObjectPrivilege> getSqlResult()
           throws MetaException {
         return getDirectSql().getTableAllColumnGrants(catName, dbName, tblName, authorizer);
       }
 
       @Override
-      protected List<HiveObjectPrivilege> getJdoResult(GetHelper<TableName, List<HiveObjectPrivilege>> ctx) {
+      protected List<HiveObjectPrivilege> getJdoResult() {
         return convertTableCols(listTableAllColumnGrants(catName, dbName, tblName, authorizer));
       }
     }.run(false);
