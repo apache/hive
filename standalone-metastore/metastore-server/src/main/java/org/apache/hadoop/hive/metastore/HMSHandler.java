@@ -3253,6 +3253,11 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public void update_table_params(List<TableParamsUpdate> updates) throws TException {
+    for (TableParamsUpdate update : updates) {
+      if (!update.isSetCat_name()) {
+        update.setCat_name(getDefaultCatalog(conf));
+      }
+    }
     getMS().updateTableParams(updates);
   }
 

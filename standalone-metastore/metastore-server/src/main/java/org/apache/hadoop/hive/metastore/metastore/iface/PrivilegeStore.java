@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.metastore.model.MDCPrivilege;
 
 @MetaDescriptor(alias = "privilege", defaultImpl = PrivilegeStoreImpl.class)
 public interface PrivilegeStore {
-  boolean addRole(String rowName, String ownerName)
+  boolean addRole(String roleName, String ownerName)
       throws InvalidObjectException, MetaException, NoSuchObjectException;
 
   boolean removeRole(String roleName) throws MetaException, NoSuchObjectException;

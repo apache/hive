@@ -57,7 +57,9 @@ public class PersistenceManagerProxy implements InvocationHandler  {
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     // Redirect if the interface method "getExecutionContext" is called
     if (method.getName().equals("getExecutionContext")) {
-      return getExecutionContext.bindTo(target).invokeWithArguments(args);
+      MethodHandle boundGetExecutionContext = getExecutionContext.bindTo(target);
+      return args == null ? boundGetExecutionContext.invokeWithArguments()
+          : boundGetExecutionContext.invokeWithArguments(args);
     } else if (method.getName().equals("newQuery")) {
       Object result = method.invoke(target, args);
       openedQueries.add((Query) result);
