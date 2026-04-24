@@ -462,22 +462,29 @@ public class OpProcFactory {
             sb.append(", ");
           }
           Dependency exprDep = ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap);
-          if (exprDep != null && !exprDep.getBaseCols().isEmpty()) {
-            newType = LineageCtx.getNewDependencyType(exprDep.getType(), newType);
-            bciSet.addAll(exprDep.getBaseCols());
-            if (exprDep.getType() == LineageInfo.DependencyType.SIMPLE) {
-              BaseColumnInfo col = exprDep.getBaseCols().iterator().next();
-              Table t = col.getTabAlias().getTable();
-              if (t != null) {
-                sb.append(Warehouse.getQualifiedName(t)).append(".");
+          BaseColumnInfo col = null;
+
+          if (exprDep != null) {
+            Set<BaseColumnInfo> baseCols = exprDep.getBaseCols();
+            if (baseCols != null && !baseCols.isEmpty()) {
+              newType = LineageCtx.getNewDependencyType(exprDep.getType(), newType);
+              bciSet.addAll(baseCols);
+              if (exprDep.getType() == LineageInfo.DependencyType.SIMPLE) {
+                col = baseCols.iterator().next();
               }
-              sb.append(col.getColumn().getName());
             }
           }
-          if (exprDep == null || exprDep.getBaseCols().isEmpty()
-              || exprDep.getType() != LineageInfo.DependencyType.SIMPLE) {
-            sb.append(exprDep != null && exprDep.getExpr() != null ? exprDep.getExpr() :
-              ExprProcFactory.getExprString(rs, expr, lctx, inpOp, null));
+
+          if (col != null && col.getColumn() != null) {
+            Table t = (col.getTabAlias() != null) ? col.getTabAlias().getTable() : null;
+            if (t != null) {
+              sb.append(Warehouse.getQualifiedName(t)).append(".");
+            }
+            sb.append(col.getColumn().getName());
+          } else {
+            sb.append(exprDep != null && exprDep.getExpr() != null
+                ? exprDep.getExpr()
+                : ExprProcFactory.getExprString(rs, expr, lctx, inpOp, null));
           }
         }
         String expr = sb.toString();
