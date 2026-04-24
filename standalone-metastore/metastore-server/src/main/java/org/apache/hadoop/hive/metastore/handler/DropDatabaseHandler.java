@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
@@ -136,6 +137,9 @@ public class DropDatabaseHandler
         if (isSoftDelete) {
           context = new EnvironmentContext();
           context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(request.getTxnId()));
+          if (ReplChangeManager.isSourceOfReplication(db)) {
+            context.putToProperties(ReplConst.SOURCE_OF_REPLICATION, Boolean.TRUE.toString());
+          }
           request.setDeleteManagedDir(false);
         }
         DropTableRequest dropRequest = new DropTableRequest(name, table.getTableName());

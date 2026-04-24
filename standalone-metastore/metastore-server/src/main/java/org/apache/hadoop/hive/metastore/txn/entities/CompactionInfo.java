@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.entities;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -371,11 +372,16 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return type == CompactionType.ABORT_TXN_CLEANUP;
   }
 
-  public void setSoftDelete(boolean softDelete) {
-    this.softDelete = softDelete;
+  public CompactionInfo asSoftDeleted() {
+    this.softDelete = true;
+    return this;
   }
 
   public boolean isSoftDelete() {
     return softDelete;
+  }
+
+  public boolean isSourceOfReplication() {
+    return Boolean.parseBoolean(getProperty(ReplConst.SOURCE_OF_REPLICATION));
   }
 }
