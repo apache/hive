@@ -715,7 +715,7 @@ public interface RawStore extends Configurable {
       String tbl_name, short max_parts) throws MetaException {
     try {
       return unwrap(TableStore.class).listPartitionNames(new TableName(catName, db_name, tbl_name),
-          MetaStoreUtils.getDefaultCatalog(getConf()), null, null, max_parts);
+          null, null, null, max_parts);
     } catch (NoSuchObjectException nse) {
       // In case of NoSuchObjectException, this method returns an empty list to
       // take care of the old clients.
@@ -1612,7 +1612,7 @@ public interface RawStore extends Configurable {
    */
   default List<HiveObjectPrivilege> listTableColumnGrantsAll(
       String catName, String dbName, String tableName, String columnName) {
-    return unwrap(PrivilegeStore.class).listPartitionGrantsAll(new TableName(catName, dbName, tableName), columnName);
+    return unwrap(PrivilegeStore.class).listTableColumnGrantsAll(new TableName(catName, dbName, tableName), columnName);
   }
 
   /**
