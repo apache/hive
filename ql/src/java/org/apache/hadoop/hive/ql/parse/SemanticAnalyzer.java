@@ -2209,7 +2209,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             }
           } else  {
             // partition spec is not specified but column schema can have partitions specified
-            for(FieldSchema f : targetTable.getEffectivePartCols()) {
+            for(FieldSchema f : targetTable.getPartCols()) {
               //parser only allows foo(a,b), not foo(foo.a, foo.b)
               targetColumns.remove(f.getName());
             }
@@ -12305,7 +12305,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (tab.isPartitioned() && !tab.hasNonNativePartitionSupport()) {
       List<String> cols = new ArrayList<String>();
       if (qbp.getAnalyzeRewrite() != null) {
-        List<FieldSchema> partitionCols = tab.getEffectivePartCols();
+        List<FieldSchema> partitionCols = tab.getPartCols();
         for (FieldSchema fs : partitionCols) {
           cols.add(fs.getName());
         }

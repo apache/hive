@@ -1201,7 +1201,7 @@ public abstract class BaseSemanticAnalyzer {
       if (partitions != null && !partitions.isEmpty()) {
         this.specType = SpecType.STATIC_PARTITION;
         this.partitions = partitions;
-        List<FieldSchema> partCols = this.tableHandle.getEffectivePartCols();
+        List<FieldSchema> partCols = this.tableHandle.getPartCols();
         this.partSpec = new LinkedHashMap<>();
         for (FieldSchema partCol : partCols) {
           partSpec.put(partCol.getName(), null);

@@ -156,7 +156,7 @@ public class ColStatsProcessor implements IStatsProcessor {
               }
             }
           } else {
-            partColSchema.addAll(tbl.getEffectivePartCols());
+            partColSchema.addAll(tbl.getPartCols());
             // Iterate over partition columns to figure out partition name
             for (int i = pos; i < pos + partColSchema.size(); i++) {
               Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
