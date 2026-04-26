@@ -19,7 +19,6 @@
 package org.apache.hive.jdbc;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
@@ -58,9 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.ErrorMsg.CLIENT_POLLING_OPSTATUS_INTERRUPTED;
 
@@ -73,10 +69,6 @@ public class HiveStatement implements java.sql.Statement {
   private static final Logger LOG = LoggerFactory.getLogger(HiveStatement.class);
 
   public static final String QUERY_CANCELLED_MESSAGE = "Query was cancelled.";
-
-  /** Last assignment wins if multiple appear (e.g. multi-line script). Uses find(), not full-string match. */
-  private static final Pattern SET_HIVE_QUERY_TIMEOUT_SECONDS = Pattern.compile(
-      "(?i)set\\s+hive\\.query\\.timeout\\.seconds\\s*=\\s*([^;\\n]+)");
 
   private final HiveConnection connection;
   private TCLIService.Iface client;
@@ -306,7 +298,6 @@ public class HiveStatement implements java.sql.Statement {
   public boolean execute(String sql) throws SQLException {
     runAsyncOnServer(sql);
     TGetOperationStatusResp status = waitForOperationToComplete();
-    trackSessionQueryTimeoutIfSet(sql);
 
     // The query should be completed by now
     if (!status.isHasResultSet() && stmtHandle.isPresent() && !stmtHandle.get().isHasResultSet()) {
@@ -408,34 +399,9 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * When {@code SET hive.query.timeout.seconds=...} succeeds, remember the effective value on the
-   * connection so {@code TIMEDOUT_STATE} can report it if the server omits {@code errorMessage}
-   * (HIVE-28265).
-   */
-  private void trackSessionQueryTimeoutIfSet(String sql) {
-    if (sql == null) {
-      return;
-    }
-    Matcher m = SET_HIVE_QUERY_TIMEOUT_SECONDS.matcher(sql);
-    Long lastSec = null;
-    while (m.find()) {
-      try {
-        HiveConf conf = new HiveConf();
-        conf.set(HiveConf.ConfVars.HIVE_QUERY_TIMEOUT_SECONDS.varname, m.group(1).trim());
-        long sec = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        lastSec = sec;
-      } catch (Exception e) {
-        LOG.debug("Could not parse session query timeout fragment: {}", m.group(0), e);
-      }
-    }
-    if (lastSec != null) {
-      connection.setSessionQueryTimeoutSeconds(lastSec);
-    }
-  }
-
-  /**
-   * HIVE-28265: Prefer server error text unless it is empty or the known-broken "0 seconds" case;
-   * otherwise derive seconds from JDBC {@link #setQueryTimeout(int)} or last session SET.
+   * HIVE-28265: Prefer server error text (from {@code TGetOperationStatusResp.errorMessage}) unless
+   * it is empty or the legacy "0 seconds" value; fall back to JDBC {@link #setQueryTimeout(int)}
+   * or the URL-seeded {@code hive.query.timeout.seconds} on the connection.
    */
   private String sqlTimeoutMessageForTimedOutState(String serverMessage) {
     if (!needsLocalTimeoutMessageForTimedOut(serverMessage)) {
