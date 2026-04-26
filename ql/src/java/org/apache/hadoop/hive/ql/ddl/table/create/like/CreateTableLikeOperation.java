@@ -100,7 +100,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     setUserSpecifiedLocation(table);
 
     table.setFields(oldTable.getCols());
-    table.setPartCols(oldTable.getEffectivePartCols());
+    table.setPartCols(oldTable.getPartCols());
 
     if (desc.getDefaultSerdeProps() != null) {
       for (Map.Entry<String, String> e : desc.getDefaultSerdeProps().entrySet()) {
