@@ -137,28 +137,13 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
     setTableType(hmsTable);
-    TableType tableType = TableType.valueOf(hmsTable.getTableType());
 
-    // Set the table type even for non HiveCatalog based tables
-    // Set the table type even for non HiveCatalog based tables
-    switch (tableType) {
-      case EXTERNAL_TABLE:
-      case MANAGED_TABLE:
-        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-                BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
-        break;
-      case VIRTUAL_VIEW:
-      case MATERIALIZED_VIEW:
-      case EXTERNAL_MATERIALIZED_VIEW:
-        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
-        break;
-      default:
-        throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
-                " is not supported as an Iceberg object type");
+
+    if (hmsTable.getTableType() != null) {
+      TableType tableType = TableType.valueOf(hmsTable.getTableType());
+
+      storeViewTextInfoForMaterializedView(request, tableType);
     }
-
-    storeViewTextInfoForMaterializedView(request, tableType);
 
     if (!Catalogs.hiveCatalog(conf, tableProperties)) {
       if (Boolean.parseBoolean(this.tableProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
@@ -232,11 +217,37 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void setTableType(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    TableType tableType = Enum.valueOf(TableType.class, hmsTable.getTableType());
+    String tableTypeValue = hmsTable.getTableType();
+
+    if (tableTypeValue == null) {
+      // Set the table type even for non HiveCatalog based tables
+      hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+              BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+      return;
+    }
+
+    TableType tableType = Enum.valueOf(TableType.class, tableTypeValue);
     if (tableType.equals(TableType.MATERIALIZED_VIEW) &&
         "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION))) {
 
       hmsTable.setTableType(TableType.EXTERNAL_MATERIALIZED_VIEW.toString());
+    }
+
+    switch (tableType) {
+      case EXTERNAL_TABLE:
+      case MANAGED_TABLE:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+        break;
+      case VIRTUAL_VIEW:
+      case MATERIALIZED_VIEW:
+      case EXTERNAL_MATERIALIZED_VIEW:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
+        break;
+      default:
+        throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
+                " is not supported as an Iceberg object type");
     }
   }
 
