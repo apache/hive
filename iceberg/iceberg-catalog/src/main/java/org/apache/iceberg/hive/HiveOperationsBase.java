@@ -115,8 +115,12 @@ public interface HiveOperationsBase {
     String tableTypeProp = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     NoSuchIcebergTableException.check(
             (TableType.MANAGED_TABLE.name().equalsIgnoreCase(table.getTableType()) ||
-                    TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(table.getTableType())) &&
-                    BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
+                    TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(table.getTableType()) ||
+                    TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType())) &&
+                    (
+                            BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.equalsIgnoreCase(tableTypeProp) ||
+                            ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableTypeProp)
+                    ),
             "Not an iceberg table: %s (type=%s) (tableType=%s)",
             fullName,
             tableTypeProp,
