@@ -58,7 +58,7 @@ public class PartExprEvalUtils {
       if (!partSpec.keySet().containsAll(expr.getCols())) {
         return null;
       }
-      partKeyTypes = p.getTable().getEffectivePartCols().stream().map(FieldSchema::getType)
+      partKeyTypes = p.getTable().getPartCols().stream().map(FieldSchema::getType)
           .toArray(String[]::new);
     } else {
       String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);

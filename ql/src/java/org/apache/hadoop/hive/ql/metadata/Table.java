@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -603,7 +604,7 @@ public class Table implements Serializable {
         && Objects.equals(snapshotRef, other.snapshotRef);
   }
 
-  public List<FieldSchema> getPartCols() {
+  private List<FieldSchema> getNativePartCols() {
     List<FieldSchema> partKeys = tTable.getPartitionKeys();
     if (partKeys == null) {
       partKeys = new ArrayList<>();
@@ -616,14 +617,14 @@ public class Table implements Serializable {
    * Returns partition columns, consulting the storage handler for non-native tables (e.g. Iceberg)
    * where partition columns are not stored in the metastore.
    */
-  public List<FieldSchema> getEffectivePartCols() {
+  public List<FieldSchema> getPartCols() {
     if (cachedPartCols != null) {
       return cachedPartCols;
     }
     if (isTableTypeSet() && hasNonNativePartitionSupport()) {
       cachedPartCols = getStorageHandler().getPartitionKeys(this);
     } else {
-      cachedPartCols = getPartCols();
+      cachedPartCols = getNativePartCols();
     }
     return cachedPartCols;
   }
@@ -643,7 +644,7 @@ public class Table implements Serializable {
   }
 
   public List<String> getPartColNames() {
-    return getEffectivePartCols().stream().map(FieldSchema::getName).toList();
+    return getPartCols().stream().map(FieldSchema::getName).toList();
   }
 
   public boolean hasNonNativePartitionSupport() {
@@ -758,7 +759,17 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
-    return getColsInternal(false);
+    if (!isNonNative()) {
+      return getColsInternal(false);
+    }
+    List<FieldSchema> nonPartFields = new ArrayList<>();
+    Set<String> partFieldsName = getPartCols().stream().map(FieldSchema::getName).collect(Collectors.toSet());
+    for (FieldSchema field : getColsInternal(false)) {
+      if (!partFieldsName.contains(field.getName())) {
+        nonPartFields.add(field);
+      }
+    }
+    return nonPartFields;
   }
 
   public List<FieldSchema> getColsForMetastore() {
@@ -842,7 +853,7 @@ public class Table implements Serializable {
   
   public boolean isPartitioned() {
     return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) :
-        CollectionUtils.isNotEmpty(getEffectivePartCols());
+        CollectionUtils.isNotEmpty(getPartCols());
   }
 
   public void setFields(List<FieldSchema> fields) {
@@ -1040,7 +1051,7 @@ public class Table implements Serializable {
   public Map<String, String> createSpec(
       org.apache.hadoop.hive.metastore.api.Partition tp) {
 
-    List<FieldSchema> fsl = getEffectivePartCols();
+    List<FieldSchema> fsl = getPartCols();
     List<String> tpl = tp.getValues();
     Map<String, String> spec = LinkedHashMap.newLinkedHashMap(fsl.size());
     for (int i = 0; i < fsl.size(); i++) {

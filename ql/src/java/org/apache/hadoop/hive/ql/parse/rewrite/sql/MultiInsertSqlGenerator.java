@@ -152,7 +152,7 @@ public abstract class MultiInsertSqlGenerator {
       return;
     }
     queryStr.append(',');
-    appendCols(targetTable.getEffectivePartCols(), alias, null, FieldSchema::getName);
+    appendCols(targetTable.getPartCols(), alias, null, FieldSchema::getName);
   }
 
   public void appendAllColsOfTargetTable(String prefix) {

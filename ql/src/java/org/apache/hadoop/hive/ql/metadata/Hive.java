@@ -869,7 +869,7 @@ public class Hive implements AutoCloseable {
         FieldSchema part = new FieldSchema();
         part.setName(partCol);
         part.setType(STRING_TYPE_NAME); // default partition key
-        tbl.getEffectivePartCols().add(part);
+        tbl.getPartCols().add(part);
       }
     }
     tbl.setSerializationLib(LazySimpleSerDe.class.getName());
@@ -1246,8 +1246,8 @@ public class Hive implements AutoCloseable {
       throws HiveException {
     try {
       Map<String, String> newPartSpec = newPart.getSpec();
-      if (oldPartSpec.keySet().size() != tbl.getEffectivePartCols().size()
-          || newPartSpec.keySet().size() != tbl.getEffectivePartCols().size()) {
+      if (oldPartSpec.keySet().size() != tbl.getPartCols().size()
+          || newPartSpec.keySet().size() != tbl.getPartCols().size()) {
         throw new HiveException("Unable to rename partition to the same name: number of partition cols don't match. ");
       }
       if (!oldPartSpec.keySet().equals(newPartSpec.keySet())){
@@ -1255,7 +1255,7 @@ public class Hive implements AutoCloseable {
       }
       List<String> pvals = new ArrayList<String>();
 
-      for (FieldSchema field : tbl.getEffectivePartCols()) {
+      for (FieldSchema field : tbl.getPartCols()) {
         String val = oldPartSpec.get(field.getName());
         if (val == null || val.length() == 0) {
           throw new HiveException("get partition: Value for key "
@@ -3832,7 +3832,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       boolean forceCreate, String partPath, boolean inheritTableSpecs) throws HiveException {
     tbl.validatePartColumnNames(partSpec, true);
     List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : tbl.getEffectivePartCols()) {
+    for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
       // enable dynamic partitioning
       if ((val == null && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING))
@@ -4221,7 +4221,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (tbl.hasNonNativePartitionSupport()) {
       return tbl.getStorageHandler().getPartitionNames(tbl, partSpec);
     }
-    List<String> pvals = MetaStoreUtils.getPvals(tbl.getEffectivePartCols(), partSpec);
+    List<String> pvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partSpec);
     return getPartitionNamesByPartitionVals(tbl, pvals, max);
   }
 
@@ -4463,7 +4463,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(ErrorMsg.TABLE_NOT_PARTITIONED, tbl.getTableName());
     }
 
-    List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getEffectivePartCols(), partialPartSpec);
+    List<String> partialPvals = MetaStoreUtils.getPvals(tbl.getPartCols(), partialPartSpec);
 
     List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
     try {
@@ -4772,7 +4772,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               || partitionWithoutSD.getRelativePath().isEmpty()) {
             if (tbl.getDataLocation() != null) {
               Path partPath = new Path(tbl.getDataLocation(),
-                  Warehouse.makePartName(tbl.getEffectivePartCols(),
+                  Warehouse.makePartName(tbl.getPartCols(),
                       partitionWithoutSD.getValues()));
               partitionLocation = partPath.toString();
             }
