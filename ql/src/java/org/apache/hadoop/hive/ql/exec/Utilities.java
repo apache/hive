@@ -4320,7 +4320,7 @@ public final class Utilities {
     if (metadata == null) {
       return;
     }
-    List<FieldSchema> partCols = metadata.getEffectivePartCols();
+    List<FieldSchema> partCols = metadata.getPartCols();
     if (partCols != null && !partCols.isEmpty()) {
       conf.set(serdeConstants.LIST_PARTITION_COLUMNS, MetaStoreUtils.getColumnNamesFromFieldSchema(partCols));
     }

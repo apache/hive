@@ -90,7 +90,7 @@ public class DummyPartition extends Partition {
     Table table = this.getTable();
     values = new ArrayList<>();
 
-    for (FieldSchema fs : table.getEffectivePartCols()) {
+    for (FieldSchema fs : table.getPartCols()) {
       String val = partSpec.get(fs.getName());
       values.add(val);
     }

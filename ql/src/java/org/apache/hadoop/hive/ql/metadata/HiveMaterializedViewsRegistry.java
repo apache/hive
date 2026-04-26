@@ -429,7 +429,7 @@ public final class HiveMaterializedViewsRegistry {
 
     // 1.2 Add column info corresponding to partition columns
     ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
-    for (FieldSchema partCol : viewTable.getEffectivePartCols()) {
+    for (FieldSchema partCol : viewTable.getPartCols()) {
       colName = partCol.getName();
       colInfo = new ColumnInfo(colName,
           TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), null, true);
