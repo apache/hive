@@ -72,12 +72,12 @@ public class HMSCatalogFactory {
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
     // Clear THRIFT_URIS so HiveCatalog doesn't accidentally use Thrift connection
     // when REST Catalog is embedded in HMS (same JVM). HiveCatalog reads from Configuration
-    // as fallback, so clearing it ensures it uses embedded connection when "uri" is not set.
+    // as fallback, so clearing it ensures it uses embedded connection when CatalogProperties.URI is not set.
     MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
-    // Only set "uri" property if THRIFT_URIS was configured (standalone mode)
+    // Only set CatalogProperties.URI if THRIFT_URIS was configured (standalone mode)
     // This tells HiveCatalog to use Thrift connection to external HMS
     if (configUri != null && !configUri.isEmpty()) {
-      properties.put("uri", configUri);
+      properties.put(CatalogProperties.URI, configUri);
     }
     final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
     if (configWarehouse != null) {
