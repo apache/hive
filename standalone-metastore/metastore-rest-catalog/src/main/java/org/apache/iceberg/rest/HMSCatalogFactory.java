@@ -81,7 +81,11 @@ public class HMSCatalogFactory {
     }
     final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
     if (configWarehouse != null) {
-      properties.put("warehouse", configWarehouse);
+      properties.put(CatalogProperties.WAREHOUSE_LOCATION, configWarehouse);
+    }
+    final String configExtWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL);
+    if (configExtWarehouse != null) {
+      properties.put(HiveCatalog.EXTERNAL_WAREHOUSE_LOCATION, configExtWarehouse);
     }
     if (configuration.get(SERVLET_ID_KEY) != null) {
       // For the testing purpose. HiveCatalog caches a metastore client in a static field. As our tests can spin up
