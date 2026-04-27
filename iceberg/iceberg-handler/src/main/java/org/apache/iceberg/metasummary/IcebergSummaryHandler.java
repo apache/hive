@@ -64,7 +64,7 @@ public class IcebergSummaryHandler implements MetaSummaryHandler {
     LOG.info("Initializing iceberg summary handler with warehouse:{}，external warehouse:{}，uris:{}",
         mgdWarehouse, extWarehouse, uris);
     propertiesMap.put("warehouse", mgdWarehouse);
-    propertiesMap.put("externalwarehouse", extWarehouse);
+    propertiesMap.put(HiveCatalog.EXTERNAL_WAREHOUSE_LOCATION, extWarehouse);
     propertiesMap.put("uri", uris);
     PrivilegedAction<HiveCatalog> action = () -> {
       HiveCatalog hiveCatalog = new HiveCatalog();
