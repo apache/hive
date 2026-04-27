@@ -359,9 +359,8 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   private void removeStorageTableForExternalMaterializedView(Table table) throws TException {
-    TableType tableType = Enum.valueOf(TableType.class, table.getTableType());
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equalsIgnoreCase(table.getTableType())) {
 
-    if (tableType.equals(TableType.EXTERNAL_MATERIALIZED_VIEW)) {
       delegate.dropTable(
               table.getCatName(),
               table.getDbName(),
