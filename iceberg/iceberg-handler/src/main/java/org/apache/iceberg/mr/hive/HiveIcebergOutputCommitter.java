@@ -308,27 +308,36 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList);
     for (JobContext jobContext : jobContextList) {
       for (String output : outputTables(jobContext.getJobConf())) {
+        Table table;
+        String tableType = "ICEBERG";
+
         Optional<Object> resource = SessionStateUtil.getResource(jobContext.getJobConf(), output);
-        if (resource.isEmpty()) {
+        if (resource.isPresent()) {
+          if (resource.get() instanceof Catalogs.MaterializedView) {
+            tableType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
+            table = resource.map(o -> ((Catalogs.MaterializedView) o).getStorageTable()).orElse(null);
+
+          } else {
+            table = (Table) SessionStateUtil.getResource(jobContext.getJobConf(), output)
+                    .filter(o -> o instanceof Table).orElse(null);
+
+          }
+        } else {
+          // fall back to getting the serialized table from the config
+          table = HiveTableUtil.deserializeTable(jobContext.getJobConf(), output);
+
+        }
+
+        if (table == null) {
           LOG.info("No Iceberg database object found in Query state with the name {}", output);
           continue;
         }
 
-        Table table;
-        String tableType;
-        if (resource.get() instanceof Catalogs.MaterializedView) {
-          tableType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
-          table = resource.map(o -> ((Catalogs.MaterializedView) o).getStorageTable()).get();
-        } else {
-          tableType = "ICEBERG";
-          table = resource.map(o -> (Table) o)
-                  // fall back to getting the serialized table from the config
-                  .orElseGet(() -> HiveTableUtil.deserializeTable(jobContext.getJobConf(), output));
-        }
         String catalogName = catalogName(jobContext.getJobConf(), output);
         outputs.put(new OutputTable(catalogName, output, table, tableType), jobContext);
       }
     }
+
     return outputs;
   }
 
