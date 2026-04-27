@@ -665,7 +665,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
           partTransformSpecs = tbl.getStorageHandler().getPartitionTransformSpecs(tbl);
         }
       }
-      colType = ast.getChildCount() == 2 ? statsCols.columnTypes() : getColumnTypesByName(tbl, colNames);
+      colType = genRewrittenColumnTypes(ast, statsCols);
       isTableLevel = !isPartitionStats;
 
       rewrittenQuery = String.join(" union all ",
@@ -744,7 +744,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         partTransformSpec = tbl.getStorageHandler().getPartitionTransformSpec(tbl);
       }
     }
-    colType = ast.getChildCount() == 2 ? statsCols.columnTypes() : getColumnTypesByName(tbl, colNames);
+    colType = genRewrittenColumnTypes(ast, statsCols);
     isTableLevel = !isPartitionStats;
 
     rewrittenQuery = genRewrittenQuery(colNames, colType, conf, partTransformSpec, -1, 
@@ -771,6 +771,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     analyzeRewrite.setColName(statsCols.columnNames());
     analyzeRewrite.setColType(statsCols.columnTypes());
     return analyzeRewrite;
+  }
+
+  private List<String> genRewrittenColumnTypes(ASTNode ast, StatsEligibleColumns statsCols) {
+    return (ast.getChildCount() == 2) ? statsCols.columnTypes() : getColumnTypesByName(tbl, colNames);
   }
 
   @Override
