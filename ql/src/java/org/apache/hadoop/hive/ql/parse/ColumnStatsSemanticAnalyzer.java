@@ -103,22 +103,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return rwt;
   }
 
-  private static final class StatsEligibleColumns {
-    private final List<String> columnNames;
-    private final List<String> columnTypes;
-
-    private StatsEligibleColumns(List<String> columnNames, List<String> columnTypes) {
-      this.columnNames = columnNames;
-      this.columnTypes = columnTypes;
-    }
-
-    List<String> getColumnNames() {
-      return columnNames;
-    }
-
-    List<String> getColumnTypes() {
-      return columnTypes;
-    }
+  private record StatsEligibleColumns(List<String> columnNames, List<String> columnTypes) {
   }
 
   /**
@@ -280,7 +265,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       boolean isPartitionStats) {
     StatsEligibleColumns statsCols = getStatsEligibleColumns(tbl);
     return ColumnStatsSemanticAnalyzer.genRewrittenQuery(
-        tbl, statsCols.getColumnNames(), statsCols.getColumnTypes(), conf, partTransformSpec, -1, partSpec,
+        tbl, statsCols.columnNames(), statsCols.columnTypes(), conf, partTransformSpec, -1, partSpec,
         isPartitionStats, true);
   }
 
@@ -658,7 +643,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       StatsEligibleColumns statsCols = null;
       if (ast.getChildCount() == 2) {
         statsCols = getStatsEligibleColumns(tbl);
-        colNames = statsCols.getColumnNames();
+        colNames = statsCols.columnNames();
       } else {
         colNames = getColumnName(ast);
       }
@@ -680,7 +665,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
           partTransformSpecs = tbl.getStorageHandler().getPartitionTransformSpecs(tbl);
         }
       }
-      colType = ast.getChildCount() == 2 ? statsCols.getColumnTypes() : getColumnTypesByName(tbl, colNames);
+      colType = ast.getChildCount() == 2 ? statsCols.columnTypes() : getColumnTypesByName(tbl, colNames);
       isTableLevel = !isPartitionStats;
 
       rewrittenQuery = String.join(" union all ",
@@ -739,7 +724,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     StatsEligibleColumns statsCols = null;
     if (ast.getChildCount() == 2) {
       statsCols = getStatsEligibleColumns(tbl);
-      colNames = statsCols.getColumnNames();
+      colNames = statsCols.columnNames();
     } else {
       colNames = getColumnName(ast);
     }
@@ -759,7 +744,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         partTransformSpec = tbl.getStorageHandler().getPartitionTransformSpec(tbl);
       }
     }
-    colType = ast.getChildCount() == 2 ? statsCols.getColumnTypes() : getColumnTypesByName(tbl, colNames);
+    colType = ast.getChildCount() == 2 ? statsCols.columnTypes() : getColumnTypesByName(tbl, colNames);
     isTableLevel = !isPartitionStats;
 
     rewrittenQuery = genRewrittenQuery(colNames, colType, conf, partTransformSpec, -1, 
@@ -783,8 +768,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
     analyzeRewrite.setTblLvl(!(conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()));
     StatsEligibleColumns statsCols = getStatsEligibleColumns(tbl);
-    analyzeRewrite.setColName(statsCols.getColumnNames());
-    analyzeRewrite.setColType(statsCols.getColumnTypes());
+    analyzeRewrite.setColName(statsCols.columnNames());
+    analyzeRewrite.setColType(statsCols.columnTypes());
     return analyzeRewrite;
   }
 
