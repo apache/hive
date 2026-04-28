@@ -643,7 +643,7 @@ class TextDescTableFormatter extends DescTableFormatter {
 
     JsonNode defaultNode = targetNode.path(defaultType);
     if (!defaultNode.isMissingNode()) {
-      return defaultNode.isTextual() ? quoteString(defaultNode.asText()) : defaultNode.asText();
+      return defaultNode.isTextual() ? quoteString(defaultNode.asText(), "'") : defaultNode.asText();
     }
     return extractStructDefaults(targetNode, defaultType);
   }
@@ -652,31 +652,43 @@ class TextDescTableFormatter extends DescTableFormatter {
     JsonNode typeNode = targetNode.path("type");
     JsonNode structFields = typeNode.path("fields");
 
-    if (!typeNode.isObject() || !"struct".equalsIgnoreCase(typeNode.path("type").asText(null)) ||
-        !structFields.isArray()) {
+    if (!typeNode.isObject() || !structFields.isArray()) {
       return StringUtils.EMPTY;
     }
 
     List<String> fieldDefaults = new ArrayList<>();
-    boolean hasDefaults = false;
     for (JsonNode childField : structFields) {
       String childName = childField.path("name").asText("");
       JsonNode childDefaultNode = childField.path(defaultType);
       if (!childDefaultNode.isMissingNode()) {
-        hasDefaults = true;
         String defaultValue = childDefaultNode.asText();
-        if (childDefaultNode.isTextual()) {
-          fieldDefaults.add("\"" + childName + "\":\"" + defaultValue + "\"");
-        } else {
-          fieldDefaults.add("\"" + childName + "\":" + defaultValue);
+        String quotedValue = childDefaultNode.isTextual() ? quoteString(defaultValue, "\"") : defaultValue;
+        fieldDefaults.add(quoteString(childName, "\"") + ":" + quotedValue);
+      } else {
+        String nestedJson = getNestedStructDefault(childField, childName, defaultType);
+        if (StringUtils.isNotEmpty(nestedJson)) {
+          fieldDefaults.add(nestedJson);
         }
       }
     }
-    return hasDefaults ? quoteString("{" + String.join(",", fieldDefaults) + "}") : StringUtils.EMPTY;
+    
+    return fieldDefaults.isEmpty() ? StringUtils.EMPTY : 
+        quoteString("{" + String.join(",", fieldDefaults) + "}", "'");
   }
 
-  private static String quoteString(String input) {
-    return "'" + input + "'";
+  private String getNestedStructDefault(JsonNode childField, String childName, String defaultType) {
+    JsonNode childTypeNode = childField.path("type");
+    if (!childTypeNode.isObject() || !childTypeNode.path("fields").isArray()) {
+      return StringUtils.EMPTY;
+    }
+    
+    String nestedDefaults = extractStructDefaults(childField, defaultType);
+    return StringUtils.isEmpty(nestedDefaults) ? StringUtils.EMPTY :
+        quoteString(childName, "\"") + ":" + nestedDefaults.substring(1, nestedDefaults.length() - 1);
+  }
+
+  private static String quoteString(String input, String quote) {
+    return quote + input + quote;
   }
 
   private void getCheckConstraintsInformation(StringBuilder constraintsInfo, CheckConstraint constraint) {
