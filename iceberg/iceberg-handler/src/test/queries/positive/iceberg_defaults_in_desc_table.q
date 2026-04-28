@@ -42,3 +42,33 @@ INSERT INTO ice_orc (id) VALUES (2);
 SELECT * FROM ice_orc ORDER BY id;
 
 DESCRIBE FORMATTED ice_orc;
+
+CREATE TABLE ice_nested (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3');
+
+ALTER TABLE ice_nested ADD COLUMNS (
+  nested_struct STRUCT<
+    outer_field:STRING, 
+    inner_struct:STRUCT<inner_a:INT, inner_b:STRUCT<inner_x:STRING, inner_y:STRING>>
+  > DEFAULT '{"outer_field":"test","inner_struct":{"inner_a":42,"inner_b":{"inner_x":"nestedx","inner_y":"nestedy"}}}',
+  simple_struct STRUCT<a:INT, b:STRING> DEFAULT '{"a":123,"b":"simple"}'
+);
+
+DESCRIBE FORMATTED ice_nested;
+
+CREATE TABLE ice_mixed_defaults (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3');
+
+ALTER TABLE ice_mixed_defaults ADD COLUMNS (
+  col_with_initial STRING DEFAULT 'initial_value'
+);
+
+DESCRIBE FORMATTED ice_mixed_defaults;
+
+ALTER TABLE ice_mixed_defaults CHANGE COLUMN col_with_initial col_without_write STRING DEFAULT null;
+
+DESCRIBE FORMATTED ice_mixed_defaults;
