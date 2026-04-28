@@ -112,7 +112,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:age     	Initial Default Value:25	Write Default Value:25
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:point   	Initial Default Value:	Write Default Value:'x:100,y:99'
+Column Name:point   	Write Default Value:'{"x":100,"y":99}'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:name    	Initial Default Value:'unknown'	Write Default Value:'unknown'
@@ -228,11 +228,11 @@ Sort Columns:       	[]
 # Default Constraints	 	 
 Table:              	default.ice_orc     	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:point   	Initial Default Value:	Write Default Value:'x:100,y:99'
+Column Name:point   	Write Default Value:'{"x":100,"y":99}'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:age     	Initial Default Value:	Write Default Value:25
+Column Name:age     	Write Default Value:25	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:name    	Initial Default Value:	Write Default Value:'unknown'
+Column Name:name    	Write Default Value:'unknown'	 
 	 	 

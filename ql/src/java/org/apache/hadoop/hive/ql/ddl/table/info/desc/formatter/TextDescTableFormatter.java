@@ -603,13 +603,19 @@ class TextDescTableFormatter extends DescTableFormatter {
     formatOutput("Constraint Name:", constraintName, constraintsInfo);
     if (CollectionUtils.isNotEmpty(columns)) {
       for (DefaultConstraintCol column : columns) {
-        String[] fields = new String[3];
-        fields[0] = "Column Name:" + column.colName;
-        fields[1] = "Initial Default Value:" +
-            getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "initial-default");
-        fields[2] = "Write Default Value:" +
-            getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "write-default");
-        formatOutput(fields, constraintsInfo);
+        String initialDefault = getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "initial-default");
+        String writeDefault = getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "write-default");
+        List<String> fieldsList = new ArrayList<>();
+        fieldsList.add("Column Name:" + column.colName);
+
+        if (StringUtils.isNotEmpty(initialDefault)) {
+          fieldsList.add("Initial Default Value:" + initialDefault);
+        }
+
+        if (StringUtils.isNotEmpty(writeDefault)) {
+          fieldsList.add("Write Default Value:" + writeDefault);
+        }
+        formatOutput(fieldsList.toArray(new String[0]), constraintsInfo);
       }
     }
     constraintsInfo.append(LINE_DELIM);
@@ -655,15 +661,18 @@ class TextDescTableFormatter extends DescTableFormatter {
     boolean hasDefaults = false;
     for (JsonNode childField : structFields) {
       String childName = childField.path("name").asText("");
-      String childDefault = getIcebergColumnDefaultsFromSchema(childField, childName, defaultType);
-      if (StringUtils.isNotEmpty(childDefault)) {
+      JsonNode childDefaultNode = childField.path(defaultType);
+      if (!childDefaultNode.isMissingNode()) {
         hasDefaults = true;
-        fieldDefaults.add(childName + ":" + childDefault);
-      } else {
-        fieldDefaults.add(childName + ":");
+        String defaultValue = childDefaultNode.asText();
+        if (childDefaultNode.isTextual()) {
+          fieldDefaults.add("\"" + childName + "\":\"" + defaultValue + "\"");
+        } else {
+          fieldDefaults.add("\"" + childName + "\":" + defaultValue);
+        }
       }
     }
-    return hasDefaults ? quoteString(String.join(",", fieldDefaults)) : StringUtils.EMPTY;
+    return hasDefaults ? quoteString("{" + String.join(",", fieldDefaults) + "}") : StringUtils.EMPTY;
   }
 
   private static String quoteString(String input) {
