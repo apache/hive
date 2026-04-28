@@ -638,7 +638,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       Map<String, String> partSpec = (isPartitionStats) ?
           AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf) : null;
 
-      List<FieldSchema> columnSchemas = getColumns(ast);
+      List<FieldSchema> columnSchemas = getColumnsFromAst(ast);
 
       if (isPartitionStats) {
         handlePartialPartitionSpec(partSpec, null);
@@ -709,7 +709,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     List<TransformSpec> partTransformSpec = null;
     Map<String, String> partSpec = null;
 
-    List<FieldSchema> columnSchemas = getColumns(ast);
+    List<FieldSchema> columnSchemas = getColumnsFromAst(ast);
 
     if (isPartitionStats) {
       partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
@@ -729,23 +729,23 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return rewrittenTree;
   }
 
-  protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {
+  protected List<FieldSchema> getColumnsFromAst(ASTNode ast) throws SemanticException {
     List<FieldSchema> statsEligibleFS = null;
-    List<String> colNames;
+    List<String> columnNames;
     if (ast.getChildCount() == 2) {
       statsEligibleFS = getStatsEligibleFieldSchemas(tbl);
-      colNames = Utilities.getColumnNamesFromFieldSchema(statsEligibleFS);
+      columnNames = Utilities.getColumnNamesFromFieldSchema(statsEligibleFS);
     } else{
-      colNames = getExplicitColumnNamesFromAst(ast);
+      columnNames = getExplicitColumnNamesFromAst(ast);
     }
 
-    checkForPartitionColumns(colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
-    validateSpecifiedColumnNames(colNames);
+    checkForPartitionColumns(columnNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
+    validateSpecifiedColumnNames(columnNames);
 
     if (statsEligibleFS != null) {
       return statsEligibleFS;
     }
-    return getFieldSchemasByColName(tbl, colNames);
+    return getFieldSchemasByColName(tbl, columnNames);
   }
 
   AnalyzeRewriteContext getAnalyzeRewriteContext() {
