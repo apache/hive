@@ -168,19 +168,12 @@ public class HiveConnection implements java.sql.Connection {
   private static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class);
 
   /**
-   * Sentinel: no {@code hive.query.timeout.seconds} has been applied from the JDBC URL or a client
-   * {@code SET} on this connection yet.
+   * Last effective {@code hive.query.timeout.seconds} in seconds, or {@code -1} if not yet set.
+   * Seeded from the JDBC URL at connect time; a JDBC {@link java.sql.Connection} may be shared
+   * across threads with concurrent {@link org.apache.hive.jdbc.HiveStatement}s on one HS2 session,
+   * so this field uses an {@link AtomicLong} to keep updates well-defined.
    */
-  static final long SESSION_QUERY_TIMEOUT_NOT_TRACKED = -1L;
-  /**
-   * Last effective {@code hive.query.timeout.seconds} in seconds: from the JDBC URL
-   * ({@code ?hive.query.timeout.seconds=...} / {@code hiveconf:} map) at connect time, and/or from a
-   * client {@code SET} (see {@link org.apache.hive.jdbc.HiveStatement}), or
-   * {@link #SESSION_QUERY_TIMEOUT_NOT_TRACKED}. A JDBC {@code Connection} may be shared across threads
-   * with concurrent {@link org.apache.hive.jdbc.HiveStatement}s on one HS2 session; this field uses an
-   * {@link AtomicLong} so updates remain well-defined (URL first, then last SET wins over prior value).
-   */
-  private final AtomicLong sessionQueryTimeoutSeconds = new AtomicLong(SESSION_QUERY_TIMEOUT_NOT_TRACKED);
+  private final AtomicLong sessionQueryTimeoutSeconds = new AtomicLong(-1L);
   private String jdbcUriString;
   private String host;
   private int port;
@@ -209,18 +202,18 @@ public class HiveConnection implements java.sql.Connection {
   public TCLIService.Iface getClient() { return client; }
 
   /**
-   * Sets the effective {@code hive.query.timeout.seconds} (in seconds) after connect (URL) or a
-   * successful {@code SET hive.query.timeout.seconds=...}. Used for JDBC timeout messages (HIVE-28265).
+   * Updates the tracked {@code hive.query.timeout.seconds} value (in seconds) on this connection.
+   * Called at connect time from the JDBC URL hive-conf map, and may be called again later if needed.
    */
   void setSessionQueryTimeoutSeconds(long seconds) {
     sessionQueryTimeoutSeconds.set(seconds);
   }
 
   /**
-   * If the JDBC URL supplied {@code hive.query.timeout.seconds} (query string / {@code hiveconf:} map),
-   * parse and store it for {@link #getSessionQueryTimeoutSeconds()} so timeout error messages can use it
-   * without regex-parsing {@code SET} statements. Does not change HS2 behavior (already applied in
-   * {@link #openSession()}).
+   * If the JDBC URL supplied {@code hive.query.timeout.seconds} (via the {@code ?hive_conf_list}
+   * segment), parses and stores the value so that {@link #getSessionQueryTimeoutSeconds()} can
+   * return it for timeout error messages. This runs once at connect time and does not affect the
+   * server-side configuration, which is applied separately in {@link #openSession()}.
    */
   private void applySessionQueryTimeoutFromJdbcUrl() {
     Map<String, String> hiveConfs = connParams.getHiveConfs();
@@ -244,8 +237,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   /**
-   * @return seconds from the JDBC URL at connect and/or the last client-tracked SET, or
-   *         {@link #SESSION_QUERY_TIMEOUT_NOT_TRACKED} if neither applied
+   * @return the tracked {@code hive.query.timeout.seconds} in seconds, or {@code -1} if not set
    */
   long getSessionQueryTimeoutSeconds() {
     return sessionQueryTimeoutSeconds.get();

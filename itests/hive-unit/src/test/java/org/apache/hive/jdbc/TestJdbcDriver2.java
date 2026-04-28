@@ -140,7 +140,7 @@ public class TestJdbcDriver2 {
 
   /**
    * {@code SET hive.query.timeout.seconds} applies to the whole HS2 session. Tests such as
-   * {@link #testQueryTimeoutMessageUsesHiveConf()} must not leave a short limit on the shared
+   * {@link #testQueryTimeoutFromSetStatement()} must not leave a short limit on the shared
    * {@link #con}, or unrelated tests will see {@link SQLTimeoutException}.
    */
   @After
@@ -164,9 +164,6 @@ public class TestJdbcDriver2 {
         context + ": should start with " + QUERY_TIMED_OUT_AFTER_1_SECONDS
             + " (HS2 may append ; Query ID: ...); actual=" + msg,
         msg.startsWith(QUERY_TIMED_OUT_AFTER_1_SECONDS));
-    assertFalse(
-        "HIVE-28265: message should not claim 0 seconds: " + msg,
-        msg.contains("after 0 seconds"));
   }
 
   private static Connection getConnection(String prefix, String postfix) throws SQLException {
@@ -387,7 +384,7 @@ public class TestJdbcDriver2 {
    * in the URL query ({@code ?hive_conf_list}) per the driver format
    * {@code jdbc:hive2://.../db;sess?hive_conf#hive_var}.
    * <p>
-   * HIVE-28265: {@link SQLTimeoutException#getMessage()} must reflect the configured limit (1s),
+   * {@link SQLTimeoutException#getMessage()} must reflect the configured limit (1s),
    * not {@code after 0 seconds}.
    */
   @Test
@@ -2755,13 +2752,14 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * When only {@code hive.query.timeout.seconds} applies (no {@link Statement#setQueryTimeout(int)}),
-   * the client must still report the real limit in {@link SQLTimeoutException#getMessage()} (before
-   * HIVE-28265 some paths wrongly showed "after 0 seconds"). Message must begin with
-   * {@link #QUERY_TIMED_OUT_AFTER_1_SECONDS}; HS2 may append {@code ; Query ID: ...}.
+   * When the session timeout is configured via a {@code SET hive.query.timeout.seconds=...}
+   * statement and no {@link Statement#setQueryTimeout(int)} is called, the
+   * {@link SQLTimeoutException#getMessage()} must still reflect the real limit.
+   * Message must begin with {@link #QUERY_TIMED_OUT_AFTER_1_SECONDS};
+   * HS2 may append {@code ; Query ID: ...}.
    */
   @Test
-  public void testQueryTimeoutMessageUsesHiveConf() throws Exception {
+  public void testQueryTimeoutFromSetStatement() throws Exception {
     String udfName = SleepMsUDF.class.getName();
     Statement stmt1 = con.createStatement();
     stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
@@ -2785,11 +2783,11 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Variant of {@link #testQueryTimeoutMessageUsesHiveConf}: the {@code SET} is issued on a
-   * separate, already-closed statement; the timed-out query runs on a brand-new statement with no
+   * Variant of {@link #testQueryTimeoutFromSetStatement}: the {@code SET} is issued on a separate,
+   * already-closed statement; the timed-out query runs on a brand-new statement with no
    * {@link Statement#setQueryTimeout(int)} call. The tracked session timeout lives on the
    * {@link HiveConnection}, so it persists across statement instances and must still drive the
-   * {@link SQLTimeoutException} message correctly. Covers the HIVE-28265 multi-statement scenario.
+   * {@link SQLTimeoutException} message correctly.
    */
   @Test
   public void testQueryTimeoutMessagePersistedAcrossStatements() throws Exception {
