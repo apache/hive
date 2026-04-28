@@ -399,9 +399,9 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * HIVE-28265: Prefer server error text (from {@code TGetOperationStatusResp.errorMessage}) unless
-   * it is empty or the legacy "0 seconds" value; fall back to JDBC {@link #setQueryTimeout(int)}
-   * or the URL-seeded {@code hive.query.timeout.seconds} on the connection.
+   * Prefers the server error text from {@code TGetOperationStatusResp.errorMessage} when it is
+   * present and plausible; falls back to a locally derived message using
+   * {@link #setQueryTimeout(int)} or the URL-seeded {@code hive.query.timeout.seconds} value.
    */
   private String sqlTimeoutMessageForTimedOutState(String serverMessage) {
     if (!needsLocalTimeoutMessageForTimedOut(serverMessage)) {
@@ -442,8 +442,8 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * One GetOperationStatus response: progress update, Thrift status check, then terminal states.
-   * Extracted to keep {@link #waitForOperationToComplete()} smaller for static analysis (Sonar).
+   * Handles one {@code GetOperationStatus} response: applies a progress update if in-place updates
+   * are enabled, verifies the Thrift status, and dispatches on the operation state.
    */
   private void processOperationStatusResponse(TGetOperationStatusResp statusResp) throws SQLException {
     if (!isOperationComplete && inPlaceUpdateStream.isPresent()) {
