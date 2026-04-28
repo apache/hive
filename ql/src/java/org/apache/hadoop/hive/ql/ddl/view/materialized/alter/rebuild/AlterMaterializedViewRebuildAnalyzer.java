@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -213,9 +214,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         HiveTxnManager txnManager = getTxnMgr();
         LockState state;
         try {
-          // trigger txn id generation
-          queryState.getValidTxnList();
-
+          txnManager.openTxn(ctx, conf.getUser(), TxnType.MATER_VIEW_REBUILD);
           state = txnManager.acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(tableName.getCat(),
               tableName.getDb(), tableName.getTable(), txnManager.getCurrentTxnId())).getState();
         } catch (LockException e) {
