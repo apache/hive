@@ -96,8 +96,9 @@ public class TestNativeIcebergViewSupport {
     TableIdentifier id = TableIdentifier.of(DB, VIEW);
     assertThat(cat.viewExists(id)).isTrue();
     View view = cat.loadView(id);
-    assertThat(view.properties().get(NativeIcebergViewSupport.ICEBERG_NATIVE_VIEW_PROPERTY))
-        .isEqualTo("true");
+    assertThat(
+            view.properties().get(NativeIcebergViewSupport.NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM))
+        .isEqualTo(NativeIcebergViewSupport.NATIVE_ICEBERG_VIEW_HANDLER_FQCN);
     assertThat(view.properties().get("comment")).isEqualTo("hello-view");
     assertThat(view.properties().get("k1")).isEqualTo("v1");
     HiveViewOperations ops = (HiveViewOperations) ((BaseView) view).operations();

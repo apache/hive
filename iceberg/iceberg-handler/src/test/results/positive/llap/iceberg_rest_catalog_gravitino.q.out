@@ -225,7 +225,6 @@ Retention:          	2147483647
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
-	hive.iceberg.native.view	true                
 #### A masked pattern was here ####
 	table_type          	ICEBERG-VIEW        
 	type                	rest                
@@ -299,7 +298,6 @@ Retention:          	2147483647
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
-	hive.iceberg.native.view	true                
 #### A masked pattern was here ####
 	table_type          	ICEBERG-VIEW        
 	type                	rest                
@@ -370,7 +368,6 @@ Retention:          	2147483647
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
-	hive.iceberg.native.view	true                
 #### A masked pattern was here ####
 	table_type          	ICEBERG-VIEW        
 	type                	rest                
@@ -444,7 +441,6 @@ Retention:          	2147483647
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
-	hive.iceberg.native.view	true                
 #### A masked pattern was here ####
 	table_type          	ICEBERG-VIEW        
 	type                	rest                

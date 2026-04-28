@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 
 import com.google.common.collect.Maps;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -1026,6 +1027,53 @@ public interface HiveStorageHandler extends Configurable {
 
   default void setMergeTaskDeleteProperties(TableDesc tableDesc) {
     throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
+  }
+
+  /**
+   * HMS table parameter recording the FQCN of the {@link HiveStorageHandler} that created a native-catalog view,
+   * used when altering back to a classic view to clear handler-specific HMS markers.
+   */
+  String NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM = "hive.storage.native.view.handler";
+
+  /**
+   * @return {@code true} if this handler may store CREATE VIEW text and column metadata in an external catalog
+   *         (native view) rather than only as a classic HMS virtual view.
+   */
+  default boolean supportsNativeViewCatalog() {
+    return false;
+  }
+
+  /**
+   * HMS table-level parameters to set on the metastore stub for a native-catalog view (markers, etc.).
+   * Keys should be removed when {@linkplain #clearNativeViewHmsTableProperties(Map)} is invoked for the same
+   * handler class recorded under {@link #NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM}.
+   */
+  default Map<String, String> getNativeViewHmsTableProperties() {
+    return Collections.emptyMap();
+  }
+
+  /**
+   * Removes entries added for native-catalog views (see {@link #getNativeViewHmsTableProperties()}).
+   */
+  default void clearNativeViewHmsTableProperties(Map<String, String> tableParameters) {
+    if (tableParameters == null) {
+      return;
+    }
+    for (String k : getNativeViewHmsTableProperties().keySet()) {
+      tableParameters.remove(k);
+    }
+    tableParameters.remove(NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM);
+  }
+
+  /**
+   * Creates or replaces a view in the external catalog backing this handler.
+   *
+   * @return {@code false} if the operation was skipped (e.g. IF NOT EXISTS and the view already exists)
+   */
+  default boolean createOrReplaceNativeView(Configuration conf, CreateNativeViewRequest request)
+      throws HiveException {
+    throw new HiveException(
+        "createOrReplaceNativeView is not supported by storage handler " + getClass().getName());
   }
 
   default boolean supportsDefaultColumnValues(Map<String, String> tblProps) {

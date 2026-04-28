@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -42,13 +43,13 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.StorageFormat;
 
 /**
  * Analyzer for create view commands.
  */
 @DDLType(types = HiveParser.TOK_CREATEVIEW)
 public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
-  private static final String ICEBERG_STORAGE_HANDLER_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
 
   public CreateViewAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -79,7 +80,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
         getColumnNames((ASTNode) children.remove(HiveParser.TOK_VIEWPARTCOLS).getChild(0)) : null;
 
     ASTNode viewMetadataFormat = children.remove(HiveParser.TOK_VIEWMETADATAFORMAT);
-    boolean icebergNativeView = resolveNativeIcebergView(viewMetadataFormat);
+    String nativeViewStorageHandlerClass = resolveNativeViewStorageHandlerClass(viewMetadataFormat);
 
     assert children.isEmpty();
 
@@ -100,7 +101,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     List<FieldSchema> partitionColumns = getPartitionColumns(partitionColumnNames);
     setColumnAccessInfo(analyzer.getColumnAccessInfo());
     CreateViewDesc desc = new CreateViewDesc(fqViewName, schema, comment, properties, partitionColumnNames,
-        ifNotExists, orReplace, originalText, expandedText, partitionColumns, icebergNativeView);
+        ifNotExists, orReplace, originalText, expandedText, partitionColumns, nativeViewStorageHandlerClass);
     validateCreateView(desc, analyzer);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
@@ -198,26 +199,45 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
   }
 
   /**
-   * Native Iceberg view when {@code STORED BY iceberg} is present, or when it is omitted and
-   * {@code hive.default.storage.handler.class} is the Iceberg storage handler class.
+   * Returns the FQCN of the storage handler that should own native-catalog view metadata, or {@code null} for a
+   * classic HMS virtual view. Uses {@link HiveStorageHandler#supportsNativeViewCatalog()} on the resolved handler.
    */
-  private boolean resolveNativeIcebergView(ASTNode viewMetadataFormat) throws SemanticException {
+  private String resolveNativeViewStorageHandlerClass(ASTNode viewMetadataFormat) throws SemanticException {
+    String handlerClass;
     if (viewMetadataFormat != null) {
       if (viewMetadataFormat.getChildCount() != 1) {
         throw new SemanticException("Internal error: expected single handler identifier in view metadata");
       }
-      String handler = ((ASTNode) viewMetadataFormat.getChild(0)).getText();
-      if (handler == null || !handler.equalsIgnoreCase("iceberg")) {
-        throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
-            "Only STORED BY ICEBERG is supported for native views, got: " + handler));
+      String identifier = ((ASTNode) viewMetadataFormat.getChild(0)).getText();
+      handlerClass = StorageFormat.resolveStorageHandlerClassNameForView(identifier);
+    } else {
+      handlerClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER);
+      if (handlerClass != null) {
+        handlerClass = handlerClass.trim();
+        if (handlerClass.isEmpty()) {
+          handlerClass = null;
+        }
       }
-      return true;
     }
-    String defaultHandler = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER);
-    if (defaultHandler == null || defaultHandler.isEmpty()) {
-      return false;
+    if (handlerClass == null || handlerClass.isEmpty()) {
+      return null;
     }
-    return ICEBERG_STORAGE_HANDLER_CLASS.equals(defaultHandler.trim());
+    try {
+      HiveStorageHandler handler = HiveUtils.getStorageHandler(conf, handlerClass);
+      if (handler != null && handler.supportsNativeViewCatalog()) {
+        return handlerClass;
+      }
+    } catch (HiveException e) {
+      if (viewMetadataFormat != null) {
+        throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(e.getMessage()), e);
+      }
+      return null;
+    }
+    if (viewMetadataFormat != null) {
+      throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.getMsg(
+          "Native view metadata is not supported for storage handler: " + handlerClass));
+    }
+    return null;
   }
 
   private void validateCreateView(CreateViewDesc desc, SemanticAnalyzer analyzer) throws SemanticException {

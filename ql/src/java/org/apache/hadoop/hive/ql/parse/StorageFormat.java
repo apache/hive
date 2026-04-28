@@ -89,6 +89,23 @@ public class StorageFormat {
     }
   }
 
+  /**
+   * Resolves {@code STORED BY &lt;identifier&gt;} for CREATE VIEW (short names such as {@code ICEBERG} or an FQCN).
+   */
+  public static String resolveStorageHandlerClassNameForView(String identifierText) throws SemanticException {
+    if (StringUtils.isBlank(identifierText)) {
+      throw new SemanticException("Storage handler identifier in CREATE VIEW cannot be empty");
+    }
+    String text = identifierText.trim();
+    for (StorageHandlerTypes type : StorageHandlerTypes.NON_DEFAULT_TYPES) {
+      if (type.name().equalsIgnoreCase(text)) {
+        Objects.requireNonNull(type.className());
+        return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(type.className()));
+      }
+    }
+    return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(text));
+  }
+
   public StorageFormat(Configuration conf) {
     this.conf = conf;
     this.serdeProps = new HashMap<String, String>();

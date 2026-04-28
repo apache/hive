@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.CreateNativeViewRequest;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -183,6 +184,7 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.MetastoreUtil;
+import org.apache.iceberg.hive.NativeIcebergViewSupport;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -381,6 +383,35 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public boolean supportsPartitioning() {
     return true;
+  }
+
+  @Override
+  public boolean supportsNativeViewCatalog() {
+    return true;
+  }
+
+  @Override
+  public Map<String, String> getNativeViewHmsTableProperties() {
+    return NativeIcebergViewSupport.defaultNativeViewMarkerTableProperties();
+  }
+
+  @Override
+  public boolean createOrReplaceNativeView(Configuration conf, CreateNativeViewRequest request)
+      throws HiveException {
+    try {
+      return NativeIcebergViewSupport.createOrReplaceNativeView(
+          conf,
+          request.getDatabaseName(),
+          request.getViewName(),
+          request.getSchema(),
+          request.getExpandedText(),
+          request.getProperties(),
+          request.getComment(),
+          request.isReplace(),
+          request.isIfNotExists());
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   /**

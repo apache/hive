@@ -34,16 +34,14 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class CreateViewDesc extends AbstractCreateViewDesc {
   private static final long serialVersionUID = 1L;
 
-  /** HMS table property set when the view is declared with {@code STORED BY ICEBERG} (native Iceberg view). */
-  public static final String ICEBERG_NATIVE_VIEW_PROPERTY = "hive.iceberg.native.view";
-
   private final String comment;
   private final Map<String, String> properties;
   private final List<String> partitionColumnNames;
   private final boolean ifNotExists;
   private final boolean replace;
   private final List<FieldSchema> partitionColumns;
-  private final boolean icebergNativeView;
+  /** FQCN of storage handler for native-catalog view, or {@code null} for a classic HMS virtual view. */
+  private final String nativeViewStorageHandlerClass;
 
   private ReplicationSpec replicationSpec = null;
   private String ownerName = null;
@@ -52,12 +50,12 @@ public class CreateViewDesc extends AbstractCreateViewDesc {
       List<String> partitionColumnNames, boolean ifNotExists, boolean replace, String originalText,
       String expandedText, List<FieldSchema> partitionColumns) {
     this(viewName, schema, comment, properties, partitionColumnNames, ifNotExists, replace, originalText,
-        expandedText, partitionColumns, false);
+        expandedText, partitionColumns, null);
   }
 
   public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment, Map<String, String> properties,
       List<String> partitionColumnNames, boolean ifNotExists, boolean replace, String originalText,
-      String expandedText, List<FieldSchema> partitionColumns, boolean icebergNativeView) {
+      String expandedText, List<FieldSchema> partitionColumns, String nativeViewStorageHandlerClass) {
     super(viewName, schema, originalText, expandedText);
     this.comment = comment;
     this.properties = properties;
@@ -65,7 +63,7 @@ public class CreateViewDesc extends AbstractCreateViewDesc {
     this.ifNotExists = ifNotExists;
     this.replace = replace;
     this.partitionColumns = partitionColumns;
-    this.icebergNativeView = icebergNativeView;
+    this.nativeViewStorageHandlerClass = nativeViewStorageHandlerClass;
   }
 
   @Explain(displayName = "partition columns")
@@ -101,9 +99,17 @@ public class CreateViewDesc extends AbstractCreateViewDesc {
     return replace;
   }
 
-  @Explain(displayName = "iceberg native view", displayOnlyOnTrue = true)
-  public boolean isIcebergNativeView() {
-    return icebergNativeView;
+  /**
+   * @return FQCN of the {@link HiveStorageHandler} that stores view metadata in an external catalog, or
+   *         {@code null} for a classic HMS-only virtual view.
+   */
+  @Explain(displayName = "native view storage handler", displayOnlyOnTrue = true)
+  public String getNativeViewStorageHandlerClass() {
+    return nativeViewStorageHandlerClass;
+  }
+
+  public boolean usesNativeViewCatalog() {
+    return nativeViewStorageHandlerClass != null && !nativeViewStorageHandlerClass.trim().isEmpty();
   }
 
   /**

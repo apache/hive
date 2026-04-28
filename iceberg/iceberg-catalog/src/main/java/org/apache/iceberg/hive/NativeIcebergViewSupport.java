@@ -30,6 +30,7 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.view.ViewBuilder;
 
 /**
@@ -38,8 +39,22 @@ import org.apache.iceberg.view.ViewBuilder;
  */
 public final class NativeIcebergViewSupport {
 
-  /** HMS parameter aligned with Hive's {@code CreateViewDesc#ICEBERG_NATIVE_VIEW_PROPERTY}. */
-  public static final String ICEBERG_NATIVE_VIEW_PROPERTY = "hive.iceberg.native.view";
+  /**
+   * HMS table parameter recording the storage handler FQCN for native views; must match the constant
+   * {@code NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM} on {@code org.apache.hadoop.hive.ql.metadata.HiveStorageHandler}.
+   */
+  public static final String NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM = "hive.storage.native.view.handler";
+
+  /** Value stored with {@link #NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM} for Iceberg native views. */
+  public static final String NATIVE_ICEBERG_VIEW_HANDLER_FQCN = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+
+  /**
+   * HMS / Iceberg view marker entries for a native Iceberg catalog view (same map as
+   * {@code HiveIcebergStorageHandler#getNativeViewHmsTableProperties()}).
+   */
+  public static Map<String, String> defaultNativeViewMarkerTableProperties() {
+    return Map.of(NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM, NATIVE_ICEBERG_VIEW_HANDLER_FQCN);
+  }
 
   private NativeIcebergViewSupport() {
   }
@@ -64,7 +79,7 @@ public final class NativeIcebergViewSupport {
       }
 
       ViewBuilder builder = startViewBuilder(viewCatalog, identifier, fieldSchemas, viewSql);
-      builder = applyCommentAndTblProps(builder, tblProperties, comment);
+      builder = applyCommentAndTblProps(builder, mergeDefaultNativeViewTableProperties(tblProperties), comment);
       commitView(builder, replace);
       return true;
     } finally {
@@ -94,8 +109,23 @@ public final class NativeIcebergViewSupport {
         .buildView(identifier)
         .withSchema(HiveSchemaUtil.convert(fieldSchemas, Collections.emptyMap(), true))
         .withDefaultNamespace(Namespace.of(identifier.namespace().level(0)))
-        .withQuery("hive", viewSql)
-        .withProperty(ICEBERG_NATIVE_VIEW_PROPERTY, "true");
+        .withQuery("hive", viewSql);
+  }
+
+  /**
+   * Fills Iceberg native-view HMS / view marker properties when absent (e.g. direct catalog callers).
+   * Handlers that delegate here after {@code HiveStorageHandler#getNativeViewHmsTableProperties()} already
+   * supplied markers get the same result.
+   */
+  public static Map<String, String> mergeDefaultNativeViewTableProperties(Map<String, String> tblProperties) {
+    Map<String, String> merged = Maps.newHashMap();
+    if (tblProperties != null) {
+      merged.putAll(tblProperties);
+    }
+    for (Map.Entry<String, String> e : defaultNativeViewMarkerTableProperties().entrySet()) {
+      merged.putIfAbsent(e.getKey(), e.getValue());
+    }
+    return merged;
   }
 
   private static ViewBuilder applyCommentAndTblProps(

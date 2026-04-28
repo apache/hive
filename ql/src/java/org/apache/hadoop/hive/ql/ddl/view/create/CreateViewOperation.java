@@ -29,13 +29,15 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
+import org.apache.hadoop.hive.ql.metadata.CreateNativeViewRequest;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,8 +50,8 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
 
   @Override
   public int execute() throws HiveException {
-    if (desc.isIcebergNativeView()) {
-      return executeIcebergNativeView();
+    if (desc.usesNativeViewCatalog()) {
+      return executeNativeCatalogView();
     }
 
     Table oldview = context.getDb().getTable(desc.getViewName(), false);
@@ -88,11 +90,7 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
       if (desc.getProperties() != null) {
         oldview.getTTable().getParameters().putAll(desc.getProperties());
       }
-      if (desc.isIcebergNativeView()) {
-        oldview.setProperty(CreateViewDesc.ICEBERG_NATIVE_VIEW_PROPERTY, "true");
-      } else {
-        oldview.getParameters().remove(CreateViewDesc.ICEBERG_NATIVE_VIEW_PROPERTY);
-      }
+      clearNativeViewCatalogMarkersIfPresent(oldview);
       oldview.setPartCols(desc.getPartitionColumns());
 
       oldview.checkValidity(null);
@@ -117,10 +115,9 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
   }
 
   /**
-   * Creates a native Iceberg view via the configured default Iceberg catalog (HiveCatalog, REST
-   * catalog with {@link org.apache.iceberg.view.ViewCatalog}, etc.).
+   * Creates a native-catalog view via the {@link HiveStorageHandler} selected at compile time.
    */
-  private int executeIcebergNativeView() throws HiveException {
+  private int executeNativeCatalogView() throws HiveException {
     Table oldview = context.getDb().getTable(desc.getViewName(), false);
 
     if (oldview != null) {
@@ -131,7 +128,7 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
         if (desc.getReplicationSpec().allowEventReplacementInto(dbParams)) {
           isReplace = true;
         } else {
-          LOG.debug("DDLTask: Create Iceberg native view is skipped as view {} is newer than update",
+          LOG.debug("DDLTask: Create native-catalog view is skipped as view {} is newer than update",
               desc.getViewName());
           return 0;
         }
@@ -149,15 +146,32 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
     boolean replace = oldview != null || desc.isReplace();
 
     try {
-      boolean created = invokeNativeIcebergViewSupport(
-          name.getDb(),
-          name.getTable(),
-          replace,
-          desc.getIfNotExists());
+      HiveStorageHandler handler =
+          HiveUtils.getStorageHandler(context.getConf(), desc.getNativeViewStorageHandlerClass());
+      Map<String, String> viewProperties = new HashMap<>();
+      if (desc.getProperties() != null) {
+        viewProperties.putAll(desc.getProperties());
+      }
+      viewProperties.putAll(handler.getNativeViewHmsTableProperties());
+      CreateNativeViewRequest request =
+          new CreateNativeViewRequest(
+              name.getDb(),
+              name.getTable(),
+              desc.getSchema(),
+              desc.getExpandedText(),
+              viewProperties,
+              desc.getComment(),
+              replace,
+              desc.getIfNotExists());
+      boolean created = handler.createOrReplaceNativeView(context.getConf(), request);
       if (!created) {
         return 0;
       }
     } catch (HiveException e) {
+      Throwable cause = e.getCause();
+      if (cause != null && cause.getClass().getName().endsWith("AlreadyExistsException")) {
+        throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(desc.getViewName()), cause);
+      }
       throw e;
     } catch (Exception e) {
       throw new HiveException(e);
@@ -173,59 +187,17 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
     return 0;
   }
 
-  /**
-   * Delegates to {@code org.apache.iceberg.hive.NativeIcebergViewSupport} when the Iceberg catalog
-   * module is on the classpath (avoids a Maven reactor cycle between {@code hive-exec} and
-   * {@code hive-iceberg-catalog}).
-   */
-  private boolean invokeNativeIcebergViewSupport(
-      String databaseName, String viewName, boolean replace, boolean ifNotExists)
-      throws Exception {
-    Class<?> supportClass;
-    Method method;
-    try {
-      supportClass = Class.forName("org.apache.iceberg.hive.NativeIcebergViewSupport");
-      method =
-          supportClass.getMethod(
-              "createOrReplaceNativeView",
-              org.apache.hadoop.conf.Configuration.class,
-              String.class,
-              String.class,
-              java.util.List.class,
-              String.class,
-              Map.class,
-              String.class,
-              boolean.class,
-              boolean.class);
-    } catch (ClassNotFoundException | NoSuchMethodException e) {
-      throw new HiveException(
-          "Native Iceberg views require hive-iceberg-catalog on the classpath "
-              + "(org.apache.iceberg.hive.NativeIcebergViewSupport is missing).",
-          e);
+  private void clearNativeViewCatalogMarkersIfPresent(Table oldview) throws HiveException {
+    Map<String, String> params = oldview.getParameters();
+    if (params == null) {
+      return;
     }
-    try {
-      return (Boolean)
-          method.invoke(
-              null,
-              context.getConf(),
-              databaseName,
-              viewName,
-              desc.getSchema(),
-              desc.getExpandedText(),
-              desc.getProperties(),
-              desc.getComment(),
-              replace,
-              ifNotExists);
-    } catch (InvocationTargetException e) {
-      Throwable cause = e.getCause() == null ? e : e.getCause();
-      if (cause.getClass().getName().endsWith("AlreadyExistsException")) {
-        throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(desc.getViewName()), cause);
-      }
-      if (cause instanceof Exception) {
-        throw (Exception) cause;
-      }
-      throw new HiveException(cause);
+    String fqcn = params.get(HiveStorageHandler.NATIVE_VIEW_STORAGE_HANDLER_CLASS_PARAM);
+    if (fqcn == null) {
+      return;
     }
+    HiveStorageHandler handler = HiveUtils.getStorageHandler(context.getConf(), fqcn);
+    handler.clearNativeViewHmsTableProperties(params);
   }
 
   private Table createViewObject() throws HiveException {
@@ -243,9 +215,6 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
 
     if (desc.getProperties() != null) {
       view.getParameters().putAll(desc.getProperties());
-    }
-    if (desc.isIcebergNativeView()) {
-      view.setProperty(CreateViewDesc.ICEBERG_NATIVE_VIEW_PROPERTY, "true");
     }
 
     if (!CollectionUtils.isEmpty(desc.getPartitionColumns())) {
