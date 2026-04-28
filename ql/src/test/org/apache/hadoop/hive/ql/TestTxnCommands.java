@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1827,11 +1828,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     runCleaner(hiveConf);
 
-    stat = fs.listStatus(new Path(getWarehouseDir(), database + ".db"),
-      t -> t.getName().matches("(mv_)?" + tableName + "2" + SOFT_DELETE_TABLE_PATTERN));
-    if (stat.length != 0) {
-      Assert.fail("Table data was not removed from FS");
-    }
+    Assert.assertThrows(database + ".db directory should not exist", FileNotFoundException.class, () -> {
+      fs.listStatus(new Path(getWarehouseDir(), database + ".db"));
+    });
   }
   
   @Test

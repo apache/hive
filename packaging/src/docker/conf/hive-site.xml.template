@@ -88,4 +88,25 @@
         <name>hive.query.results.cache.directory</name>
         <value>${HIVE_QUERY_RESULTS_CACHE_DIRECTORY}</value>
     </property>
+    <property>
+        <name>hive.server2.tez.initialize.default.sessions</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hive.server2.tez.use.external.sessions</name>
+        <value>${HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS}</value>
+    </property>
+    <!--
+      A registry namespace prefix is a hardcoded prefix for Tez external sessions.
+      The actual tez.am.registry.namespace value is appended to this prefix.
+      Once hive can use the registry client that Tez provides (ZkAMRegistryClient), this property will be removed.
+    -->
+    <property>
+        <name>hive.server2.tez.external.sessions.namespace</name>
+        <value>/tez-external-sessions${TEZ_AM_REGISTRY_NAMESPACE}</value>
+    </property>
+    <property>
+        <name>hive.server2.tez.external.sessions.registry.class</name>
+        <value>org.apache.hadoop.hive.ql.exec.tez.ZookeeperExternalSessionsRegistryClient</value>
+    </property>
 </configuration>

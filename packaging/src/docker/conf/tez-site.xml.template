@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<configuration>
+    <property>
+        <name>tez.am.mode.session</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>tez.am.framework.mode</name>
+        <value>${TEZ_FRAMEWORK_MODE}</value>
+    </property>
+    <property>
+        <name>tez.am.zookeeper.quorum</name>
+        <value>${TEZ_AM_ZOOKEEPER_QUORUM}</value>
+    </property>
+    <property>
+        <name>tez.am.registry.namespace</name>
+        <value>${TEZ_AM_REGISTRY_NAMESPACE}</value>
+    </property>
+    <property>
+        <name>tez.local.mode</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>tez.am.tez-ui.webservice.enable</name>
+        <value>false</value>
+    </property>
+    <!-- Tez AM should not timeout in ZK Mode -->
+    <property>
+        <name>tez.session.am.dag.submit.timeout.secs</name>
+        <value>-1</value>
+    </property>
+    <property>
+        <name>tez.ignore.lib.uris</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>tez.am.disable.client-version-check</name>
+        <value>true</value>
+    </property>
+
+    <!--
+      In standalone AM mode with LLAP, the task scheduler (LlapTaskSchedulerService) and task
+      communicator (LlapTaskCommunicator) are instantiated at AM startup from service_plugins_descriptor.json
+      on the classpath — not from the DAG payload as in YARN-submitted mode. These plugins read their
+      configuration from TezConfiguration, which is built exclusively from tez-site.xml on the classpath.
+      Hive-specific properties must therefore appear here so the AM can find LLAP daemons and connect
+      to them, even though they are conceptually Hive settings.
+    -->
+    <property>
+        <name>hive.zookeeper.quorum</name>
+        <value>${HIVE_ZOOKEEPER_QUORUM}</value>
+    </property>
+    <property>
+        <name>hive.llap.daemon.service.hosts</name>
+        <value>${HIVE_LLAP_DAEMON_SERVICE_HOSTS}</value>
+    </property>
+</configuration>

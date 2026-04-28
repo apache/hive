@@ -41,8 +41,17 @@ export HIVE_WAREHOUSE_PATH="${HIVE_WAREHOUSE_PATH:-/opt/hive/data/warehouse}"
 export HIVE_SCRATCH_DIR="${HIVE_SCRATCH_DIR:-/opt/hive/scratch}"
 export HIVE_QUERY_RESULTS_CACHE_DIRECTORY="${HIVE_WAREHOUSE_PATH:-/opt/hive/scratch/_resultscache_}"
 
+export HIVE_ZOOKEEPER_QUORUM="${HIVE_ZOOKEEPER_QUORUM:-zookeeper:2181}"
+export HIVE_LLAP_DAEMON_SERVICE_HOSTS="${HIVE_LLAP_DAEMON_SERVICE_HOSTS:-@llap0}"
+
+export HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS="${HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS:-true}"
+export TEZ_FRAMEWORK_MODE="${TEZ_FRAMEWORK_MODE:-STANDALONE_ZOOKEEPER}"
+export TEZ_AM_REGISTRY_NAMESPACE="${TEZ_AM_REGISTRY_NAMESPACE:-/tez_am/server}"
+export TEZ_AM_ZOOKEEPER_QUORUM="${TEZ_AM_ZOOKEEPER_QUORUM:-${HIVE_ZOOKEEPER_QUORUM}}"
+
 envsubst < $HIVE_HOME/conf/core-site.xml.template > $HIVE_HOME/conf/core-site.xml
 envsubst < $HIVE_HOME/conf/hive-site.xml.template > $HIVE_HOME/conf/hive-site.xml
+envsubst < $HIVE_HOME/conf/tez-site.xml.template > $HIVE_HOME/conf/tez-site.xml
 # =========================================================================
 
 : "${DB_DRIVER:=derby}"
@@ -68,9 +77,30 @@ function initialize_hive {
   fi
 }
 
+function append_java_opens {
+  local -n _opts=$1
+  local opens=(
+    "--add-opens=java.base/java.lang=ALL-UNNAMED"
+    "--add-opens=java.base/java.util=ALL-UNNAMED"
+    "--add-opens=java.base/java.io=ALL-UNNAMED"
+    "--add-opens=java.base/java.net=ALL-UNNAMED"
+    "--add-opens=java.base/java.nio=ALL-UNNAMED"
+    "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED"
+    "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
+    "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
+    "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
+    "--add-opens=java.sql/java.sql=ALL-UNNAMED"
+    "--add-opens=java.base/java.text=ALL-UNNAMED"
+    "-Dnet.bytebuddy.experimental=true"
+  )
+  for opt in "${opens[@]}"; do
+    if [[ " ${_opts} " != *" ${opt} "* ]]; then
+      _opts="${_opts} ${opt}"
+    fi
+  done
+}
+
 function run_llap {
-  export HIVE_ZOOKEEPER_QUORUM="${HIVE_ZOOKEEPER_QUORUM:-zookeeper:2181}"
-  export HIVE_LLAP_DAEMON_SERVICE_HOSTS="${HIVE_LLAP_DAEMON_SERVICE_HOSTS:-@llap0}"
   export LLAP_MEMORY_MB="${LLAP_MEMORY_MB:-1024}"
   export LLAP_EXECUTORS="${LLAP_EXECUTORS:-1}"
 
@@ -87,25 +117,8 @@ function run_llap {
   export LLAP_DAEMON_CONF_DIR="${LLAP_DAEMON_CONF_DIR:-$HIVE_CONF_DIR}"
   export LLAP_DAEMON_USER_CLASSPATH="${LLAP_DAEMON_USER_CLASSPATH:-$TEZ_HOME/*:$TEZ_HOME/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/tools/lib/*}"
 
-  JAVA_ADD_OPENS=(
-    "--add-opens=java.base/java.lang=ALL-UNNAMED"
-    "--add-opens=java.base/java.util=ALL-UNNAMED"
-    "--add-opens=java.base/java.io=ALL-UNNAMED"
-    "--add-opens=java.base/java.net=ALL-UNNAMED"
-    "--add-opens=java.base/java.nio=ALL-UNNAMED"
-    "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED"
-    "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
-    "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
-    "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
-    "--add-opens=java.sql/java.sql=ALL-UNNAMED"
-    "--add-opens=java.base/java.text=ALL-UNNAMED"
-    "-Dnet.bytebuddy.experimental=true"
-  )
-  for opt in "${JAVA_ADD_OPENS[@]}"; do
-    if [[ " ${LLAP_DAEMON_OPTS:-} " != *" ${opt} "* ]]; then
-      LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS:-} ${opt}"
-    fi
-  done
+  LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS:-}"
+  append_java_opens LLAP_DAEMON_OPTS
 
   if [[ -n "${LLAP_EXTRA_OPTS:-}" ]]; then
     export LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS:-} ${LLAP_EXTRA_OPTS}"
@@ -121,6 +134,40 @@ function run_llap {
   exec "${LLAP_RUN_SCRIPT}" run "$@"
 }
 
+function run_tezam {
+  : "${USER:=hive}"
+  : "${LOCAL_DIRS:="/tmp"}"
+  : "${LOG_DIRS:="/opt/tez/logs"}"
+  : "${APP_SUBMIT_TIME_ENV:=$(($(date +%s) * 1000))}"
+  : "${TEZ_AM_EXTERNAL_ID:="tez-session-${HOSTNAME:-tezam}"}"
+  export USER LOCAL_DIRS LOG_DIRS APP_SUBMIT_TIME_ENV TEZ_AM_EXTERNAL_ID
+
+  export HADOOP_HOME="${HADOOP_HOME:-/opt/hadoop}"
+  export TEZ_HOME="${TEZ_HOME:-/opt/tez}"
+  export HIVE_HOME="${HIVE_HOME:-/opt/hive}"
+  export HADOOP_CONF_DIR="${HADOOP_CONF_DIR:-$HIVE_CONF_DIR}"
+  export TEZ_CONF_DIR="${TEZ_CONF_DIR:-$HADOOP_CONF_DIR}"
+  : "${TEZ_SNAPSHOT_HOME:=/opt/tez-snapshot}"
+  if [[ ! -d "${TEZ_SNAPSHOT_HOME}" ]]; then
+    echo "Tez snapshot home not found at ${TEZ_SNAPSHOT_HOME}. Rebuild image to prefetch snapshot artifacts."
+    exit 1
+  fi
+  # service_plugins_descriptor.json references org.apache.hadoop.hive.llap.tezplugins.* (hive-llap-tez, etc.)
+  tezam_cp="${HADOOP_CONF_DIR}:${TEZ_CONF_DIR}:${TEZ_SNAPSHOT_HOME}/*:${TEZ_HOME}/*:${TEZ_HOME}/lib/*:${HIVE_HOME}/lib/*:${HADOOP_HOME}/share/hadoop/common/*:${HADOOP_HOME}/share/hadoop/common/lib/*:${HADOOP_HOME}/share/hadoop/yarn/*:${HADOOP_HOME}/share/hadoop/yarn/lib/*:${HADOOP_HOME}/share/hadoop/hdfs/*:${HADOOP_HOME}/share/hadoop/hdfs/lib/*:${HADOOP_HOME}/share/hadoop/mapreduce/*:${HADOOP_HOME}/share/hadoop/mapreduce/lib/*:${HADOOP_CLASSPATH:-}"
+
+  local java_bin
+  local tezam_java_opts
+  java_bin="${JAVA_HOME:+$JAVA_HOME/bin/}java"
+  tezam_java_opts="${HADOOP_CLIENT_OPTS:-} -Dlog4j.configuration=file:${HIVE_CONF_DIR}/tez-log4j.properties"
+  append_java_opens tezam_java_opts
+  "${java_bin}" ${tezam_java_opts} -cp "${tezam_cp}" org.apache.tez.dag.app.DAGAppMaster --session "$@"
+  local rc=$?
+  if [[ ${rc} -ne 0 ]]; then
+    echo "DAGAppMaster exited with code ${rc}. See logs above for details."
+  fi
+  exit "${rc}"
+}
+
 export HIVE_CONF_DIR=$HIVE_HOME/conf
 if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
   find "${HIVE_CUSTOM_CONF_DIR}" -type f -exec \
@@ -129,13 +176,24 @@ if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
   export TEZ_CONF_DIR=$HIVE_CONF_DIR
 fi
 
-export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx1G $SERVICE_OPTS"
+export HADOOP_CLIENT_OPTS="${HADOOP_CLIENT_OPTS:-} -Xmx1G ${SERVICE_OPTS:-}"
 if [[ "${SKIP_SCHEMA_INIT}" == "false" && ( "${SERVICE_NAME}" == "hiveserver2" || "${SERVICE_NAME}" == "metastore" ) ]]; then
   # handles schema initialization
   initialize_hive
 fi
 
 if [ "${SERVICE_NAME}" == "hiveserver2" ]; then
+  TEZ_SNAPSHOT_HOME="${TEZ_SNAPSHOT_HOME:-/opt/tez-snapshot}"
+  # bin/hive prepends all of $HIVE_HOME/lib/*.jar to $HADOOP_CLASSPATH, so any entry
+  # we put first in HADOOP_CLASSPATH ends up after all Hive lib jars.  To get snapshot jars
+  # truly first, symlink them into $HIVE_HOME/lib/ with a "0-" prefix: the for-loop glob in
+  # bin/hive processes jars alphabetically, and ASCII '0' (48) sorts before 'a' (97), so these
+  # symlinks become the very first jars on the classpath (right after the conf dir entries).
+  if ls "${TEZ_SNAPSHOT_HOME}"/*.jar 1>/dev/null 2>&1; then
+    for snap_jar in "${TEZ_SNAPSHOT_HOME}"/*.jar; do
+      ln -sf "$snap_jar" "${HIVE_HOME}/lib/0-$(basename "$snap_jar")"
+    done
+  fi
   export HADOOP_CLASSPATH="$TEZ_HOME/*:$TEZ_HOME/lib/*:$HADOOP_CLASSPATH"
   exec "$HIVE_HOME/bin/hive" --skiphadoopversion --skiphbasecp --service "$SERVICE_NAME"
 elif [ "${SERVICE_NAME}" == "metastore" ]; then
@@ -147,4 +205,6 @@ elif [ "${SERVICE_NAME}" == "metastore" ]; then
   fi
 elif [ "${SERVICE_NAME}" == "llap" ]; then
   run_llap "$@"
+elif [ "${SERVICE_NAME}" == "tezam" ]; then
+  run_tezam "$@"
 fi

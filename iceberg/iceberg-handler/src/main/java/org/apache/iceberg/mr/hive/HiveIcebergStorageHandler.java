@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.AlterTableSnapshotRefSpec;
@@ -313,8 +314,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
     SessionStateUtil.getResource(conf, SessionStateUtil.MISSING_COLUMNS)
         .ifPresent(cols -> map.put(SessionStateUtil.MISSING_COLUMNS, String.join(",", (HashSet<String>) cols)));
-    SessionStateUtil.getResource(conf, SessionStateUtil.ROW_LINEAGE)
-        .ifPresent(v -> map.put(SessionStateUtil.ROW_LINEAGE, v.toString()));
+    if (RowLineageUtils.isRowLineageInsert(conf)) {
+      map.put(SessionStateUtil.ROW_LINEAGE, Boolean.toString(true));
+    }
 
   }
 

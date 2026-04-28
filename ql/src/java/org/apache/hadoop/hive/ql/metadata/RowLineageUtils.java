@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.parse.rewrite.MergeStatement;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 
@@ -63,7 +64,7 @@ public class RowLineageUtils {
   public static void setRowLineageColumns(boolean isRowLineageEnabled, MultiInsertSqlGenerator sqlGenerator,
       Configuration conf) {
     if (isRowLineageEnabled) {
-      SessionStateUtil.addResource(conf, SessionStateUtil.ROW_LINEAGE, true);
+      setRowLineage(conf, true);
       // copy ROW_ID
       sqlGenerator.append(",");
       sqlGenerator.append(HiveUtils.unparseIdentifier(VirtualColumn.ROW_LINEAGE_ID.getName(), conf));
@@ -81,17 +82,40 @@ public class RowLineageUtils {
     return table.getStorageHandler().supportsRowLineage(table.getParameters());
   }
 
+  /**
+   * Returns the row lineage virtual columns with the leading comma for string concatenation.
+   * Example: {@code ", ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER"}.
+   */
+  public static String getRowLineageColumnsForCompaction() {
+    return ", " + VirtualColumn.ROW_LINEAGE_ID.getName() + ", " + VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName();
+  }
+
+  /**
+   * Enables or disables row lineage for the current query/session context.
+   */
+  private static void setRowLineage(Configuration conf, boolean enabled) {
+    SessionStateUtil.addResource(conf, SessionStateUtil.ROW_LINEAGE, enabled);
+  }
+
+  public static void enableRowLineage(Configuration conf) {
+    conf.setBoolean(SessionStateUtil.ROW_LINEAGE, true);
+  }
+
+  public static void disableRowLineage(SessionState sessionState) {
+    sessionState.getConf().setBoolean(SessionStateUtil.ROW_LINEAGE, false);
+  }
+
   public static boolean shouldAddRowLineageColumnsForMerge(MergeStatement mergeStatement, Configuration conf) {
     boolean shouldAddRowLineageColumns =
         supportsRowLineage(mergeStatement.getTargetTable()) && mergeStatement.hasWhenMatchedUpdateClause();
-    SessionStateUtil.addResource(conf, SessionStateUtil.ROW_LINEAGE, shouldAddRowLineageColumns);
+    setRowLineage(conf, shouldAddRowLineageColumns);
     return shouldAddRowLineageColumns;
   }
 
   public static void addSourceColumnsForRowLineage(boolean isRowLineageSupported, MultiInsertSqlGenerator sqlGenerator,
       String prefix, Configuration conf) {
     if (isRowLineageSupported) {
-      SessionStateUtil.addResource(conf, SessionStateUtil.ROW_LINEAGE, true);
+      setRowLineage(conf, true);
       sqlGenerator.append(", ");
       sqlGenerator.append(HiveUtils.unparseIdentifier(prefix + VirtualColumn.ROW_LINEAGE_ID.getName(), conf));
       sqlGenerator.append(", ");
@@ -134,7 +158,8 @@ public class RowLineageUtils {
   }
 
   public static boolean isRowLineageInsert(Configuration conf) {
-    return SessionStateUtil.getResource(conf, SessionStateUtil.ROW_LINEAGE).map(Boolean.class::cast).orElse(false);
+    return SessionStateUtil.getResource(conf, SessionStateUtil.ROW_LINEAGE).map(Boolean.class::cast).orElse(false) ||
+        conf.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
   }
 
   public static MessageType getRequestedSchemaWithRowLineageColumns(VectorizedRowBatchCtx rbCtx,

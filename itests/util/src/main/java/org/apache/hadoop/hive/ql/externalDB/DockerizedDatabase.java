@@ -96,11 +96,14 @@ public abstract class DockerizedDatabase extends AbstractExternalDB {
 
   public void start() throws Exception {
     runCmdAndPrintStreams(buildRmCmd(), 600);
+    long startTime = System.currentTimeMillis();
     if (runCmdAndPrintStreams(buildRunCmd(), 600).rc != 0) {
       printDockerEvents();
       throw new RuntimeException("Unable to start docker container");
     }
-    long startTime = System.currentTimeMillis();
+    // 1. Time measured for the docker run command to complete.
+    long initStartTime = System.currentTimeMillis();
+    LOG.info("Started docker container in {} ms, waiting for init...", initStartTime - startTime);
     ProcessResults pr;
     do {
       Thread.sleep(1000);
@@ -109,13 +112,15 @@ public abstract class DockerizedDatabase extends AbstractExternalDB {
         printDockerEvents();
         throw new RuntimeException("Failed to get docker logs");
       }
-    } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
-    if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
+    } while (initStartTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
+    if (initStartTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
       printDockerEvents();
       throw new RuntimeException(
           String.format("Container initialization failed within %d seconds. Please check the hive logs.",
               MAX_STARTUP_WAIT / 1000));
     }
+    // 2. Time measured for Docker to be fully initialized (i.e., when the DB is actually ready to use from the start).
+    LOG.info("Initialized docker container in {} ms", System.currentTimeMillis() - initStartTime);
     super.start();
   }
 
