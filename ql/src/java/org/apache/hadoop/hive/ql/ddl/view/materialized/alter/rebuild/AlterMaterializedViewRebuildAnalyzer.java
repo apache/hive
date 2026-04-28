@@ -213,6 +213,9 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         HiveTxnManager txnManager = getTxnMgr();
         LockState state;
         try {
+          // trigger txn id generation
+          queryState.getValidTxnList();
+
           state = txnManager.acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(tableName.getCat(),
               tableName.getDb(), tableName.getTable(), txnManager.getCurrentTxnId())).getState();
         } catch (LockException e) {
