@@ -419,8 +419,7 @@ public class HMSCatalogAdapter implements RESTClient {
   }
   
   @SuppressWarnings({"MethodLength", "unchecked"})
-  private <T extends RESTResponse> T handleRequest(
-      Route route, Map<String, String> vars, Object body) {
+  private <T extends RESTResponse> T handleRequest(Route route, Map<String, String> vars, Object body) {
     return switch (route) {
       case CONFIG -> (T) config();
       case LIST_NAMESPACES -> (T) listNamespaces(vars);

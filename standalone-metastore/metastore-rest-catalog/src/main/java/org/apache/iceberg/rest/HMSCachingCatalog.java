@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.HasTableOperations;
@@ -59,10 +58,10 @@ import org.slf4j.LoggerFactory;
 public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
   protected static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
 
-  private static SoftReference<HMSCachingCatalog> CACHE = new SoftReference<>(null);
+  private static SoftReference<HMSCachingCatalog> cacheRef = new SoftReference<>(null);
   @TestOnly
   public static <C extends Catalog> C  getLatestCache(Function<HMSCachingCatalog, C> extractor) {
-    HMSCachingCatalog cache = CACHE.get();
+    HMSCachingCatalog cache = cacheRef.get();
     if (cache == null) {
       return null;
     }
@@ -74,7 +73,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     return hiveCatalog;
   }
 
-  protected final HiveCatalog hiveCatalog;
+  private final HiveCatalog hiveCatalog;
   // Metrics counters
   private final AtomicLong cacheHitCount = new AtomicLong(0);
   private final AtomicLong cacheMissCount = new AtomicLong(0);
@@ -83,14 +82,14 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   private final AtomicLong cacheMetaLoadCount = new AtomicLong(0);
 
   public HMSCachingCatalog(HiveCatalog catalog, long expirationMs) {
-    this(catalog, expirationMs, /*caseSensitive*/ true, null);
+    this(catalog, expirationMs, /*caseSensitive*/ true);
   }
 
-  public HMSCachingCatalog(HiveCatalog catalog, long expirationMs, boolean caseSensitive, Configuration conf) {
+  public HMSCachingCatalog(HiveCatalog catalog, long expirationMs, boolean caseSensitive) {
     super(catalog, caseSensitive, expirationMs, Ticker.systemTicker());
     this.hiveCatalog = catalog;
     if (catalog.getConf().getBoolean("metastore.iceberg.catalog.cache.debug", false)) {
-      CACHE = new SoftReference<>(this);
+      cacheRef = new SoftReference<>(this);
     }
   }
 

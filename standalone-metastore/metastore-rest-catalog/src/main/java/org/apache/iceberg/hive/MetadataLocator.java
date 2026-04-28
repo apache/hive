@@ -44,14 +44,19 @@ public class MetadataLocator {
   static final GetProjectionsSpec PARAM_SPEC = new GetTableProjectionsSpecBuilder()
       .includeParameters()  // only fetches table.parameters
       .build();
-  final HiveCatalog catalog;
+  private final HiveCatalog catalog;
 
   public MetadataLocator(HiveCatalog catalog) {
     this.catalog = catalog;
   }
 
+  public HiveCatalog getCatalog() {
+    return catalog;
+  }
+
   /**
-   * Returns the location of the metadata table identified by the given identifier, or null if the table does not exist or is not a metadata table.
+   * Returns the location of the metadata table identified by the given identifier, or null if the table does not exist or is
+   * not a metadata table.
    * <p>This uses the Thrift API to fetch the table parameters, which is more efficient than fetching the entire table object.</p>
    * @param  identifier the identifier of the metadata table to fetch the location for
    * @return the location of the metadata table, or null if the table does not exist or is not a metadata table
@@ -90,6 +95,7 @@ public class MetadataLocator {
   }
 
   private boolean isValidMetadataIdentifier(TableIdentifier identifier) {
-    return MetadataTableType.from(identifier.name()) != null && catalog.isValidIdentifier(TableIdentifier.of(identifier.namespace().levels()));
+    return MetadataTableType.from(identifier.name()) != null
+        && catalog.isValidIdentifier(TableIdentifier.of(identifier.namespace().levels()));
   }
 }
