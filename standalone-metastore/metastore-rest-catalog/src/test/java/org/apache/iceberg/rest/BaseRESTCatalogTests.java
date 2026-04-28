@@ -99,6 +99,40 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
     Assertions.assertThrows(ForbiddenException.class, executable);
   }
 
+  /**
+   * Verifies REST write paths are rejected when the configured
+   * org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer denies
+   * checkPrivileges for the client principal (see
+   * org.apache.iceberg.rest.extension.MockHiveAuthorizer.PERMISSION_TEST_USER in integration tests).
+   *
+   * These operations hit HMSCatalogAdapter write handlers, which call
+   * PrivilegeHelper before invoking the underlying Iceberg catalog.
+   */
+  @Test
+  void testRestWriteOperationsDeniedWhenHiveAuthorizerRejects() throws Exception {
+    Optional<Map<String, String>> deniedClient = getPermissionTestClientConfiguration();
+    if (deniedClient.isEmpty()) {
+      return;
+    }
+    Namespace db = Namespace.of("rest_write_guard_db");
+    TableIdentifier table = TableIdentifier.of(db, "rest_write_guard_tbl");
+    TableIdentifier renamed = TableIdentifier.of(db, "rest_write_guard_tbl_renamed");
+    try (var admin = RCKUtils.initCatalogClient(getDefaultClientConfiguration())) {
+      admin.createNamespace(db);
+      admin.createTable(table, new Schema());
+    } catch (IOException e) {
+      throw new AssertionError("Catalog operation failed", e);
+    }
+    try (var denied = RCKUtils.initCatalogClient(deniedClient.get())) {
+      TableMetadata dummyMetadata = TableMetadata.newTableMetadata(
+          new Schema(), PartitionSpec.unpartitioned(), "dummy-location", Collections.emptyMap());
+      testUnauthorizedAccess(
+          () -> denied.commitTransaction(TableCommit.create(table, dummyMetadata, dummyMetadata)));
+    } catch (IOException e) {
+      throw new AssertionError("Catalog operation failed", e);
+    }
+  }
+
   @Test
   void testPermissionsWithDeniedUser() throws Exception {
     var properties = getPermissionTestClientConfiguration();

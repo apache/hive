@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.Table;
@@ -102,14 +103,20 @@ public class HMSCatalogAdapter implements RESTClient {
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
+  private final PrivilegeHelper privilegeHelper;
 
 
   public HMSCatalogAdapter(Catalog catalog) {
+    this(catalog, null);
+  }
+
+  public HMSCatalogAdapter(Catalog catalog, Configuration conf) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
     Preconditions.checkArgument(catalog instanceof ViewCatalog);
     this.catalog = catalog;
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
+    this.privilegeHelper = conf != null ? new PrivilegeHelper(conf) : null;
   }
 
   enum Route {
@@ -263,11 +270,35 @@ public class HMSCatalogAdapter implements RESTClient {
     return castResponse(ListTablesResponse.class, CatalogHandlers.listTables(catalog, namespace));
   }
 
+  private void requireWriteAccess(TableIdentifier ident) {
+    if (privilegeHelper == null) {
+      return;
+    }
+    try {
+      privilegeHelper.requireWriteAccess(ident.namespace().toString(), ident.name());
+    } catch (RestCatalogWriteDeniedException e) {
+      throw new ForbiddenException("%s", e.getMessage());
+    }
+  }
+
+  private void requireNamespaceWriteAccess(Namespace namespace) {
+    if (privilegeHelper == null) {
+      return;
+    }
+    try {
+      String dbName = namespace.levels().length > 0 ? namespace.level(0) : namespace.toString();
+      privilegeHelper.requireCreateAccess(dbName);
+    } catch (RestCatalogWriteDeniedException e) {
+      throw new ForbiddenException("%s", e.getMessage());
+    }
+  }
+
   private LoadTableResponse createTable(Map<String, String> vars, Object body) {
     final Class<LoadTableResponse> responseType = LoadTableResponse.class;
     Namespace namespace = namespaceFromPathVars(vars);
     CreateTableRequest request = castRequest(CreateTableRequest.class, body);
     request.validate();
+    requireNamespaceWriteAccess(namespace);
     if (request.stageCreate()) {
       return castResponse(
               responseType, CatalogHandlers.stageTableCreate(catalog, namespace, request));
@@ -278,10 +309,12 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   private RESTResponse dropTable(Map<String, String> vars) {
+    TableIdentifier ident = identFromPathVars(vars);
+    requireWriteAccess(ident);
     if (PropertyUtil.propertyAsBoolean(vars, "purgeRequested", false)) {
-      CatalogHandlers.purgeTable(catalog, identFromPathVars(vars));
+      CatalogHandlers.purgeTable(catalog, ident);
     } else {
-      CatalogHandlers.dropTable(catalog, identFromPathVars(vars));
+      CatalogHandlers.dropTable(catalog, ident);
     }
     return null;
   }
@@ -305,12 +338,15 @@ public class HMSCatalogAdapter implements RESTClient {
 
   private LoadTableResponse updateTable(Map<String, String> vars, Object body) {
     TableIdentifier ident = identFromPathVars(vars);
+    requireWriteAccess(ident);
     UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
     return castResponse(LoadTableResponse.class, CatalogHandlers.updateTable(catalog, ident, request));
   }
 
   private RESTResponse renameTable(Object body) {
     RenameTableRequest request = castRequest(RenameTableRequest.class, body);
+    requireWriteAccess(request.source());
+    requireWriteAccess(request.destination());
     CatalogHandlers.renameTable(catalog, request);
     return null;
   }
@@ -323,6 +359,9 @@ public class HMSCatalogAdapter implements RESTClient {
 
   private RESTResponse commitTransaction(Object body) {
     CommitTransactionRequest request = castRequest(CommitTransactionRequest.class, body);
+    for (UpdateTableRequest tableChange : request.tableChanges()) {
+      requireWriteAccess(tableChange.identifier());
+    }
     commitTransaction(catalog, request);
     return null;
   }
