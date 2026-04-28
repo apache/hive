@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.ql.exec.tez.ReduceRecordSource;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.SkewedMergeJoinMonitor;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
@@ -97,8 +98,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient NullOrdering nullOrdering;
   transient private boolean shortcutUnmatchedRows;
 
-  transient long mergeJoinSkewThreshold;
-  transient boolean mergeJoinSkewAbort;
+  transient SkewedMergeJoinMonitor skewedMergeJoinMonitor;
 
   /** Kryo ctor. */
   protected CommonMergeJoinOperator() {
@@ -142,10 +142,13 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_BUCKET_CACHE_SIZE);
     shortcutUnmatchedRows = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_JOIN_SHORTCUT_UNMATCHED_ROWS);
 
-    mergeJoinSkewThreshold = HiveConf.getLongVar(hconf,
-        HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_THRESHOLD);
-    mergeJoinSkewAbort = HiveConf.getBoolVar(hconf,
-        HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_ABORT);
+    skewedMergeJoinMonitor = new SkewedMergeJoinMonitor(
+            HiveConf.getLongVar(hconf,
+                    HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_THRESHOLD),
+            HiveConf.getBoolVar(hconf,
+                    HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_ABORT),
+            maxAlias
+    );
 
     if (oldVar != 100) {
       bucketSize = oldVar;
@@ -332,7 +335,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     candidateStorage[tag].addRow(value);
 
     if (tag == posBigTable) {
-      checkMergeJoinSkew(alias, candidateStorage[tag].rowCount());
+      skewedMergeJoinMonitor.checkMergeJoinSkew(alias, candidateStorage[tag].rowCount());
     }
   }
 
@@ -636,23 +639,6 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     oldRowContainer.clearRows();
     this.candidateStorage[t] = this.nextGroupStorage[t];
     this.nextGroupStorage[t] = oldRowContainer;
-  }
-
-  void checkMergeJoinSkew(byte alias, long rowCount) throws HiveException {
-    if (mergeJoinSkewThreshold <= 0 || rowCount < mergeJoinSkewThreshold) {
-      return;
-    }
-
-    String msg = String.format(
-        "Data skew detected in merge join, "
-        + "table alias %d has accumulated %d rows.",
-        alias, rowCount);
-
-    if (mergeJoinSkewAbort) {
-      throw new HiveException(msg);
-    } else {
-      LOG.warn(msg);
-    }
   }
 
   private boolean processKey(byte alias, List<Object> key) throws HiveException {

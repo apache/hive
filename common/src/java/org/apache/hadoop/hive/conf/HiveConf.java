@@ -1737,7 +1737,7 @@ public class HiveConf extends Configuration {
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVE_JOIN_CACHE_SIZE("hive.join.cache.size", 25000,
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
-    HIVE_MERGE_JOIN_SKEW_THRESHOLD("hive.merge.join.skew.threshold", 100_000,
+    HIVE_MERGE_JOIN_SKEW_THRESHOLD("hive.merge.join.skew.threshold", -1L,
         "Maximum number of rows allowed per join key in a single Tez sort-merge join task before a "
         + "skew event is reported."),
     HIVE_MERGE_JOIN_SKEW_ABORT("hive.merge.join.skew.abort", false,
