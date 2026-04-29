@@ -82,6 +82,13 @@ public class MetricsConstants {
   public static final String TOTAL_NUM_ABORTED_TXNS = "total_num_aborted_transactions";
   public static final String TOTAL_NUM_COMMITTED_TXNS = "total_num_committed_transactions";
   public static final String TOTAL_NUM_TIMED_OUT_TXNS = "total_num_timed_out_transactions";
+  public static final String TOTAL_NUM_DEADLOCKED_TXNS = "total_num_deadlocked_transactions";
+  public static final String TOTAL_NUM_DEADLOCK_DETECTOR_GRAPH_TOO_LARGE =
+      "total_num_deadlock_detector_graph_too_large";
+  public static final String TOTAL_NUM_DEADLOCK_DETECTOR_SCAN_FAILURES =
+      "total_num_deadlock_detector_scan_failures";
+  public static final String DEADLOCK_DETECTOR_SCAN_DURATION =
+      "deadlock_detector_scan_duration";
 
   public static final String OPEN_CONNECTIONS = "open_connections";
 
