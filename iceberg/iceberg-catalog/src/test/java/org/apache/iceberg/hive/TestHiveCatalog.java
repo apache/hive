@@ -284,7 +284,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
   }
 
   @Test
-  public void testInitializeCatalogWithExternalWarehouseProperty() {
+  void testInitializeCatalogWithExternalWarehouseProperty() {
     Map<String, String> properties = Maps.newHashMap();
     properties.put("warehouse", "/user/hive/testwarehouse/");
     properties.put(HiveCatalog.EXTERNAL_WAREHOUSE_LOCATION, "/user/hive/external/");
