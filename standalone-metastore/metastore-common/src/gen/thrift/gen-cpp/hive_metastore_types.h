@@ -129,7 +129,8 @@ struct CompactionType {
     MAJOR = 2,
     REBALANCE = 3,
     ABORT_TXN_CLEANUP = 4,
-    SMART_OPTIMIZE = 5
+    SMART_OPTIMIZE = 5,
+    DEFERRED_CLEANUP = 6
   };
 };
 
