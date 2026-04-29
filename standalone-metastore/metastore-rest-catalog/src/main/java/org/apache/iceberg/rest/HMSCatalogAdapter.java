@@ -548,11 +548,12 @@ public class HMSCatalogAdapter {
 
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
-    errorBuilder
-        .responseCode(EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500))
-        .withType(exc.getClass().getSimpleName())
-        .withMessage(exc.getMessage())
-        .withStackTrace(exc);
+    var errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);
+    errorBuilder.responseCode(errorCode).withType(exc.getClass().getSimpleName()).withMessage(exc.getMessage());
+    // avoid exposing stack traces for client errors but include them for server errors to aid debugging
+    if (errorCode >= 500) {
+      errorBuilder.withStackTrace(exc);
+    }
   }
 
   private static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
