@@ -81,7 +81,8 @@ public class Stmt {
       exec.signal(Signal.Type.SQLEXCEPTION);
       return -1;
     }
-    exec.addVariable(new Var(name, Type.CURSOR, cur.value)); 
+    exec.addVariable(new Var(name, Type.CURSOR, cur.value));
+    exec.setSqlSuccess();
     return 0; 
   }
   
@@ -475,7 +476,7 @@ public class Stmt {
         exec.signal(queryResult);
         return 1;
       } else if (!exec.getOffline()) {
-        exec.setSqlCode(SqlCodes.SUCCESS);
+        exec.setSqlSuccess();
       }
       if (cursor.isWithReturn()) {
         exec.addReturnCursor(var);
@@ -507,8 +508,8 @@ public class Stmt {
       exec.signal(Signal.Type.SQLEXCEPTION);
       return 1;
     } else if (exec.getOffline()) {
-      exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
-      exec.signal(Signal.Type.NOTFOUND);
+      exec.setSqlNoData();
+      exec.signal(Signal.Type.NOTFOUND, null, null);
       return 0;
     }
     // Assign values from the row to local variables
@@ -533,6 +534,7 @@ public class Stmt {
             break;
           }
         }
+        exec.setSqlSuccess();
       } else {
         if(queryResult.next()) {
           cursor.setFetch(true);
@@ -555,7 +557,7 @@ public class Stmt {
           exec.setSqlSuccess();
         } else {
           cursor.setFetch(false);
-          exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
+          exec.setSqlNoData();
         }
       }
     } catch (QueryException e) {
@@ -581,7 +583,7 @@ public class Stmt {
     Var var = exec.findVariable(name);
     if(var != null && var.type == Type.CURSOR) {
       ((Cursor)var.value).close();
-      exec.setSqlCode(SqlCodes.SUCCESS);
+      exec.setSqlSuccess();
     } else if(trace) {
       trace(ctx, "Cursor not found: " + name);
     }
@@ -716,8 +718,8 @@ public class Stmt {
       exec.incRowCount();
       exec.setSqlSuccess();
     } else {
-      exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
-      exec.signal(Signal.Type.NOTFOUND);
+      exec.setSqlNoData();
+      exec.signal(Signal.Type.NOTFOUND, null, null);
     }
   }
 
@@ -892,7 +894,7 @@ public class Stmt {
       exec.signal(query);
       return 1;
     }
-    exec.setSqlCode(SqlCodes.SUCCESS);
+    exec.setSqlSuccess();
     query.close();
     return 0; 
   }
@@ -1061,6 +1063,7 @@ public class Stmt {
       exec.signal(query);
       return 1;
     }
+    exec.setSqlSuccess();
     try {
       if (ctx.T_INTO() != null) {
         int cols = ctx.L_ID().size();
@@ -1082,7 +1085,7 @@ public class Stmt {
               trace(ctx, "Variable not found: " + ctx.L_ID(i).getText());
             }
           }
-          exec.setSqlCode(SqlCodes.SUCCESS);
+          exec.setSqlSuccess();
         }
       }
       // Print the results
@@ -1595,7 +1598,8 @@ public class Stmt {
     if (ctx.expr() != null) {
       eval(ctx.expr());
     }
-    exec.signal(Signal.Type.LEAVE_ROUTINE);    
+    exec.signal(Signal.Type.LEAVE_ROUTINE, null, null);
+    exec.setSqlSuccess();
     return 0; 
   }  
   
