@@ -229,7 +229,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         if (!isSupported) {
           logTypeWarning(colName, type);
         } else {
-          result.add(fs);
+          result.add(new FieldSchema(colName, type, fs.getComment()));
         }
       }
     }
