@@ -678,7 +678,7 @@ class TextDescTableFormatter extends DescTableFormatter {
 
   private String getNestedStructDefault(JsonNode childField, String childName, String defaultType) {
     JsonNode childTypeNode = childField.path("type");
-    if (!childTypeNode.isObject() || !childTypeNode.path("fields").isArray()) {
+    if (!childTypeNode.isObject()) {
       return StringUtils.EMPTY;
     }
     
