@@ -143,8 +143,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    * rollback (assuming the statement is well implemented)).
    *
    * This is done so that all commands run in a transaction which simplifies implementation and
-   * allows a simple implementation of multi-statement txns which don't require a lock manager
-   * capable of deadlock detection.  (todo: not fully implemented; elaborate on how this LM works)
+   * allows a simple implementation of multi-statement txns. Deadlocks among waiting ACID
+   * txns are resolved metastore-side by {@code DeadlockDetectorService}, not by this client.
    *
    * Also, critically important, ensuring that everything runs in a transaction assigns an order
    * to all operations in the system - needed for replication/DR.
@@ -323,10 +323,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
   /**
    * Ensures that the current SQL statement is appropriate for the current state of the
-   * Transaction Manager (e.g. can call commit unless you called start transaction)
+   * Transaction Manager (e.g. can call commit unless you called start transaction).
    *
-   * Note that support for multi-statement txns is a work-in-progress so it's only supported in
-   * HiveConf#HIVE_IN_TEST/HiveConf#TEZ_HIVE_IN_TEST.
    * @param queryPlan
    * @throws LockException
    */

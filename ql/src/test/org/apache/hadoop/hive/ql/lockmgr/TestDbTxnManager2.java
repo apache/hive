@@ -37,9 +37,12 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.DeadlockDetectorService;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -4746,5 +4749,430 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
 
     // cleanup
     driver.run("drop materialized view mv_tab_acid");
+  }
+
+  /**
+   * N-party deadlock cycle: txn_i holds table_i, then requests table_{(i+1) % n}, forming
+   * a complete wait-for cycle. The detector must abort the youngest member (txn_{n-1}) and
+   * leave the rest live; the predecessor's waiting lock must become acquirable. Tarjan's
+   * SCC handles cycles of any size uniformly, so {n=2, 3} cover the canonical case and a
+   * non-trivial SCC respectively.
+   */
+  @Test
+  public void testDeadlockDetectionMultiParty() throws Exception {
+    for (int n : new int[]{2, 3}) {
+      assertCycleAbortsYoungest(n);
+    }
+  }
+
+  private void assertCycleAbortsYoungest(int n) throws Exception {
+    String[] tables = new String[n];
+    for (int i = 0; i < n; i++) {
+      tables[i] = "DLM" + n + "_T" + i;
+    }
+    dropTable(tables);
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    for (String t : tables) {
+      driver.run("create table " + t + " (a int, b int) clustered by(b) into 2 buckets "
+          + "stored as orc TBLPROPERTIES ('transactional'='true')");
+    }
+
+    HiveTxnManager[] mgrs = new HiveTxnManager[n];
+    long[] ids = new long[n];
+    for (int i = 0; i < n; i++) {
+      mgrs[i] = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(mgrs[i]);
+      mgrs[i].openTxn(ctx, "Txn" + i);
+      ids[i] = mgrs[i].getCurrentTxnId();
+      driver.compileAndRespond("update " + tables[i] + " set a = 1 where b = 1", true);
+      mgrs[i].acquireLocks(driver.getPlan(), ctx, "Txn" + i);
+    }
+    for (int i = 1; i < n; i++) {
+      Assert.assertTrue("Txn IDs must be monotonically increasing", ids[i] > ids[i - 1]);
+    }
+
+    for (int i = 0; i < n; i++) {
+      swapTxnManager(mgrs[i]);
+      driver.compileAndRespond("update " + tables[(i + 1) % n] + " set a = 2 where b = 2", true);
+      ((DbTxnManager) mgrs[i]).acquireLocks(driver.getPlan(), ctx, "Txn" + i, false);
+    }
+
+    runDeadlockDetector();
+
+    int victim = n - 1;
+    LockException ex = null;
+    try {
+      mgrs[victim].heartbeat();
+    } catch (LockException e) {
+      ex = e;
+    }
+    Assert.assertNotNull(n + "-party: heartbeat on victim Txn" + victim + " should fail", ex);
+    Assert.assertTrue(n + "-party: cause should be TxnAbortedException, was: " + ex,
+        ex.getCause() instanceof org.apache.hadoop.hive.metastore.api.TxnAbortedException);
+    for (int i = 0; i < victim; i++) {
+      mgrs[i].heartbeat();
+    }
+
+    // Predecessor's waiting lock (on the victim's table) is now acquirable.
+    int predecessor = victim - 1;
+    swapTxnManager(mgrs[predecessor]);
+    List<ShowLocksResponseElement> locks = getLocks(mgrs[predecessor]);
+    long waitingLockId = findWaitingLockId(locks, tables[victim], ids[predecessor]);
+    Assert.assertTrue(n + "-party: predecessor's waiting lock should exist", waitingLockId > 0);
+    LockState state = ((DbLockManager) mgrs[predecessor].getLockManager()).checkLock(waitingLockId);
+    Assert.assertEquals(n + "-party: predecessor's lock should now be acquired",
+        LockState.ACQUIRED, state);
+
+    for (int i = 0; i < victim; i++) {
+      mgrs[i].rollbackTxn();
+    }
+    for (HiveTxnManager m : mgrs) {
+      m.closeTxnManager();
+    }
+    swapTxnManager(txnMgr);
+  }
+
+  /**
+   * Linear wait chain (no cycle): A holds lock, B waits for A.
+   * The detector must NOT abort either transaction.
+   */
+  @Test
+  public void testNoFalsePositiveLinearChain() throws Exception {
+    dropTable(new String[]{"NF_T1"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    driver.run("create table NF_T1 (a int, b int) " +
+        "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+
+    HiveTxnManager txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgrA);
+    txnMgrA.openTxn(ctx, "TxnA");
+    driver.compileAndRespond("update NF_T1 set a = 1 where b = 1", true);
+    txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
+
+    HiveTxnManager txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgrB);
+    txnMgrB.openTxn(ctx, "TxnB");
+    driver.compileAndRespond("update NF_T1 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+
+    List<ShowLocksResponseElement> locks = getLocks(txnMgrB);
+    long txnBWaitingLockId = -1;
+    for (ShowLocksResponseElement lock : locks) {
+      if (lock.getState() == LockState.WAITING) {
+        txnBWaitingLockId = lock.getLockid();
+        break;
+      }
+    }
+    Assert.assertTrue("Should have found B's waiting lock", txnBWaitingLockId > 0);
+
+    long deadlockedBefore = getDeadlockedCounter();
+    runDeadlockDetector();
+    Assert.assertEquals("Linear chain must not increment deadlock counter",
+        deadlockedBefore, getDeadlockedCounter());
+
+    // Neither txn should have been aborted; B remains WAITING.
+    txnMgrA.heartbeat();
+    txnMgrB.heartbeat();
+    LockState state = ((DbLockManager) txnMgrB.getLockManager()).checkLock(txnBWaitingLockId);
+    Assert.assertEquals("B should still be WAITING (no deadlock)", LockState.WAITING, state);
+
+    txnMgrA.rollbackTxn();
+    txnMgrB.rollbackTxn();
+    txnMgrA.closeTxnManager();
+    txnMgrB.closeTxnManager();
+    swapTxnManager(txnMgr);
+  }
+
+  /**
+   * The headline soundness test: a young transaction {@code D} is blocked by a member of
+   * an established two-party cycle but is itself NOT in the cycle. The detector must
+   * abort the cycle's youngest member ({@code B}) — never {@code D}, even though
+   * {@code D} has the highest txn ID overall. This pins the fix for the original
+   * detector's seed-based victim-selection bug.
+   */
+  @Test
+  public void testInnocentWaiterNotAborted() throws Exception {
+    dropTable(new String[]{"IW_T1", "IW_T2"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    driver.run("create table IW_T1 (a int, b int) "
+        + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("create table IW_T2 (a int, b int) "
+        + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+
+    // A holds IW_T1
+    HiveTxnManager txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgrA);
+    txnMgrA.openTxn(ctx, "TxnA");
+    long txnIdA = txnMgrA.getCurrentTxnId();
+    driver.compileAndRespond("update IW_T1 set a = 1 where b = 1", true);
+    txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
+
+    // B holds IW_T2
+    HiveTxnManager txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgrB);
+    txnMgrB.openTxn(ctx, "TxnB");
+    long txnIdB = txnMgrB.getCurrentTxnId();
+    driver.compileAndRespond("update IW_T2 set a = 1 where b = 1", true);
+    txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
+
+    // A waits for IW_T2 (-> B); B waits for IW_T1 (-> A): cycle {A,B}.
+    swapTxnManager(txnMgrA);
+    driver.compileAndRespond("update IW_T2 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
+    swapTxnManager(txnMgrB);
+    driver.compileAndRespond("update IW_T1 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+
+    // D — newest txn, NOT in the cycle. D simply waits on IW_T1 (held by A).
+    HiveTxnManager txnMgrD = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgrD);
+    txnMgrD.openTxn(ctx, "TxnD");
+    long txnIdD = txnMgrD.getCurrentTxnId();
+    Assert.assertTrue("D should have the highest txn ID", txnIdD > txnIdB && txnIdB > txnIdA);
+    driver.compileAndRespond("update IW_T1 set a = 3 where b = 3", true);
+    ((DbTxnManager) txnMgrD).acquireLocks(driver.getPlan(), ctx, "TxnD", false);
+
+    runDeadlockDetector();
+
+    // B is the youngest cycle member -> aborted. A and D survive.
+    Assert.assertTrue("B (younger of the two cycle members) should be aborted",
+        heartbeatThrowsTxnAborted(txnMgrB));
+    txnMgrA.heartbeat();
+    txnMgrD.heartbeat();
+
+    txnMgrA.rollbackTxn();
+    txnMgrD.rollbackTxn();
+    txnMgrA.closeTxnManager();
+    txnMgrB.closeTxnManager();
+    txnMgrD.closeTxnManager();
+    swapTxnManager(txnMgr);
+  }
+
+  /**
+   * The detector kill switch ({@code TXN_DEADLOCK_DETECTOR_ENABLED=false}) must
+   * short-circuit {@code run()} and prevent any abort, even on a real cycle. This is the
+   * production "stop the bleeding" lever; a regression that ignores the flag would let a
+   * misbehaving detector keep killing user txns until binary rollback.
+   */
+  @Test
+  public void testDetectorDisabledKillSwitch() throws Exception {
+    dropTable(new String[]{"KS_T1", "KS_T2"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    boolean originalEnabled = MetastoreConf.getBoolVar(conf,
+        MetastoreConf.ConfVars.TXN_DEADLOCK_DETECTOR_ENABLED);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_DEADLOCK_DETECTOR_ENABLED, false);
+    HiveTxnManager txnMgrA = null;
+    HiveTxnManager txnMgrB = null;
+    try {
+      driver.run("create table KS_T1 (a int, b int) "
+          + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+      driver.run("create table KS_T2 (a int, b int) "
+          + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+      txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgrA);
+      txnMgrA.openTxn(ctx, "TxnA");
+      driver.compileAndRespond("update KS_T1 set a = 1 where b = 1", true);
+      txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
+      txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgrB);
+      txnMgrB.openTxn(ctx, "TxnB");
+      driver.compileAndRespond("update KS_T2 set a = 1 where b = 1", true);
+      txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
+      swapTxnManager(txnMgrA);
+      driver.compileAndRespond("update KS_T2 set a = 2 where b = 2", true);
+      ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
+      swapTxnManager(txnMgrB);
+      driver.compileAndRespond("update KS_T1 set a = 2 where b = 2", true);
+      ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+
+      runDeadlockDetector();
+
+      // Both txns must still be alive — kill switch must skip the scan entirely.
+      txnMgrA.heartbeat();
+      txnMgrB.heartbeat();
+    } finally {
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_DEADLOCK_DETECTOR_ENABLED,
+          originalEnabled);
+      if (txnMgrA != null) {
+        try { txnMgrA.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgrA.closeTxnManager();
+      }
+      if (txnMgrB != null) {
+        try { txnMgrB.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgrB.closeTxnManager();
+      }
+      swapTxnManager(txnMgr);
+    }
+  }
+
+  /**
+   * Re-running the detector immediately after a successful abort must be a no-op: the
+   * cycle is already broken and re-detection must not fire phantom aborts or double-count
+   * the metric. Production runs the detector on a 5-second timer, so this re-entry path
+   * is exercised every interval.
+   */
+  @Test
+  public void testIdempotentReRunReturnsZero() throws Exception {
+    dropTable(new String[]{"IR_T1", "IR_T2"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    driver.run("create table IR_T1 (a int, b int) "
+        + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("create table IR_T2 (a int, b int) "
+        + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+
+    HiveTxnManager txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgrA);
+    txnMgrA.openTxn(ctx, "TxnA");
+    driver.compileAndRespond("update IR_T1 set a = 1 where b = 1", true);
+    txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
+    HiveTxnManager txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgrB);
+    txnMgrB.openTxn(ctx, "TxnB");
+    driver.compileAndRespond("update IR_T2 set a = 1 where b = 1", true);
+    txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
+    swapTxnManager(txnMgrA);
+    driver.compileAndRespond("update IR_T2 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
+    swapTxnManager(txnMgrB);
+    driver.compileAndRespond("update IR_T1 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+
+    runDeadlockDetector();
+    Assert.assertTrue("First run must abort B", heartbeatThrowsTxnAborted(txnMgrB));
+
+    long deadlockedAfterFirst = getDeadlockedCounter();
+    runDeadlockDetector();
+    // Second run: cycle already broken, A still alive, metric must not move.
+    txnMgrA.heartbeat();
+    Assert.assertEquals("Re-running the detector must not increment the deadlock counter",
+        deadlockedAfterFirst, getDeadlockedCounter());
+
+    txnMgrA.rollbackTxn();
+    txnMgrA.closeTxnManager();
+    txnMgrB.closeTxnManager();
+    swapTxnManager(txnMgr);
+  }
+
+  /**
+   * Exact-delta assertion on {@code TOTAL_NUM_DEADLOCKED_TXNS}. A regression that
+   * over-counts (e.g. incrementing inside a retry loop) or under-counts (e.g. forgetting
+   * the metric on the new abort path) would slip past the existing tests, all of which
+   * only assert "victim got aborted" and not "metric moved by exactly one."
+   */
+  @Test
+  public void testDeadlockMetricIncrement() throws Exception {
+    dropTable(new String[]{"DM_T1", "DM_T2"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    boolean originalAcidExt = MetastoreConf.getBoolVar(conf,
+        MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
+    boolean originalMetrics = MetastoreConf.getBoolVar(conf,
+        MetastoreConf.ConfVars.METRICS_ENABLED);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    // Force a fresh Metrics registry. Without METRICS_ENABLED + a re-init, every
+    // getOrCreateCounter call returns the same shared `dummyCounter`, so increments to
+    // any counter (e.g. AbortTxnsFunction's TOTAL_NUM_ABORTED_TXNS) leak into our reading
+    // of TOTAL_NUM_DEADLOCKED_TXNS — making the delta reflect *all* metric work, not just
+    // ours.
+    Metrics.shutdown();
+    Metrics.initialize(conf);
+    HiveTxnManager txnMgrA = null;
+    HiveTxnManager txnMgrB = null;
+    try {
+      driver.run("create table DM_T1 (a int, b int) "
+          + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+      driver.run("create table DM_T2 (a int, b int) "
+          + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+      txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgrA);
+      txnMgrA.openTxn(ctx, "TxnA");
+      driver.compileAndRespond("update DM_T1 set a = 1 where b = 1", true);
+      txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
+      txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgrB);
+      txnMgrB.openTxn(ctx, "TxnB");
+      driver.compileAndRespond("update DM_T2 set a = 1 where b = 1", true);
+      txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
+      swapTxnManager(txnMgrA);
+      driver.compileAndRespond("update DM_T2 set a = 2 where b = 2", true);
+      ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
+      swapTxnManager(txnMgrB);
+      driver.compileAndRespond("update DM_T1 set a = 2 where b = 2", true);
+      ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+
+      long before = getDeadlockedCounter();
+      runDeadlockDetector();
+      long after = getDeadlockedCounter();
+      Assert.assertEquals("Detector must increment the deadlock counter exactly once",
+          before + 1, after);
+    } finally {
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON,
+          originalAcidExt);
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, originalMetrics);
+      // Restore Metrics to its prior state so subsequent tests in this class are not
+      // observing a registry that this test re-initialized.
+      Metrics.shutdown();
+      if (originalMetrics) {
+        Metrics.initialize(conf);
+      }
+      if (txnMgrA != null) {
+        try { txnMgrA.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgrA.closeTxnManager();
+      }
+      if (txnMgrB != null) {
+        try { txnMgrB.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgrB.closeTxnManager();
+      }
+      swapTxnManager(txnMgr);
+    }
+  }
+
+  /**
+   * Synchronously runs the deadlock detector. In production this runs on a periodic timer
+   * inside the metastore leader; tests bypass the schedule and the cluster mutex (via
+   * {@code enforceMutex(false)}) to deterministically observe the effect of one scan.
+   */
+  private void runDeadlockDetector() {
+    DeadlockDetectorService detector = new DeadlockDetectorService();
+    detector.setConf(conf);
+    detector.enforceMutex(false);
+    detector.run();
+  }
+
+  /**
+   * Returns true iff a heartbeat() on the given txn manager fails because the txn was
+   * aborted. Preferred over commitTxn() because the assertion is non-destructive — the
+   * txn stays in its current state if it's still open.
+   */
+  private static boolean heartbeatThrowsTxnAborted(HiveTxnManager txnMgr) {
+    try {
+      txnMgr.heartbeat();
+      return false;
+    } catch (LockException e) {
+      return e.getCause() instanceof org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+    }
+  }
+
+  /**
+   * Reads the current value of the deadlock-aborted-txn metric. The counter is
+   * process-global; tests must use snapshot-and-delta, not absolute values.
+   */
+  private static long getDeadlockedCounter() {
+    return Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_DEADLOCKED_TXNS).getCount();
+  }
+
+  /**
+   * Locates the {@code WAITING} lock on the given table for the given txn ID. Returns
+   * {@code -1} if none found.
+   */
+  private static long findWaitingLockId(List<ShowLocksResponseElement> locks, String table,
+                                        long txnId) {
+    for (ShowLocksResponseElement lock : locks) {
+      if (lock.getState() == LockState.WAITING && table.equalsIgnoreCase(lock.getTablename())
+          && lock.getTxnid() == txnId) {
+        return lock.getLockid();
+      }
+    }
+    return -1;
   }
 }
