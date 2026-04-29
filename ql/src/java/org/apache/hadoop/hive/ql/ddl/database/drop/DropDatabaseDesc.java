@@ -68,7 +68,7 @@ public class DropDatabaseDesc implements DDLDesc, Serializable {
     return ifExists;
   }
 
-  public boolean isCasdade() {
+  public boolean isCascade() {
     return cascade;
   }
 

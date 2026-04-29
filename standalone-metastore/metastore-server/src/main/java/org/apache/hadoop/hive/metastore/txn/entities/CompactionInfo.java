@@ -88,7 +88,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   private String fullPartitionName = null;
   private String fullTableName = null;
   private StringableMap propertiesMap;
-  private boolean softDelete;
 
   public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
     this.dbname = dbname;
@@ -192,7 +191,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
         .append("numberOfBuckets", numberOfBuckets)
         .append("orderByClause", orderByClause)
         .append("minOpenWriteTxnId", minOpenWriteTxnId)
-        .append("softDelete", softDelete)
         .build();
   }
 
@@ -372,13 +370,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return type == CompactionType.ABORT_TXN_CLEANUP;
   }
 
-  public CompactionInfo asSoftDeleted() {
-    this.softDelete = true;
-    return this;
-  }
-
-  public boolean isSoftDelete() {
-    return softDelete;
+  public boolean isDeferredCleanup() {
+    return CompactionType.DEFERRED_CLEANUP == type;
   }
 
   public boolean isSourceOfReplication() {

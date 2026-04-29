@@ -750,7 +750,7 @@ public class Hive implements AutoCloseable {
     req.setName(desc.getDatabaseName());
     req.setIgnoreUnknownDb(desc.getIfExists());
     req.setDeleteData(desc.isDeleteData());
-    req.setCascade(desc.isCasdade());
+    req.setCascade(desc.isCascade());
     req.setSoftDelete(isSoftDelete);
     req.setTxnId(txnId);
     
