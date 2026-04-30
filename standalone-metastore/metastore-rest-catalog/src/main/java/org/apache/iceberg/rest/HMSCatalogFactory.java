@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.servlet.http.HttpServlet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
@@ -71,20 +72,18 @@ public class HMSCatalogFactory {
     final Map<String, String> properties = new TreeMap<>();
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
     // Clear THRIFT_URIS so HiveCatalog doesn't accidentally use Thrift connection
-    // when REST Catalog is embedded in HMS (same JVM). HiveCatalog reads from Configuration
-    // as fallback, so clearing it ensures it uses embedded connection when CatalogProperties.URI is not set.
+    // when REST Catalog is embedded in HMS (same JVM).
     MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
-    // Only set CatalogProperties.URI if THRIFT_URIS was configured (standalone mode)
     // This tells HiveCatalog to use Thrift connection to external HMS
-    if (configUri != null && !configUri.isEmpty()) {
+    if (!StringUtils.isEmpty(configUri)) {
       properties.put(CatalogProperties.URI, configUri);
     }
     final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
-    if (configWarehouse != null) {
+    if (!StringUtils.isEmpty(configWarehouse)) {
       properties.put(CatalogProperties.WAREHOUSE_LOCATION, configWarehouse);
     }
     final String configExtWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL);
-    if (configExtWarehouse != null) {
+    if (!StringUtils.isEmpty(configExtWarehouse)) {
       properties.put(HiveCatalog.EXTERNAL_WAREHOUSE_LOCATION, configExtWarehouse);
     }
     if (configuration.get(SERVLET_ID_KEY) != null) {
