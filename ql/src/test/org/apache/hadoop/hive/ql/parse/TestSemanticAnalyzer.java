@@ -513,13 +513,12 @@ public class TestSemanticAnalyzer {
   private void testMaterializeCTEUsesDDLFactory(boolean cboEnabled) throws Exception {
     HiveConf testConf = new HiveConf(conf);
     testConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, cboEnabled);
+    testConf.setIntVar(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, 1);
 
     SessionState.start(testConf);
     Context ctx = new Context(testConf);
 
-    // Reference CTE 3 times to exceed default materialization threshold of 2
-    String query = "WITH cte AS (SELECT COUNT(*) as cnt FROM table1) " +
-                   "SELECT * FROM cte UNION ALL SELECT * FROM cte UNION ALL SELECT * FROM cte";
+    String query = "WITH cte AS (SELECT COUNT(*) AS cnt FROM table1) SELECT * FROM cte";
 
     ASTNode astNode = ParseUtils.parse(query, ctx);
     QueryState queryState = new QueryState.Builder().withHiveConf(testConf).build();
