@@ -173,13 +173,21 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         sslContextFactory.setKeyStoreType(keyStoreType);
         sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
-        String excludeCiphersuites = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_HTTP_EXCLUDE_CIPHERSUITES).trim();
-        if (!excludeCiphersuites.trim().isEmpty()) {
+        String includeCiphersuites = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_HTTP_INCLUDE_CIPHERSUITES);
+        if (includeCiphersuites != null && !includeCiphersuites.trim().isEmpty()) {
+          Set<String> includeCS = Sets.newHashSet(
+              Splitter.on(":").trimResults().omitEmptyStrings().split(includeCiphersuites));
+          if (!includeCS.isEmpty()) {
+            sslContextFactory.setIncludeCipherSuites(includeCS.toArray(new String[0]));
+          }
+        }
+
+        String excludeCiphersuites = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_HTTP_EXCLUDE_CIPHERSUITES);
+        if (excludeCiphersuites != null && !excludeCiphersuites.trim().isEmpty()) {
           Set<String> excludeCS = Sets.newHashSet(
-                  Splitter.on(",").trimResults().omitEmptyStrings().split(excludeCiphersuites.trim()));
-          int eSize = excludeCS.size();
-          if (eSize > 0) {
-            sslContextFactory.setExcludeCipherSuites(excludeCS.toArray(new String[eSize]));
+              Splitter.on(",").trimResults().omitEmptyStrings().split(excludeCiphersuites));
+          if (!excludeCS.isEmpty()) {
+            sslContextFactory.setExcludeCipherSuites(excludeCS.toArray(new String[0]));
           }
         }
         connector = new ServerConnector(server, sslContextFactory, http);
