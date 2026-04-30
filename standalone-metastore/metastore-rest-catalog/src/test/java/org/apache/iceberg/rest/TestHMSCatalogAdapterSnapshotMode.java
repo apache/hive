@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.PartitionSpec;
@@ -92,7 +93,7 @@ class TestHMSCatalogAdapterSnapshotMode {
     Mockito.when(operations.current()).thenReturn(initialMetadata);
     Mockito.when(catalog.loadTable(Mockito.any(TableIdentifier.class))).thenReturn(table);
 
-    adapter = new HMSCatalogAdapter("test_catalog", catalog, null, Collections.emptyList());
+    adapter = new HMSCatalogAdapter("test_catalog", catalog, null, null, Collections.emptyList());
 
     response = Mockito.mock(HttpServletResponse.class);
     stringWriter = new StringWriter();
@@ -111,7 +112,7 @@ class TestHMSCatalogAdapterSnapshotMode {
         snapshotMode != null
             ? ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, snapshotMode)
             : null;
-    return adapter.execute(HTTPMethod.GET, TABLE_PATH, queryParams, null, response);
+    return adapter.execute(HTTPMethod.GET, TABLE_PATH, Set.of(), queryParams, null, response);
   }
 
   @Test
