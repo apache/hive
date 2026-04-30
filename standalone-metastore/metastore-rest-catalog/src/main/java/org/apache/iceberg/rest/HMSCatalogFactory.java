@@ -112,7 +112,13 @@ public class HMSCatalogFactory {
     // Iceberg REST client uses "catalog" by default
     List<String> scopes = Collections.singletonList("catalog");
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
-    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
+    final IcebergVendedCredentialProvider vendedCredentialProvider;
+    if (MetastoreConf.getBoolVar(configuration, ConfVars.ICEBERG_CATALOG_VENDED_CREDENTIALS_ENABLED)) {
+      vendedCredentialProvider = new IcebergVendedCredentialProvider(configuration);
+    } else {
+      vendedCredentialProvider = null;
+    }
+    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog, vendedCredentialProvider)));
   }
 
   /**

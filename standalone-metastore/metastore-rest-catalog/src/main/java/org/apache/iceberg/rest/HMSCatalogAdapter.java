@@ -21,8 +21,10 @@ package org.apache.iceberg.rest;
 
 import com.google.common.base.Preconditions;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -72,12 +74,15 @@ import org.apache.iceberg.rest.responses.LoadViewResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements RESTClient {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/');
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
@@ -102,14 +107,15 @@ public class HMSCatalogAdapter implements RESTClient {
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
+  private final IcebergVendedCredentialProvider credentialProvider;
 
-
-  public HMSCatalogAdapter(Catalog catalog) {
+  HMSCatalogAdapter(Catalog catalog, IcebergVendedCredentialProvider credentialProvider) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
     Preconditions.checkArgument(catalog instanceof ViewCatalog);
     this.catalog = catalog;
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
+    this.credentialProvider = credentialProvider;
   }
 
   enum Route {
@@ -263,18 +269,21 @@ public class HMSCatalogAdapter implements RESTClient {
     return castResponse(ListTablesResponse.class, CatalogHandlers.listTables(catalog, namespace));
   }
 
-  private LoadTableResponse createTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse createTable(Set<AccessDelegationMode> accessDelegationModes, Map<String, String> vars,
+      Object body) {
     final Class<LoadTableResponse> responseType = LoadTableResponse.class;
     Namespace namespace = namespaceFromPathVars(vars);
     CreateTableRequest request = castRequest(CreateTableRequest.class, body);
     request.validate();
+    LoadTableResponse response;
     if (request.stageCreate()) {
-      return castResponse(
-              responseType, CatalogHandlers.stageTableCreate(catalog, namespace, request));
+      response = castResponse(
+          responseType, CatalogHandlers.stageTableCreate(catalog, namespace, request));
     } else {
-      return castResponse(
-              responseType, CatalogHandlers.createTable(catalog, namespace, request));
+      response = castResponse(
+          responseType, CatalogHandlers.createTable(catalog, namespace, request));
     }
+    return attachCredentials(accessDelegationModes, TableIdentifier.of(namespace, request.name()), response);
   }
 
   private RESTResponse dropTable(Map<String, String> vars) {
@@ -292,21 +301,33 @@ public class HMSCatalogAdapter implements RESTClient {
     return null;
   }
 
-  private LoadTableResponse loadTable(Map<String, String> vars) {
+  private LoadTableResponse loadTable(Set<AccessDelegationMode> delegationModes, Map<String, String> vars) {
     TableIdentifier ident = identFromPathVars(vars);
-    return castResponse(LoadTableResponse.class, CatalogHandlers.loadTable(catalog, ident));
+    LoadTableResponse response =
+        castResponse(LoadTableResponse.class, CatalogHandlers.loadTable(catalog, ident));
+    return attachCredentials(delegationModes, ident, response);
   }
 
-  private LoadTableResponse registerTable(Map<String, String> vars, Object body) {
-      Namespace namespace = namespaceFromPathVars(vars);
-      RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
-      return castResponse(LoadTableResponse.class, CatalogHandlers.registerTable(catalog, namespace, request));
+  private LoadTableResponse registerTable(
+      Set<AccessDelegationMode> delegationModes,
+      Map<String, String> vars,
+      Object body) {
+    Namespace namespace = namespaceFromPathVars(vars);
+    RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
+    LoadTableResponse response =
+        castResponse(LoadTableResponse.class, CatalogHandlers.registerTable(catalog, namespace, request));
+    return attachCredentials(delegationModes, TableIdentifier.of(namespace, request.name()), response);
   }
 
-  private LoadTableResponse updateTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse updateTable(
+      Set<AccessDelegationMode> delegationModes,
+      Map<String, String> vars,
+      Object body) {
     TableIdentifier ident = identFromPathVars(vars);
     UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
-    return castResponse(LoadTableResponse.class, CatalogHandlers.updateTable(catalog, ident, request));
+    LoadTableResponse response =
+        castResponse(LoadTableResponse.class, CatalogHandlers.updateTable(catalog, ident, request));
+    return attachCredentials(delegationModes, ident, response);
   }
 
   private RESTResponse renameTable(Object body) {
@@ -377,6 +398,23 @@ public class HMSCatalogAdapter implements RESTClient {
     return null;
   }
 
+  private LoadTableResponse attachCredentials(Set<AccessDelegationMode> accessDelegationModes, TableIdentifier ident,
+      LoadTableResponse response) {
+    if (credentialProvider == null) {
+      return response;
+    }
+
+    if (accessDelegationModes.contains(AccessDelegationMode.VENDED_CREDENTIALS)) {
+      final var credentials = credentialProvider.vend(ident, response.tableMetadata().location());
+      return LoadTableResponse.builder().withTableMetadata(response.tableMetadata()).addAllConfig(response.config())
+          .addAllCredentials(credentials).build();
+    }
+    if (accessDelegationModes.contains(AccessDelegationMode.REMOTE_SIGNING)) {
+      LOG.warn("Remote signing is not supported. Ignoring...");
+    }
+    return response;
+  }
+
   /**
    * This is a very simplistic approach that only validates the requirements for each table and does
    * not do any other conflict detection. Therefore, it does not guarantee true transactional
@@ -408,7 +446,10 @@ public class HMSCatalogAdapter implements RESTClient {
   
   @SuppressWarnings({"MethodLength", "unchecked"})
   private <T extends RESTResponse> T handleRequest(
-      Route route, Map<String, String> vars, Object body) {
+      Route route,
+      Set<AccessDelegationMode> accessDelegationModes,
+      Map<String, String> vars,
+      Object body) {
     switch (route) {
       case CONFIG:
         return (T) config();
@@ -435,7 +476,7 @@ public class HMSCatalogAdapter implements RESTClient {
         return (T) listTables(vars);
 
       case CREATE_TABLE:
-        return (T) createTable(vars, body);
+        return (T) createTable(accessDelegationModes, vars, body);
 
       case DROP_TABLE:
         return (T) dropTable(vars);
@@ -444,13 +485,13 @@ public class HMSCatalogAdapter implements RESTClient {
         return (T) tableExists(vars);
 
       case LOAD_TABLE:
-        return (T) loadTable(vars);
+        return (T) loadTable(accessDelegationModes, vars);
 
       case REGISTER_TABLE:
-        return (T) registerTable(vars, body);
+        return (T) registerTable(accessDelegationModes, vars, body);
 
       case UPDATE_TABLE:
-        return (T) updateTable(vars, body);
+        return (T) updateTable(accessDelegationModes, vars, body);
 
       case RENAME_TABLE:
         return (T) renameTable(body);
@@ -491,9 +532,9 @@ public class HMSCatalogAdapter implements RESTClient {
   <T extends RESTResponse> T execute(
       HTTPMethod method,
       String path,
+      Set<AccessDelegationMode> accessDelegationModes,
       Map<String, String> queryParams,
-      Object body,
-      Consumer<ErrorResponse> errorHandler) {
+      Object body, Consumer<ErrorResponse> errorHandler) {
     ErrorResponse.Builder errorBuilder = ErrorResponse.builder();
     Pair<Route, Map<String, String>> routeAndVars = Route.from(method, path);
     if (routeAndVars != null) {
@@ -503,7 +544,7 @@ public class HMSCatalogAdapter implements RESTClient {
           vars.putAll(queryParams);
         }
         vars.putAll(routeAndVars.second());
-        return handleRequest(routeAndVars.first(), vars.build(), body);
+        return handleRequest(routeAndVars.first(), accessDelegationModes, vars.build(), body);
       } catch (RuntimeException e) {
         configureResponseFromException(e, errorBuilder);
       }
@@ -517,6 +558,15 @@ public class HMSCatalogAdapter implements RESTClient {
     errorHandler.accept(error);
     // if the error handler doesn't throw an exception, throw a generic one
     throw new RESTException("Unhandled error: %s", error);
+  }
+
+  <T extends RESTResponse> T execute(
+      HTTPMethod method,
+      String path,
+      Map<String, String> queryParams,
+      Object body,
+      Consumer<ErrorResponse> errorHandler) {
+    return execute(method, path, EnumSet.noneOf(AccessDelegationMode.class), queryParams, body, errorHandler);
   }
 
   @Override
