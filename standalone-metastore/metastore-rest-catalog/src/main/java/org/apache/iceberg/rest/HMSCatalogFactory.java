@@ -113,8 +113,15 @@ public class HMSCatalogFactory {
     List<String> scopes = Collections.singletonList("catalog");
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
     String catalogName = MetastoreConf.getVar(configuration, ConfVars.CATALOG_DEFAULT);
+    final IcebergVendedCredentialProvider vendedCredentialProvider;
+    if (MetastoreConf.getBoolVar(configuration, ConfVars.ICEBERG_CATALOG_VENDED_CREDENTIALS_ENABLED)) {
+      vendedCredentialProvider = new IcebergVendedCredentialProvider(configuration);
+    } else {
+      vendedCredentialProvider = null;
+    }
     List<IcebergMetricsReporter> reporters = createReporters();
-    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalogName, catalog, reporters)));
+    var adapter = new HMSCatalogAdapter(catalogName, catalog, vendedCredentialProvider, reporters);
+    return security.proxy(new HMSCatalogServlet(adapter));
   }
 
   private List<IcebergMetricsReporter> createReporters() {

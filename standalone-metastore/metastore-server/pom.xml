@@ -379,6 +379,31 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>arns</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>iam-policy-builder</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>sts</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>url-connection-client</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <!-- test scope dependencies -->
     <dependency>
       <groupId>junit</groupId>
