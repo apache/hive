@@ -104,10 +104,10 @@ public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
     LOG.info("Checking privileges. User={}, Operation={}, inputs={}, outputs={}", authenticator.getUserName(),
         hiveOpType, inputsHObjs, outputHObjs);
     if (PERMISSION_TEST_USER.equals(authenticator.getUserName())) {
-      throw new HiveAccessControlException(String.format("Unauthorized. Operation=%s, inputs=%s, outputs=%s",
-          hiveOpType, inputsHObjs, outputHObjs));
+      throw new HiveAccessControlException(String.format("Unauthorized. User=%s, Operation=%s, inputs=%s, outputs=%s",
+          authenticator.getUserName(), hiveOpType, inputsHObjs, outputHObjs));
     }
-    if (PERMISSION_READ_ONLY_USER.equals(authenticator.getUserName()) && isWriteOperation(hiveOpType)) {
+    if (PERMISSION_READ_ONLY_USER.equals(authenticator.getUserName()) && !outputHObjs.isEmpty()) {
       throw new HiveAccessControlException(String.format(
           "Unauthorized write operations. Operation=%s, inputs=%s, outputs=%s",
           hiveOpType, inputsHObjs, outputHObjs));
@@ -116,13 +116,6 @@ public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
       throw new HiveAccessControlException(String.format("Unauthorized URI. Operation=%s, inputs=%s, outputs=%s",
           hiveOpType, inputsHObjs, outputHObjs));
     }
-  }
-
-  private boolean isWriteOperation(HiveOperationType type) {
-    return switch (type) {
-    case CREATEDATABASE, DROPDATABASE, ALTERDATABASE, CREATETABLE, DROPTABLE, ALTERTABLE_ADDCOLS -> true;
-    default -> false;
-    };
   }
 
   private boolean containsDeniedUri(List<HivePrivilegeObject> objects) {
