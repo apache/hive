@@ -823,6 +823,7 @@ public class StatsUtils {
       if (numTrues == 0 && numFalses == 0) {
         // All NULL column - no non-null distinct values
         cs.setCountDistint(0);
+        cs.setConst(true);
       } else if (numTrues == 0 || numFalses == 0) {
         // One value type confirmed absent (=0), other is present (>0) or unknown (<0)
         cs.setCountDistint(1);
@@ -1646,6 +1647,7 @@ public class StatsUtils {
     colStats.setAvgColLen(avgColSize);
     colStats.setCountDistint(countDistincts);
     colStats.setNumNulls(numNulls);
+    colStats.setConst(true);
 
     Optional<Number> value = getConstValue(encd);
     value.ifPresent(number -> colStats.setRange(number, number));
@@ -2112,7 +2114,7 @@ public class StatsUtils {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         long ndv = cs.getCountDistint();
-        if (ndv > 0 && cs.getNumNulls() > 0) {
+        if (cs.getNumNulls() > 0 && (ndv > 0 || cs.isConst())) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }
         ndvValues.add(ndv);

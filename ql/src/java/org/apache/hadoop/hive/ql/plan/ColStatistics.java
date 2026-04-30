@@ -31,6 +31,7 @@ public class ColStatistics {
   private boolean isPrimaryKey;
   private boolean isEstimated;
   private boolean isFilteredColumn;
+  private boolean isConst;
   private byte[] bitVectors;
   private byte[] histogram;
 
@@ -155,6 +156,8 @@ public class ColStatistics {
 
     sb.append(" isEstimated: ");
     sb.append(isEstimated);
+    sb.append(" isConst: ");
+    sb.append(isConst);
     return sb.toString();
   }
 
@@ -171,6 +174,7 @@ public class ColStatistics {
     clone.setPrimaryKey(isPrimaryKey);
     clone.setIsEstimated(isEstimated);
     clone.setIsFilteredColumn(isFilteredColumn);
+    clone.setConst(isConst);
     if (range != null ) {
       clone.setRange(range.clone());
     }
@@ -230,6 +234,14 @@ public class ColStatistics {
 
   public boolean isFilteredColumn() {
     return isFilteredColumn;
+  }
+
+  public boolean isConst() {
+    return isConst;
+  }
+
+  public void setConst(boolean isConst) {
+    this.isConst = isConst;
   }
 
 }

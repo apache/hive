@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class TestPessimisticStatCombiner {
 
@@ -153,6 +155,21 @@ class TestPessimisticStatCombiner {
     ColStatistics combined = combiner.getResult().get();
     assertEquals(-1, combined.getNumTrues(), "Both unknown should result in unknown (-1)");
     assertEquals(-1, combined.getNumFalses(), "Both unknown should result in unknown (-1)");
+  }
+
+  @ParameterizedTest(name = "combine isConst({0}, {1}) = {2}")
+  @CsvSource({"true, true, true", "true, false, false", "false, true, false", "false, false, false"})
+  void testCombineIsConstAndSemantics(boolean stat1Const, boolean stat2Const, boolean expected) {
+    ColStatistics stat1 = createStat("col1", "int", 0, 100, 4.0);
+    stat1.setConst(stat1Const);
+    ColStatistics stat2 = createStat("col2", "int", 0, 100, 4.0);
+    stat2.setConst(stat2Const);
+
+    PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    combiner.add(stat1);
+    combiner.add(stat2);
+
+    assertEquals(expected, combiner.getResult().get().isConst());
   }
 
   private ColStatistics createStat(String name, String type, long ndv, long numNulls, double avgColLen) {
