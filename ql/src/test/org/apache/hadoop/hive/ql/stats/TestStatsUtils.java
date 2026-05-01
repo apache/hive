@@ -370,6 +370,25 @@ class TestStatsUtils {
     assertEquals(true, cs.isConst(), "all-NULL boolean column must be marked isConst");
   }
 
+  @ParameterizedTest(name = "isConst=true for verified single-value boolean (numTrues={0}, numFalses={1}, numNulls=0)")
+  @org.junit.jupiter.params.provider.CsvSource({"100, 0", "0, 100"})
+  void testGetColStatisticsBooleanIsConstForVerifiedSingleValue(long numTrues, long numFalses) {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(numTrues);
+    boolStats.setNumFalses(numFalses);
+    boolStats.setNumNulls(0);
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertEquals(true, cs.isConst());
+  }
+
   @ParameterizedTest(name = "isConst stays false for boolean (numTrues={0}, numFalses={1})")
   @org.junit.jupiter.params.provider.CsvSource({
       "100, 0", "0, 100", "-1, 100", "100, -1", "50, 50"})

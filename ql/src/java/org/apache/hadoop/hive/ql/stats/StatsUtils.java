@@ -827,6 +827,7 @@ public class StatsUtils {
       } else if (numTrues == 0 || numFalses == 0) {
         // One value type confirmed absent (=0), other is present (>0) or unknown (<0)
         cs.setCountDistint(1);
+        cs.setConst(csd.getBooleanStats().getNumNulls() == 0 && (numTrues > 0 || numFalses > 0));
       } else {
         // Both != 0: either both present (>0), both unknown (<0), or one present + one unknown
         cs.setCountDistint(2);
