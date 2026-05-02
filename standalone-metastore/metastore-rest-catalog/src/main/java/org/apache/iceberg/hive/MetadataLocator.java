@@ -7,14 +7,13 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.iceberg.hive;
@@ -83,15 +82,18 @@ public class MetadataLocator {
       return tables == null || tables.isEmpty()
           ? null
           : tables.getFirst().getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-    } catch (NoSuchTableException | NoSuchObjectException e) {
-      LOGGER.info("Table not found {}", baseTableIdentifier, e);
+    } catch (NoSuchTableException e) {
+      LOGGER.debug("Table {} not found: {}", baseTableIdentifier, e.getMessage());
+      throw e;
+    } catch (NoSuchObjectException e) {
+      throw new NoSuchTableException("Table {} not found: {}", baseTableIdentifier, e.getMessage());
     } catch (TException e) {
-      LOGGER.info("Table parameters fetch failed {}", baseTableIdentifier, e);
+      LOGGER.info("Table {} parameters fetch failed: {}", baseTableIdentifier, e.getMessage());
+      throw new RuntimeException("Failed to fetch table parameters for " + baseTableIdentifier, e);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      LOGGER.error("Interrupted in call to check table existence of {}", baseTableIdentifier, e);
+      throw new RuntimeException("Interrupted while fetching table parameters for " + baseTableIdentifier, e);
     }
-    return null;
   }
 
   private boolean isValidMetadataIdentifier(TableIdentifier identifier) {

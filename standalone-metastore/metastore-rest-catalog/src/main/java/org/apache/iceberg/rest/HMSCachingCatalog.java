@@ -7,14 +7,13 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -22,12 +21,16 @@ package org.apache.iceberg.rest;
 import com.github.benmanes.caffeine.cache.Ticker;
 
 import java.lang.ref.SoftReference;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.HasTableOperations;
@@ -58,8 +61,10 @@ import org.slf4j.LoggerFactory;
 public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
   protected static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
 
-  private static SoftReference<HMSCachingCatalog> cacheRef = new SoftReference<>(null);
   @TestOnly
+  private static SoftReference<HMSCachingCatalog> cacheRef = new SoftReference<>(null);
+
+  @TestOnly @SuppressWarnings("unchecked")
   public static <C extends Catalog> C  getLatestCache(Function<HMSCachingCatalog, C> extractor) {
     HMSCachingCatalog cache = cacheRef.get();
     if (cache == null) {
@@ -73,8 +78,24 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     return hiveCatalog;
   }
 
+  // The underlying HiveCatalog instance.
   private final HiveCatalog hiveCatalog;
-  // Metrics counters
+  // Duplicate because CachingCatalog doesn't expose the case sensitivity of the underlying catalog,
+  // which is needed for canonicalizing identifiers before caching.
+  private final boolean caseSensitive;
+  // The locator.
+  private final MetadataLocator metadataLocator;
+  // An L1 small latency cache.
+  // This is used to cache the last cached time for each table identifier,
+  // so that we can skip location check for repeated access to the same table within a short period of time,
+  // which can significantly reduce the latency for repeated access to the same table.
+  private final Map<TableIdentifier, Long> l1Cache;
+  // The TTL for L1 cache (3s).
+  private final int L1TTL_MS;
+  // The L1 cache size.
+  private final int L1_CACHE_SIZE;
+
+  // Metrics counters.
   private final AtomicLong cacheHitCount = new AtomicLong(0);
   private final AtomicLong cacheMissCount = new AtomicLong(0);
   private final AtomicLong cacheLoadCount = new AtomicLong(0);
@@ -88,8 +109,28 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   public HMSCachingCatalog(HiveCatalog catalog, long expirationMs, boolean caseSensitive) {
     super(catalog, caseSensitive, expirationMs, Ticker.systemTicker());
     this.hiveCatalog = catalog;
-    if (catalog.getConf().getBoolean("metastore.iceberg.catalog.cache.debug", false)) {
+    this.caseSensitive = caseSensitive;
+    this.metadataLocator = new MetadataLocator(catalog);
+    Configuration conf = catalog.getConf();
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+      // Only keep a reference to the latest cache for testing purpose, so that tests can manipulate the catalog.
       cacheRef = new SoftReference<>(this);
+    }
+    int l1size = conf.getInt("hms.caching.catalog.l1.cache.size", 32);
+    int l1ttl = conf.getInt("hms.caching.catalog.l1.cache.ttl", 3_000);
+    if (l1size > 0 && l1ttl > 0) {
+       l1Cache = Collections.synchronizedMap(new LinkedHashMap<TableIdentifier, Long>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<TableIdentifier, Long> eldest) {
+          return size() > L1_CACHE_SIZE;
+        }
+      });
+       L1TTL_MS = l1ttl;
+       L1_CACHE_SIZE = l1size;
+    } else {
+       l1Cache = Collections.emptyMap();
+       L1TTL_MS = 0;
+       L1_CACHE_SIZE = 0;
     }
   }
 
@@ -99,8 +140,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
    * @param tid the table identifier to invalidate
    */
   protected void onCacheInvalidate(TableIdentifier tid) {
-    cacheInvalidateCount.incrementAndGet();
-    LOG.debug("Cache invalidate {}: {}", tid, cacheInvalidateCount.get());
+    long count = cacheInvalidateCount.incrementAndGet();
+    LOG.debug("Cache invalidate {}: {}", tid, count);
   }
 
   /**
@@ -109,8 +150,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
    * @param tid the table identifier
    */
   protected void onCacheLoad(TableIdentifier tid) {
-    cacheLoadCount.incrementAndGet();
-    LOG.debug("Cache load {}: {}", tid, cacheLoadCount.get());
+    long count = cacheLoadCount.incrementAndGet();
+    LOG.debug("Cache load {}: {}", tid, count);
   }
 
   /**
@@ -119,8 +160,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
    * @param tid the table identifier
    */
   protected void onCacheHit(TableIdentifier tid) {
-    cacheHitCount.incrementAndGet();
-    LOG.debug("Cache hit {} : {}", tid, cacheHitCount.get());
+    long count = cacheHitCount.incrementAndGet();
+    LOG.debug("Cache hit {} : {}", tid, count);
   }
 
   /**
@@ -129,8 +170,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
    * @param tid the table identifier
    */
   protected void onCacheMiss(TableIdentifier tid) {
-    cacheMissCount.incrementAndGet();
-    LOG.debug("Cache miss {}: {}", tid, cacheMissCount.get());
+    long count = cacheMissCount.incrementAndGet();
+    LOG.debug("Cache miss {}: {}", tid, count);
   }
 
   /**
@@ -139,8 +180,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
    * @param tid the table identifier
    */
   protected void onCacheMetaLoad(TableIdentifier tid) {
-    cacheMetaLoadCount.incrementAndGet();
-    LOG.debug("Cache meta-load {}: {}", tid, cacheMetaLoadCount.get());
+    long count = cacheMetaLoadCount.incrementAndGet();
+    LOG.debug("Cache meta-load {}: {}", tid, count);
   }
 
   // Getter methods for accessing metrics
@@ -198,50 +239,86 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     return hiveCatalog.listNamespaces(namespace);
   }
 
+  /**
+   * Canonicalizes the given table identifier based on the case sensitivity of the underlying catalog.
+   * Copied from CachingCatalog that exposes it as private.
+   * @param tableIdentifier the table identifier to canonicalize
+   * @return the canonicalized table identifier
+   */
+  private TableIdentifier canonicalizeIdentifier(TableIdentifier tableIdentifier) {
+    return this.caseSensitive ? tableIdentifier : tableIdentifier.toLowerCase();
+  }
+
+  @Override
+  public void invalidateTable(TableIdentifier ident) {
+    super.invalidateTable(ident);
+    l1Cache.remove(ident);
+  }
+
   @Override
   public Table loadTable(final TableIdentifier identifier) {
-    final TableIdentifier canonicalized = identifier.toLowerCase();
+    final TableIdentifier canonicalized = canonicalizeIdentifier(identifier);
     final Table cachedTable = tableCache.getIfPresent(canonicalized);
+    long now = System.currentTimeMillis();
     if (cachedTable != null) {
-      final String location = new MetadataLocator(hiveCatalog).getLocation(canonicalized);
-      if (location == null) {
-        LOG.debug("Table {} has no location, returning cached table without location", canonicalized);
-      } else {
-        String cachedLocation = cachedTable instanceof HasTableOperations tableOps
-                ? tableOps.operations().current().metadataFileLocation()
-                : null;
-        if (!location.equals(cachedLocation)) {
-          LOG.debug("Invalidate table {}, cached {} != actual {}", canonicalized, cachedLocation, location);
-          // Invalidate the cached table if the location is different
-          invalidateTable(canonicalized);
-          onCacheInvalidate(canonicalized);
-        } else {
+      // Determine if L1 cache is valid based on the last cached time and the TTL.
+      // If the table is in L1 cache, we can skip the location check and return the cached table directly,
+      // which can significantly reduce the latency for repeated access to the same table.
+      Long lastCached = l1Cache.get(canonicalized);
+      if (lastCached != null) {
+        if (now - lastCached < L1TTL_MS) {
+          LOG.debug("Table {} is in L1 cache, returning cached table", canonicalized);
           onCacheHit(canonicalized);
           return cachedTable;
+        } else {
+          l1Cache.remove(canonicalized);
         }
+      }
+      // If the table is no longer in L1 cache, we need to check the location.
+      final String location = metadataLocator.getLocation(canonicalized);
+      if (location == null) {
+        LOG.debug("Table {} has no location, returning cached table without location", canonicalized);
+        onCacheHit(canonicalized);
+        l1Cache.put(canonicalized, now);
+        return cachedTable;
+      }
+      String cachedLocation = cachedTable instanceof HasTableOperations tableOps
+              ? tableOps.operations().current().metadataFileLocation()
+              : null;
+      if (location.equals(cachedLocation)) {
+        onCacheHit(canonicalized);
+        l1Cache.put(canonicalized, now);
+        return cachedTable;
+      } else {
+        LOG.debug("Invalidate table {}, cached {} != actual {}", canonicalized, cachedLocation, location);
+        // Invalidate the cached table if the location is different
+        invalidateTable(canonicalized);
+        onCacheInvalidate(canonicalized);
       }
     } else {
       onCacheMiss(canonicalized);
     }
+    // The following code is copied from CachingCatalog.loadTable(), but with additional handling for L1 cache and stats.
     final Table table = tableCache.get(canonicalized, this::loadTableWithoutCache);
     if (table instanceof BaseMetadataTable) {
-      // Cache underlying table
-      TableIdentifier originTableIdentifier =
-              TableIdentifier.of(canonicalized.namespace().levels());
+      // Cache underlying table: there must be a table named by the namespace (?)
+      TableIdentifier originTableIdentifier = TableIdentifier.of(canonicalized.namespace().levels());
       Table originTable = tableCache.get(originTableIdentifier, this::loadTableWithoutCache);
       // Share TableOperations instance of origin table for all metadata tables, so that metadata
       // table instances are refreshed as well when origin table instance is refreshed.
       if (originTable instanceof HasTableOperations tableOps) {
         TableOperations ops = tableOps.operations();
         MetadataTableType type = MetadataTableType.from(canonicalized.name());
-        Table metadataTable =
-                MetadataTableUtils.createMetadataTableInstance(
-                        ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
-        tableCache.put(canonicalized, metadataTable);
-        onCacheMetaLoad(canonicalized);
-        LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
-        // Return the metadata table instead of the original table
-        return metadataTable;
+        // Defensive: CachingCatalog doesn't perform this check
+        if (type != null) {
+          Table metadataTable = MetadataTableUtils.createMetadataTableInstance(ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
+          tableCache.put(canonicalized, metadataTable);
+          l1Cache.put(canonicalized, now);
+          onCacheMetaLoad(canonicalized);
+          LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
+          // Return the metadata table instead of the original table
+          return metadataTable;
+        }
       }
     }
     onCacheLoad(canonicalized);
@@ -249,11 +326,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   }
 
   private Table loadTableWithoutCache(TableIdentifier identifier) {
-    try {
       return hiveCatalog.loadTable(identifier);
-    } catch (NoSuchTableException exception) {
-      return null;
-    }
   }
 
   @Override
