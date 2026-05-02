@@ -391,11 +391,6 @@
     </dependency>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
-      <artifactId>s3</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>software.amazon.awssdk</groupId>
       <artifactId>sts</artifactId>
       <scope>provided</scope>
     </dependency>
@@ -405,6 +400,11 @@
       <scope>provided</scope>
     </dependency>
     <!-- test scope dependencies -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>bundle</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
