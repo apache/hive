@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.credential;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,22 +47,24 @@ public class CompositeVendedCredentialProvider implements VendedCredentialProvid
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(CompositeVendedCredentialProvider.class);
-  private static final String CLASS_CONFIG_KEY_PREFIX = "metastore.catalog.vended-credentials";
-  private static final String PROVIDERS_KEY = CLASS_CONFIG_KEY_PREFIX + ".providers";
-  private static final String PROVIDER_CONFIG_KEY_PREFIX = "metastore.credential.vending.%s";
+  private static final String PROVIDERS_KEY_PREFIX =
+      MetastoreConf.ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname();
+  private static final String CLASS_KEY = "class";
+  private static final String CACHE_MAX_SIZE_KEY = "cache.max-size";
+  private static final String CACHE_MAX_DURATION_KEY = "cache.max-duration";
   private static final Duration DEFAULT_MAX_CACHE_DURATION = Duration.ofMinutes(30);
   private static final VendedCredentialProvider FALLBACK_PROVIDER = new FallbackVendedCredentialProvider();
 
   private final List<VendedCredentialProvider> providers;
 
   private static VendedCredentialProvider create(Configuration conf, String providerId) {
-    final var classKey = "%s.%s.class".formatted(CLASS_CONFIG_KEY_PREFIX, providerId);
+    final var providerConfigKeyPrefix = "%s.%s".formatted(PROVIDERS_KEY_PREFIX, providerId);
+    final var classKey = "%s.%s".formatted(providerConfigKeyPrefix, CLASS_KEY);
     final var clazz = conf.getClass(classKey, null, VendedCredentialProvider.class);
     if (clazz == null) {
       throw new IllegalArgumentException("No vended credential provider class configured for provider ID: " + providerId);
     }
 
-    final var providerConfigKeyPrefix = PROVIDER_CONFIG_KEY_PREFIX.formatted(providerId);
     final VendedCredentialProvider provider;
     try {
       final var constructor = clazz.getDeclaredConstructor(String.class, Configuration.class);
@@ -71,13 +74,14 @@ public class CompositeVendedCredentialProvider implements VendedCredentialProvid
       throw new IllegalArgumentException("Failed to instantiate vended credential provider: " + clazz.getName(), e);
     }
 
-    final var maxCacheSize = conf.getInt("%s.cache.max-size".formatted(providerConfigKeyPrefix), 0);
+    final var maxCacheSize = conf.getInt("%s.%s".formatted(providerConfigKeyPrefix, CACHE_MAX_SIZE_KEY), 0);
     if (maxCacheSize <= 0) {
       LOG.info("Created VendedCredentialProvider, {}, without cache", provider);
       return provider;
     }
 
-    final var maxCacheDuration = Duration.ofNanos(conf.getTimeDuration("%s.cache.max-duration".formatted(providerConfigKeyPrefix),
+    final var maxCacheDuration = Duration.ofNanos(
+        conf.getTimeDuration("%s.%s".formatted(providerConfigKeyPrefix, CACHE_MAX_DURATION_KEY),
         DEFAULT_MAX_CACHE_DURATION.toNanos(), TimeUnit.NANOSECONDS));
     LOG.info("Created VendedCredentialProvider, {}, with caching (capacity={}, duration={}) ", provider, maxCacheSize,
         maxCacheDuration);
@@ -85,8 +89,14 @@ public class CompositeVendedCredentialProvider implements VendedCredentialProvid
   }
 
   public CompositeVendedCredentialProvider(Configuration conf) {
-    this(Arrays.stream(conf.getTrimmedStrings(PROVIDERS_KEY)).filter(providerId -> !providerId.isEmpty())
-        .map(providerId -> create(conf, providerId)).toList());
+    this(
+        Arrays
+            .stream(
+                MetastoreConf.getTrimmedStringsVar(conf, MetastoreConf.ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS))
+            .filter(providerId -> !providerId.isEmpty())
+            .map(providerId -> create(conf, providerId))
+            .toList()
+    );
   }
 
   @VisibleForTesting

@@ -87,14 +87,18 @@ class TestCredentialVendingAws {
     var config = AwsS3IntegrationTestConfig.fromEnvironment();
 
     builder.configure(ConfVars.ICEBERG_CATALOG_VENDED_CREDENTIALS_ENABLED.getVarname(), "true");
-    builder.configure(ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname(), "s3");
-    builder.configure("metastore.catalog.vended-credentials.s3.class", S3VendedCredentialProvider.class.getName());
-    builder.configure("metastore.credential.vending.s3.aws.role-arn", config.roleArn());
-    builder.configure("metastore.credential.vending.s3.aws.prefixes",
+    builder.configure(ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname(), "my-s3");
+    builder.configure(ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname() + ".my-s3.class",
+        S3VendedCredentialProvider.class.getName());
+    builder.configure(ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname() + ".my-s3.aws.role-arn",
+        config.roleArn());
+    builder.configure(ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname() + ".my-s3.aws.prefixes",
         "%s/%s/".formatted(config.bucket(), config.basePath()));
-    builder.configure("metastore.credential.vending.s3.aws.region", config.regionId());
+    builder.configure(ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname() + ".my-s3.aws.region",
+        config.regionId());
     if (config.externalId() != null && !config.externalId().isBlank()) {
-      builder.configure("metastore.credential.vending.s3.aws.external-id", config.externalId());
+      builder.configure(ConfVars.CATALOG_VENDED_CREDENTIALS_PROVIDERS.getVarname() + ".my-s3.aws.external-id",
+          config.externalId());
     }
     builder.configure("fs.s3a.impl", S3AFileSystem.class.getName());
     builder.configure("fs.AbstractFileSystem.s3a.impl", "org.apache.hadoop.fs.s3a.S3A");
