@@ -154,6 +154,7 @@ public class HMSCatalogServlet extends HttpServlet {
       var accessDelegationModes = Arrays
           .stream(Optional.ofNullable(request.getHeader("X-Iceberg-Access-Delegation")).orElse("").split(","))
           .map(String::trim)
+          .filter(header -> !header.isEmpty())
           .map(header -> switch (header) {
             case "vended-credentials" -> AccessDelegationMode.VENDED_CREDENTIALS;
             case "remote-signing" -> AccessDelegationMode.REMOTE_SIGNING;
