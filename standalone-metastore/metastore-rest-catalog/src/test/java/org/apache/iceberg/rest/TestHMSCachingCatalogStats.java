@@ -191,7 +191,7 @@ class TestHMSCachingCatalogStats {
         "Expected at least 1 cache invalidation (metadata location changed after table update), but delta was: " + deltaInvalidate);
 
     // hit-rate must be a valid ratio in [0.0, 1.0]
-    double hitRate = after.stats().getOrDefault("hit-rate", 0.0).doubleValue();
+    double hitRate = after.getOrDefault("hit-rate", 0.0).doubleValue();
     Assertions.assertTrue(hitRate > 0.0 && hitRate <= 1.0,
         "hit-rate must be in [0.0, 1.0] but was: " + hitRate);
   }
