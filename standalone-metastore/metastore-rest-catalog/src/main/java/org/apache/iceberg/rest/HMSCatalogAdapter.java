@@ -544,7 +544,8 @@ public class HMSCatalogAdapter implements RESTClient {
       String path,
       Set<AccessDelegationMode> accessDelegationModes,
       Map<String, String> queryParams,
-      Object body, Consumer<ErrorResponse> errorHandler) {
+      Object body,
+      Consumer<ErrorResponse> errorHandler) {
     ErrorResponse.Builder errorBuilder = ErrorResponse.builder();
     Pair<Route, Map<String, String>> routeAndVars = Route.from(method, path);
     if (routeAndVars != null) {
