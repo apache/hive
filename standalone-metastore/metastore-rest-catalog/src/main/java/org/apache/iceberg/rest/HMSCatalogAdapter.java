@@ -283,7 +283,7 @@ public class HMSCatalogAdapter implements RESTClient {
       response = castResponse(
           responseType, CatalogHandlers.createTable(catalog, namespace, request));
     }
-    return attachCredentials(accessDelegationModes, TableIdentifier.of(namespace, request.name()), response);
+    return withCredentials(accessDelegationModes, TableIdentifier.of(namespace, request.name()), response);
   }
 
   private RESTResponse dropTable(Map<String, String> vars) {
@@ -305,7 +305,7 @@ public class HMSCatalogAdapter implements RESTClient {
     TableIdentifier ident = identFromPathVars(vars);
     LoadTableResponse response =
         castResponse(LoadTableResponse.class, CatalogHandlers.loadTable(catalog, ident));
-    return attachCredentials(delegationModes, ident, response);
+    return withCredentials(delegationModes, ident, response);
   }
 
   private LoadTableResponse registerTable(
@@ -316,7 +316,7 @@ public class HMSCatalogAdapter implements RESTClient {
     RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
     LoadTableResponse response =
         castResponse(LoadTableResponse.class, CatalogHandlers.registerTable(catalog, namespace, request));
-    return attachCredentials(delegationModes, TableIdentifier.of(namespace, request.name()), response);
+    return withCredentials(delegationModes, TableIdentifier.of(namespace, request.name()), response);
   }
 
   private LoadTableResponse updateTable(
@@ -327,7 +327,7 @@ public class HMSCatalogAdapter implements RESTClient {
     UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
     LoadTableResponse response =
         castResponse(LoadTableResponse.class, CatalogHandlers.updateTable(catalog, ident, request));
-    return attachCredentials(delegationModes, ident, response);
+    return withCredentials(delegationModes, ident, response);
   }
 
   private RESTResponse renameTable(Object body) {
@@ -398,21 +398,31 @@ public class HMSCatalogAdapter implements RESTClient {
     return null;
   }
 
-  private LoadTableResponse attachCredentials(Set<AccessDelegationMode> accessDelegationModes, TableIdentifier ident,
+  private LoadTableResponse withCredentials(
+      Set<AccessDelegationMode> accessDelegationModes,
+      TableIdentifier ident,
       LoadTableResponse response) {
     if (credentialProvider == null) {
       return response;
     }
 
     if (accessDelegationModes.contains(AccessDelegationMode.VENDED_CREDENTIALS)) {
-      final var credentials = credentialProvider.vend(ident, response.tableMetadata().location());
-      return LoadTableResponse.builder().withTableMetadata(response.tableMetadata()).addAllConfig(response.config())
-          .addAllCredentials(credentials).build();
+      return withVendedCredentials(ident, response);
     }
+
     if (accessDelegationModes.contains(AccessDelegationMode.REMOTE_SIGNING)) {
       LOG.warn("Remote signing is not supported. Ignoring...");
     }
+
     return response;
+  }
+
+  private LoadTableResponse withVendedCredentials(TableIdentifier ident, LoadTableResponse response) {
+    final var credentials = credentialProvider.vend(ident, response.tableMetadata().location());
+    return LoadTableResponse.builder()
+        .withTableMetadata(response.tableMetadata())
+        .addAllConfig(response.config())
+        .addAllCredentials(credentials).build();
   }
 
   /**
