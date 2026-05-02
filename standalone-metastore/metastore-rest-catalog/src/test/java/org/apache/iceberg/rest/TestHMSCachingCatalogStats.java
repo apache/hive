@@ -24,6 +24,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
+
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -68,7 +70,7 @@ class TestHMSCachingCatalogStats {
           .configure(
               MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY.getVarname(),
               String.valueOf(CACHE_EXPIRY_MS))
-          .configure("metastore.iceberg.catalog.cache.debug", "true")
+          .configure("hive.in.test", "true")
           .build();
 
   private RESTCatalog catalog;
@@ -133,10 +135,10 @@ class TestHMSCachingCatalogStats {
   @Test
   void testCacheCountersAreUpdated() throws Exception {
     // -- baseline ---------------------------------------------------------------
-    HMSCacheStatsResponse baseline = fetchCacheStats();
-    long baseHit  = baseline.stats().getOrDefault("hit",  0L).longValue();
-    long baseMiss = baseline.stats().getOrDefault("miss", 0L).longValue();
-    long baseLoad = baseline.stats().getOrDefault("load", 0L).longValue();
+    Map<String, Number> baseline = fetchCacheStats().stats();
+    long baseHit  = baseline.getOrDefault("hit",  0L).longValue();
+    long baseMiss = baseline.getOrDefault("miss", 0L).longValue();
+    long baseLoad = baseline.getOrDefault("load", 0L).longValue();
 
     // -- exercise the cache -----------------------------------------------------
     var db      = Namespace.of("caching_stats_test_db");
@@ -166,16 +168,17 @@ class TestHMSCachingCatalogStats {
         .commit();
 
     long baseInvalidate = fetchCacheStats().stats().getOrDefault("invalidate", 0L).longValue();
-
+    // the L1 cache has a 3 seconds default delay before it considers entries stale
+    Thread.sleep(3_000);
     // Fourth load → cache invalidation + load (cached location != HMS location)
     catalog.loadTable(tableId);
 
     // -- fetch updated stats via the REST endpoint ------------------------------
-    HMSCacheStatsResponse after = fetchCacheStats();
-    long deltaHit        = after.stats().getOrDefault("hit",        0L).longValue() - baseHit;
-    long deltaMiss       = after.stats().getOrDefault("miss",       0L).longValue() - baseMiss;
-    long deltaLoad       = after.stats().getOrDefault("load",       0L).longValue() - baseLoad;
-    long deltaInvalidate = after.stats().getOrDefault("invalidate", 0L).longValue() - baseInvalidate;
+    Map<String, Number> after = fetchCacheStats().stats();
+    long deltaHit        = after.getOrDefault("hit",        0L).longValue() - baseHit;
+    long deltaMiss       = after.getOrDefault("miss",       0L).longValue() - baseMiss;
+    long deltaLoad       = after.getOrDefault("load",       0L).longValue() - baseLoad;
+    long deltaInvalidate = after.getOrDefault("invalidate", 0L).longValue() - baseInvalidate;
 
     // -- assertions -------------------------------------------------------------
     Assertions.assertTrue(deltaMiss >= 1,
@@ -189,7 +192,7 @@ class TestHMSCachingCatalogStats {
 
     // hit-rate must be a valid ratio in [0.0, 1.0]
     double hitRate = after.stats().getOrDefault("hit-rate", 0.0).doubleValue();
-    Assertions.assertTrue(hitRate >= 0.0 && hitRate <= 1.0,
+    Assertions.assertTrue(hitRate > 0.0 && hitRate <= 1.0,
         "hit-rate must be in [0.0, 1.0] but was: " + hitRate);
   }
 }
