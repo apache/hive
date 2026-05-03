@@ -58,30 +58,30 @@ public class CompositeVendedCredentialProvider implements VendedCredentialProvid
   private final List<VendedCredentialProvider> providers;
 
   private static VendedCredentialProvider create(Configuration conf, String providerId) {
-    final var providerConfigKeyPrefix = "%s.%s".formatted(PROVIDERS_KEY_PREFIX, providerId);
-    final var classKey = "%s.%s".formatted(providerConfigKeyPrefix, CLASS_KEY);
+    final var providerConfigKeyPrefix = "%s.%s.".formatted(PROVIDERS_KEY_PREFIX, providerId);
+    final var classKey = providerConfigKeyPrefix + CLASS_KEY;
     final var clazz = conf.getClass(classKey, null, VendedCredentialProvider.class);
     if (clazz == null) {
-      throw new IllegalArgumentException("No vended credential provider class configured for provider ID: " + providerId);
+      throw new IllegalArgumentException(
+          "No vended credential provider class configured for provider ID: " + providerId);
     }
 
     final VendedCredentialProvider provider;
     try {
       final var constructor = clazz.getDeclaredConstructor(String.class, Configuration.class);
-      constructor.setAccessible(true);
       provider = constructor.newInstance(providerConfigKeyPrefix, conf);
     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new IllegalArgumentException("Failed to instantiate vended credential provider: " + clazz.getName(), e);
     }
 
-    final var maxCacheSize = conf.getInt("%s.%s".formatted(providerConfigKeyPrefix, CACHE_MAX_SIZE_KEY), 0);
+    final var maxCacheSize = conf.getInt(providerConfigKeyPrefix + CACHE_MAX_SIZE_KEY, 0);
     if (maxCacheSize <= 0) {
       LOG.info("Created VendedCredentialProvider, {}, without cache", provider);
       return provider;
     }
 
     final var maxCacheDuration = Duration.ofNanos(
-        conf.getTimeDuration("%s.%s".formatted(providerConfigKeyPrefix, CACHE_MAX_DURATION_KEY),
+        conf.getTimeDuration(providerConfigKeyPrefix + CACHE_MAX_DURATION_KEY,
         DEFAULT_MAX_CACHE_DURATION.toNanos(), TimeUnit.NANOSECONDS));
     LOG.info("Created VendedCredentialProvider, {}, with caching (capacity={}, duration={}) ", provider, maxCacheSize,
         maxCacheDuration);

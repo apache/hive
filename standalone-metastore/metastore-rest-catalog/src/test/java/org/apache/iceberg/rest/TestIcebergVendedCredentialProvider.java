@@ -7,14 +7,13 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -104,8 +103,12 @@ public class TestIcebergVendedCredentialProvider {
 
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(authorizer, Mockito.times(2))
-        .checkPrivileges(eq(HiveOperationType.QUERY), inputCaptor.capture(), outputCaptor.capture(), any(HiveAuthzContext.class));
+    Mockito.verify(authorizer, Mockito.times(2)).checkPrivileges(
+        eq(HiveOperationType.QUERY),
+        inputCaptor.capture(),
+        outputCaptor.capture(),
+        any(HiveAuthzContext.class)
+    );
     assertPrivilegeObjects(List.of(INPUT_OBJECT), inputCaptor.getAllValues().getFirst());
     assertPrivilegeObjects(List.of(), inputCaptor.getAllValues().getLast());
     assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
@@ -142,8 +145,12 @@ public class TestIcebergVendedCredentialProvider {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(authorizer, Mockito.times(2))
-        .checkPrivileges(operationCaptor.capture(), inputCaptor.capture(), outputCaptor.capture(), any(HiveAuthzContext.class));
+    Mockito.verify(authorizer, Mockito.times(2)).checkPrivileges(
+        operationCaptor.capture(),
+        inputCaptor.capture(),
+        outputCaptor.capture(),
+        any(HiveAuthzContext.class)
+    );
     Assert.assertEquals(List.of(HiveOperationType.QUERY, HiveOperationType.QUERY), operationCaptor.getAllValues());
     assertPrivilegeObjects(List.of(INPUT_OBJECT), inputCaptor.getAllValues().getFirst());
     assertPrivilegeObjects(List.of(), inputCaptor.getAllValues().getLast());
