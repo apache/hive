@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.credential.s3;
 
+import org.apache.hadoop.fs.Path;
 import software.amazon.awssdk.arns.Arn;
 
 import java.net.URI;
@@ -27,7 +28,7 @@ import java.util.Set;
 /**
  * An S3 location.
  */
-class S3Location {
+final class S3Location {
   private static final Set<String> SCHEMES = Set.of("s3", "s3a", "s3n");
 
   private final String partition;
@@ -56,7 +57,7 @@ class S3Location {
     if (rawPath == null) {
       return Optional.empty();
     }
-    final var path = rawPath.endsWith("/") ? rawPath : rawPath + "/";
+    final var path = rawPath.endsWith(Path.SEPARATOR) ? rawPath : rawPath + Path.SEPARATOR;
     return Optional.of(new S3Location(partition, bucket, path));
   }
 

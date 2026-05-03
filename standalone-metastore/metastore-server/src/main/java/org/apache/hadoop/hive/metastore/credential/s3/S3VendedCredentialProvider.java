@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.credential.StorageAccessRequest;
 import org.apache.hadoop.hive.metastore.credential.VendedCredentialProvider;
 import org.apache.hadoop.hive.metastore.credential.VendedStorageCredential;
 import software.amazon.awssdk.arns.Arn;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.policybuilder.iam.IamConditionOperator;
 import software.amazon.awssdk.policybuilder.iam.IamEffect;
 import software.amazon.awssdk.policybuilder.iam.IamPolicy;
@@ -62,7 +63,8 @@ public class S3VendedCredentialProvider implements VendedCredentialProvider {
   private final StsClient stsClient;
 
   private static StsClient createStsClient(String region) {
-    final var builder = StsClient.builder();
+    final var credentialsProvider = DefaultCredentialsProvider.builder().build();
+    final var builder = StsClient.builder().credentialsProvider(credentialsProvider);
     return region == null ? builder.build() : builder.region(Region.of(region)).build();
   }
 
@@ -75,14 +77,14 @@ public class S3VendedCredentialProvider implements VendedCredentialProvider {
 
   public S3VendedCredentialProvider(String configKeyPrefix, Configuration conf) {
     this(
-        Arn.fromString(Objects.requireNonNull(conf.get("%s.%s".formatted(configKeyPrefix, ROLE_ARN_KEY)))),
-        conf.get("%s.%s".formatted(configKeyPrefix, EXTERNAL_ID_KEY)),
-        createPrefixes(conf.getStrings("%s.%s".formatted(configKeyPrefix, PREFIXES_KEY), (String) null)),
+        Arn.fromString(Objects.requireNonNull(conf.get(configKeyPrefix + ROLE_ARN_KEY))),
+        conf.get(configKeyPrefix + EXTERNAL_ID_KEY),
+        createPrefixes(conf.getStrings(configKeyPrefix + PREFIXES_KEY, (String) null)),
         (int) Math.min(
             Integer.MAX_VALUE,
-            conf.getTimeDuration("%s.%s".formatted(configKeyPrefix, CREDENTIAL_EXPIRATION_KEY), 3600, TimeUnit.SECONDS)
+            conf.getTimeDuration(configKeyPrefix + CREDENTIAL_EXPIRATION_KEY, 3600, TimeUnit.SECONDS)
         ),
-        createStsClient(conf.get("%s.%s".formatted(configKeyPrefix, REGION_KEY)))
+        createStsClient(conf.get(configKeyPrefix + REGION_KEY))
     );
   }
 
@@ -190,20 +192,22 @@ public class S3VendedCredentialProvider implements VendedCredentialProvider {
     bucketLocationBuilder.values().stream().map(IamStatement.Builder::build).forEach(policyBuilder::addStatement);
     listBuilder.values().stream().map(IamStatement.Builder::build).forEach(policyBuilder::addStatement);
     if (!readResources.isEmpty()) {
-      final var builder = IamStatement.builder().effect(IamEffect.ALLOW).addAction("s3:GetObject")
-          .addAction("s3:GetObjectVersion");
-      readResources.forEach(builder::addResource);
-      policyBuilder.addStatement(builder.build());
+      policyBuilder.addStatement(builder -> {
+        builder.effect(IamEffect.ALLOW).addAction("s3:GetObject").addAction("s3:GetObjectVersion");
+        readResources.forEach(builder::addResource);
+      });
     }
     if (!createResources.isEmpty()) {
-      final var createBuilder = IamStatement.builder().effect(IamEffect.ALLOW).addAction("s3:PutObject");
-      createResources.forEach(createBuilder::addResource);
-      policyBuilder.addStatement(createBuilder.build());
+      policyBuilder.addStatement(builder -> {
+        builder.effect(IamEffect.ALLOW).addAction("s3:PutObject");
+        createResources.forEach(builder::addResource);
+      });
     }
     if (!deleteResources.isEmpty()) {
-      final var deleteBuilder = IamStatement.builder().effect(IamEffect.ALLOW).addAction("s3:DeleteObject");
-      deleteResources.forEach(deleteBuilder::addResource);
-      policyBuilder.addStatement(deleteBuilder.build());
+      policyBuilder.addStatement(builder -> {
+        builder.effect(IamEffect.ALLOW).addAction("s3:DeleteObject");
+        deleteResources.forEach(builder::addResource);
+      });
     }
     return policyBuilder.build();
   }
