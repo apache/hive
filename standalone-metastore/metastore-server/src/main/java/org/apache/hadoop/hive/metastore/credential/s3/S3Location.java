@@ -18,11 +18,10 @@
 
 package org.apache.hadoop.hive.metastore.credential.s3;
 
-import com.google.common.base.Preconditions;
 import software.amazon.awssdk.arns.Arn;
 
 import java.net.URI;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -41,13 +40,24 @@ class S3Location {
     this.path = path;
   }
 
-  static S3Location create(String partition, URI uri) {
-    Preconditions.checkArgument(SCHEMES.contains(uri.getScheme()));
-    Objects.requireNonNull(uri);
-    final var bucket = Objects.requireNonNull(uri.getAuthority());
-    final var rawPath = Objects.requireNonNull(uri.getPath());
+  static Optional<S3Location> create(String partition, URI uri) {
+    final var scheme = uri.getScheme();
+    if (scheme == null) {
+      return Optional.empty();
+    }
+    if (!SCHEMES.contains(scheme)) {
+      return Optional.empty();
+    }
+    final var bucket = uri.getAuthority();
+    if (bucket == null) {
+      return Optional.empty();
+    }
+    final var rawPath = uri.getPath();
+    if (rawPath == null) {
+      return Optional.empty();
+    }
     final var path = rawPath.endsWith("/") ? rawPath : rawPath + "/";
-    return new S3Location(partition, bucket, path);
+    return Optional.of(new S3Location(partition, bucket, path));
   }
 
   Arn getBucketArn() {
