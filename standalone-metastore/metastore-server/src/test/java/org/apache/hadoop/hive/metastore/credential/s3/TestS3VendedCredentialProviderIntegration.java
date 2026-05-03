@@ -87,7 +87,10 @@ public class TestS3VendedCredentialProviderIntegration {
   private static void deleteObjectIfExists(S3Client s3, String bucket, String key) {
     try {
       s3.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(key).build());
-    } catch (S3Exception ignored) {
+    } catch (S3Exception e) {
+      if (e.statusCode() != 404) {
+        throw e;
+      }
     }
   }
 

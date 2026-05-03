@@ -76,8 +76,8 @@ public class TestS3VendedCredentialProvider {
         new Path("s3a://bucket-b/warehouse/table"),
         EnumSet.of(StorageOperation.READ));
     Assert.assertFalse(provider.supports(unmatched));
-    Assert.assertThrows(IllegalArgumentException.class,
-        () -> provider.vend("test-user", Collections.singletonList(unmatched)));
+    var requests = Collections.singletonList(unmatched);
+    Assert.assertThrows(IllegalArgumentException.class, () -> provider.vend("test-user", requests));
   }
 
   @Test

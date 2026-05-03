@@ -20,92 +20,94 @@ package org.apache.hadoop.hive.metastore.testutils;
 
 import software.amazon.awssdk.regions.Region;
 
-// AWS Integration tests don't run by default. You need to set up your environment.
-//
-// ACCOUNT_ID={your AWS account ID}
-// HMS_PRINCIPAL_ARN="arn:aws:iam::${ACCOUNT_ID}:{user or role}"
-//
-// REGION=us-east-1
-// ROLE_NAME=hive-s3-vending-test-role
-// export HIVE_IT_AWS_INTEGRATION_TEST_ENABLED=true
-// export HIVE_IT_S3_BUCKET="$BUCKET-$ACCOUNT_ID-$REGION-an"
-// export HIVE_IT_S3_TEST_PATH=hive-test
-// export HIVE_IT_S3_ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/$ROLE_NAME"
-// export HIVE_IT_S3_EXTERNAL_ID=hive-s3-vending-test
-// export HIVE_IT_S3_REGION=us-east-1
-//
-// aws s3api create-bucket \
-//   --bucket "${HIVE_IT_S3_BUCKET}" \
-//   --region "${REGION}" \
-//   --bucket-namespace account-regional
-//
-// aws s3api put-bucket-versioning \
-//   --bucket "${HIVE_IT_S3_BUCKET}" \
-//   --versioning-configuration Status=Enabled
-//
-// cat > trust-policy.json <<EOF
-// {
-//   "Version": "2012-10-17",
-//   "Statement": [
-//     {
-//       "Effect": "Allow",
-//       "Principal": {
-//         "AWS": "${HMS_PRINCIPAL_ARN}"
-//       },
-//       "Action": "sts:AssumeRole",
-//       "Condition": {
-//         "StringEquals": {
-//           "sts:ExternalId": "${HIVE_IT_S3_EXTERNAL_ID}"
-//         }
-//       }
-//     }
-//   ]
-// }
-// EOF
-//
-// aws iam create-role \
-//   --role-name "${ROLE_NAME}" \
-//   --assume-role-policy-document file://trust-policy.json
-//
-// cat > role-policy.json <<EOF
-// {
-//   "Version": "2012-10-17",
-//   "Statement": [
-//     {
-//       "Effect": "Allow",
-//       "Action": "s3:GetBucketLocation",
-//       "Resource": "arn:aws:s3:::${HIVE_IT_S3_BUCKET}"
-//     },
-//     {
-//       "Effect": "Allow",
-//       "Action": "s3:ListBucket",
-//       "Resource": "arn:aws:s3:::${HIVE_IT_S3_BUCKET}",
-//       "Condition": {
-//         "StringLike": {
-//           "s3:prefix": [
-//             "${HIVE_IT_S3_TEST_PATH}/*"
-//           ]
-//         }
-//       }
-//     },
-//     {
-//       "Effect": "Allow",
-//       "Action": [
-//         "s3:GetObject",
-//         "s3:GetObjectVersion",
-//         "s3:PutObject",
-//         "s3:DeleteObject"
-//       ],
-//       "Resource": "arn:aws:s3:::${HIVE_IT_S3_BUCKET}/${HIVE_IT_S3_TEST_PATH}/*"
-//     }
-//   ]
-// }
-// EOF
-//
-// aws iam put-role-policy \
-//   --role-name "${ROLE_NAME}" \
-//   --policy-name hive-s3-vending-it-s3 \
-//   --policy-document file://role-policy.json
+/**
+ * AWS Integration tests don't run by default. You need to set up your environment.
+ *
+ * ACCOUNT_ID={your AWS account ID}
+ * HMS_PRINCIPAL_ARN="arn:aws:iam::${ACCOUNT_ID}:{user or role}"
+ *
+ * REGION=us-east-1
+ * ROLE_NAME=hive-s3-vending-test-role
+ * export HIVE_IT_AWS_INTEGRATION_TEST_ENABLED=true
+ * export HIVE_IT_S3_BUCKET="$BUCKET-$ACCOUNT_ID-$REGION-an"
+ * export HIVE_IT_S3_TEST_PATH=hive-test
+ * export HIVE_IT_S3_ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/$ROLE_NAME"
+ * export HIVE_IT_S3_EXTERNAL_ID=hive-s3-vending-test
+ * export HIVE_IT_S3_REGION=us-east-1
+ *
+ * aws s3api create-bucket \
+ *   --bucket "${HIVE_IT_S3_BUCKET}" \
+ *   --region "${REGION}" \
+ *   --bucket-namespace account-regional
+ *
+ * aws s3api put-bucket-versioning \
+ *   --bucket "${HIVE_IT_S3_BUCKET}" \
+ *   --versioning-configuration Status=Enabled
+ *
+ * cat > trust-policy.json <<EOF
+ * {
+ *   "Version": "2012-10-17",
+ *   "Statement": [
+ *     {
+ *       "Effect": "Allow",
+ *       "Principal": {
+ *         "AWS": "${HMS_PRINCIPAL_ARN}"
+ *       },
+ *       "Action": "sts:AssumeRole",
+ *       "Condition": {
+ *         "StringEquals": {
+ *           "sts:ExternalId": "${HIVE_IT_S3_EXTERNAL_ID}"
+ *         }
+ *       }
+ *     }
+ *   ]
+ * }
+ * EOF
+ *
+ * aws iam create-role \
+ *   --role-name "${ROLE_NAME}" \
+ *   --assume-role-policy-document file://trust-policy.json
+ *
+ * cat > role-policy.json <<EOF
+ * {
+ *   "Version": "2012-10-17",
+ *   "Statement": [
+ *     {
+ *       "Effect": "Allow",
+ *       "Action": "s3:GetBucketLocation",
+ *       "Resource": "arn:aws:s3:::${HIVE_IT_S3_BUCKET}"
+ *     },
+ *     {
+ *       "Effect": "Allow",
+ *       "Action": "s3:ListBucket",
+ *       "Resource": "arn:aws:s3:::${HIVE_IT_S3_BUCKET}",
+ *       "Condition": {
+ *         "StringLike": {
+ *           "s3:prefix": [
+ *             "${HIVE_IT_S3_TEST_PATH}/*"
+ *           ]
+ *         }
+ *       }
+ *     },
+ *     {
+ *       "Effect": "Allow",
+ *       "Action": [
+ *         "s3:GetObject",
+ *         "s3:GetObjectVersion",
+ *         "s3:PutObject",
+ *         "s3:DeleteObject"
+ *       ],
+ *       "Resource": "arn:aws:s3:::${HIVE_IT_S3_BUCKET}/${HIVE_IT_S3_TEST_PATH}/*"
+ *     }
+ *   ]
+ * }
+ * EOF
+ *
+ * aws iam put-role-policy \
+ *   --role-name "${ROLE_NAME}" \
+ *   --policy-name hive-s3-vending-it-s3 \
+ *   --policy-document file://role-policy.json
+ */
 public record AwsS3IntegrationTestConfig(
     String bucket,
     String basePath,
