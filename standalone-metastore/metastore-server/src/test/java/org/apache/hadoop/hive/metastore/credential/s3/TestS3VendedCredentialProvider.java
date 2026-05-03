@@ -76,9 +76,8 @@ public class TestS3VendedCredentialProvider {
         new Path("s3a://bucket-b/warehouse/table"),
         EnumSet.of(StorageOperation.READ));
     Assert.assertFalse(provider.supports(unmatched));
-    Assert.assertThrows(IllegalArgumentException.class, () -> {
-      provider.vend("test-user", Collections.singletonList(unmatched));
-    });
+    Assert.assertThrows(IllegalArgumentException.class,
+        () -> provider.vend("test-user", Collections.singletonList(unmatched)));
   }
 
   @Test
@@ -98,9 +97,33 @@ public class TestS3VendedCredentialProvider {
         new Path("s3a://bucket-b/warehouse/table"),
         EnumSet.of(StorageOperation.READ));
     Assert.assertFalse(provider.supports(unmatched));
-    Assert.assertThrows(IllegalArgumentException.class, () -> {
-      provider.vend("test-user", Collections.singletonList(unmatched));
-    });
+    Assert.assertThrows(IllegalArgumentException.class,
+        () -> provider.vend("test-user", Collections.singletonList(unmatched)));
+  }
+
+  @Test
+  public void testSupportsWithUnsupportedPaths() {
+    var provider = new S3VendedCredentialProvider(
+        Arn.fromString("arn:aws:iam::123456789012:role/test-role"),
+        null,
+        Collections.emptyList(),
+        3600,
+        Mockito.mock(StsClient.class));
+
+    var nonSchema = new StorageAccessRequest(
+        new Path("/bucket-a/warehouse/table"),
+        EnumSet.of(StorageOperation.READ));
+    Assert.assertFalse(provider.supports(nonSchema));
+
+    var nonS3 = new StorageAccessRequest(
+        new Path("hdfs://bucket-a/warehouse/table"),
+        EnumSet.of(StorageOperation.READ));
+    Assert.assertFalse(provider.supports(nonS3));
+
+    var nonAuthority = new StorageAccessRequest(
+        new Path("s3a:///warehouse/table"),
+        EnumSet.of(StorageOperation.READ));
+    Assert.assertFalse(provider.supports(nonAuthority));
   }
 
   @Test
