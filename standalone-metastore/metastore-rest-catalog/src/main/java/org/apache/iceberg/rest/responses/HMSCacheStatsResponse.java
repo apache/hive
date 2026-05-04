@@ -26,7 +26,9 @@ import java.util.TreeMap;
 
 public record HMSCacheStatsResponse(Map<String, Number> stats) implements RESTResponse {
   public HMSCacheStatsResponse(Map<String, Number> stats) {
-    this.stats = Collections.unmodifiableMap(new TreeMap<>(stats));
+    this.stats = stats == null || stats.isEmpty()
+      ? Collections.emptyMap()
+      : Collections.unmodifiableMap(new TreeMap<>(stats));
   }
 
   @Override

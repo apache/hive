@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class MetadataLocator {
   private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MetadataLocator.class);
-  static final GetProjectionsSpec PARAM_SPEC = new GetTableProjectionsSpecBuilder()
+  private static final GetProjectionsSpec PARAM_SPEC = new GetTableProjectionsSpecBuilder()
       .includeParameters()  // only fetches table.parameters
       .build();
   private final HiveCatalog catalog;
@@ -54,11 +54,12 @@ public class MetadataLocator {
   }
 
   /**
-   * Returns the location of the metadata table identified by the given identifier, or null if the table does not exist or is
+   * Returns the location of the metadata table identified by the given identifier, or null if the table is
    * not a metadata table.
    * <p>This uses the Thrift API to fetch the table parameters, which is more efficient than fetching the entire table object.</p>
    * @param  identifier the identifier of the metadata table to fetch the location for
    * @return the location of the metadata table, or null if the table does not exist or is not a metadata table
+   * @throws NoSuchTableException if the table does not exist
    */
   public String getLocation(TableIdentifier identifier) {
     final ClientPool<IMetaStoreClient, TException> clients = catalog.clientPool();
@@ -86,7 +87,7 @@ public class MetadataLocator {
       LOGGER.debug("Table {} not found: {}", baseTableIdentifier, e.getMessage());
       throw e;
     } catch (NoSuchObjectException e) {
-      throw new NoSuchTableException("Table {} not found: {}", baseTableIdentifier, e.getMessage());
+      throw new NoSuchTableException("Table %s not found: %s", baseTableIdentifier, e.getMessage());
     } catch (TException e) {
       LOGGER.info("Table {} parameters fetch failed: {}", baseTableIdentifier, e.getMessage());
       throw new RuntimeException("Failed to fetch table parameters for " + baseTableIdentifier, e);

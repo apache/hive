@@ -46,7 +46,6 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
-import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.MetadataLocator;
 import org.apache.iceberg.view.View;
@@ -91,9 +90,9 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   // which can significantly reduce the latency for repeated access to the same table.
   private final Map<TableIdentifier, Long> l1Cache;
   // The TTL for L1 cache (3s).
-  private final int L1TTL_MS;
+  private final int l1Ttl;
   // The L1 cache size.
-  private final int L1_CACHE_SIZE;
+  private final int l1CacheSize;
 
   // Metrics counters.
   private final AtomicLong cacheHitCount = new AtomicLong(0);
@@ -122,15 +121,15 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
        l1Cache = Collections.synchronizedMap(new LinkedHashMap<TableIdentifier, Long>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<TableIdentifier, Long> eldest) {
-          return size() > L1_CACHE_SIZE;
+          return size() > l1CacheSize;
         }
       });
-       L1TTL_MS = l1ttl;
-       L1_CACHE_SIZE = l1size;
+       l1Ttl = l1ttl;
+       l1CacheSize = l1size;
     } else {
        l1Cache = Collections.emptyMap();
-       L1TTL_MS = 0;
-       L1_CACHE_SIZE = 0;
+       l1Ttl = 0;
+       l1CacheSize = 0;
     }
   }
 
@@ -266,7 +265,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
       // which can significantly reduce the latency for repeated access to the same table.
       Long lastCached = l1Cache.get(canonicalized);
       if (lastCached != null) {
-        if (now - lastCached < L1TTL_MS) {
+        if (now - lastCached < l1Ttl) {
           LOG.debug("Table {} is in L1 cache, returning cached table", canonicalized);
           onCacheHit(canonicalized);
           return cachedTable;
@@ -321,6 +320,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
         }
       }
     }
+    l1Cache.put(canonicalized, now);
     onCacheLoad(canonicalized);
     return table;
   }
