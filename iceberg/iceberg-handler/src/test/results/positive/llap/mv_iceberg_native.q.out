@@ -187,6 +187,8 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 mat_native
 mat_native_storage_table
+part
+src
 tbl_ice_native
 PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
