@@ -399,12 +399,14 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * Prefers the server error text from {@code TGetOperationStatusResp.errorMessage} when it is
-   * present and plausible; falls back to a locally derived message using
-   * {@link #setQueryTimeout(int)} or the URL-seeded {@code hive.query.timeout.seconds} value.
+   * Returns the timeout message for a {@code TIMEDOUT_STATE} response.
+   * Uses the server error message when the SQL state is {@code HYT00} ("timeout expired"),
+   * which indicates that the server set a precise message. Otherwise falls back to a
+   * locally derived message from {@link #setQueryTimeout(int)} or the URL-seeded
+   * {@code hive.query.timeout.seconds} value on the connection.
    */
-  private String sqlTimeoutMessageForTimedOutState(String serverMessage) {
-    if (!needsLocalTimeoutMessageForTimedOut(serverMessage)) {
+  private String sqlTimeoutMessageForTimedOutState(String serverMessage, String sqlState) {
+    if ("HYT00".equals(sqlState) && StringUtils.isNotBlank(serverMessage)) {
       return serverMessage;
     }
     long effectiveSec = resolveEffectiveTimeoutSecondsForMessage();
@@ -412,11 +414,6 @@ public class HiveStatement implements java.sql.Statement {
       return "Query timed out after " + effectiveSec + " seconds";
     }
     return "Query timed out";
-  }
-
-  private boolean needsLocalTimeoutMessageForTimedOut(String timeoutMsg) {
-    return StringUtils.isBlank(timeoutMsg)
-        || StringUtils.containsIgnoreCase(timeoutMsg, "after 0 seconds");
   }
 
   private long resolveEffectiveTimeoutSecondsForMessage() {
@@ -438,7 +435,7 @@ public class HiveStatement implements java.sql.Statement {
     } else {
       fullErrMsg = QUERY_CANCELLED_MESSAGE + " " + errMsg;
     }
-    return new SQLException(fullErrMsg, "01000");
+    return new SQLException(fullErrMsg, "01000"); // SQLSTATE 01000 = warning
   }
 
   /**
@@ -462,7 +459,8 @@ public class HiveStatement implements java.sql.Statement {
     case CANCELED_STATE:
       throw sqlExceptionForCanceledState(statusResp);
     case TIMEDOUT_STATE:
-      throw new SQLTimeoutException(sqlTimeoutMessageForTimedOutState(statusResp.getErrorMessage()));
+      throw new SQLTimeoutException(
+          sqlTimeoutMessageForTimedOutState(statusResp.getErrorMessage(), statusResp.getSqlState()));
     case ERROR_STATE:
       throw new SQLException(statusResp.getErrorMessage(), statusResp.getSqlState(), statusResp.getErrorCode());
     case UKNOWN_STATE:
