@@ -20,6 +20,9 @@
 package org.apache.iceberg.rest;
 
 import com.google.common.base.Preconditions;
+
+import java.io.IOException;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
+import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
 import org.apache.iceberg.rest.requests.CommitTransactionRequest;
 import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
@@ -99,17 +103,21 @@ public class HMSCatalogAdapter implements RESTClient {
           .put(CommitStateUnknownException.class, 500)
           .buildOrThrow();
 
+  private final String catalogName;
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
+  private final List<IcebergMetricsReporter> metricsReporters;
+  private final Clock clock = Clock.systemUTC();
 
-
-  public HMSCatalogAdapter(Catalog catalog) {
+  public HMSCatalogAdapter(String catalogName, Catalog catalog, List<IcebergMetricsReporter> metricsReporters) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
     Preconditions.checkArgument(catalog instanceof ViewCatalog);
+    this.catalogName = catalogName;
     this.catalog = catalog;
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
+    this.metricsReporters = metricsReporters;
   }
 
   enum Route {
@@ -315,9 +323,11 @@ public class HMSCatalogAdapter implements RESTClient {
     return null;
   }
 
-  private RESTResponse reportMetrics(Object body) {
-    // nothing to do here other than checking that we're getting the correct request
-    castRequest(ReportMetricsRequest.class, body);
+  private RESTResponse reportMetrics(Map<String, String> vars, Object body) {
+    final var ident = identFromPathVars(vars);
+    final var report = castRequest(ReportMetricsRequest.class, body).report();
+    final var receivedAt = clock.instant();
+    metricsReporters.forEach(reporter -> reporter.report(catalogName, ident, report, receivedAt));
     return null;
   }
 
@@ -456,7 +466,7 @@ public class HMSCatalogAdapter implements RESTClient {
         return (T) renameTable(body);
 
       case REPORT_METRICS:
-        return (T) reportMetrics(body);
+        return (T) reportMetrics(vars, body);
 
       case COMMIT_TRANSACTION:
         return (T) commitTransaction(body);
@@ -574,8 +584,11 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   @Override
-  public void close() {
+  public void close() throws IOException {
     // The caller is responsible for closing the underlying catalog backing this REST catalog.
+    for (IcebergMetricsReporter reporter : metricsReporters) {
+      reporter.close();
+    }
   }
 
   private static class BadResponseType extends RuntimeException {

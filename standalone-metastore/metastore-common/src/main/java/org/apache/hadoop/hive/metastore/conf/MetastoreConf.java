@@ -1935,6 +1935,10 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
+    ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
+        "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
+        "A comma separated list of custom Iceberg Metrics Reporting plugins."
+    ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,
             "HMS embedded HTTP server minimum number of threads."
