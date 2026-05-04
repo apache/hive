@@ -444,7 +444,6 @@ public class HMSCatalogAdapter implements RESTClient {
       case RENAME_VIEW -> (T) renameView(body);
       case DROP_VIEW -> (T) dropView(vars);
       case CACHE_STATS -> (T) cacheStats();
-      default -> null;
     };
   }
 

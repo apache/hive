@@ -34,7 +34,6 @@ import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -80,6 +79,7 @@ class TestHMSCachingCatalogStats {
   void setupAll() {
     catalog = RCKUtils.initCatalogClient(clientConfig());
     serverCatalog = HMSCachingCatalog.getLatestCache(HMSCachingCatalog::getCatalog);
+    Assertions.assertNotNull(serverCatalog, "Expected HMSCachingCatalog to be initialized");
   }
 
   /** Remove any namespace/table created by the test so each run starts clean. */
