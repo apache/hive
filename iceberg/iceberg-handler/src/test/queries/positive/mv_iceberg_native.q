@@ -8,73 +8,65 @@ set hive.explain.user=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.iceberg.materializedview.metadata.location=iceberg;
---set hive.server2.materializedviews.registry.impl=DUMMY;
 set hive.external.table.purge.default=true;
 
 
-drop materialized view if exists mat1;
-drop table if exists tbl_ice;
+drop materialized view if exists mat_native;
+drop table if exists tbl_ice_native;
 
-create table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1');
-insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54);
+create table tbl_ice_native(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1');
+insert into tbl_ice_native values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54);
 
---explain
---create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
---select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+explain
+create materialized view mat_native stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select b, c from tbl_ice_native where c > 52;
 
-create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
-select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+create materialized view mat_native stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
+select b, c from tbl_ice_native where c > 52;
 
-select * from mat1;
+select * from mat_native;
 
 
-show tables;
-
+SHOW TABLES;
 SHOW MATERIALIZED VIEWS;
 
-show create table mat1;
-describe formatted mat1;
+show create table mat_native;
+describe formatted mat_native;
 
-drop materialized view mat1;
+drop materialized view mat_native;
 
-select 1 as hello;
+create materialized view mat_native_orc stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
+select b, c from tbl_ice_native where c > 52;
 
-create materialized view mat1_orc stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
-select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+select * from mat_native_orc;
 
-select * from mat1_orc;
+show create table mat_native_orc;
+explain show create table mat_native_orc;
+describe extended mat_native_orc;
+explain describe formatted mat_native_orc;
 
-show create table mat1_orc;
-explain show create table mat1_orc;
-describe extended mat1_orc;
-explain describe formatted mat1_orc;
+describe formatted mat_native_orc;
 
-describe formatted mat1_orc;
+insert into tbl_ice_native values (6, 'six', 60);
 
-insert into tbl_ice values (6, 'six', 60);
+select * from mat_native_orc;
 
-select * from mat1_orc;
+alter materialized view mat_native_orc rebuild;
 
-select 1;
+select * from mat_native_orc;
 
-alter materialized view mat1_orc rebuild;
-
-select * from mat1_orc;
-
-select 1;
-
-create materialized view mat2_orc stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
-select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+create materialized view mat_native_orc_2 stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
+select b, c from tbl_ice_native where c > 52;
 
 
 -- partitioned materialized view
 
-create materialized view mat1_orc_partitioned partitioned on (b) stored by iceberg stored as orc tblproperties ('format-version'='1') as
-select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+create materialized view mat_native_orc_partitioned partitioned on (b) stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select b, c from tbl_ice_native where c > 52;
 
-select * from mat1_orc_partitioned;
+select * from mat_native_orc_partitioned;
 
-describe formatted mat1_orc_partitioned;
+describe formatted mat_native_orc_partitioned;
 
 -- multiple tables
 
@@ -82,21 +74,21 @@ create external table tbl_ice_v2(d int, e string, f int) stored by iceberg store
 
 insert into tbl_ice_v2 values (1, 'one v2', 50), (4, 'four v2', 53), (5, 'five v2', 54);
 
-create materialized view mat1_multiple_tables stored by iceberg as
-select tbl_ice.b, tbl_ice.c, sum(tbl_ice_v2.f)
-from tbl_ice
-join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
-group by tbl_ice.b, tbl_ice.c;
+create materialized view mat_native_multiple_tables stored by iceberg as
+select tbl_ice_native.b, tbl_ice_native.c, sum(tbl_ice_v2.f)
+from tbl_ice_native
+join tbl_ice_v2 on tbl_ice_native.a=tbl_ice_v2.d where tbl_ice_native.c > 52
+group by tbl_ice_native.b, tbl_ice_native.c;
 
 -- delete some records from a source table
 delete from tbl_ice_v2 where d = 4;
 
 -- plan should be insert overwrite
- explain cbo
--- alter materialized view mat1_multiple_tables rebuild;
+explain cbo
+alter materialized view mat_native_multiple_tables rebuild;
 
--- alter materialized view mat1_multiple_tables rebuild;
+alter materialized view mat_native_multiple_tables rebuild;
 
-select * from mat1_multiple_tables;
+select * from mat_native_multiple_tables;
 
 SHOW MATERIALIZED VIEWS;
