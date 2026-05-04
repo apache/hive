@@ -1,3 +1,6 @@
+--! qt:dataset:src
+--! qt:dataset:part
+
 -- MV metadata is stored in Iceberg
 -- SORT_QUERY_RESULTS
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
