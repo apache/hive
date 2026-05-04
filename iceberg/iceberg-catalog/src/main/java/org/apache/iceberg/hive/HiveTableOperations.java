@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -68,6 +69,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   private final long maxHiveTablePropertySize;
   private final int metadataRefreshMaxRetries;
   private final FileIO fileIO;
+
   private final ClientPool<IMetaStoreClient, TException> metaClients;
 
   protected HiveTableOperations(
@@ -118,8 +120,12 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
       // Check if we are trying to load an Iceberg View as a Table
       HiveOperationsBase.validateIcebergViewNotLoadedAsIcebergTable(table, fullName);
-      // Check if it is a valid Iceberg Table
-      HiveOperationsBase.validateTableIsIceberg(table, fullName);
+
+      if ("iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION))) {
+        HiveOperationsBase.validateTableOrMVIsIceberg(table, fullName);
+      } else {
+        HiveOperationsBase.validateTableIsIceberg(table, fullName);
+      }
 
       metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
 

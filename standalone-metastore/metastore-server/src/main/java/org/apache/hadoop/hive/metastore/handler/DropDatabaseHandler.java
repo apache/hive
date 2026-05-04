@@ -297,7 +297,8 @@ public class DropDatabaseHandler
           boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table,
               request.isDeleteData()) && !isSoftDelete;
           if (table.getSd().getLocation() != null) {
-            if (table.getTableType().equals(TableType.MATERIALIZED_VIEW.toString()) && !isSoftDelete) {
+            if ((table.getTableType().equals(TableType.MATERIALIZED_VIEW.toString()) ||
+                table.getTableType().equals(TableType.EXTERNAL_MATERIALIZED_VIEW.toString())) && !isSoftDelete) {
               Path materializedViewPath = wh.getDnsPath(new Path(table.getSd().getLocation()));
               if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) ||
                   request.isSoftDelete()) {
@@ -337,7 +338,8 @@ public class DropDatabaseHandler
     List<Table> materializedTables = new ArrayList<>();
     List<Table> normalTables = new ArrayList<>();
     for (Table table : tables) {
-      if (table.getTableType().equals(TableType.MATERIALIZED_VIEW.toString())) {
+      if (table.getTableType().equals(TableType.MATERIALIZED_VIEW.toString()) ||
+          table.getTableType().equals(TableType.EXTERNAL_MATERIALIZED_VIEW.toString())) {
         materializedTables.add(table);
       } else {
         normalTables.add(table);

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.view.create;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -198,13 +199,12 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
       //replace view
       Table oldView = getTable(desc.getViewName(), false);
       if (desc.isReplace() && oldView != null) {
-        if (oldView.getTableType().equals(TableType.MATERIALIZED_VIEW)) {
+        if (TableType.ALL_MATERIALIZED_VIEWS.contains(oldView.getTableType())) {
           throw new SemanticException(ErrorMsg.REPLACE_MATERIALIZED_WITH_VIEW, oldView.getTableName());
         }
 
         // Existing table is not a view
-        if (!oldView.getTableType().equals(TableType.VIRTUAL_VIEW) &&
-            !oldView.getTableType().equals(TableType.MATERIALIZED_VIEW)) {
+        if (!TableType.ALL_VIEWS.contains(oldView.getTableType())) {
           String tableNotViewErrorMsg = "The following is an existing table, not a view: " + desc.getViewName();
           throw new SemanticException(ErrorMsg.EXISTING_TABLE_IS_NOT_VIEW.getMsg(tableNotViewErrorMsg));
         }

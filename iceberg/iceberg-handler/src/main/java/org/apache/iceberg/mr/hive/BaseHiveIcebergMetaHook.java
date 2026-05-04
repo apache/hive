@@ -33,7 +33,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -60,6 +62,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergTableProperties;
@@ -94,8 +97,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
   protected final Configuration conf;
   protected Table icebergTable = null;
+  protected Catalogs.MaterializedView icebergMaterializedView = null;
   protected Properties tableProperties;
   protected boolean createHMSTableInHook = false;
+
+  protected String viewOriginalText;
+  protected String viewExpandedText;
 
   public enum FileFormat {
     ORC("orc"), PARQUET("parquet"), AVRO("avro");
@@ -129,9 +136,14 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
-    // Set the table type even for non HiveCatalog based tables
-    hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-        BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+    setTableType(hmsTable);
+
+
+    if (hmsTable.getTableType() != null) {
+      TableType tableType = TableType.valueOf(hmsTable.getTableType());
+
+      storeViewTextInfoForMaterializedView(request, tableType);
+    }
 
     if (!Catalogs.hiveCatalog(conf, tableProperties)) {
       if (Boolean.parseBoolean(this.tableProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
@@ -202,6 +214,53 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, tableProperties);
+  }
+
+  private void setTableType(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    String tableTypeValue = hmsTable.getTableType();
+
+    if (tableTypeValue == null) {
+      // Set the table type even for non HiveCatalog based tables
+      hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+              BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+      return;
+    }
+
+    TableType tableType = Enum.valueOf(TableType.class, tableTypeValue);
+    if (tableType.equals(TableType.MATERIALIZED_VIEW) &&
+        "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION))) {
+
+      hmsTable.setTableType(TableType.EXTERNAL_MATERIALIZED_VIEW.toString());
+    }
+
+    switch (tableType) {
+      case EXTERNAL_TABLE:
+      case MANAGED_TABLE:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+        break;
+      case VIRTUAL_VIEW:
+      case MATERIALIZED_VIEW:
+      case EXTERNAL_MATERIALIZED_VIEW:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
+        break;
+      default:
+        throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
+                " is not supported as an Iceberg object type");
+    }
+  }
+
+  private void storeViewTextInfoForMaterializedView(CreateTableRequest request, TableType tableType) {
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.equals(tableType)) {
+
+      org.apache.hadoop.hive.metastore.api.Table tbl = request.getTable();
+      viewOriginalText = tbl.getViewOriginalText();
+      viewExpandedText = tbl.getViewExpandedText();
+
+      tbl.setViewOriginalText(null);
+      tbl.setViewExpandedText(null);
+    }
   }
 
   /**
@@ -504,8 +563,30 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
-        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
-        String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
+        Table tbl;
+        String formatVersion;
+        switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
+          case MANAGED_TABLE:
+          case EXTERNAL_TABLE:
+          case MATERIALIZED_VIEW:
+            tbl = IcebergTableUtil.getTable(conf, hmsTable);
+            formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
+            break;
+
+          case EXTERNAL_MATERIALIZED_VIEW:
+            Catalogs.MaterializedView mv = IcebergTableUtil.getMaterializedView(conf, hmsTable, false);
+            formatVersion = String.valueOf(TableUtil.formatVersion(mv.getStorageTable()));
+
+            hmsTable.setViewOriginalText(mv.getView().properties().get(Catalogs.MATERIALIZED_VIEW_ORIGINAL_TEXT));
+            hmsTable.setViewExpandedText(mv.getView().sqlFor("hive").sql());
+            hmsTable.getCreationMetadata().setMaterializationTime(
+                mv.getView().currentVersion().refreshState().refreshStartTimestampMs()
+            );
+            break;
+
+          default:
+            throw new UnsupportedOperationException("Unsupported table type " + hmsTable.getTableType());
+        }
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());

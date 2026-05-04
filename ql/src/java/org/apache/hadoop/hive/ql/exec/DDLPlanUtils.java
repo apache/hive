@@ -905,7 +905,7 @@ public class DDLPlanUtils {
   }
 
   private String getExternal(Table table) {
-    return table.getTableType() == TableType.EXTERNAL_TABLE ? "EXTERNAL " : "";
+    return TableType.ALL_EXTERNAL.contains(table.getTableType()) ? "EXTERNAL " : "";
   }
 
   private String getColumns(Table table) {

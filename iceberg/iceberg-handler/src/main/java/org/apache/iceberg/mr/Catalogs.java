@@ -19,26 +19,39 @@
 
 package org.apache.iceberg.mr;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.view.ImmutableRefreshState;
+import org.apache.iceberg.view.ImmutableSourceState;
+import org.apache.iceberg.view.RefreshState;
+import org.apache.iceberg.view.SourceState;
+import org.apache.iceberg.view.View;
+import org.apache.iceberg.view.ViewVersion;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -75,6 +88,16 @@ public final class Catalogs {
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
               InputFormatConfig.CATALOG_NAME);
+
+  public static final String MATERIALIZED_VIEW_PROPERTY_KEY = "iceberg.materialized.view";
+  public static final String MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY =
+          "iceberg.materialized.view.storage.table";
+  public static final String MATERIALIZED_VIEW_BASE_SNAPSHOT_PROPERTY_KEY_PREFIX =
+          "iceberg.base.snapshot.";
+  public static final String MATERIALIZED_VIEW_VERSION_PROPERTY_KEY =
+          "iceberg.materialized.view.version";
+  public static final String MATERIALIZED_VIEW_ORIGINAL_TEXT = "iceberg.materialized.view.original.text";
+  public static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
 
   private Catalogs() {
   }
@@ -278,5 +301,137 @@ public final class Catalogs {
       }
     }
     return map;
+  }
+
+  public static MaterializedView createMaterializedView(
+          Configuration conf, Properties props, String viewOriginalText, String viewExpandedText,
+          CreationMetadata creationMetadata) {
+
+    boolean isExternalMaterializedView = "iceberg".equals(
+        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION));
+
+    Schema schema = schema(props);
+    PartitionSpec spec = spec(props, schema);
+    String location = props.getProperty(LOCATION);
+    String storageTableLocation = location +
+        (isExternalMaterializedView ? MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX : "");
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
+    if (catalog.isEmpty()) {
+      throw new IllegalStateException("Unable to load catalog: " + catalogName);
+    }
+    String name = props.getProperty(NAME);
+    Preconditions.checkNotNull(name, "Table identifier not set");
+
+    ViewCatalog viewCatalog = (ViewCatalog) catalog.get();
+
+    Map<String, String> map = filterIcebergTableProperties(props);
+    String storageTableIdentifier = name +
+        (isExternalMaterializedView ? MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX : "");
+    Table storageTable = catalog.get().buildTable(TableIdentifier.parse(storageTableIdentifier), schema)
+            .withPartitionSpec(spec).withLocation(storageTableLocation).withProperties(map).withSortOrder(sortOrder)
+            .create();
+
+    Map<String, String> viewProperties = Maps.newHashMapWithExpectedSize(2);
+    viewProperties.put(MATERIALIZED_VIEW_PROPERTY_KEY, "true");
+    viewProperties.put(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY, storageTableIdentifier);
+    viewProperties.put(MATERIALIZED_VIEW_ORIGINAL_TEXT, viewOriginalText);
+
+    long createTime = System.currentTimeMillis();
+
+    List<SourceState> sourceStates = Lists.newArrayList();
+
+    for (var sourceTable : creationMetadata.getSourceTables()) {
+      SourceState.SourceStateType type = sourceTable.getTable().getViewExpandedText() == null ?
+              SourceState.SourceStateType.TABLE :
+              SourceState.SourceStateType.VIEW;
+
+      String dbName = sourceTable.getTable().getDbName();
+      String sourceTableName = sourceTable.getTable().getTableName();
+      String sourceTableNamespace = "default";
+      String sourceTableCatalog = sourceTable.getTable().isSetCatName() ? sourceTable.getTable().getCatName() : null;
+      Catalog tableCatalog = loadCatalog(conf, sourceTableCatalog).orElse(catalog.get());
+      UUID uuid = null;
+      Snapshot snapshot = null;
+      ViewVersion version = null;
+
+      switch (type) {
+        case TABLE -> {
+          Table icebergTable = tableCatalog.loadTable(TableIdentifier.parse(dbName + "." + sourceTableName));
+          uuid = icebergTable.uuid();
+          snapshot = icebergTable.currentSnapshot();
+
+          SourceState sourcestate = ImmutableSourceState.of(type, sourceTableName, sourceTableNamespace, catalogName,
+                  uuid, snapshot == null ? null : snapshot.snapshotId(), null, null);
+          sourceStates.add(sourcestate);
+        }
+        case VIEW -> {
+          var icebergView = ((ViewCatalog) tableCatalog).loadView(TableIdentifier.parse(sourceTableName));
+          uuid = icebergView.uuid();
+          version = icebergView.currentVersion();
+
+          SourceState sourcestate = ImmutableSourceState.of(type, sourceTableName, sourceTableNamespace, catalogName,
+                  uuid, null, null, version.versionId());
+          sourceStates.add(sourcestate);
+        }
+      }
+    }
+
+    RefreshState refreshState = ImmutableRefreshState.of(1, sourceStates, createTime);
+
+    TableIdentifier viewIdentifier = TableIdentifier.parse(name);
+    View mv = viewCatalog.buildView(viewIdentifier)
+            .withLocation(location)
+            .withDefaultNamespace(viewIdentifier.namespace())
+            .withQuery("hive", viewExpandedText)
+            .withSchema(schema)
+            .withProperties(viewProperties)
+            .withStorageTable(storageTableIdentifier)
+            .withRefreshState(refreshState)
+            .withCreateTime(createTime)
+            .create();
+
+    return new MaterializedView(mv, storageTable);
+  }
+
+  public static class MaterializedView {
+    private View view;
+    private Table storageTable;
+
+    public MaterializedView(View view, Table storageTable) {
+      this.view = view;
+      this.storageTable = storageTable;
+    }
+
+    public View getView() {
+      return view;
+    }
+
+    public Table getStorageTable() {
+      return storageTable;
+    }
+  }
+
+  public static MaterializedView loadMaterializedView(Configuration conf, Properties props) {
+    return loadMaterializedView(conf, props.getProperty(NAME), props.getProperty(LOCATION),
+            props.getProperty(InputFormatConfig.CATALOG_NAME));
+  }
+
+  public static MaterializedView loadMaterializedView(
+          Configuration conf, String tableIdentifier, String tableLocation, String catalogName) {
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+
+    if (catalog.isPresent()) {
+      Preconditions.checkArgument(tableIdentifier != null, "View identifier not set");
+      ViewCatalog viewCatalog = (ViewCatalog) catalog.get();
+      View view = viewCatalog.loadView(TableIdentifier.parse(tableIdentifier));
+      String storageTableIdentifier = view.properties().get(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY);
+      Table storageTable = catalog.get().loadTable(TableIdentifier.parse(storageTableIdentifier));
+      return new MaterializedView(view, storageTable);
+    }
+
+    throw new UnsupportedOperationException("Catalog " + catalogName + " not found!");
   }
 }

@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -138,6 +139,9 @@ import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.StructProjection;
+import org.apache.iceberg.view.BaseView;
+import org.apache.iceberg.view.ViewMetadata;
+import org.apache.iceberg.view.ViewMetadataParser;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,6 +195,27 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       Table table;
       if (metadataLocation != null) {
         table = Catalogs.registerTable(conf, tableProperties, metadataLocation);
+      } else if (
+          "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION)) &&
+            (
+              "MATERIALIZED_VIEW".equals(hmsTable.getTableType()) ||
+              "EXTERNAL_MATERIALIZED_VIEW".equals(hmsTable.getTableType())
+            )
+      ) {
+        Catalogs.MaterializedView mv =
+                Catalogs.createMaterializedView(
+                        conf,
+                        tableProperties,
+                        viewOriginalText,
+                        viewExpandedText,
+                        hmsTable.getCreationMetadata());
+
+        String tableIdentifier = tableProperties.getProperty(Catalogs.NAME);
+        SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
+        SessionStateUtil.addResource(conf, tableIdentifier, mv);
+
+        HiveTableUtil.createFileForTableObject(mv.getStorageTable(), conf);
+        return;
       } else {
         table = Catalogs.createTable(conf, tableProperties);
       }
@@ -303,7 +328,11 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
     try {
-      icebergTable = IcebergTableUtil.getTable(conf, tableProperties, true);
+      if ("EXTERNAL_MATERIALIZED_VIEW".equals(hmsTable.getTableType())) {
+        icebergMaterializedView = IcebergTableUtil.getMaterializedView(conf, tableProperties, true);
+      } else {
+        icebergTable = IcebergTableUtil.getTable(conf, tableProperties, true);
+      }
     } catch (NoSuchTableException nte) {
       context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
       // If the iceberg table does not exist, then this is an ALTER command aimed at migrating the table to iceberg
@@ -357,6 +386,20 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       hmsTable.getParameters().put(TableProperties.DEFAULT_NAME_MAPPING, NameMappingParser.toJson(nameMapping));
     }
 
+    handleAlterTableOperationBasedOnType(hmsTable, context);
+
+    // Migration case is already handled above, in case of migration we don't have all the properties set till this
+    // point.
+    if (!isTableMigration) {
+      // Set whether the format is ORC, to be used during vectorization.
+      setOrcOnlyFilesParam(hmsTable);
+    }
+  }
+
+  private void handleAlterTableOperationBasedOnType(
+      org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      EnvironmentContext context) throws MetaException {
+
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
       handleAddColumns(hmsTable);
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
@@ -371,17 +414,19 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
     } else {
-      setWriteModeDefaults(icebergTable, hmsTable.getParameters(), context);
+      setWriteModeDefaults(
+          getIcebergTbl(),
+          hmsTable.getParameters(), context);
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
     }
+  }
 
-    // Migration case is already handled above, in case of migration we don't have all the properties set till this
-    // point.
-    if (!isTableMigration) {
-      // Set whether the format is ORC, to be used during vectorization.
-      setOrcOnlyFilesParam(hmsTable);
+  private Table getIcebergTbl() {
+    if (icebergMaterializedView != null) {
+      return icebergMaterializedView.getStorageTable();
     }
 
+    return icebergTable;
   }
 
   /**
@@ -390,6 +435,46 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
    * @param tblParams hms table properties, must be non-null
    */
   private void assertNotCrossTableMetadataLocationChange(Map<String, String> tblParams, EnvironmentContext context) {
+    if (icebergMaterializedView != null) {
+      assertNotCrossTableMetadataLocationChangeForMaterializedView(tblParams, context);
+    } else {
+      assertNotCrossTableMetadataLocationChangeForTable(tblParams, context);
+    }
+
+  }
+
+  private void assertNotCrossTableMetadataLocationChangeForMaterializedView(
+      Map<String, String> tblParams, EnvironmentContext context) {
+    if (tblParams.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      Preconditions.checkArgument(icebergMaterializedView != null,
+          "Cannot perform table migration to Iceberg and setting the snapshot location in one step. " +
+              "Please migrate the table first");
+      String newMetadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      FileIO io = ((BaseTable) icebergMaterializedView.getStorageTable()).operations().io();
+      ViewMetadata newMetadata = ViewMetadataParser.read(io, newMetadataLocation);
+      ViewMetadata currentMetadata = ((BaseView) icebergMaterializedView.getView()).operations().current();
+      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+        throw new UnsupportedOperationException(
+            String.format("Cannot change iceberg table %s metadata location pointing to another table's metadata %s",
+                icebergTable.name(), newMetadataLocation)
+        );
+      }
+      if (!currentMetadata.metadataFileLocation().equals(newMetadataLocation) &&
+          !context.getProperties().containsKey(MANUAL_ICEBERG_METADATA_LOCATION_CHANGE)) {
+        // If we got here then this is an alter table operation where the table to be changed had an Iceberg commit
+        // meanwhile. The base metadata locations differ, while we know that this wasn't an intentional, manual
+        // metadata_location set by a user. To protect the interim commit we need to refresh the metadata file location.
+        tblParams.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, currentMetadata.metadataFileLocation());
+        LOG.warn("Detected an alter table operation attempting to do alterations on an Iceberg table with a stale " +
+              "metadata_location. Considered base metadata_location: {}, Actual metadata_location: {}. Will override " +
+              "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
+            newMetadataLocation, currentMetadata.metadataFileLocation());
+      }
+    }
+  }
+
+  private void assertNotCrossTableMetadataLocationChangeForTable(
+      Map<String, String> tblParams, EnvironmentContext context) {
     if (tblParams.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
       Preconditions.checkArgument(icebergTable != null,
           "Cannot perform table migration to Iceberg and setting the snapshot location in one step. " +
@@ -411,8 +496,8 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         // metadata_location set by a user. To protect the interim commit we need to refresh the metadata file location.
         tblParams.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, currentMetadata.metadataFileLocation());
         LOG.warn("Detected an alter table operation attempting to do alterations on an Iceberg table with a stale " +
-            "metadata_location. Considered base metadata_location: {}, Actual metadata_location: {}. Will override " +
-            "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
+              "metadata_location. Considered base metadata_location: {}, Actual metadata_location: {}. Will override " +
+              "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
             newMetadataLocation, currentMetadata.metadataFileLocation());
       }
     }

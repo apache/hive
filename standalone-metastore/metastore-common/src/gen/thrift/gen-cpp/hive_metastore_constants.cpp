@@ -57,6 +57,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   META_TABLE_SERDE = "serde";
 
+  META_OBJECT_TYPE = "object_type";
+
   META_TABLE_PARTITION_COLUMNS = "partition_columns";
 
   META_TABLE_PARTITION_COLUMN_TYPES = "partition_columns.types";

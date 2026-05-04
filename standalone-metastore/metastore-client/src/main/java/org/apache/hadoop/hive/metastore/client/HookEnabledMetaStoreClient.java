@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
@@ -56,6 +55,9 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
+  public static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  public static final String STORAGE_HANDLER_KEY = "storage_handler";
+  public static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
   private final HiveMetaHookLoader hookLoader;
 
   private static final Logger LOG = LoggerFactory.getLogger(HookEnabledMetaStoreClient.class);
@@ -205,6 +207,7 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
       // TODO: Fix this
       List<String> materializedViews =
           getTables(req.getCatalogName(), req.getName(), ".*", TableType.MATERIALIZED_VIEW);
+      materializedViews.addAll(getTables(req.getCatalogName(), req.getName(), ".*", TableType.EXTERNAL_MATERIALIZED_VIEW));
       for (String table : materializedViews) {
         // First we delete the materialized views
         Table materializedView = getTable(req.getCatalogName(), req.getName(), table);
@@ -340,6 +343,9 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
       if (hook != null) {
         hook.commitDropTable(table, deleteData || ifPurge);
       }
+
+      removeStorageTableForExternalMaterializedView(table);
+
       success = true;
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
@@ -349,6 +355,19 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
       if (!success && (hook != null)) {
         hook.rollbackDropTable(table);
       }
+    }
+  }
+
+  private void removeStorageTableForExternalMaterializedView(Table table) throws TException {
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equalsIgnoreCase(table.getTableType())) {
+
+      delegate.dropTable(
+              table.getCatName(),
+              table.getDbName(),
+              table.getTableName() + MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX,
+              true,
+              true,
+              true);
     }
   }
 

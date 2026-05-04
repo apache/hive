@@ -179,6 +179,7 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
@@ -869,7 +870,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     boolean sharedWrite = !HiveConf.getBoolVar(conf, ConfVars.TXN_WRITE_X_LOCK);
     // Materialized views stored by Iceberg and the MV metadata is stored in HMS doesn't need write locking because
     // the locking is done by DbTxnManager.acquireMaterializationRebuildLock()
-    if (TableType.MATERIALIZED_VIEW == writeEntity.getTable().getTableType()) {
+    if (TableType.ALL_MATERIALIZED_VIEWS.contains(writeEntity.getTable().getTableType())) {
       return LockType.SHARED_READ;
     }
     if (HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf)) {
@@ -1663,6 +1664,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
 
     String location;
+    String objectType = "ICEBERG";
     Schema schema;
     PartitionSpec spec;
     String bytes;
@@ -1700,6 +1702,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
 
       location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
+      objectType = getObjectType(map);
+
       bytes = SerializationUtil.serializeToBase64(null);
 
       try {
@@ -1717,6 +1721,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (StringUtils.isNotBlank(location)) {
       map.put(InputFormatConfig.TABLE_LOCATION, location);
     }
+    if (StringUtils.isNotBlank(objectType)) {
+      map.put(InputFormatConfig.TABLE_TYPE, objectType);
+    }
+
     String schemaJson = SchemaParser.toJson(schema);
     map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
@@ -1730,6 +1738,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
     map.remove("columns.comments");
+  }
+
+  private static String getObjectType(Map<String, String> map) {
+    String objectType;
+    objectType = map.get(hive_metastoreConstants.META_OBJECT_TYPE);
+
+    if (TableType.MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE)) ||
+        TableType.EXTERNAL_MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE))) {
+      objectType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
+    }
+    return objectType;
   }
 
   @Override

@@ -236,6 +236,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.jdo.JDODataStoreException;
 
@@ -256,6 +257,7 @@ import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.CALCITE;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
+import static org.locationtech.jts.geom.util.GeometryMapper.flatMap;
 
 /**
  * This class has functions that implement meta data/DDL operations using calls
@@ -1900,34 +1902,21 @@ public class Hive implements AutoCloseable {
   }
 
   /**
-   * Get all materialized view names for the specified database.
-   * @param dbName
-   * @return List of materialized view table names
-   * @throws HiveException
-   */
-  public List<String> getAllMaterializedViews(String dbName) throws HiveException {
-    return getTablesByType(dbName, ".*", TableType.MATERIALIZED_VIEW);
-  }
-
-  /**
-   * Get all materialized views for the specified database.
+   * Get all materialized views for the specified database
    * @param dbName
    * @return List of materialized view table objects
    * @throws HiveException
    */
-  public List<Table> getAllMaterializedViewObjects(String dbName) throws HiveException {
-    return getTableObjects(dbName, ".*", TableType.MATERIALIZED_VIEW);
-  }
+  public List<Table> getAllMaterializedViews(String dbName) throws HiveException {
+    try {
+      Stream<Table> hiveMaterializedViews = getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, ".*", TableType.MATERIALIZED_VIEW)).stream().map(Table::new);
+      Stream<Table> externalMaterializedViews = getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, ".*", TableType.EXTERNAL_MATERIALIZED_VIEW)).stream().map(Table::new);
 
-  /**
-   * Get materialized views for the specified database that match the provided regex pattern.
-   * @param dbName
-   * @param pattern
-   * @return List of materialized view table objects
-   * @throws HiveException
-   */
-  public List<Table> getMaterializedViewObjectsByPattern(String dbName, String pattern) throws HiveException {
-    return getTableObjects(dbName, pattern, TableType.MATERIALIZED_VIEW);
+      return Stream.concat(hiveMaterializedViews, externalMaterializedViews)
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   public List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {

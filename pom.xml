@@ -150,7 +150,7 @@
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
-    <immutables.version>2.9.2</immutables.version>
+    <immutables.version>2.10.0</immutables.version>
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
@@ -2000,6 +2000,13 @@
               <groupId>io.dropwizard.metrics</groupId>
               <artifactId>metrics-core</artifactId>
               <version>${dropwizard.version}</version>
+            </additionalDependency>
+            <!--    Added temporary. It won't be needed after Iceberg releases the materialized view specification
+                    and Hive upgrade Iceberg version-->
+            <additionalDependency>
+              <groupId>org.immutables</groupId>
+              <artifactId>value</artifactId>
+              <version>${immutables.version}</version>
             </additionalDependency>
           </additionalDependencies>
         </configuration>
