@@ -78,6 +78,13 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   public static final String LIST_ALL_TABLES = "list-all-tables";
   public static final String LIST_ALL_TABLES_DEFAULT = "false";
 
+  /**
+   * Catalog property for the external (unmanaged) warehouse location, propagated by
+   * {@link #initialize(String, Map)} to {@code hive.metastore.warehouse.external.dir}.
+   * Mirrors {@link CatalogProperties#WAREHOUSE_LOCATION} which targets the managed warehouse.
+   */
+  public static final String EXTERNAL_WAREHOUSE_LOCATION = "external-warehouse";
+
   public static final String HMS_TABLE_OWNER = "hive.metastore.table.owner";
   public static final String HMS_DB_OWNER = "hive.metastore.database.owner";
   public static final String HMS_DB_OWNER_TYPE = "hive.metastore.database.owner-type";
@@ -113,6 +120,11 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
     if (properties.containsKey(CatalogProperties.WAREHOUSE_LOCATION)) {
       this.conf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
           LocationUtil.stripTrailingSlash(properties.get(CatalogProperties.WAREHOUSE_LOCATION)));
+    }
+
+    if (properties.containsKey(EXTERNAL_WAREHOUSE_LOCATION)) {
+      this.conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname,
+          LocationUtil.stripTrailingSlash(properties.get(EXTERNAL_WAREHOUSE_LOCATION)));
     }
 
     this.listAllTables = Boolean.parseBoolean(properties.getOrDefault(LIST_ALL_TABLES, LIST_ALL_TABLES_DEFAULT));

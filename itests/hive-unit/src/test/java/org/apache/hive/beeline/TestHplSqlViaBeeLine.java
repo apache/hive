@@ -587,6 +587,56 @@ public class TestHplSqlViaBeeLine {
   }
 
   @Test
+  public void testErrorcodeWithBulkCollectFetch() throws Throwable {
+    String scriptText =
+        "SET hplsql.onerror='seterror';\n" +
+            "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "DROP TABLE IF EXISTS emp;\n" +
+            "CREATE TABLE emp (name string, age int);\n" +
+            "INSERT INTO emp VALUES('alice', 20),('bob', 30);\n" +
+            "TYPE t_rows IS TABLE OF emp%ROWTYPE INDEX BY BINARY_INTEGER;\n" +
+            "SELECT * FROM UNKNOWN; --Exception expted and errorcode is set to -1\n" +
+            "PRINT 'First ERRORCODE: ' || errorcode\n" +
+            "DECLARE rows t_rows;\n" +
+            "DECLARE cur SYS_REFCURSOR;\n" +
+            "OPEN cur FOR SELECT * FROM emp;\n" +
+            "PRINT 'Second ERRORCODE: ' || errorcode\n" +
+            "SELECT * FROM UNKNOWN1; --Exception expted and errorcode is set to -1\n" +
+            "PRINT 'Third ERRORCODE: ' || errorcode\n" +
+            "FETCH cur BULK COLLECT INTO rows;\n" +
+            "PRINT 'Fourth ERRORCODE: ' || errorcode\n" +
+            "CLOSE cur;\n" +
+            "INSERT INTO result VALUES(rows(1).name || ' = ' || rows(1).age || ' ' || rows(2).name || ' = ' || rows(2).age);\n" +
+            "SELECT * FROM result;\n";
+    testScriptFile(scriptText, args(), "First ERRORCODE: -1.*Second ERRORCODE: 0.*Third ERRORCODE: -1.*Fourth ERRORCODE: 0.*alice = 20 bob = 30", OutStream.ERR);
+  }
+
+  @Test
+  public void testErrorCodeWithAllocateCursor() throws Throwable {
+    String scriptText =
+        "SET hplsql.onerror='seterror';\n" +
+            "DROP TABLE IF EXISTS issues;\n" +
+            "CREATE TABLE issues (id int, name string);\n" +
+            "CREATE PROCEDURE spOpenIssues \n" +
+            "  DYNAMIC RESULT SETS 1\n" +
+            "BEGIN\n" +
+            "  DECLARE cur CURSOR WITH RETURN FOR\n" +
+            "    SELECT id, name FROM issues;\n" +
+            "  OPEN cur;\n" +
+            "END;\n" +
+            "DECLARE id INT;\n" +
+            "DECLARE name VARCHAR(30);\n" +
+             "CALL spOpenIssues;\n" +
+            "SELECT * FROM UNKNOWN; --Exception expted and errorcode is set to -1\n" +
+            "PRINT 'First ERRORCODE: ' || errorcode\n" +
+            "ALLOCATE c1 CURSOR FOR PROCEDURE spOpenIssues;\n" +
+            "PRINT 'Second ERRORCODE: ' || errorcode\n" +
+            "CLOSE c1;";
+    testScriptFile(scriptText, args(), "First ERRORCODE: -1.*Second ERRORCODE: 0", OutStream.ERR);
+  }
+
+  @Test
   public void testDecimalCast() throws Throwable {
     String scriptText =
         "DECLARE\n" +
@@ -1417,6 +1467,17 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(scriptText, args(),
         "^(.(?!(Caused by: org.apache.hadoop.hive.ql.metadata.InvalidTableException: Table not found def)))*$",
         OutStream.ERR);
+  }
+
+  @Test
+  public void testERRORCODEForExecuteStatements() throws Throwable {
+    String scriptText =
+        "SET hplsql.onerror='seterror';\n" +
+            "EXECUTE 'select * from unknown';\n" +
+            "PRINT 'First ERRORCODE: ' || errorcode\n" +
+            "EXECUTE 'select 1';\n" +
+            "PRINT 'Second ERRORCODE: ' || errorcode";
+    testScriptFile(scriptText, args(), "First ERRORCODE: -1.*Second ERRORCODE: 0", OutStream.ERR);
   }
 
   private static List<String> args() {
