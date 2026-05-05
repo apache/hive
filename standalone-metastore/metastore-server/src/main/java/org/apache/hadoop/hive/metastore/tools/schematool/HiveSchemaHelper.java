@@ -42,7 +42,7 @@ public class HiveSchemaHelper {
   public static final String DB_HIVE = "hive";
   public static final String DB_MSSQL = "mssql";
   public static final String DB_MYSQL = "mysql";
-  public static final String DB_POSTGRACE = "postgres";
+  public static final String DB_POSTGRES = "postgres";
   public static final String DB_ORACLE = "oracle";
   public static final String EMBEDDED_HS2_URL =
       "jdbc:hive2://?hive.conf.restricted.list=;hive.security.authorization.sqlstd.confwhitelist=.*;"
@@ -186,6 +186,18 @@ public class HiveSchemaHelper {
      */
     String buildCommand(String scriptDir, String scriptFile, boolean fixQuotes)
         throws IllegalFormatException, IOException;
+
+    /**
+     * Parse the script and return a list of individual, executable SQL commands.
+     */
+    List<String> getExecutableCommands(String scriptDir, String scriptFile)
+        throws IllegalFormatException, IOException;
+
+    /**
+     * Parse the script and return a list of individual, executable SQL commands.
+     */
+    List<String> getExecutableCommands(String scriptDir, String scriptFile, boolean fixQuotes) 
+        throws IllegalFormatException, IOException;
   }
 
   /**
@@ -254,6 +266,59 @@ public class HiveSchemaHelper {
     }
 
     @Override
+    public List<String> getExecutableCommands(String scriptDir, String scriptFile)
+        throws IllegalFormatException, IOException {
+      return getExecutableCommands(scriptDir, scriptFile, false);
+    }
+
+    @Override
+    public List<String> getExecutableCommands(String scriptDir, String scriptFile, boolean fixQuotes) 
+        throws IllegalFormatException, IOException {
+      List<String> commands = new java.util.ArrayList<>();
+
+      try (BufferedReader bfReader = 
+               new BufferedReader(new FileReader(scriptDir + File.separatorChar + scriptFile))) {
+        String currLine;
+        String currentCommand = null;
+
+        while ((currLine = bfReader.readLine()) != null) {
+          currLine = fixQuotesFromCurrentLine(fixQuotes, currLine.trim());
+
+          if (currLine.isEmpty()) {
+            continue;
+          }
+
+          currentCommand = currentCommand == null ? currLine : currentCommand + " " + currLine;
+
+          if (!isPartialCommand(currLine)) {
+            if (!isNonExecCommand(currentCommand)) {
+              currentCommand = cleanseCommand(currentCommand);
+              if (isNestedScript(currentCommand)) {
+                String currScript = getScriptName(currentCommand);
+                commands.addAll(getExecutableCommands(scriptDir, currScript, fixQuotes));
+              } else {
+                commands.add(currentCommand.trim());
+              }
+            }
+            currentCommand = null;
+          }
+        }
+
+        if (currentCommand != null && !isNonExecCommand(currentCommand)) {
+          throw new IllegalArgumentException("Unterminated SQL statement at end of script: " + scriptFile);
+        }
+      }
+      return commands;
+    }
+
+    private String fixQuotesFromCurrentLine(boolean fixQuotes, String currLine) {
+      if (fixQuotes && !getQuoteCharacter().equals(DEFAULT_QUOTE)) {
+        currLine = currLine.replace("\\\"", getQuoteCharacter());
+      }
+      return currLine;
+    }
+
+    @Override
     public String buildCommand(
       String scriptDir, String scriptFile) throws IllegalFormatException, IOException {
       return buildCommand(scriptDir, scriptFile, false);
@@ -262,50 +327,16 @@ public class HiveSchemaHelper {
     @Override
     public String buildCommand(
       String scriptDir, String scriptFile, boolean fixQuotes) throws IllegalFormatException, IOException {
-      BufferedReader bfReader =
-          new BufferedReader(new FileReader(scriptDir + File.separatorChar + scriptFile));
-      String currLine;
+      List<String> commands = getExecutableCommands(scriptDir, scriptFile, fixQuotes);
       StringBuilder sb = new StringBuilder();
-      String currentCommand = null;
-      while ((currLine = bfReader.readLine()) != null) {
-        currLine = currLine.trim();
-
-        if (fixQuotes && !getQuoteCharacter().equals(DEFAULT_QUOTE)) {
-          currLine = currLine.replace("\\\"", getQuoteCharacter());
+      for (String cmd : commands) {
+        sb.append(cmd);
+        if (usingSqlLine) {
+          sb.append(";");
         }
-
-        if (currLine.isEmpty()) {
-          continue; // skip empty lines
-        }
-
-        if (currentCommand == null) {
-          currentCommand = currLine;
-        } else {
-          currentCommand = currentCommand + " " + currLine;
-        }
-        if (isPartialCommand(currLine)) {
-          // if its a partial line, continue collecting the pieces
-          continue;
-        }
-
-        // if this is a valid executable command then add it to the buffer
-        if (!isNonExecCommand(currentCommand)) {
-          currentCommand = cleanseCommand(currentCommand);
-          if (isNestedScript(currentCommand)) {
-            // if this is a nested sql script then flatten it
-            String currScript = getScriptName(currentCommand);
-            sb.append(buildCommand(scriptDir, currScript));
-          } else {
-            // Now we have a complete statement, process it
-            // write the line to buffer
-            sb.append(currentCommand);
-            if (usingSqlLine) sb.append(";");
-            sb.append(System.getProperty("line.separator"));
-          }
-        }
-        currentCommand = null;
+        sb.append(System.lineSeparator());
       }
-      bfReader.close();
+      
       return sb.toString();
     }
 
@@ -581,7 +612,7 @@ public class HiveSchemaHelper {
       return new MSSQLCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {
       return new MySqlCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    } else if (dbName.equalsIgnoreCase(DB_POSTGRACE)) {
+    } else if (dbName.equalsIgnoreCase(DB_POSTGRES)) {
       return new PostgresCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_ORACLE)) {
       return new OracleCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
