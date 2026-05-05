@@ -602,6 +602,7 @@ public class StatsUtils {
     partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
         ci.getObjectInspector(), partCS.getColumnType()));
     partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(), ci.getType().getTypeName()));
+    partCS.setNumNulls(getNumNullsForPartCol(partList, ci.getInternalName(), conf));
     return partCS;
   }
 
@@ -611,6 +612,24 @@ public class StatsUtils {
       distinctVals.add(partition.getSpec().get(partColName));
     }
     return distinctVals.size();
+  }
+
+  private static long getNumNullsForPartCol(PartitionIterable partitions, String partColName, HiveConf conf) {
+    long numNulls = 0;
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    for (Partition partition : partitions) {
+      String partVal = partition.getSpec().get(partColName);
+      if (partVal != null && partVal.equals(defaultPartitionName)) {
+        Map<String, String> parameters = partition.getParameters();
+        if (parameters != null && parameters.get(StatsSetupConst.ROW_COUNT) != null) {
+          long rowCount = Long.parseLong(parameters.get(StatsSetupConst.ROW_COUNT));
+          if (rowCount > 0) {
+            numNulls = safeAdd(numNulls, rowCount);
+          }
+        }
+      }
+    }
+    return numNulls;
   }
 
   private static Range getRangePartitionColumn(PartitionIterable partitions, String partColName,
