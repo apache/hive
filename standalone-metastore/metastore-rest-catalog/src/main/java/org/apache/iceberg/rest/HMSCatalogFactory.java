@@ -131,7 +131,7 @@ public class HMSCatalogFactory {
         final var constructor = clazz.getDeclaredConstructor(Configuration.class);
         return (IcebergMetricsReporter) constructor.newInstance(configuration);
       } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-        throw new IllegalArgumentException("Failed to instantiate IcebergMetricsReporter: {}" + clazz.getName(), e);
+        throw new IllegalArgumentException("Failed to instantiate IcebergMetricsReporter: " + clazz.getName(), e);
       }
     }).toList();
   }
