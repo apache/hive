@@ -99,6 +99,8 @@
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
+    <josdk.version>4.9.6</josdk.version>
+    <fabric8.version>6.13.4</fabric8.version>
     <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
@@ -2236,6 +2238,12 @@
       <id>itests</id>
       <modules>
         <module>itests</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>kubernetes</id>
+      <modules>
+        <module>packaging/src/kubernetes</module>
       </modules>
     </profile>
     <profile>
