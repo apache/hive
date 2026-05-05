@@ -42,6 +42,7 @@ import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
 import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -128,8 +129,42 @@ public class TestJdbcDriver2 {
   private static Connection con;
   private static final float floatCompareDelta = 0.0001f;
 
+  /**
+   * Required prefix of {@link SQLTimeoutException#getMessage()} for a 1s limit. HS2 may append
+   * {@code ; Query ID: ...} after the base text from {@code HiveSQLException}.
+   */
+  private static final String QUERY_TIMED_OUT_AFTER_1_SECONDS = "Query timed out after 1 seconds";
+
   @Rule public ExpectedException thrown = ExpectedException.none();
   @Rule public final TestName testName = new TestName();
+
+  /**
+   * {@code SET hive.query.timeout.seconds} applies to the whole HS2 session. Tests such as
+   * {@link #testQueryTimeoutFromSetStatement()} must not leave a short limit on the shared
+   * {@link #con}, or unrelated tests will see {@link SQLTimeoutException}.
+   */
+  @After
+  public void resetHiveSessionQueryTimeout() {
+    try {
+      if (con == null || con.isClosed()) {
+        return;
+      }
+      try (Statement st = con.createStatement()) {
+        st.execute("set hive.query.timeout.seconds=0s");
+      }
+    } catch (SQLException e) {
+      LOG.warn("Could not reset hive.query.timeout.seconds after {}", testName.getMethodName(), e);
+    }
+  }
+
+  private static void assertTimeoutMessageShowsOneSecond(String context, SQLTimeoutException e) {
+    String msg = e.getMessage();
+    assertNotNull(context + ": message should not be null", msg);
+    assertTrue(
+        context + ": should start with " + QUERY_TIMED_OUT_AFTER_1_SECONDS
+            + " (HS2 may append ; Query ID: ...); actual=" + msg,
+        msg.startsWith(QUERY_TIMED_OUT_AFTER_1_SECONDS));
+  }
 
   private static Connection getConnection(String prefix, String postfix) throws SQLException {
     Connection con1;
@@ -336,11 +371,46 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testURLWithFetchSize() throws SQLException {
-    Connection con = getConnection(testDbName + ";fetchSize=1234", "");
-    Statement stmt = con.createStatement();
+    Connection connectionWithFetchSize = getConnection(testDbName + ";fetchSize=1234", "");
+    Statement stmt = connectionWithFetchSize.createStatement();
     assertEquals(stmt.getFetchSize(), 1234);
     stmt.close();
-    con.close();
+    connectionWithFetchSize.close();
+  }
+
+  /**
+   * Same idea as {@link #testURLWithFetchSize}: drive session behavior from the JDBC URL instead of
+   * only {@link Statement#setQueryTimeout(int)} or an explicit {@code SET}. The timeout is supplied
+   * in the URL query ({@code ?hive_conf_list}) per the driver format
+   * {@code jdbc:hive2://.../db;sess?hive_conf#hive_var}.
+   * <p>
+   * {@link SQLTimeoutException#getMessage()} must reflect the configured limit (1s),
+   * not {@code after 0 seconds}.
+   */
+  @Test
+  public void testURLWithHiveQueryTimeoutSeconds() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    // Postfix appends to the query string after test overlay / lock manager settings.
+    Connection connectionWithUrlQueryTimeout = getConnection(testDbName, "hive.query.timeout.seconds=1");
+    try {
+      Statement stmt1 = connectionWithUrlQueryTimeout.createStatement();
+      stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+      stmt1.close();
+      Statement stmt = connectionWithUrlQueryTimeout.createStatement();
+      try {
+        stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
+            + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+            + " t2 on t1.under_col = t2.under_col");
+        fail("Expecting SQLTimeoutException");
+      } catch (SQLTimeoutException e) {
+        assertTimeoutMessageShowsOneSecond("JDBC URL hive.query.timeout.seconds=1 (query string)", e);
+      } catch (SQLException e) {
+        fail("Expecting SQLTimeoutException, but got SQLException: " + e);
+      }
+      stmt.close();
+    } finally {
+      connectionWithUrlQueryTimeout.close();
+    }
   }
 
   @Test
@@ -349,13 +419,13 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testCreateTableAsExternal() throws SQLException {
-    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true", "");
-    Statement stmt = con.createStatement();
+    Connection connectionWithExternalLegacy = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true", "");
+    Statement stmt = connectionWithExternalLegacy.createStatement();
     ResultSet res = stmt.executeQuery("set hive.create.as.external.legacy");
     assertTrue("ResultSet is empty", res.next());
     assertEquals("hive.create.as.external.legacy=true", res.getObject(1));
     stmt.close();
-    con.close();
+    connectionWithExternalLegacy.close();
   }
 
   @Test
@@ -2661,7 +2731,8 @@ public class TestJdbcDriver2 {
           + " t2 on t1.under_col = t2.under_col");
       fail("Expecting SQLTimeoutException");
     } catch (SQLTimeoutException e) {
-      assertNotNull(e);
+      assertTimeoutMessageShowsOneSecond(
+          "JDBC query timeout (1s)", e);
       System.err.println(e.toString());
     } catch (SQLException e) {
       fail("Expecting SQLTimeoutException, but got SQLException: " + e);
@@ -2670,6 +2741,83 @@ public class TestJdbcDriver2 {
 
     // Test a query where timeout does not kick in. Set it to 5s;
     // show tables should be faster than that
+    stmt.setQueryTimeout(5);
+    try {
+      stmt.executeQuery("show tables");
+    } catch (SQLException e) {
+      fail("Unexpected SQLException: " + e);
+      e.printStackTrace();
+    }
+    stmt.close();
+  }
+
+  /**
+   * When the session timeout is configured via a {@code SET hive.query.timeout.seconds=...}
+   * statement and no {@link Statement#setQueryTimeout(int)} is called, the
+   * {@link SQLTimeoutException#getMessage()} must still reflect the real limit.
+   * Message must begin with {@link #QUERY_TIMED_OUT_AFTER_1_SECONDS};
+   * HS2 may append {@code ; Query ID: ...}.
+   */
+  @Test
+  public void testQueryTimeoutFromSetStatement() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+    stmt1.close();
+
+    Statement stmt = con.createStatement();
+    stmt.execute("set hive.query.timeout.seconds=1s");
+
+    try {
+      stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
+          + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+          + " t2 on t1.under_col = t2.under_col");
+      fail("Expecting SQLTimeoutException");
+    } catch (SQLTimeoutException e) {
+      assertTimeoutMessageShowsOneSecond(
+          "Session query timeout (1s)", e);
+    } catch (SQLException e) {
+      fail("Expecting SQLTimeoutException, but got SQLException: " + e);
+    }
+    stmt.close();
+  }
+
+  /**
+   * Variant of {@link #testQueryTimeoutFromSetStatement}: the {@code SET} is issued on a separate,
+   * already-closed statement; the timed-out query runs on a brand-new statement with no
+   * {@link Statement#setQueryTimeout(int)} call. The tracked session timeout lives on the
+   * {@link HiveConnection}, so it persists across statement instances and must still drive the
+   * {@link SQLTimeoutException} message correctly.
+   */
+  @Test
+  public void testQueryTimeoutMessagePersistedAcrossStatements() throws Exception {
+    String udfName = SleepMsUDF.class.getName();
+    Statement stmt1 = con.createStatement();
+    stmt1.execute("create temporary function sleepMsUDF as '" + udfName + "'");
+    stmt1.close();
+
+    // SET is issued on stmt2, which is then closed – timeout must survive on the connection
+    Statement stmt2 = con.createStatement();
+    stmt2.execute("set hive.query.timeout.seconds=1s");
+    stmt2.close();
+
+    // Brand-new statement, no setQueryTimeout() call – relies solely on the tracked session value
+    Statement stmt = con.createStatement();
+    System.err.println("Executing query (expecting timeout): ");
+    try {
+      stmt.executeQuery("select sleepMsUDF(t1.under_col, 5) as u0, t1.under_col as u1, "
+          + "t2.under_col as u2 from " + tableName + " t1 join " + tableName
+          + " t2 on t1.under_col = t2.under_col");
+      fail("Expecting SQLTimeoutException");
+    } catch (SQLTimeoutException e) {
+      assertTimeoutMessageShowsOneSecond("SET on closed stmt2, executeQuery on new stmt", e);
+      System.err.println(e.toString());
+    } catch (SQLException e) {
+      fail("Expecting SQLTimeoutException, but got SQLException: " + e);
+      e.printStackTrace();
+    }
+
+    // A fast query must still complete when the per-statement timeout overrides
     stmt.setQueryTimeout(5);
     try {
       stmt.executeQuery("show tables");
