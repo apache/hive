@@ -62,6 +62,7 @@ public class PessimisticStatCombiner {
     if (stat.isFilteredColumn()) {
       result.setFilterColumn();
     }
+    result.setConst(result.isConst() && stat.isConst());
   }
   public Optional<ColStatistics> getResult() {
     return Optional.of(result);
