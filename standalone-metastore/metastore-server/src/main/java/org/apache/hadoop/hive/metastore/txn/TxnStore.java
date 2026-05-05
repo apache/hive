@@ -107,7 +107,7 @@ public interface TxnStore extends Configurable {
 
   enum MUTEX_KEY {
     Initiator, Cleaner, HouseKeeper, IcebergHouseKeeper, TxnCleaner,
-    CompactionScheduler, MaterializationRebuild
+    CompactionScheduler, MaterializationRebuild, DeadlockDetector
   }
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";
@@ -564,6 +564,17 @@ public interface TxnStore extends Configurable {
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void performTimeOuts();
+
+  /**
+   * Scan HIVE_LOCKS for wait-for cycles and abort the youngest eligible txn in each
+   * (REPL_CREATED/SOFT_DELETE protected). Driven by {@code DeadlockDetectorService}; tests
+   * may invoke synchronously.
+   *
+   * @return number of transactions aborted as deadlock victims
+   */
+  @Transactional(POOL_TX)
+  @RetrySemantics.Idempotent
+  int performDeadlockDetection() throws MetaException;
 
   /**
    * This will look through the completed_txn_components table and look for partitions or tables
