@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.drop;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -32,17 +33,17 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class DropTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final String tableName;
+  private final TableName tableName;
   private final boolean ifExists;
   private final boolean purge;
   private final ReplicationSpec replicationSpec;
   private final boolean validationRequired;
 
-  public DropTableDesc(String tableName, boolean ifExists, boolean ifPurge, ReplicationSpec replicationSpec) {
+  public DropTableDesc(TableName tableName, boolean ifExists, boolean ifPurge, ReplicationSpec replicationSpec) {
     this(tableName, ifExists, ifPurge, replicationSpec, true);
   }
 
-  public DropTableDesc(String tableName, boolean ifExists, boolean purge, ReplicationSpec replicationSpec,
+  public DropTableDesc(TableName tableName, boolean ifExists, boolean purge, ReplicationSpec replicationSpec,
       boolean validationRequired) {
     this.tableName = tableName;
     this.ifExists = ifExists;
@@ -52,7 +53,7 @@ public class DropTableDesc implements DDLDesc, Serializable {
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 

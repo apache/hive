@@ -214,12 +214,13 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         .equalsIgnoreCase(tblProps.get(META_TABLE_STORAGE));
   }
 
-  private String getDefaultLocation(String dbName, String tableName, boolean isExt)
-      throws SemanticException {
+  private String getDefaultLocation(TableName qualifiedTabName, boolean isExt)
+          throws SemanticException {
     String tblLocation;
     try {
       Warehouse wh = new Warehouse(conf);
-      tblLocation = wh.getDefaultTablePath(db.getDatabase(dbName), tableName, isExt).toUri().getPath();
+      tblLocation = wh.getDefaultTablePath(db.getDatabase(qualifiedTabName.getCat(),
+              qualifiedTabName.getDb()), qualifiedTabName.getTable(), isExt).toUri().getPath();
     } catch (MetaException | HiveException e) {
       throw new SemanticException(e);
     }
@@ -236,7 +237,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
    */
   private Map<String, String> validateAndAddDefaultProperties(Map<String, String> tblProp, boolean isExt,
       StorageFormat storageFormat, String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-      boolean isTemporaryTable, boolean isTransactional, boolean isManaged, String[] qualifiedTabName,
+      boolean isTemporaryTable, boolean isTransactional, boolean isManaged, TableName qualifiedTabName,
       boolean isTableTypeChanged)
       throws SemanticException {
     Map<String, String> retValue = Optional.ofNullable(tblProp).orElseGet(HashMap::new);
@@ -297,7 +298,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
 
     if (isIcebergTable(retValue)) {
       SessionStateUtil.addResourceOrThrow(conf, SessionStateUtil.DEFAULT_TABLE_LOCATION,
-          getDefaultLocation(qualifiedTabName[0], qualifiedTabName[1], true));
+          getDefaultLocation(qualifiedTabName, true));
     }
     return retValue;
   }
@@ -329,7 +330,8 @@ public class CreateTableAnalyzer extends CalcitePlanner {
    */
   ASTNode analyzeCreateTable(ASTNode ast, QB qb, PlannerContext plannerCtx)
       throws SemanticException {
-    TableName qualifiedTabName = getQualifiedTableName((ASTNode) ast.getChild(0));
+    String currentCatalog = HiveUtils.getCurrentCatalogOrDefault(conf);
+    TableName qualifiedTabName = getQualifiedTableName((ASTNode) ast.getChild(0), currentCatalog);
     final String dbDotTab = qualifiedTabName.getNotEmptyDbTable();
 
     String likeTableName = null;
@@ -617,11 +619,9 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         }
         tblProps =
             validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-                isTemporary, isTransactional, isManaged,
-                new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
+                isTemporary, isTransactional, isManaged, qualifiedTabName, isDefaultTableTypeChanged);
         isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
-        addDbAndTabToOutputs(new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-            TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
+        addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
         if (!Strings.isNullOrEmpty(sortOrder)) {
           tblProps.put("default-sort-order", sortOrder);
         }
@@ -646,7 +646,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         if (location != null) {
           tblLocation = location;
         } else {
-          tblLocation = getDefaultLocation(qualifiedTabName.getDb(), qualifiedTabName.getTable(), isExt);
+          tblLocation = getDefaultLocation(qualifiedTabName, isExt);
         }
         boolean isNativeColumnDefaultSupported = false;
         try {
@@ -680,11 +680,9 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         }
         tblProps =
             validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-                isTemporary, isTransactional, isManaged,
-                new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
+                isTemporary, isTransactional, isManaged, qualifiedTabName, isDefaultTableTypeChanged);
         isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
-        addDbAndTabToOutputs(new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-            TableType.MANAGED_TABLE, false, tblProps, storageFormat);
+        addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, false, tblProps, storageFormat);
 
         CreateTableDesc crtTranTblDesc =
             new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols, partCols, bucketCols, sortCols, numBuckets,
@@ -707,14 +705,10 @@ public class CreateTableAnalyzer extends CalcitePlanner {
 
         tblProps =
             validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-                isTemporary,
-
-                isTransactional, isManaged, new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-                isDefaultTableTypeChanged);
+                isTemporary, isTransactional, isManaged, qualifiedTabName, isDefaultTableTypeChanged);
         tblProps.put(hive_metastoreConstants.TABLE_IS_CTLT, "true");
         isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
-        addDbAndTabToOutputs(new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-            TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
+        addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
 
         Table likeTable = getTable(likeTableName, false);
         if (likeTable != null) {
@@ -731,10 +725,10 @@ public class CreateTableAnalyzer extends CalcitePlanner {
           isExt = true;
         }
         CreateTableLikeDesc crtTblLikeDesc =
-            new CreateTableLikeDesc(dbDotTab, isExt, isTemporary, storageFormat.getInputFormat(),
+            new CreateTableLikeDesc(qualifiedTabName, isExt, isTemporary, storageFormat.getInputFormat(),
                 storageFormat.getOutputFormat(), location, storageFormat.getSerde(), storageFormat.getSerdeProps(),
                 tblProps, ifNotExists, likeTableName, isUserStorageFormat);
-        tblLocation = getDefaultLocation(qualifiedTabName.getDb(), qualifiedTabName.getTable(), isExt);
+        tblLocation = getDefaultLocation(qualifiedTabName, isExt);
         SessionStateUtil.addResource(conf, META_TABLE_LOCATION, tblLocation);
         rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTblLikeDesc)));
         break;
@@ -796,7 +790,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
           }
           tblLocation = location;
         } else {
-          tblLocation = getDefaultLocation(qualifiedTabName.getDb(), qualifiedTabName.getTable(), isExt);
+          tblLocation = getDefaultLocation(qualifiedTabName, isExt);
         }
         SessionStateUtil.addResource(conf, META_TABLE_LOCATION, tblLocation);
         if (!CollectionUtils.isEmpty(partCols)) {
@@ -806,11 +800,10 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         tblProps =
             validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
                 isTemporary, isTransactional, isManaged,
-                new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
+                qualifiedTabName, isDefaultTableTypeChanged);
         isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
         tblProps.put(TABLE_IS_CTAS, "true");
-        addDbAndTabToOutputs(new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-            TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
+        addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
         tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols, partColNames, bucketCols, sortCols,
             numBuckets, rowFormatParams.getFieldDelim(), rowFormatParams.getFieldEscape(),
             rowFormatParams.getCollItemDelim(), rowFormatParams.getMapKeyDelim(), rowFormatParams.getLineDelim(),
