@@ -35,10 +35,13 @@ import java.util.Set;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.model.MTable;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
+import org.apache.hadoop.hive.metastore.utils.DirectSqlConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -59,52 +62,62 @@ public class VerifyingObjectStore extends ObjectStore {
   public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName,
                                                GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException {
-    List<Partition> sqlResults = getPartitionsByFilterInternal(
-        catName, dbName, tblName, true, false, args);
-    List<Partition> ormResults = getPartitionsByFilterInternal(
-        catName, dbName, tblName, false, true, args);
-    verifyLists(sqlResults, ormResults, Partition.class);
-    return sqlResults;
+    TableStore tableStore = unwrap(TableStore.class);
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, false)) {
+      List<Partition> ormResults = tableStore.getPartitionsByFilter(new TableName(catName, dbName, tblName), args);
+      configurator.tryDirectSql(true);
+      List<Partition> sqlResults = tableStore.getPartitionsByFilter(new TableName(catName, dbName, tblName), args);
+      verifyLists(sqlResults, ormResults, Partition.class);
+      return sqlResults;
+    }
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
     GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(partNames).build();
-    List<Partition> sqlResults = getPartitionsByNamesInternal(
-        catName, dbName, tblName, true, false, args);
-    List<Partition> ormResults = getPartitionsByNamesInternal(
-        catName, dbName, tblName, false, true, args);
-    verifyLists(sqlResults, ormResults, Partition.class);
-    return sqlResults;
+    TableStore tableStore = unwrap(TableStore.class);
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, false)) {
+      List<Partition> ormResults = tableStore.getPartitionsByNames(new TableName(catName, dbName, tblName), args);
+      configurator.tryDirectSql(true);
+      List<Partition> sqlResults = tableStore.getPartitionsByNames(new TableName(catName, dbName, tblName), args);
+      verifyLists(sqlResults, ormResults, Partition.class);
+      return sqlResults;
+    }
   }
 
   @Override
   public boolean getPartitionsByExpr(String catName, String dbName, String tblName, List<Partition> result,
       GetPartitionsArgs args) throws TException {
     List<Partition> ormParts = new LinkedList<>();
-    boolean sqlResult = getPartitionsByExprInternal(
-        catName, dbName, tblName, result, true, false, args);
-    boolean ormResult = getPartitionsByExprInternal(
-        catName, dbName, tblName, ormParts, false, true, args);
-    if (sqlResult != ormResult) {
-      String msg = "The unknown flag is different - SQL " + sqlResult + ", ORM " + ormResult;
-      LOG.error(msg);
-      throw new MetaException(msg);
+    TableStore tableStore = unwrap(TableStore.class);
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, false)) {
+      boolean ormResult = tableStore.getPartitionsByExpr(new TableName(catName, dbName, tblName), ormParts, args);
+      configurator.tryDirectSql(true);
+      boolean sqlResult = tableStore.getPartitionsByExpr(new TableName(catName, dbName, tblName), result, args);
+      if (sqlResult != ormResult) {
+        String msg = "The unknown flag is different - SQL " + sqlResult + ", ORM " + ormResult;
+        LOG.error(msg);
+        throw new MetaException(msg);
+      }
+      verifyLists(result, ormParts, Partition.class);
+      return sqlResult;
     }
-    verifyLists(result, ormParts, Partition.class);
-    return sqlResult;
   }
 
   @Override
   public List<Partition> getPartitions(
       String catName, String dbName, String tableName, GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
     openTransaction();
-    List<Partition> sqlResults = getPartitionsInternal(catName, dbName, tableName, true, false, args);
-    List<Partition> ormResults = getPartitionsInternal(catName, dbName, tableName, false, true, args);
-    verifyLists(sqlResults, ormResults, Partition.class);
-    commitTransaction();
-    return sqlResults;
+    TableStore tableStore = unwrap(TableStore.class);
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, false)) {
+      List<Partition> ormResults = tableStore.getPartitions(new TableName(catName, dbName, tableName), args);
+      configurator.tryDirectSql(true);
+      List<Partition> sqlResults = tableStore.getPartitions(new TableName(catName, dbName, tableName), args);
+      verifyLists(sqlResults, ormResults, Partition.class);
+      commitTransaction();
+      return sqlResults;
+    }
   }
 
   @Override
@@ -142,15 +155,22 @@ public class VerifyingObjectStore extends ObjectStore {
       // could be different from that in the datastore.
       // We cannot verify the partitions by getPartitionsByNames now.
       GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(partNames).build();
-      List<Partition> oldParts = getPartitionsByNamesInternal(
-          catName, dbName, tblName, true, true, args);
+      List<Partition> oldParts = unwrap(TableStore.class).getPartitionsByNames(new TableName(catName, dbName, tblName), args);
       if (oldParts.size() != partNames.size()) {
         throw new MetaException("Some partitions to be altered are missing");
       }
       List<Partition> tmpNewParts = new ArrayList<>(newParts);
-      alterPartitionsInternal(table, partNames, newParts, queryWriteIdList, true, false);
-      alterPartitionsInternal(table, partNames, oldParts, queryWriteIdList, false, true);
-      results = alterPartitionsInternal(table, partNames, tmpNewParts, queryWriteIdList, true, false);
+      TableStore tableStore = unwrap(TableStore.class);
+      try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, true)) {
+        tableStore.alterPartitions(new TableName(catName, dbName, tblName), part_vals, newParts, writeId,
+            queryWriteIdList);
+        configurator.tryDirectSql(false);
+        tableStore.alterPartitions(new TableName(catName, dbName, tblName), part_vals, oldParts, writeId,
+            queryWriteIdList);
+        configurator.tryDirectSql(true);
+        tableStore.alterPartitions(new TableName(catName, dbName, tblName), part_vals, tmpNewParts, writeId,
+            queryWriteIdList);
+      }
       // commit the changes
       success = commitTransaction();
     } catch (Exception exception) {
