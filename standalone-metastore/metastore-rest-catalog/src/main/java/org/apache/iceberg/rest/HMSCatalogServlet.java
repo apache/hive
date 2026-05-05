@@ -100,6 +100,12 @@ public class HMSCatalogServlet extends HttpServlet {
     };
   }
 
+  @Override
+  public void destroy() {
+    super.destroy();
+    restCatalogAdapter.close();
+  }
+
   public static class ServletRequestContext {
     private HTTPMethod method;
     private String path;

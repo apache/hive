@@ -76,12 +76,15 @@ import org.apache.iceberg.rest.responses.LoadViewResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements RESTClient {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/');
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
@@ -584,10 +587,14 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     // The caller is responsible for closing the underlying catalog backing this REST catalog.
     for (IcebergMetricsReporter reporter : metricsReporters) {
-      reporter.close();
+      try {
+        reporter.close();
+      } catch (IOException e) {
+        LOG.error("Failed to close metrics reporter: {}", reporter, e);
+      }
     }
   }
 
