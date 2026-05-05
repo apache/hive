@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.metastore;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.jdo.JDOException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -44,10 +46,12 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
 
   private final long retryInterval;
   private final int retryLimit;
+  private final boolean local;
 
   public RetryingHMSHandler(Configuration conf, IHMSHandler baseHandler, boolean local)
       throws MetaException {
     super(conf, baseHandler, local);
+    this.local = local;
     retryInterval = MetastoreConf.getTimeVar(origConf,
         ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
     retryLimit = MetastoreConf.getIntVar(origConf, ConfVars.HMS_HANDLER_ATTEMPTS);
@@ -88,8 +92,18 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
         Object object = null;
         boolean isStarted = Deadline.startTimer(method.getName());
         try {
+          if (!local) {
+            Pair<String, Long> currentCall = Pair.of(method.getName(), System.currentTimeMillis());
+            Optional<Pair<String, Long>> previous = HMSHandlerContext.getCallId();
+            previous.ifPresent(
+                pc -> LOG.debug("Previous call {} will be taken over by {}", pc, currentCall));
+            HMSHandlerContext.setCallId(currentCall);
+          }
           object = method.invoke(baseHandler, args);
         } finally {
+          if (!local) {
+            HMSHandlerContext.setCallId(null);
+          }
           if (isStarted) {
             Deadline.stopTimer();
           }

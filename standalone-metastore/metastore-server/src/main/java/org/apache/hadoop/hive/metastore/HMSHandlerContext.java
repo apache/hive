@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -55,6 +56,9 @@ public final class HMSHandlerContext {
 
   private Map<String, com.codahale.metrics.Timer.Context> timerContexts = new HashMap<>();
 
+  // The unique ID of current thrift call
+  private Pair<String, Long> callId;
+
   private HMSHandlerContext() {
   }
 
@@ -87,6 +91,14 @@ public final class HMSHandlerContext {
 
   public static Map<String, com.codahale.metrics.Timer.Context> getTimerContexts() {
     return context.get().timerContexts;
+  }
+
+  public static Optional<Pair<String, Long>> getCallId() {
+    return Optional.ofNullable(context.get().callId);
+  }
+
+  public static void setCallId(Pair<String, Long> callId) {
+    context.get().callId = callId;
   }
 
   public static void setRawStore(RawStore rawStore) {
