@@ -1927,6 +1927,10 @@ public class MetastoreConf {
         "The pattern to extract a user name. This is effective when you use RegexPrincipalMapper. For example, if " +
         "you want to extract a user name from the local part of the email claim, set this to (.*)@example.com."
     ),
+    CATALOG_VENDED_CREDENTIALS_PROVIDERS("metastore.catalog.vended-credentials.providers",
+        "hive.metastore.catalog.vended-credentials.providers", "",
+        "List of comma-separated credential-vending provider IDs"
+    ),
     ICEBERG_CATALOG_SERVLET_PATH("metastore.iceberg.catalog.servlet.path",
         "hive.metastore.iceberg.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
@@ -1934,6 +1938,10 @@ public class MetastoreConf {
     ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
+    ),
+    ICEBERG_CATALOG_VENDED_CREDENTIALS_ENABLED("metastore.iceberg.catalog.vended-credentials.enabled",
+        "hive.metastore.iceberg.catalog.vended-credentials.enabled", false,
+        "Boolean flag to enable credential vending on Iceberg REST Catalog"
     ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,

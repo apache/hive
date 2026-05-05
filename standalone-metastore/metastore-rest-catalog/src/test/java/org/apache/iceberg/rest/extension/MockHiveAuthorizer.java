@@ -18,7 +18,9 @@
 
 package org.apache.iceberg.rest.extension;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AbstractHiveAuthorizer;
@@ -35,12 +37,30 @@ import org.slf4j.LoggerFactory;
 
 public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
   public static final String PERMISSION_TEST_USER = "permission_test_user";
+  public static final String READ_ONLY_USER = "read_only_user";
   private static final Logger LOG = LoggerFactory.getLogger(MockHiveAuthorizer.class);
+  private static final List<PrivilegeCheck> PRIVILEGE_CHECKS = new CopyOnWriteArrayList<>();
 
   private final HiveAuthenticationProvider authenticator;
 
   public MockHiveAuthorizer(HiveAuthenticationProvider authenticator) {
     this.authenticator = authenticator;
+  }
+
+  public record PrivilegeCheck(HiveOperationType operationType, List<HivePrivilegeObject> inputs,
+                               List<HivePrivilegeObject> outputs) {
+  }
+
+  public static void clearPrivilegeChecks() {
+    PRIVILEGE_CHECKS.clear();
+  }
+
+  public static List<PrivilegeCheck> privilegeChecks() {
+    return new ArrayList<>(PRIVILEGE_CHECKS);
+  }
+
+  private static List<HivePrivilegeObject> copyPrivilegeObjects(List<HivePrivilegeObject> objects) {
+    return objects == null ? List.of() : List.copyOf(objects);
   }
 
   @Override
@@ -97,9 +117,15 @@ public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
       List<HivePrivilegeObject> outputHObjs, HiveAuthzContext context) throws HiveAccessControlException {
     LOG.info("Checking privileges. User={}, Operation={}, inputs={}, outputs={}", authenticator.getUserName(),
         hiveOpType, inputsHObjs, outputHObjs);
+    PRIVILEGE_CHECKS.add(new PrivilegeCheck(hiveOpType, copyPrivilegeObjects(inputsHObjs),
+        copyPrivilegeObjects(outputHObjs)));
     if (PERMISSION_TEST_USER.equals(authenticator.getUserName())) {
-      throw new HiveAccessControlException(String.format("Unauthorized. Operation=%s, inputs=%s, outputs=%s",
-          hiveOpType, inputsHObjs, outputHObjs));
+      throw new HiveAccessControlException(String.format("Unauthorized. User=%s, Operation=%s, inputs=%s, outputs=%s",
+          authenticator.getUserName(), hiveOpType, inputsHObjs, outputHObjs));
+    }
+    if (READ_ONLY_USER.equals(authenticator.getUserName()) && !outputHObjs.isEmpty()) {
+      throw new HiveAccessControlException(String.format("Unauthorized. User=%s, Operation=%s, inputs=%s, outputs=%s",
+          authenticator.getUserName(), hiveOpType, inputsHObjs, outputHObjs));
     }
   }
 
