@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -2521,21 +2522,27 @@ public class MetastoreConf {
   }
 
   /**
-   * Get class instances based on a configuration value
+   * Get class instances based on a configuration value.
+   *
    * @param conf configuration file to retrieve it from
-   * @param var variable to retrieve
+   * @param confVar variable to retrieve
    * @return instances of the classes
    */
-  public static Class<?>[] getClasses(Configuration conf, ConfVars var) {
-    assert var.defaultVal.getClass() == String.class;
+  public static Class<?>[] getClasses(Configuration conf, ConfVars confVar) {
+    Preconditions.checkArgument(confVar.defaultVal.getClass() == String.class);
     Class<?> defaultClass;
     try {
-      defaultClass = Class.forName((String) var.defaultVal);
+      defaultClass = Class.forName((String) confVar.defaultVal);
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException("The default class " + var.defaultVal + " does not exist");
+      throw new IllegalArgumentException(
+          String.format("Failed to load the the default value of %s: %s", confVar.defaultVal, confVar.varname),
+          e
+      );
     }
-    String val = conf.get(var.varname);
-    return val == null ? conf.getClasses(var.hiveName, defaultClass) : conf.getClasses(var.varname, defaultClass);
+    String val = conf.get(confVar.varname);
+    return val == null
+        ? conf.getClasses(confVar.hiveName, defaultClass)
+        : conf.getClasses(confVar.varname, defaultClass);
   }
 
   /**
