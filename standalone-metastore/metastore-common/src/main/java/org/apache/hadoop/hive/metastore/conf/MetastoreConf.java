@@ -2521,6 +2521,24 @@ public class MetastoreConf {
   }
 
   /**
+   * Get class instances based on a configuration value
+   * @param conf configuration file to retrieve it from
+   * @param var variable to retrieve
+   * @return instances of the classes
+   */
+  public static Class<?>[] getClasses(Configuration conf, ConfVars var) {
+    assert var.defaultVal.getClass() == String.class;
+    Class<?> defaultClass;
+    try {
+      defaultClass = Class.forName((String) var.defaultVal);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("The default class " + var.defaultVal + " does not exist");
+    }
+    String val = conf.get(var.varname);
+    return val == null ? conf.getClasses(var.hiveName, defaultClass) : conf.getClasses(var.varname, defaultClass);
+  }
+
+  /**
    * Set the class name in the configuration file
    * @param conf configuration file to set it in
    * @param var variable to set

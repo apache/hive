@@ -35,7 +35,6 @@ import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
-import org.apache.iceberg.rest.metrics.LoggingMetricsReporter;
 
 /**
  * Catalog &amp; servlet factory.
@@ -122,10 +121,7 @@ public class HMSCatalogFactory {
   }
 
   private List<IcebergMetricsReporter> createReporters() {
-    final var classes = configuration.getClasses(
-        ConfVars.ICEBERG_CATALOG_METRICS_REPORTERS.getVarname(),
-        LoggingMetricsReporter.class
-    );
+    final var classes = MetastoreConf.getClasses(configuration, ConfVars.ICEBERG_CATALOG_METRICS_REPORTERS);
     return Arrays.stream(classes).map(clazz -> {
       try {
         final var constructor = clazz.getDeclaredConstructor(Configuration.class);
