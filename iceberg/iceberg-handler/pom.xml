@@ -144,36 +144,38 @@
   <build>
     <plugins>
       <plugin>
-        <!-- Unpacking all Iceberg related classes into the iceberg-handler jar for consumption by external
-                components -->
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
+        <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
-            <id>unpack</id>
-            <phase>generate-sources</phase>
+            <phase>package</phase>
             <goals>
-              <goal>unpack</goal>
+              <goal>shade</goal>
             </goals>
             <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.apache.hive</groupId>
-                  <artifactId>hive-iceberg-shading</artifactId>
-                  <version>${project.version}</version>
-                  <type>jar</type>
-                  <overWrite>true</overWrite>
-                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.apache.hive</groupId>
-                  <artifactId>hive-iceberg-catalog</artifactId>
-                  <version>${project.version}</version>
-                  <type>jar</type>
-                  <overWrite>true</overWrite>
-                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                </artifactItem>
-              </artifactItems>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.hive:hive-iceberg-shading</include>
+                  <include>org.apache.hive:hive-iceberg-catalog</include>
+                </includes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <!-- Create a slim jar without dependencies -->
+        <executions>
+          <execution>
+            <id>core-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>core</classifier>
             </configuration>
           </execution>
         </executions>
