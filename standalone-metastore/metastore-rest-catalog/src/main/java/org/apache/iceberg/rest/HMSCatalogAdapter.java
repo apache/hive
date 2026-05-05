@@ -20,10 +20,11 @@
 package org.apache.iceberg.rest;
 
 import com.google.common.base.Preconditions;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.Table;
@@ -45,7 +46,6 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
-import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -77,7 +77,7 @@ import org.apache.iceberg.util.PropertyUtil;
  * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
-public class HMSCatalogAdapter implements RESTClient {
+public class HMSCatalogAdapter {
   private static final Splitter SLASH = Splitter.on('/');
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
@@ -493,7 +493,7 @@ public class HMSCatalogAdapter implements RESTClient {
       String path,
       Map<String, String> queryParams,
       Object body,
-      Consumer<ErrorResponse> errorHandler) {
+      HttpServletResponse response) throws IOException {
     ErrorResponse.Builder errorBuilder = ErrorResponse.builder();
     Pair<Route, Map<String, String>> routeAndVars = Route.from(method, path);
     if (routeAndVars != null) {
@@ -514,68 +514,9 @@ public class HMSCatalogAdapter implements RESTClient {
           .withMessage(String.format("No route for request: %s %s", method, path));
     }
     ErrorResponse error = errorBuilder.build();
-    errorHandler.accept(error);
-    // if the error handler doesn't throw an exception, throw a generic one
-    throw new RESTException("Unhandled error: %s", error);
-  }
-
-  @Override
-  public <T extends RESTResponse> T delete(
-      String path,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.DELETE, path, null, null, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T delete(
-      String path,
-      Map<String, String> queryParams,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.DELETE, path, queryParams, null, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T post(
-      String path,
-      RESTRequest body,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.POST, path, null, body, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T get(
-      String path,
-      Map<String, String> queryParams,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.GET, path, queryParams, null, errorHandler);
-  }
-
-  @Override
-  public void head(String path, Map<String, String> headers, Consumer<ErrorResponse> errorHandler) {
-    execute(HTTPMethod.HEAD, path, null, headers, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T postForm(
-      String path,
-      Map<String, String> formData,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.POST, path, null, formData, errorHandler);
-  }
-
-  @Override
-  public void close() {
-    // The caller is responsible for closing the underlying catalog backing this REST catalog.
+    response.setStatus(error.code());
+    RESTObjectMapper.mapper().writeValue(response.getWriter(), error);
+    return null;
   }
 
   private static class BadResponseType extends RuntimeException {
@@ -607,11 +548,12 @@ public class HMSCatalogAdapter implements RESTClient {
 
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
-    errorBuilder
-        .responseCode(EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500))
-        .withType(exc.getClass().getSimpleName())
-        .withMessage(exc.getMessage())
-        .withStackTrace(exc);
+    var errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);
+    errorBuilder.responseCode(errorCode).withType(exc.getClass().getSimpleName()).withMessage(exc.getMessage());
+    // avoid exposing stack traces for client errors but include them for server errors to aid debugging
+    if (errorCode >= 500) {
+      errorBuilder.withStackTrace(exc);
+    }
   }
 
   private static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
