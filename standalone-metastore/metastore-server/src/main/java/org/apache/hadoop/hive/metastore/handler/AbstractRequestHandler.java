@@ -232,12 +232,16 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
       // The background handler thread was cancelled
       LOG.trace("{} The background handler was cancelled", logMsgPrefix);
     } catch (ExecutionException | InterruptedException e) {
-      // No op, we will deal with this exception later
-      LOG.error("{} Failed", logMsgPrefix, e);
       if (e.getCause() instanceof Exception ex && !aborted.get()) {
         throw handleException(ex).throwIfInstance(TException.class).defaultMetaException();
       }
-      String errorMsg = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+      Throwable t = e.getCause() != null ? e.getCause() : e;
+      if (!(t instanceof TException)) {
+        LOG.error("{} Failed", logMsgPrefix, t);
+      } else if (LOG.isDebugEnabled()) {
+        LOG.debug("{} Failed", logMsgPrefix, t);
+      }
+      String errorMsg = t.getMessage();
       throw new MetaException(logMsgPrefix + " failed with " + errorMsg);
     }
     return resp;
