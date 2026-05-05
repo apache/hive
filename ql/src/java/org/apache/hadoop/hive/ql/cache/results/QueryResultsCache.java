@@ -50,6 +50,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -194,6 +195,12 @@ public final class QueryResultsCache {
     private Path cachedResultsPath;
     private Set<FileStatus> cachedResultPaths;
 
+    /**
+     * Absolute path prefix for result files when using safe cache write; see
+     * {@link org.apache.hadoop.hive.ql.Context#getCacheSafeWriteSourceDir()}.
+     */
+    private String safeSourceDir;
+
     // Cache administration
     private long size;
     private AtomicInteger readers = new AtomicInteger(0);
@@ -285,6 +292,14 @@ public final class QueryResultsCache {
 
     public QueryInfo getQueryInfo() {
       return queryInfo;
+    }
+
+    public void setSafeSourceDir(String safeSourceDir) {
+      this.safeSourceDir = safeSourceDir;
+    }
+
+    public String getSafeSourceDir() {
+      return safeSourceDir;
     }
 
     public Path getCachedResultsPath() {
@@ -416,6 +431,19 @@ public final class QueryResultsCache {
   }
 
   /**
+   * Runs {@code action} while holding {@link #rwLock} in exclusive (write) mode.
+   */
+  private void withWriteLock(Runnable action) {
+    Lock writeLock = rwLock.writeLock();
+    try {
+      writeLock.lock();
+      action.run();
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  /**
    * Check if the cache contains an entry for the requested LookupInfo.
    * @param request
    * @return  The cached result if there is a match in the cache, or null if no match is found.
@@ -494,10 +522,7 @@ public final class QueryResultsCache {
     addedEntry.queryInfo = queryInfo;
     addedEntry.txnWriteIdList = txnWriteIdList;
 
-    Lock writeLock = rwLock.writeLock();
-    try {
-      writeLock.lock();
-
+    withWriteLock(() -> {
       LOG.info("Adding placeholder cache entry for query '{}'", queryText);
 
       // Add the entry to the cache structures while under write lock.
@@ -506,11 +531,22 @@ public final class QueryResultsCache {
       // Index of entries by table usage.
       addedEntry.getTableNames()
           .forEach(tableName -> addToEntryMap(tableToEntryMap, tableName, addedEntry));
-    } finally {
-      writeLock.unlock();
-    }
+    });
 
     return addedEntry;
+  }
+
+  public void removeInvalidStaleFiles(FileSystem fs, Set<FileStatus> files) {
+    withWriteLock(() -> {
+      for (FileStatus f : files) {
+        try {
+          fs.delete(f.getPath(), true);
+        } catch (IOException e) {
+          LOG.warn("Failed to clean up stale invalid file: {}",
+              f.getPath(), e);
+        }
+      }
+    });
   }
 
   /**
@@ -520,9 +556,11 @@ public final class QueryResultsCache {
    * CacheEntry.releaseReader() should be called when the caller is done with the cache entry.
    * @param cacheEntry
    * @param fetchWork
+   * @param queryConf session (or query) Hive configuration; used for safe-cache-write and filesystem access
+   *                  so per-session {@code SET hive.query.results.cache.safe.write.enabled} is honored
    * @return
    */
-  public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork) {
+  public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork, HiveConf queryConf) {
     Path queryResultsPath = null;
     Path cachedResultsPath = null;
 
@@ -532,7 +570,7 @@ public final class QueryResultsCache {
 
       boolean requiresCaching = true;
       queryResultsPath = fetchWork.getTblDir();
-      FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
+      FileSystem resultsFs = queryResultsPath.getFileSystem(queryConf);
 
       long resultSize = 0;
       for(FileStatus fs:fetchWork.getFilesToFetch()) {
@@ -546,6 +584,10 @@ public final class QueryResultsCache {
       }
 
       if (!shouldEntryBeAdded(cacheEntry, resultSize)) {
+        return false;
+      }
+
+      if (!rewriteFetchWorkForSafeCacheWrite(cacheEntry, fetchWork, queryConf)) {
         return false;
       }
 
@@ -601,10 +643,61 @@ public final class QueryResultsCache {
     return true;
   }
 
+  private boolean rewriteFetchWorkForSafeCacheWrite(CacheEntry cacheEntry, FetchWork fetchWork, HiveConf queryConf)
+      throws IOException {
+    if (!queryConf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_SAFE_CACHE_WRITE_ENABLED)) {
+      return true;
+    }
+    String safeDir = cacheEntry.getSafeSourceDir();
+    if (safeDir == null) {
+      LOG.error("Safe cache write enabled but cache entry has no safe source dir; query: {}",
+          cacheEntry.getQueryInfo().getLookupInfo().getQueryText());
+      return false;
+    }
+    final int safeDirAndSepLen = safeDir.length() + Path.SEPARATOR.length();
+    Path resultDir = new Path(cacheDirPath, UUID.randomUUID().toString());
+    FileSystem cacheFs = resultDir.getFileSystem(queryConf);
+    cacheFs.mkdirs(resultDir);
+
+    Set<FileStatus> cacheFilesToFetch = new HashSet<>();
+    boolean succeeded =
+        copyFetchWorkFilesIntoCacheDirUnderWriteLock(fetchWork, resultDir, cacheFs, safeDirAndSepLen,
+            queryConf, cacheFilesToFetch);
+    if (!succeeded) {
+      removeInvalidStaleFiles(cacheFs, cacheFilesToFetch);
+      return false;
+    }
+    fetchWork.setFilesToFetch(cacheFilesToFetch);
+    fetchWork.setTblDir(new Path(resultDir, fetchWork.getTblDir().toString().substring(safeDirAndSepLen)));
+    return true;
+  }
+
+  private boolean copyFetchWorkFilesIntoCacheDirUnderWriteLock(FetchWork fetchWork, Path resultDir,
+      FileSystem cacheFs, int safeDirAndSepLen, HiveConf queryConf, Set<FileStatus> destFileStatuses) {
+    final boolean[] succeeded = {true};
+    withWriteLock(() -> {
+      try {
+        for (FileStatus fs : fetchWork.getFilesToFetch()) {
+          FileSystem srcFs = fs.getPath().getFileSystem(queryConf);
+          Path srcFile = fs.getPath();
+          Path destFile = new Path(resultDir,
+              new Path(fs.getPath().toString().substring(safeDirAndSepLen)));
+          succeeded[0] = FileUtil.copy(srcFs, srcFile, cacheFs, destFile, false, queryConf);
+          if (!succeeded[0]) {
+            throw new IOException("File copy failed for " + srcFile + " -> " + destFile);
+          }
+          destFileStatuses.add(cacheFs.getFileStatus(destFile));
+        }
+      } catch (IOException e) {
+        LOG.warn("Failed to write cache entry to {}", resultDir, e);
+        succeeded[0] = false;
+      }
+    });
+    return succeeded[0];
+  }
+
   public void clear() {
-    Lock writeLock = rwLock.writeLock();
-    try {
-      writeLock.lock();
+    withWriteLock(() -> {
       LOG.info("Clearing the results cache");
       CacheEntry[] allEntries = null;
       synchronized (lru) {
@@ -617,9 +710,7 @@ public final class QueryResultsCache {
           LOG.error("Error removing cache entry " + entry, err);
         }
       }
-    } finally {
-      writeLock.unlock();
-    }
+    });
   }
 
   public long getSize() {
@@ -635,17 +726,13 @@ public final class QueryResultsCache {
   public void notifyTableChanged(String dbName, String tableName, long updateTime) {
     LOG.debug("Table changed: {}.{}, at {}", dbName, tableName, updateTime);
     // Invalidate all cache entries using this table.
-    List<CacheEntry> entriesToInvalidate = null;
-    rwLock.writeLock().lock();
-    try {
+    withWriteLock(() -> {
       String key = (dbName.toLowerCase() + "." + tableName.toLowerCase());
       Set<CacheEntry> entriesForTable = tableToEntryMap.get(key);
       if (entriesForTable != null) {
         // Possible concurrent modification issues if we try to remove cache entries while
         // traversing the cache structures. Save the entries to remove in a separate list.
-        entriesToInvalidate = new ArrayList<>(entriesForTable);
-      }
-      if (entriesToInvalidate != null) {
+        List<CacheEntry> entriesToInvalidate = new ArrayList<>(entriesForTable);
         for (CacheEntry entry : entriesToInvalidate) {
           // Ignore updates that occured before this cached query was created.
           if (entry.getQueryInfo().getQueryTime() <= updateTime) {
@@ -653,9 +740,7 @@ public final class QueryResultsCache {
           }
         }
       }
-    } finally {
-      rwLock.writeLock().unlock();
-    }
+    });
   }
 
   private static final int INITIAL_LRU_SIZE = 16;
@@ -737,15 +822,12 @@ public final class QueryResultsCache {
 
   public void removeEntry(CacheEntry entry) {
     entry.invalidate();
-    rwLock.writeLock().lock();
-    try {
+    withWriteLock(() -> {
       removeFromLookup(entry);
       lru.remove(entry);
       // Should the cache size be updated here, or after the result data has actually been deleted?
       cacheSize -= entry.size;
-    } finally {
-      rwLock.writeLock().unlock();
-    }
+    });
   }
 
   private void removeFromLookup(CacheEntry entry) {
