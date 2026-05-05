@@ -112,6 +112,10 @@ public class MetastoreConf {
           "metastore.authentication.ldap.userMembershipKey";
   public static final String METASTORE_RETRYING_HANDLER_CLASS =
           "org.apache.hadoop.hive.metastore.RetryingHMSHandler";
+  public static final String  ACID_TABLE_OPTIMIZER_CLASS =
+      "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer";
+  public static final String  ICEBERG_TABLE_OPTIMIZER_CLASS =
+      "org.apache.iceberg.mr.hive.compaction.IcebergTableOptimizer";
 
   private static final Map<String, ConfVars> metaConfs = new HashMap<>();
   private static volatile URL hiveSiteURL = null;
@@ -662,8 +666,7 @@ public class MetastoreConf {
       "Enable table caching in the initiator. Currently the cache is cleaned after each cycle."),
     COMPACTOR_INITIATOR_TABLE_OPTIMIZERS("compactor.table.optimizers",
         "hive.compactor.table.optimizers",
-        "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer," +
-            "org.apache.iceberg.mr.hive.compaction.IcebergTableOptimizer",
+        ACID_TABLE_OPTIMIZER_CLASS + "," + ICEBERG_TABLE_OPTIMIZER_CLASS,
         "Comma separated list of table optimizers executed by compaction Initiator."),
     COMPACTOR_WORKER_THREADS("metastore.compactor.worker.threads",
         "hive.compactor.worker.threads", 0,
@@ -1988,6 +1991,8 @@ public class MetastoreConf {
         "The maximum non-native tables allowed per table type during collecting the summary."),
     METADATA_SUMMARY_NONNATIVE_THREADS("hive.metatool.summary.nonnative.threads", "hive.metatool.summary.nonnative.threads", 20,
         "Number of threads to be allocated for MetaToolTaskMetadataSummary for collecting the non-native table's summary."),
+    METASTORE_SUPPORT_ACID("metastore.support.acid", "hive.metastore.support.acid", true,
+        "Whether to support acid functionality in Hive metastore server."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),

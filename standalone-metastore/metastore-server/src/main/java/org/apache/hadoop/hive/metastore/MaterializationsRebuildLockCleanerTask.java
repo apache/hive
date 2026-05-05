@@ -42,7 +42,8 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, unit) / 2;
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID) ?
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, unit) / 2 : 0;
   }
 
   @Override

@@ -614,6 +614,26 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   }
 
+  private void transformToExternalIfAcidNotSupported(Table table) throws MetaException {
+    Map<String, String> params = table.getParameters();
+    boolean isSupportAcid = MetastoreConf.getBoolVar(hmsHandler.getConf(),
+        ConfVars.METASTORE_SUPPORT_ACID);
+    if (!isSupportAcid) {
+      if (Boolean.parseBoolean(params.get(TABLE_IS_TRANSACTIONAL))) {
+        throw new MetaException("ACID tables are not permitted when the "
+            + ConfVars.METASTORE_SUPPORT_ACID.getHiveName() + " property is set to false");
+      }
+      if (TableType.MANAGED_TABLE.name().equals(table.getTableType())) {
+        table.setTableType(TableType.EXTERNAL_TABLE.toString());
+      }
+      if (TableType.EXTERNAL_TABLE.name().equals(table.getTableType())) {
+        params.put(HiveMetaHook.EXTERNAL, "TRUE");
+      }
+      params.remove(TABLE_IS_TRANSACTIONAL);
+      params.remove(TABLE_TRANSACTIONAL_PROPERTIES);
+    }
+  }
+
   @Override
   public Table transformCreateTable(Table table, List<String> processorCapabilities, String processorId) throws MetaException {
     if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
@@ -628,6 +648,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     if (params == null) {
       params = new HashMap<>();
     }
+    transformToExternalIfAcidNotSupported(newTable);
     String tableType = newTable.getTableType();
     String dbName = table.getDbName();
     Database db = null;
@@ -673,8 +694,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
         }
 
-        newTable = validateTablePaths(table);
-        if (MetaStoreUtils.isInsertOnlyTableParam(table.getParameters())) { // MICRO_MANAGED Tables
+        validateTablePaths(newTable);
+        if (MetaStoreUtils.isInsertOnlyTableParam(newTable.getParameters())) { // MICRO_MANAGED Tables
           if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE)) {
             LOG.debug("Processor has required capabilities to be able to create INSERT-only tables");
             return newTable;
@@ -694,7 +715,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
       LOG.debug("Table to be created is of type " + tableType);
-      newTable = validateTablePaths(table);
+      validateTablePaths(newTable);
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
@@ -734,7 +755,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
 
-
+    transformToExternalIfAcidNotSupported(newTable);
     if (tableLocationChanged(oldTable, newTable)) {
       validateTablePaths(newTable);
     }

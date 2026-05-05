@@ -53,7 +53,8 @@ public class AcidTxnCleanerService implements MetastoreTaskThread {
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.ACID_TXN_CLEANER_INTERVAL, unit);
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID) ?
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.ACID_TXN_CLEANER_INTERVAL, unit) : 0;
   }
 
   @Override
