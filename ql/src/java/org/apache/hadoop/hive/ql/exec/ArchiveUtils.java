@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +73,7 @@ public final class ArchiveUtils {
       // ARCHIVE PARTITION(hr='13') won't
       List<FieldSchema> prefixFields = new ArrayList<FieldSchema>();
       List<String> prefixValues = new ArrayList<String>();
-      List<FieldSchema> partCols = tbl.getPartCols();
+      List<FieldSchema> partCols = tbl.getEffectivePartCols();
       Iterator<String> itrPsKeys = partSpec.keySet().iterator();
       for (FieldSchema fs : partCols) {
         if (!itrPsKeys.hasNext()) {
@@ -222,7 +221,7 @@ public final class ArchiveUtils {
    * @throws HiveException
    */
   public static String getPartialName(Partition p, int level) throws HiveException {
-    List<FieldSchema> fields = p.getTable().getPartCols().subList(0, level);
+    List<FieldSchema> fields = p.getTable().getEffectivePartCols().subList(0, level);
     List<String> values = p.getValues().subList(0, level);
     try {
       return Warehouse.makePartName(fields, values);
@@ -254,7 +253,7 @@ public final class ArchiveUtils {
    * @throws HiveException
    */
   public static String conflictingArchiveNameOrNull(Hive db, Table tbl,
-        LinkedHashMap<String, String> partSpec)
+        Map<String, String> partSpec)
       throws HiveException {
 
     List<FieldSchema> partKeys = tbl.getPartitionKeys();
@@ -273,7 +272,7 @@ public final class ArchiveUtils {
 
     Map<String, String> spec = new HashMap<String, String>(partSpec);
     List<String> reversedKeys = new ArrayList<String>();
-    for (FieldSchema fs : tbl.getPartCols()) {
+    for (FieldSchema fs : tbl.getEffectivePartCols()) {
       if (spec.containsKey(fs.getName())) {
         reversedKeys.add(fs.getName());
       }

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -124,8 +123,8 @@ public class Partition implements Serializable {
 
   public static org.apache.hadoop.hive.metastore.api.Partition createMetaPartitionObject(
       Table tbl, Map<String, String> partSpec, Path location) throws HiveException {
-    List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : tbl.getPartCols()) {
+    List<String> pvals = new ArrayList<>();
+    for (FieldSchema field : tbl.getEffectivePartCols()) {
       String val = partSpec.get(field.getName());
       if (val == null || val.isEmpty()) {
         throw new HiveException("partition spec is invalid; field "
@@ -173,7 +172,8 @@ public class Partition implements Serializable {
           // set default if location is not set and this is a physical
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
-            Path partPath = new Path(table.getDataLocation(), Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
+            Path partPath = new Path(table.getDataLocation(),
+                Warehouse.makePartName(table.getEffectivePartCols(), tPartition.getValues()));
             tPartition.getSd().setLocation(partPath.toString());
           }
         }
@@ -200,7 +200,7 @@ public class Partition implements Serializable {
 
   public String getName() {
     try {
-      return Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
+      return Warehouse.makePartName(table.getEffectivePartCols(), tPartition.getValues());
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
@@ -416,7 +416,7 @@ public class Partition implements Serializable {
       }
 
       int scount = s.getSampleFraction();
-      ArrayList<Path> ret = new ArrayList<Path>();
+      List<Path> ret = new ArrayList<>();
 
       if (bcount == scount) {
         ret.add(getBucketPath(s.getSampleNum() - 1));
@@ -428,7 +428,7 @@ public class Partition implements Serializable {
         }
         // undersampling a bucket
         ret.add(getBucketPath((s.getSampleNum() - 1) % bcount));
-      } else if (bcount > scount) {
+      } else {
         if ((bcount / scount) * scount != bcount) {
           throw new HiveException("Sample Count" + scount
               + " is not a divisor of bucket count " + bcount + " for table "
@@ -439,11 +439,11 @@ public class Partition implements Serializable {
           ret.add(getBucketPath(i * scount + (s.getSampleNum() - 1)));
         }
       }
-      return (ret.toArray(new Path[ret.size()]));
+      return (ret.toArray(new Path[0]));
     }
   }
 
-  public LinkedHashMap<String, String> getSpec() {
+  public Map<String, String> getSpec() {
     return table.createSpec(tPartition);
   }
 
@@ -542,8 +542,8 @@ public class Partition implements Serializable {
    */
   public void setValues(Map<String, String> partSpec)
       throws HiveException {
-    List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : table.getPartCols()) {
+    List<String> pvals = new ArrayList<>();
+    for (FieldSchema field : table.getEffectivePartCols()) {
       String val = partSpec.get(field.getName());
       if (val == null) {
         throw new HiveException(
@@ -582,12 +582,11 @@ public class Partition implements Serializable {
     return tPartition.getSd().getSkewedInfo().getSkewedColNames();
   }
 
-  public void setSkewedValueLocationMap(List<String> valList, String dirName)
-      throws HiveException {
+  public void setSkewedValueLocationMap(List<String> valList, String dirName) {
     Map<List<String>, String> mappings = tPartition.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
-      mappings = new HashMap<List<String>, String>();
+      mappings = new HashMap<>();
       tPartition.getSd().getSkewedInfo().setSkewedColValueLocationMaps(mappings);
     }
 
@@ -612,8 +611,7 @@ public class Partition implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof Partition) {
-      Partition o = (Partition) obj;
+    if (obj instanceof Partition o) {
       return Objects.equals(tPartition, o.tPartition);
     }
     return false;

@@ -2209,7 +2209,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             }
           } else  {
             // partition spec is not specified but column schema can have partitions specified
-            for(FieldSchema f : targetTable.getPartCols()) {
+            for(FieldSchema f : targetTable.getEffectivePartCols()) {
               //parser only allows foo(a,b), not foo(foo.a, foo.b)
               targetColumns.remove(f.getName());
             }
@@ -12039,10 +12039,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       // Hack!! - refactor once the metadata APIs with types are ready
       // Finally add the partitioning columns
-      for (FieldSchema part_col : tab.getPartCols()) {
-        LOG.trace("Adding partition col: " + part_col);
-        rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
-            TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
+      for (FieldSchema partCol : tab.getPartCols()) {
+        LOG.trace("Adding partition col: " + partCol);
+        rwsch.put(alias, partCol.getName(), new ColumnInfo(partCol.getName(),
+            TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true));
       }
 
       // put virtual columns into RowResolver.
@@ -12305,7 +12305,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (tab.isPartitioned() && !tab.hasNonNativePartitionSupport()) {
       List<String> cols = new ArrayList<String>();
       if (qbp.getAnalyzeRewrite() != null) {
-        List<FieldSchema> partitionCols = tab.getPartCols();
+        List<FieldSchema> partitionCols = tab.getEffectivePartCols();
         for (FieldSchema fs : partitionCols) {
           cols.add(fs.getName());
         }

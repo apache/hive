@@ -123,15 +123,11 @@ public final class ParseUtils {
    * @return boolean
    */
   public static boolean isJoinToken(ASTNode node) {
-    switch (node.getToken().getType()) {
-    case HiveParser.TOK_JOIN:
-    case HiveParser.TOK_LEFTOUTERJOIN:
-    case HiveParser.TOK_RIGHTOUTERJOIN:
-    case HiveParser.TOK_FULLOUTERJOIN:
-      return true;
-    default:
-      return false;
-    }
+    return switch (node.getToken().getType()) {
+      case HiveParser.TOK_JOIN, HiveParser.TOK_LEFTOUTERJOIN, HiveParser.TOK_RIGHTOUTERJOIN,
+           HiveParser.TOK_FULLOUTERJOIN -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -163,12 +159,10 @@ public final class ParseUtils {
     // but it should not be a major bottleneck as the number of columns are
     // anyway not so big
     Iterator<FieldSchema> iterCols = fieldSchemas.iterator();
-    List<String> colNames = new ArrayList<String>();
+    List<String> colNames = new ArrayList<>();
     while (iterCols.hasNext()) {
       String colName = iterCols.next().getName();
-      Iterator<String> iter = colNames.iterator();
-      while (iter.hasNext()) {
-        String oldColName = iter.next();
+      for (String oldColName : colNames) {
         if (colName.equalsIgnoreCase(oldColName)) {
           throw new SemanticException(ErrorMsg.DUPLICATE_COLUMN_NAMES
               .getMsg(oldColName));
@@ -286,7 +280,7 @@ public final class ParseUtils {
     final Set<Integer> tokensToMatch = new HashSet<>(Arrays.asList(tokens));
     final String[] matched = {null};
 
-    boolean check =  ParseUtils.containsTokenOfType(root, new PTFUtils.Predicate<ASTNode>() {
+    boolean check = ParseUtils.containsTokenOfType(root, new PTFUtils.Predicate<>() {
       @Override
       public boolean apply(ASTNode node) {
         if (tokensToMatch.contains(node.getType())) {
@@ -302,7 +296,7 @@ public final class ParseUtils {
   }
 
   public static boolean containsTokenOfType(ASTNode root, PTFUtils.Predicate<ASTNode> predicate) {
-    Queue<ASTNode> queue = new ArrayDeque<ASTNode>();
+    Queue<ASTNode> queue = new ArrayDeque<>();
 
     // BFS
     queue.add(root);
@@ -535,7 +529,7 @@ public final class ParseUtils {
       if (excludes != null && excludes.contains(name)) {
         continue;
       }
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
         sb.append(",");
       }
       sb.append(name);
@@ -581,8 +575,7 @@ public final class ParseUtils {
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
     String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     Map<String, String> colTypes = new HashMap<>();
-    List<FieldSchema> partitionKeys = table.hasNonNativePartitionSupport() ?
-        table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();
+    List<FieldSchema> partitionKeys = table.getEffectivePartCols();
     for (FieldSchema fs : partitionKeys) {
       colTypes.put(fs.getName().toLowerCase(), fs.getType());
     }
@@ -692,7 +685,7 @@ public final class ParseUtils {
    */
   private static int calculatePartPrefix(Table tbl, Set<String> partSpecKeys) {
     int partPrefixToDrop = 0;
-    for (FieldSchema fs : tbl.getPartCols()) {
+    for (FieldSchema fs : tbl.getEffectivePartCols()) {
       if (!partSpecKeys.contains(fs.getName())) {
         break;
       }

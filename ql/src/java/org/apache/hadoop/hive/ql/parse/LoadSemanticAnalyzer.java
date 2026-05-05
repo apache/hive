@@ -561,7 +561,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     rewrittenQueryStr.append(getFullTableNameForSQL((ASTNode)(tableTree.getChild(0))));
-    addPartitionColsToInsert(table.getPartCols(), inpPartSpec, rewrittenQueryStr);
+    addPartitionColsToInsert(parts, inpPartSpec, rewrittenQueryStr);
     rewrittenQueryStr.append(" select * from ");
     rewrittenQueryStr.append(tempTblName);
 

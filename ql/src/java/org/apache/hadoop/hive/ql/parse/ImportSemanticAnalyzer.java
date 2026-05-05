@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -89,7 +88,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 
 /**
@@ -878,7 +876,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     {
       // check partitioning column order and types
-      List<FieldSchema> existingTablePartCols = table.getPartCols();
+      List<FieldSchema> existingTablePartCols = table.getEffectivePartCols();
       List<FieldSchema> importedTablePartCols = tableDesc.getPartCols();
       if (!EximUtil.schemaCompare(importedTablePartCols, existingTablePartCols)) {
         throw new SemanticException(
