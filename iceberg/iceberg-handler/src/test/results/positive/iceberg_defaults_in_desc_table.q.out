@@ -1,0 +1,478 @@
+PREHOOK: query: CREATE TABLE ice_parq (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parq
+POSTHOOK: query: CREATE TABLE ice_parq (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parq
+PREHOOK: query: INSERT INTO ice_parq (id) VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parq
+POSTHOOK: query: INSERT INTO ice_parq (id) VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parq
+PREHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@ice_parq
+PREHOOK: Output: default@ice_parq
+POSTHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@ice_parq
+POSTHOOK: Output: default@ice_parq
+PREHOOK: query: INSERT INTO ice_parq (id) VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parq
+POSTHOOK: query: INSERT INTO ice_parq (id) VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parq
+PREHOOK: query: SELECT * FROM ice_parq ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parq
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM ice_parq ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parq
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	unknown	25
+2	{"x":100,"y":99}	unknown	25
+PREHOOK: query: DESCRIBE FORMATTED ice_parq
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_parq
+POSTHOOK: query: DESCRIBE FORMATTED ice_parq
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_parq
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+point               	struct<x:int,y:int> 	                    
+name                	string              	                    
+age                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"point\",\"required\":false,\"type\":{\"type\":\"struct\",\"fields\":[{\"id\":3,\"name\":\"x\",\"required\":false,\"type\":\"int\",\"write-default\":100},{\"id\":4,\"name\":\"y\",\"required\":false,\"type\":\"int\",\"write-default\":99}]}},{\"id\":5,\"name\":\"name\",\"required\":false,\"type\":\"string\",\"initial-default\":\"unknown\",\"write-default\":\"unknown\"},{\"id\":6,\"name\":\"age\",\"required\":false,\"type\":\"int\",\"initial-default\":25,\"write-default\":25}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"Apache Iceberg 1.10.1 (commit ccb8bc435062171e64bc8b7e5f56e6aed9c5b934)\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	3                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	2                   
+	numRows             	2                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	2                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Default Constraints	 	 
+Table:              	default.ice_parq    	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:age     	Initial Default Value:25	Write Default Value:25
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:point   	Write Default Value:'{"x":100,"y":99}'	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:name    	Initial Default Value:'unknown'	Write Default Value:'unknown'
+	 	 
+PREHOOK: query: CREATE TABLE ice_orc (
+  id INT)
+STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: CREATE TABLE ice_orc (
+  id INT)
+STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: INSERT INTO ice_orc (id) VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: INSERT INTO ice_orc (id) VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":99}',
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: INSERT INTO ice_orc (id) VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: INSERT INTO ice_orc (id) VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: SELECT * FROM ice_orc ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM ice_orc ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	NULL	NULL
+2	{"x":100,"y":99}	unknown	25
+PREHOOK: query: DESCRIBE FORMATTED ice_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: DESCRIBE FORMATTED ice_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+point               	struct<x:int,y:int> 	                    
+name                	string              	                    
+age                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"point\",\"required\":false,\"type\":{\"type\":\"struct\",\"fields\":[{\"id\":3,\"name\":\"x\",\"required\":false,\"type\":\"int\",\"write-default\":100},{\"id\":4,\"name\":\"y\",\"required\":false,\"type\":\"int\",\"write-default\":99}]}},{\"id\":5,\"name\":\"name\",\"required\":false,\"type\":\"string\",\"write-default\":\"unknown\"},{\"id\":6,\"name\":\"age\",\"required\":false,\"type\":\"int\",\"write-default\":25}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"Apache Iceberg 1.10.1 (commit ccb8bc435062171e64bc8b7e5f56e6aed9c5b934)\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	3                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	2                   
+	numRows             	2                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	2                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Default Constraints	 	 
+Table:              	default.ice_orc     	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:point   	Write Default Value:'{"x":100,"y":99}'	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:age     	Write Default Value:25	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:name    	Write Default Value:'unknown'	 
+	 	 
+PREHOOK: query: CREATE TABLE ice_nested (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_nested
+POSTHOOK: query: CREATE TABLE ice_nested (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_nested
+PREHOOK: query: ALTER TABLE ice_nested ADD COLUMNS (
+  nested_struct STRUCT<
+    outer_field:STRING, 
+    inner_struct:STRUCT<inner_a:INT, inner_b:STRUCT<inner_x:STRING, inner_y:STRING>>
+  > DEFAULT '{"outer_field":"test","inner_struct":{"inner_a":42,"inner_b":{"inner_x":"nestedx","inner_y":"nestedy"}}}',
+  simple_struct STRUCT<a:INT, b:STRING> DEFAULT '{"a":123,"b":"simple"}'
+)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@ice_nested
+PREHOOK: Output: default@ice_nested
+POSTHOOK: query: ALTER TABLE ice_nested ADD COLUMNS (
+  nested_struct STRUCT<
+    outer_field:STRING, 
+    inner_struct:STRUCT<inner_a:INT, inner_b:STRUCT<inner_x:STRING, inner_y:STRING>>
+  > DEFAULT '{"outer_field":"test","inner_struct":{"inner_a":42,"inner_b":{"inner_x":"nestedx","inner_y":"nestedy"}}}',
+  simple_struct STRUCT<a:INT, b:STRING> DEFAULT '{"a":123,"b":"simple"}'
+)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@ice_nested
+POSTHOOK: Output: default@ice_nested
+PREHOOK: query: DESCRIBE FORMATTED ice_nested
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_nested
+POSTHOOK: query: DESCRIBE FORMATTED ice_nested
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_nested
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+nested_struct       	struct<outer_field:string,inner_struct:struct<inner_a:int,inner_b:struct<inner_x:string,inner_y:string>>>	                    
+simple_struct       	struct<a:int,b:string>	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"nested_struct\",\"required\":false,\"type\":{\"type\":\"struct\",\"fields\":[{\"id\":3,\"name\":\"outer_field\",\"required\":false,\"type\":\"string\",\"write-default\":\"test\"},{\"id\":4,\"name\":\"inner_struct\",\"required\":false,\"type\":{\"type\":\"struct\",\"fields\":[{\"id\":5,\"name\":\"inner_a\",\"required\":false,\"type\":\"int\",\"write-default\":42},{\"id\":6,\"name\":\"inner_b\",\"required\":false,\"type\":{\"type\":\"struct\",\"fields\":[{\"id\":7,\"name\":\"inner_x\",\"required\":false,\"type\":\"string\",\"write-default\":\"nestedx\"},{\"id\":8,\"name\":\"inner_y\",\"required\":false,\"type\":\"string\",\"write-default\":\"nestedy\"}]}}]}}]}},{\"id\":9,\"name\":\"simple_struct\",\"required\":false,\"type\":{\"type\":\"struct\",\"fields\":[{\"id\":10,\"name\":\"a\",\"required\":false,\"type\":\"int\",\"write-default\":123},{\"id\":11,\"name\":\"b\",\"required\":false,\"type\":\"string\",\"write-default\":\"simple\"}]}}]}
+	format-version      	3                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Default Constraints	 	 
+Table:              	default.ice_nested  	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:nested_struct	Write Default Value:'{"outer_field":"test","inner_struct":{"inner_a":42,"inner_b":{"inner_x":"nestedx","inner_y":"nestedy"}}}'	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:simple_struct	Write Default Value:'{"a":123,"b":"simple"}'	 
+	 	 
+PREHOOK: query: CREATE TABLE ice_mixed_defaults (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_mixed_defaults
+POSTHOOK: query: CREATE TABLE ice_mixed_defaults (
+  id INT)
+STORED BY ICEBERG stored as parquet
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_mixed_defaults
+PREHOOK: query: ALTER TABLE ice_mixed_defaults ADD COLUMNS (
+  col_with_initial STRING DEFAULT 'initial_value'
+)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@ice_mixed_defaults
+PREHOOK: Output: default@ice_mixed_defaults
+POSTHOOK: query: ALTER TABLE ice_mixed_defaults ADD COLUMNS (
+  col_with_initial STRING DEFAULT 'initial_value'
+)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@ice_mixed_defaults
+POSTHOOK: Output: default@ice_mixed_defaults
+PREHOOK: query: DESCRIBE FORMATTED ice_mixed_defaults
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_mixed_defaults
+POSTHOOK: query: DESCRIBE FORMATTED ice_mixed_defaults
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_mixed_defaults
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+col_with_initial    	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"col_with_initial\",\"required\":false,\"type\":\"string\",\"initial-default\":\"initial_value\",\"write-default\":\"initial_value\"}]}
+	format-version      	3                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Default Constraints	 	 
+Table:              	default.ice_mixed_defaults	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:col_with_initial	Initial Default Value:'initial_value'	Write Default Value:'initial_value'
+	 	 
+PREHOOK: query: ALTER TABLE ice_mixed_defaults CHANGE COLUMN col_with_initial col_without_write STRING DEFAULT null
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@ice_mixed_defaults
+PREHOOK: Output: default@ice_mixed_defaults
+POSTHOOK: query: ALTER TABLE ice_mixed_defaults CHANGE COLUMN col_with_initial col_without_write STRING DEFAULT null
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@ice_mixed_defaults
+POSTHOOK: Output: default@ice_mixed_defaults
+PREHOOK: query: DESCRIBE FORMATTED ice_mixed_defaults
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_mixed_defaults
+POSTHOOK: query: DESCRIBE FORMATTED ice_mixed_defaults
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_mixed_defaults
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+col_without_write   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":2,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"col_without_write\",\"required\":false,\"type\":\"string\",\"initial-default\":\"initial_value\"}]}
+	format-version      	3                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Default Constraints	 	 
+Table:              	default.ice_mixed_defaults	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:col_without_write	Initial Default Value:'initial_value'	 
+	 	 

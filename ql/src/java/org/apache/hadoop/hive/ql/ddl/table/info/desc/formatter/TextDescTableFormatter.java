@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -73,6 +76,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
+import static org.apache.hadoop.hive.ql.ddl.DDLUtils.isIcebergTable;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.ALIGNMENT;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.DEFAULT_STRINGBUILDER_SIZE;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.FIELD_DELIM;
@@ -83,6 +87,7 @@ import static org.apache.hadoop.hive.ql.ddl.ShowUtils.formatOutput;
  * Formats DESC TABLE results to text format.
  */
 class TextDescTableFormatter extends DescTableFormatter {
+  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   @Override
   public void describeTable(HiveConf conf, DataOutputStream out, String columnPath, String tableName, Table table,
       Partition partition, List<FieldSchema> columns, boolean isFormatted, boolean isExtended, boolean isOutputPadded,
@@ -454,7 +459,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     }
   }
 
-  private String getConstraintsInformation(Table table) {
+  private String getConstraintsInformation(Table table) throws IOException {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
@@ -476,7 +481,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     }
     if (DefaultConstraint.isNotEmpty(table.getDefaultConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Default Constraints").append(LINE_DELIM);
-      getDefaultConstraintsInformation(constraintsInfo, table.getDefaultConstraint());
+      getDefaultConstraintsInformation(constraintsInfo, table);
     }
     if (CheckConstraint.isNotEmpty(table.getCheckConstraint())) {
       constraintsInfo.append(LINE_DELIM).append("# Check Constraints").append(LINE_DELIM);
@@ -558,12 +563,23 @@ class TextDescTableFormatter extends DescTableFormatter {
     }
   }
 
-  private void getDefaultConstraintsInformation(StringBuilder constraintsInfo, DefaultConstraint constraint) {
+  private void getDefaultConstraintsInformation(StringBuilder constraintsInfo, Table table) throws IOException {
+    DefaultConstraint constraint = table.getDefaultConstraint();
     formatOutput("Table:", constraint.getDatabaseName() + "." + constraint.getTableName(), constraintsInfo);
     Map<String, List<DefaultConstraintCol>> defaultConstraints = constraint.getDefaultConstraints();
     if (MapUtils.isNotEmpty(defaultConstraints)) {
+      boolean isIceberg = isIcebergTable(table);
+      JsonNode fieldsNode = null;
+      if (isIceberg && table.getParameters().get("current-schema") != null) {
+        fieldsNode = OBJECT_MAPPER.readTree(table.getParameters().get("current-schema")).get("fields");
+      }
+      
       for (Map.Entry<String, List<DefaultConstraintCol>> entry : defaultConstraints.entrySet()) {
-        getDefaultConstraintRelInformation(constraintsInfo, entry.getKey(), entry.getValue());
+        if (isIceberg) {
+          getIcebergDefaultConstraintRelInformation(constraintsInfo, entry.getKey(), entry.getValue(), fieldsNode);
+        } else {
+          getDefaultConstraintRelInformation(constraintsInfo, entry.getKey(), entry.getValue());
+        }
       }
     }
   }
@@ -580,6 +596,99 @@ class TextDescTableFormatter extends DescTableFormatter {
       }
     }
     constraintsInfo.append(LINE_DELIM);
+  }
+
+  private void getIcebergDefaultConstraintRelInformation(StringBuilder constraintsInfo, String constraintName,
+      List<DefaultConstraintCol> columns, JsonNode fieldsNode) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (CollectionUtils.isNotEmpty(columns)) {
+      for (DefaultConstraintCol column : columns) {
+        String initialDefault = getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "initial-default");
+        String writeDefault = getIcebergColumnDefaultsFromSchema(fieldsNode, column.colName, "write-default");
+        List<String> fieldsList = new ArrayList<>();
+        fieldsList.add("Column Name:" + column.colName);
+
+        if (StringUtils.isNotEmpty(initialDefault)) {
+          fieldsList.add("Initial Default Value:" + initialDefault);
+        }
+
+        if (StringUtils.isNotEmpty(writeDefault)) {
+          fieldsList.add("Write Default Value:" + writeDefault);
+        }
+        formatOutput(fieldsList.toArray(new String[0]), constraintsInfo);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private String getIcebergColumnDefaultsFromSchema(JsonNode node, String colName, String defaultType) {
+    if (node == null || colName == null) {
+      return StringUtils.EMPTY;
+    }
+
+    JsonNode targetNode = node;
+    if (node.isArray()) {
+      targetNode = null;
+      for (JsonNode field : node) {
+        if (colName.equalsIgnoreCase(field.path("name").asText(null))) {
+          targetNode = field;
+          break;
+        }
+      }
+    }
+
+    if (targetNode == null) {
+      return StringUtils.EMPTY;
+    }
+
+    JsonNode defaultNode = targetNode.path(defaultType);
+    if (!defaultNode.isMissingNode()) {
+      return defaultNode.isTextual() ? quoteString(defaultNode.asText(), "'") : defaultNode.asText();
+    }
+    return extractStructDefaults(targetNode, defaultType);
+  }
+
+  private String extractStructDefaults(JsonNode targetNode, String defaultType) {
+    JsonNode typeNode = targetNode.path("type");
+    JsonNode structFields = typeNode.path("fields");
+
+    if (!typeNode.isObject() || !structFields.isArray()) {
+      return StringUtils.EMPTY;
+    }
+
+    List<String> fieldDefaults = new ArrayList<>();
+    for (JsonNode childField : structFields) {
+      String childName = childField.path("name").asText("");
+      JsonNode childDefaultNode = childField.path(defaultType);
+      if (!childDefaultNode.isMissingNode()) {
+        String defaultValue = childDefaultNode.asText();
+        String quotedValue = childDefaultNode.isTextual() ? quoteString(defaultValue, "\"") : defaultValue;
+        fieldDefaults.add(quoteString(childName, "\"") + ":" + quotedValue);
+      } else {
+        String nestedJson = getNestedStructDefault(childField, childName, defaultType);
+        if (StringUtils.isNotEmpty(nestedJson)) {
+          fieldDefaults.add(nestedJson);
+        }
+      }
+    }
+    
+    return fieldDefaults.isEmpty() ? StringUtils.EMPTY : 
+        quoteString("{" + String.join(",", fieldDefaults) + "}", "'");
+  }
+
+  private String getNestedStructDefault(JsonNode childField, String childName, String defaultType) {
+    JsonNode childTypeNode = childField.path("type");
+    if (!childTypeNode.isObject()) {
+      return StringUtils.EMPTY;
+    }
+    
+    String nestedDefaults = extractStructDefaults(childField, defaultType);
+    return StringUtils.isEmpty(nestedDefaults) ? StringUtils.EMPTY :
+        quoteString(childName, "\"") + ":" + nestedDefaults.substring(1, nestedDefaults.length() - 1);
+  }
+
+  private static String quoteString(String input, String quote) {
+    return quote + input + quote;
   }
 
   private void getCheckConstraintsInformation(StringBuilder constraintsInfo, CheckConstraint constraint) {
