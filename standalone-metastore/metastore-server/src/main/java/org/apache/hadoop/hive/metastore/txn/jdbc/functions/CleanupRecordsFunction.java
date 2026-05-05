@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
   private static final Logger LOG = LoggerFactory.getLogger(CleanupRecordsFunction.class);
   private static final EnumSet<HiveObjectType> HIVE_OBJECT_TYPES = 
       EnumSet.of(HiveObjectType.DATABASE, HiveObjectType.TABLE, HiveObjectType.PARTITION);
+  private static final String COMPACTION_TYPE_PARAM = "compactionType";
 
   @SuppressWarnings("squid:S3599")
   //language=SQL
@@ -66,7 +68,8 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
                 "\"CQ_DATABASE\" = :dbName AND " +
                 "(\"CQ_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CQ_PARTITION\" = :partName OR :partName IS NULL) AND " +
-                "(\"CQ_TXN_ID\" != :txnId OR :txnId IS NULL)");
+                "(\"CQ_TXN_ID\" != :txnId OR :txnId IS NULL) AND " +
+                "(\"CQ_TYPE\" != :" + COMPACTION_TYPE_PARAM + ")");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE " +
                 "\"CC_DATABASE\" = :dbName AND " +
@@ -112,7 +115,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
   public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     // cleanup should be done only for objects belonging to default catalog
     List<MapSqlParameterSource> paramSources = new ArrayList<>();
-
+    String deferredCleanUp = Character.toString(TxnStore.DEFERRED_CLEANUP);
     switch (type) {
       case DATABASE: {
         if (!defaultCatalog.equals(db.getCatalogName())) {
@@ -124,7 +127,8 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
             .addValue("dbName", db.getName().toLowerCase())
             .addValue("tableName", null, Types.VARCHAR)
             .addValue("partName", null, Types.VARCHAR)
-            .addValue("txnId", txnId, Types.BIGINT));
+            .addValue("txnId", txnId, Types.BIGINT)
+            .addValue(COMPACTION_TYPE_PARAM, deferredCleanUp, Types.CHAR));
         break;
       }
       case TABLE: {
@@ -137,7 +141,8 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
             .addValue("dbName", table.getDbName().toLowerCase())
             .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
             .addValue("partName", null, Types.VARCHAR)
-            .addValue("txnId", null, Types.BIGINT));
+            .addValue("txnId", null, Types.BIGINT)
+            .addValue(COMPACTION_TYPE_PARAM, deferredCleanUp, Types.CHAR));
         break;
       }
       case PARTITION: {
@@ -155,7 +160,8 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
               .addValue("dbName", table.getDbName().toLowerCase())
               .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
               .addValue("partName", Warehouse.makePartName(partCols, partVals), Types.VARCHAR)
-              .addValue("txnId", null, Types.BIGINT));
+              .addValue("txnId", null, Types.BIGINT)
+              .addValue(COMPACTION_TYPE_PARAM, deferredCleanUp, Types.CHAR));
         }
       }
     }

@@ -220,6 +220,7 @@ enum CompactionType {
     REBALANCE = 3,
     ABORT_TXN_CLEANUP = 4,
     SMART_OPTIMIZE = 5,
+    DEFERRED_CLEANUP = 6,
 }
 
 enum GrantRevokeType {
