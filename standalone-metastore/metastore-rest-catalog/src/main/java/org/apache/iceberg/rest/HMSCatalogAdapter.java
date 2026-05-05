@@ -324,7 +324,7 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   private RESTResponse reportMetrics(Map<String, String> vars, Object body) {
-    final var ident = identFromPathVars(vars);
+    final TableIdentifier ident = identFromPathVars(vars);
     final var report = castRequest(ReportMetricsRequest.class, body).report();
     final var receivedAt = clock.instant();
     metricsReporters.forEach(reporter -> reporter.report(catalogName, ident, report, receivedAt));
