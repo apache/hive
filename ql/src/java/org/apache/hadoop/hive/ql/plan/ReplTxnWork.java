@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import com.google.inject.internal.cglib.core.$MethodInfoTransformer;
 import org.apache.hadoop.hive.metastore.api.ReplLastIdInfo;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;

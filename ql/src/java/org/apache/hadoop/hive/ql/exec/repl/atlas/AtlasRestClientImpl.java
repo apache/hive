@@ -47,7 +47,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 /**
  * Implementation of RESTClient, encapsulates Atlas' REST APIs.
@@ -137,12 +137,12 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
         try {
           return clientV2.getServer(endpoint);
         } catch (AtlasServiceException e) {
-          int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
+          /* int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
           if (NOT_FOUND.getStatusCode() == statusCode) {
             // Atlas server entity is initialized on first import/export o/p.
             LOG.info("Atlas server entity is not found");
             return null;
-          }
+          } */
           throw e;
         }
       });
@@ -171,13 +171,13 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
       }
       return entityWithExtInfo.getEntity().getGuid();
     } catch (AtlasServiceException e) {
-      int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
+      /* int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
       if (statusCode != NOT_FOUND.getStatusCode()) {
         throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format("Exception " +
           "while getEntityGuid ", ReplUtils.REPL_ATLAS_SERVICE), e.getCause());
       }
       LOG.warn("getEntityGuid: Could not retrieve entity guid for: {}-{}-{}",
-              entityType, attributeName, qualifiedName, e.getMessage());
+              entityType, attributeName, qualifiedName, e.getMessage()); */
       return null;
     } catch (Exception e) {
       throw new SemanticException(e);

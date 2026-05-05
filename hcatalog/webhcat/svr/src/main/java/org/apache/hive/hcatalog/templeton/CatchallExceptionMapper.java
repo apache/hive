@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.eclipse.jetty.http.HttpStatus;
 
-import com.sun.jersey.api.NotFoundException;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Map all exceptions to the Jersey response.  This lets us have nice
