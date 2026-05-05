@@ -1,0 +1,70 @@
+PREHOOK: query: CREATE TABLE merge_skew_abort_a (key int, value string) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge_skew_abort_a
+POSTHOOK: query: CREATE TABLE merge_skew_abort_a (key int, value string) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge_skew_abort_a
+PREHOOK: query: CREATE TABLE merge_skew_abort_b (key int, value string) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge_skew_abort_b
+POSTHOOK: query: CREATE TABLE merge_skew_abort_b (key int, value string) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge_skew_abort_b
+PREHOOK: query: INSERT INTO TABLE merge_skew_abort_a VALUES (1, 'a1'), (1, 'a2'), (1, 'a3'), (1, 'a4'),(2, 'b1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@merge_skew_abort_a
+POSTHOOK: query: INSERT INTO TABLE merge_skew_abort_a VALUES (1, 'a1'), (1, 'a2'), (1, 'a3'), (1, 'a4'),(2, 'b1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@merge_skew_abort_a
+POSTHOOK: Lineage: merge_skew_abort_a.key SCRIPT []
+POSTHOOK: Lineage: merge_skew_abort_a.value SCRIPT []
+PREHOOK: query: INSERT INTO TABLE merge_skew_abort_b VALUES (1, 'x1'), (2, 'y1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@merge_skew_abort_b
+POSTHOOK: query: INSERT INTO TABLE merge_skew_abort_b VALUES (1, 'x1'), (2, 'y1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@merge_skew_abort_b
+POSTHOOK: Lineage: merge_skew_abort_b.key SCRIPT []
+POSTHOOK: Lineage: merge_skew_abort_b.value SCRIPT []
+PREHOOK: query: SELECT a.key, a.value, b.value
+FROM merge_skew_abort_a a JOIN merge_skew_abort_b b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_skew_abort_a
+PREHOOK: Input: default@merge_skew_abort_b
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Data skew detected in merge join, table alias 0 has accumulated 2 rows.
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Data skew detected in merge join, table alias 0 has accumulated 2 rows.
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Data skew detected in merge join, table alias 0 has accumulated 2 rows.
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Data skew detected in merge join, table alias 0 has accumulated 2 rows.
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
