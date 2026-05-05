@@ -78,6 +78,10 @@ public class HMSCatalogFactory {
     if (!StringUtils.isEmpty(configUri)) {
       properties.put(CatalogProperties.URI, configUri);
     }
+    // TODO catalog. Currently, `configWarehouse` is determined by the path of the default catalog. We need to consider whether,
+    //  in the case of a non-default catalog, `configWarehouse` should be determined by the specific catalog path instead.
+    //  Need to consider adding new created native/internal catalog warehouse(MetastoreConf.ConfVars.WAREHOUSE_CATALOG) later.
+    //  Create HIVE-28879 to track this issue.
     final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
     if (!StringUtils.isEmpty(configWarehouse)) {
       properties.put(CatalogProperties.WAREHOUSE_LOCATION, configWarehouse);

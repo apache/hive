@@ -7,7 +7,7 @@ CREATE DATABASE testdb;
 -- The list of databases in the catalog 'hive' should only contain the default and the testdb.
 SHOW DATABASES;
 
--- CREATE a new catalog with comment
+-- CREATE a new native catalog with comment
 CREATE CATALOG testcat LOCATION '/tmp/testcat' COMMENT 'Hive test catalog';
 
 -- Check catalogs list

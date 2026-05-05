@@ -164,15 +164,18 @@ public class MetaStoreTestUtils {
                                             boolean createTransactionalTables) throws Exception {
     Exception metaStoreException = null;
     String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
+    String warehouseCatDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_CATALOG);
 
     for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
       try {
         int metaStorePort = findFreePort();
         if (!keepWarehousePath) {
           // Setting metastore instance specific warehouse directory, postfixing with port
-          Path postfixedWarehouseDir = new Path(warehouseDir, String.valueOf(metaStorePort));
-          MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, postfixedWarehouseDir.toString());
-          warehouseDir = postfixedWarehouseDir.toString();
+          warehouseDir = new Path(warehouseDir, String.valueOf(metaStorePort)).toString();
+          MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, warehouseDir);
+
+          warehouseCatDir = new Path(warehouseCatDir, String.valueOf(metaStorePort)).toString();
+          MetastoreConf.setVar(conf, ConfVars.WAREHOUSE_CATALOG, warehouseCatDir);
         }
 
         String jdbcUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);

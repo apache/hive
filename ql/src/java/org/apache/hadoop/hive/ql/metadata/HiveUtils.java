@@ -573,4 +573,8 @@ public final class HiveUtils {
             .map(SessionState::getCurrentCatalog)
             .orElseGet(() -> getDefaultCatalog(conf));
   }
+
+  public static boolean isDefaultCatalog(String catName, Configuration conf) {
+    return catName == null || catName.isEmpty() || getDefaultCatalog(conf).equals(catName);
+  }
 }
