@@ -79,7 +79,7 @@ public class VectorizedReadUtils {
       // Note: Since Hive doesn't know about partition information of Iceberg tables, partitionDesc is only used to
       // deduct the table (and DB) name here.
       CacheTag cacheTag = HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE) ?
-          LlapHiveUtils.getDbAndTableNameForMetrics(path, true, partitionDesc) : null;
+          LlapHiveUtils.getCacheTag(path, true, partitionDesc) : null;
 
       try {
         // Schema has to be serialized and deserialized as it is passed between different packages of TypeDescription:

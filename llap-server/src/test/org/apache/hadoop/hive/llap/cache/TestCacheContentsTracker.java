@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.metastore.Warehouse;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -127,7 +126,7 @@ public class TestCacheContentsTracker {
   public void testEncodingDecoding() throws Exception {
     LinkedHashMap<String, String> partDescs = new LinkedHashMap<>();
     partDescs.put("pytha=goras", "a2+b2=c2");
-    CacheTag tag = CacheTag.build("math.rules", partDescs);
+    CacheTag tag = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "math.rules", partDescs);
     CacheTag.SinglePartitionCacheTag stag = ((CacheTag.SinglePartitionCacheTag)tag);
     assertEquals("pytha=goras=a2+b2=c2", stag.partitionDescToString());
     assertEquals(1, stag.getPartitionDescMap().size());
@@ -136,7 +135,7 @@ public class TestCacheContentsTracker {
     partDescs.clear();
     partDescs.put("mutli=one", "one=/1");
     partDescs.put("mutli=two/", "two=2");
-    tag = CacheTag.build("math.rules", partDescs);
+    tag = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "math.rules", partDescs);
     CacheTag.MultiPartitionCacheTag mtag = ((CacheTag.MultiPartitionCacheTag)tag);
     assertEquals("mutli=one=one=/1/mutli=two/=two=2", mtag.partitionDescToString());
     assertEquals(2, mtag.getPartitionDescMap().size());
@@ -168,6 +167,10 @@ public class TestCacheContentsTracker {
   }
 
   public static CacheTag cacheTagBuilder(String dbAndTable, String... partitions) {
+    String[] parts = dbAndTable.split("\\.");
+    if(parts.length < 3) {
+      dbAndTable = Warehouse.DEFAULT_CATALOG_NAME + "." + dbAndTable;
+    }
     if (partitions != null && partitions.length > 0) {
       LinkedHashMap<String, String> partDescs = new LinkedHashMap<>();
       for (String partition : partitions) {
@@ -215,33 +218,33 @@ public class TestCacheContentsTracker {
   private static final String EXPECTED_CACHE_STATE_WHEN_FULL =
       "\n" +
           "Cache state: \n" +
-          "default : 2/2, 2101248/2101248\n" +
-          "default.testtable : 2/2, 2101248/2101248\n" +
-          "otherdb : 7/7, 1611106304/1611106304\n" +
-          "otherdb.testtable : 4/4, 231424/231424\n" +
-          "otherdb.testtable/p=v1 : 3/3, 100352/100352\n" +
-          "otherdb.testtable/p=v1/pp=vv1 : 2/2, 34816/34816\n" +
-          "otherdb.testtable/p=v1/pp=vv2 : 1/1, 65536/65536\n" +
-          "otherdb.testtable/p=v2 : 1/1, 131072/131072\n" +
-          "otherdb.testtable/p=v2/pp=vv1 : 1/1, 131072/131072\n" +
-          "otherdb.testtable2 : 2/2, 537133056/537133056\n" +
-          "otherdb.testtable2/p=v3 : 2/2, 537133056/537133056\n" +
-          "otherdb.testtable3 : 1/1, 1073741824/1073741824";
+          "hive.default : 2/2, 2101248/2101248\n" +
+          "hive.default.testtable : 2/2, 2101248/2101248\n" +
+          "hive.otherdb : 7/7, 1611106304/1611106304\n" +
+          "hive.otherdb.testtable : 4/4, 231424/231424\n" +
+          "hive.otherdb.testtable/p=v1 : 3/3, 100352/100352\n" +
+          "hive.otherdb.testtable/p=v1/pp=vv1 : 2/2, 34816/34816\n" +
+          "hive.otherdb.testtable/p=v1/pp=vv2 : 1/1, 65536/65536\n" +
+          "hive.otherdb.testtable/p=v2 : 1/1, 131072/131072\n" +
+          "hive.otherdb.testtable/p=v2/pp=vv1 : 1/1, 131072/131072\n" +
+          "hive.otherdb.testtable2 : 2/2, 537133056/537133056\n" +
+          "hive.otherdb.testtable2/p=v3 : 2/2, 537133056/537133056\n" +
+          "hive.otherdb.testtable3 : 1/1, 1073741824/1073741824";
 
   private static final String EXPECTED_CACHE_STATE_AFTER_EVICTION =
       "\n" +
           "Cache state: \n" +
-          "default : 0/2, 0/2101248\n" +
-          "default.testtable : 0/2, 0/2101248\n" +
-          "otherdb : 5/7, 1074202624/1611106304\n" +
-          "otherdb.testtable : 3/4, 198656/231424\n" +
-          "otherdb.testtable/p=v1 : 2/3, 67584/100352\n" +
-          "otherdb.testtable/p=v1/pp=vv1 : 1/2, 2048/34816\n" +
-          "otherdb.testtable/p=v1/pp=vv2 : 1/1, 65536/65536\n" +
-          "otherdb.testtable/p=v2 : 1/1, 131072/131072\n" +
-          "otherdb.testtable/p=v2/pp=vv1 : 1/1, 131072/131072\n" +
-          "otherdb.testtable2 : 1/2, 262144/537133056\n" +
-          "otherdb.testtable2/p=v3 : 1/2, 262144/537133056\n" +
-          "otherdb.testtable3 : 1/1, 1073741824/1073741824";
+          "hive.default : 0/2, 0/2101248\n" +
+          "hive.default.testtable : 0/2, 0/2101248\n" +
+          "hive.otherdb : 5/7, 1074202624/1611106304\n" +
+          "hive.otherdb.testtable : 3/4, 198656/231424\n" +
+          "hive.otherdb.testtable/p=v1 : 2/3, 67584/100352\n" +
+          "hive.otherdb.testtable/p=v1/pp=vv1 : 1/2, 2048/34816\n" +
+          "hive.otherdb.testtable/p=v1/pp=vv2 : 1/1, 65536/65536\n" +
+          "hive.otherdb.testtable/p=v2 : 1/1, 131072/131072\n" +
+          "hive.otherdb.testtable/p=v2/pp=vv1 : 1/1, 131072/131072\n" +
+          "hive.otherdb.testtable2 : 1/2, 262144/537133056\n" +
+          "hive.otherdb.testtable2/p=v3 : 1/2, 262144/537133056\n" +
+          "hive.otherdb.testtable3 : 1/1, 1073741824/1073741824";
 
 }

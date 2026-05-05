@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +38,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.impl.LlapManagementProtocolClientImpl;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
@@ -139,7 +138,8 @@ public final class ProactiveEviction {
 
         long evictedBytes = 0;
         for (LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest : protoRequests) {
-          LOG.debug("Requesting proactive eviction for entities in database {}", protoRequest.getDbName());
+          LOG.debug("Requesting proactive eviction for entities in catalog {}, database {}",
+              protoRequest.getCatalogName(), protoRequest.getDbName());
           LlapDaemonProtocolProtos.EvictEntityResponseProto response = client.evictEntity(null, protoRequest);
           evictedBytes += response.getEvictedBytes();
           LOG.debug("Proactively evicted {} bytes", response.getEvictedBytes());
@@ -152,19 +152,19 @@ public final class ProactiveEviction {
   }
 
   /**
-   * Holds information on entities: DB name(s), table name(s), partitions.
+   * Holds information on entities: catalog name(s), DB name(s), table name(s), partitions.
    */
   public static final class Request {
 
-    // Holds a hierarchical structure of DBs, tables and partitions such as:
-    // { testdb : { testtab0 : [], testtab1 : [ {pk0 : p0v0, pk1 : p0v1}, {pk0 : p1v0, pk1 : p1v1} ] }, testdb2 : {} }
-    private final Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities;
+    public record PartitionSpec(Map<String, String> spec) {}
+    public record CatalogDb(String catalog, String database){}
+    private final Map<CatalogDb, Map<String, Set<PartitionSpec>>> entities;
 
-    private Request(Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities) {
+    private Request(Map<CatalogDb, Map<String, Set<PartitionSpec>>> entities) {
       this.entities = entities;
     }
 
-    public Map<String, Map<String, Set<LinkedHashMap<String, String>>>> getEntities() {
+    public Map<CatalogDb, Map<String, Set<PartitionSpec>>> getEntities() {
       return entities;
     }
 
@@ -172,15 +172,8 @@ public final class ProactiveEviction {
       return entities.isEmpty();
     }
 
-    /**
-     * Request often times only contains tables/partitions of 1 DB only.
-     * @return the single DB name, null if the count of DBs present is not exactly 1.
-     */
-    public String getSingleDbName() {
-      if (entities.size() == 1) {
-        return entities.keySet().stream().findFirst().get();
-      }
-      return null;
+    public boolean hasDatabaseName(String catalogName, String dbName) {
+      return entities.containsKey(new CatalogDb(catalogName, dbName));
     }
 
     /**
@@ -188,41 +181,39 @@ public final class ProactiveEviction {
      * @return list of request instances ready to be sent over protobuf.
      */
     public List<LlapDaemonProtocolProtos.EvictEntityRequestProto> toProtoRequests() {
+      return entities.entrySet().stream()
+          .map(entry -> {
+            CatalogDb catalogDb = entry.getKey();
+            Map<String, Set<PartitionSpec>> tables = entry.getValue();
+            LlapDaemonProtocolProtos.EvictEntityRequestProto.Builder requestBuilder =
+                LlapDaemonProtocolProtos.EvictEntityRequestProto.newBuilder();
 
-      List<LlapDaemonProtocolProtos.EvictEntityRequestProto> protoRequests = new LinkedList<>();
+            requestBuilder.setCatalogName(catalogDb.catalog().toLowerCase());
+            requestBuilder.setDbName(catalogDb.database().toLowerCase());
 
-      for (Map.Entry<String, Map<String, Set<LinkedHashMap<String, String>>>> dbEntry : entities.entrySet()) {
-        String dbName = dbEntry.getKey();
-        Map<String, Set<LinkedHashMap<String, String>>> tables = dbEntry.getValue();
+            tables.forEach((tableName, partitions) -> {
+              LlapDaemonProtocolProtos.TableProto.Builder tableBuilder =
+                  LlapDaemonProtocolProtos.TableProto.newBuilder();
 
-        LlapDaemonProtocolProtos.EvictEntityRequestProto.Builder requestBuilder =
-            LlapDaemonProtocolProtos.EvictEntityRequestProto.newBuilder();
-        LlapDaemonProtocolProtos.TableProto.Builder tableBuilder = null;
+              tableBuilder.setTableName(tableName.toLowerCase());
 
-        requestBuilder.setDbName(dbName.toLowerCase());
-        for (Map.Entry<String, Set<LinkedHashMap<String, String>>> tableEntry : tables.entrySet()) {
-          String tableName = tableEntry.getKey();
-          tableBuilder = LlapDaemonProtocolProtos.TableProto.newBuilder();
-          tableBuilder.setTableName(tableName.toLowerCase());
+              Set<String> partitionKeys = null;
 
-          Set<LinkedHashMap<String, String>> partitions = tableEntry.getValue();
-          Set<String> partitionKeys = null;
-
-          for (Map<String, String> partitionSpec : partitions) {
-            if (partitionKeys == null) {
+              for (PartitionSpec partitionSpec : partitions) {
+                if (partitionKeys == null) {
+                  partitionKeys = new LinkedHashSet<>(partitionSpec.spec().keySet());
+                  tableBuilder.addAllPartKey(partitionKeys);
+                }
+                for (String partKey : tableBuilder.getPartKeyList()) {
+                  tableBuilder.addPartVal(partitionSpec.spec().get(partKey));
+                }
+              }
               // For a given table the set of partition columns (keys) should not change.
-              partitionKeys = new LinkedHashSet<>(partitionSpec.keySet());
-              tableBuilder.addAllPartKey(partitionKeys);
-            }
-            for (String partKey : tableBuilder.getPartKeyList()) {
-              tableBuilder.addPartVal(partitionSpec.get(partKey));
-            }
-          }
-          requestBuilder.addTable(tableBuilder.build());
-        }
-        protoRequests.add(requestBuilder.build());
-      }
-      return protoRequests;
+              requestBuilder.addTable(tableBuilder.build());
+            });
+            return requestBuilder.build();
+          })
+          .toList();
     }
 
     /**
@@ -233,19 +224,28 @@ public final class ProactiveEviction {
      * @return true if cacheTag matches and the related buffer is eligible for proactive eviction, false otherwise.
      */
     public boolean isTagMatch(CacheTag cacheTag) {
-      String db = getSingleDbName();
-      if (db == null) {
-        // Number of DBs in the request was not exactly 1.
-        throw new UnsupportedOperationException("Predicate only implemented for 1 DB case.");
+      String[] names = cacheTag.getTableName().split("\\.");
+      String catalog = Warehouse.DEFAULT_CATALOG_NAME;
+      String db = null;
+      if (names.length == 2) {
+        db = names[0];
+      } else if (names.length == 3) {
+        catalog = names[0];
+        db = names[1];
       }
+      if (db == null) {
+        // Number of (catalog, DB) pairs in the request was not exactly 1.
+        throw new UnsupportedOperationException("Predicate only implemented for 1 catalog and 1 DB case.");
+      }
+      // getTableName() returns "catalog.db.table"; TableName.fromString handles 3-part names.
       TableName tagTableName = TableName.fromString(cacheTag.getTableName(), null, null);
 
-      // Check against DB.
-      if (!db.equals(tagTableName.getDb())) {
+      // Check that the tag's catalog and database is present in the eviction request.
+      if (!entities.containsKey(new CatalogDb(catalog, db))) {
         return false;
       }
 
-      Map<String, Set<LinkedHashMap<String, String>>> tables = entities.get(db);
+      Map<String, Set<PartitionSpec>> tables = entities.getOrDefault(new CatalogDb(catalog, db), Map.of());
 
       // If true, must be a drop DB event and this cacheTag matches.
       if (tables.isEmpty()) {
@@ -261,7 +261,7 @@ public final class ProactiveEviction {
       for (String tableAndDbName : tables.keySet()) {
         if (tableAndDbName.equals(tagTableName.getNotEmptyDbTable())) {
 
-          Set<LinkedHashMap<String, String>> partDescs = tables.get(tableAndDbName);
+          Set<PartitionSpec> partDescs = tables.get(tableAndDbName);
 
           // If true, must be a drop table event, and this cacheTag matches.
           if (partDescs == null) {
@@ -274,7 +274,7 @@ public final class ProactiveEviction {
                 " to evict due to (and based on) a drop partition DDL statement..");
           }
 
-          if (partDescs.contains(tagPartDescMap)) {
+          if (partDescs.contains(new PartitionSpec(tagPartDescMap))) {
             return true;
           }
         }
@@ -292,7 +292,7 @@ public final class ProactiveEviction {
      */
     public static final class Builder {
 
-      private final Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities;
+      private final Map<CatalogDb, Map<String, Set<PartitionSpec>>> entities;
 
       private Builder() {
         this.entities = new HashMap<>();
@@ -302,45 +302,64 @@ public final class ProactiveEviction {
         return new Builder();
       }
 
-      public Builder addPartitionOfATable(String db, String tableName, LinkedHashMap<String, String> partSpec) {
-        ensureDb(db);
-        ensureTable(db, tableName);
-        entities.get(db).get(tableName).add(partSpec);
+      /**
+       * Add a partition of a table scoped to the given catalog.
+       */
+      public Builder addPartitionOfATable(String catalog, String db, String tableName,
+                                          Map<String, String> partSpec) {
+        ensureTable(catalog, db, tableName);
+        entities.get(new CatalogDb(catalog, db)).get(tableName).add(new PartitionSpec(partSpec));
         return this;
       }
 
+      /**
+       * Add a partition of a table scoped to the default catalog.
+       */
+      public Builder addPartitionOfATable(String db, String tableName, Map<String, String> partSpec) {
+        return addPartitionOfATable(Warehouse.DEFAULT_CATALOG_NAME, db, tableName, partSpec);
+      }
+
+      /**
+       * Add a database scoped to the given catalog.
+       */
+      public Builder addDb(String catalog, String db) {
+        ensureDb(catalog, db);
+        return this;
+      }
+
+      /**
+       * Add a database scoped to the default catalog.
+       */
       public Builder addDb(String db) {
-        ensureDb(db);
+        return addDb(Warehouse.DEFAULT_CATALOG_NAME, db);
+      }
+
+      /**
+       * Add a table scoped to the given catalog.
+       */
+      public Builder addTable(String catalog, String db, String table) {
+        ensureTable(catalog, db, table);
         return this;
       }
 
+      /**
+       * Add a table scoped to the default catalog.
+       */
       public Builder addTable(String db, String table) {
-        ensureDb(db);
-        ensureTable(db, table);
-        return this;
+        return addTable(Warehouse.DEFAULT_CATALOG_NAME, db, table);
       }
 
       public Request build() {
         return new Request(entities);
       }
 
-      private void ensureDb(String dbName) {
-        Map<String, Set<LinkedHashMap<String, String>>> tables = entities.get(dbName);
-        if (tables == null) {
-          tables = new HashMap<>();
-          entities.put(dbName, tables);
-        }
+      private void ensureDb(String catalogName, String dbName) {
+        entities.computeIfAbsent(new CatalogDb(catalogName, dbName), k -> new HashMap<>());
       }
 
-      private void ensureTable(String dbName, String tableName) {
-        ensureDb(dbName);
-        Map<String, Set<LinkedHashMap<String, String>>> tables = entities.get(dbName);
-
-        Set<LinkedHashMap<String, String>> partitions = tables.get(tableName);
-        if (partitions == null) {
-          partitions = new HashSet<>();
-          tables.put(tableName, partitions);
-        }
+      private void ensureTable(String catalogName, String dbName, String tableName) {
+        ensureDb(catalogName, dbName);
+        entities.get(new CatalogDb(catalogName, dbName)).computeIfAbsent(tableName, k -> new HashSet<>());
       }
 
       /**
@@ -350,9 +369,10 @@ public final class ProactiveEviction {
        */
       public Builder fromProtoRequest(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest) {
         entities.clear();
+        String catalogName = protoRequest.getCatalogName().toLowerCase();
         String dbName = protoRequest.getDbName().toLowerCase();
 
-        Map<String, Set<LinkedHashMap<String, String>>> entitiesInDb = new HashMap<>();
+        Map<String, Set<PartitionSpec>> entitiesInDb = new HashMap<>();
         List<LlapDaemonProtocolProtos.TableProto> tables = protoRequest.getTableList();
 
         if (tables != null && !tables.isEmpty()) {
@@ -364,8 +384,8 @@ public final class ProactiveEviction {
               entitiesInDb.put(dbAndTableName, null);
               continue;
             }
-            Set<LinkedHashMap<String, String>> partitions = new HashSet<>();
-            LinkedHashMap<String, String> partDesc = new LinkedHashMap<>();
+            Set<PartitionSpec> partitions = new HashSet<>();
+            Map<String, String> partDesc = new HashMap<>();
 
             for (int valIx = 0; valIx < table.getPartValCount(); ++valIx) {
               int keyIx = valIx % table.getPartKeyCount();
@@ -373,15 +393,15 @@ public final class ProactiveEviction {
               partDesc.put(table.getPartKey(keyIx).toLowerCase(), table.getPartVal(valIx));
 
               if (keyIx == table.getPartKeyCount() - 1) {
-                partitions.add(partDesc);
-                partDesc = new LinkedHashMap<>();
+                partitions.add(new PartitionSpec(partDesc));
+                partDesc = new HashMap<>();
               }
             }
 
             entitiesInDb.put(dbAndTableName, partitions);
           }
         }
-        entities.put(dbName, entitiesInDb);
+        entities.put(new CatalogDb(catalogName, dbName), entitiesInDb);
         return this;
       }
     }

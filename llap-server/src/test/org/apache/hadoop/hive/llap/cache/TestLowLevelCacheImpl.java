@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
@@ -309,13 +310,14 @@ Example code to test specific scenarios:
 
     LlapDataBuffer[] buffs1 = IntStream.range(0, 4).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
     DiskRange[] drs1 = drs(IntStream.range(1, 5).toArray());
-    CacheTag tag1 = CacheTag.build("default.table1");
+    CacheTag tag1 = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "default.table1");
 
     LlapDataBuffer[] buffs2 = IntStream.range(0, 41).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
     DiskRange[] drs2 = drs(IntStream.range(1, 42).toArray());
-    CacheTag tag2 = CacheTag.build("default.table2");
+    CacheTag tag2 = CacheTag.build(Warehouse.DEFAULT_CATALOG_NAME, "default.table2");
 
-    Predicate<CacheTag> predicate = tag -> "default.table1".equals(tag.getTableName());
+    Predicate<CacheTag> predicate = tag ->
+        (Warehouse.DEFAULT_CATALOG_NAME + "." + "default.table1").equals(tag.getTableName());
 
     cache.putFileData(fn1, drs1, buffs1, 0, Priority.NORMAL, null, tag1);
     cache.putFileData(fn2, drs2, buffs2, 0, Priority.NORMAL, null, tag2);
