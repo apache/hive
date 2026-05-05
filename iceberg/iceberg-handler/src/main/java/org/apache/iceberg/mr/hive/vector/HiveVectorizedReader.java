@@ -54,10 +54,12 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
+import org.apache.iceberg.parquet.HiveParquetUtil;
 import org.apache.iceberg.parquet.ParquetFooterInputFromCache;
 import org.apache.iceberg.parquet.ParquetSchemaUtil;
 import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
@@ -165,7 +167,8 @@ public class HiveVectorizedReader {
         case PARQUET:
           recordReader = parquetRecordReader(job, reporter, task, path, start, length, fileId,
               getInitialColumnDefaults(table.schema().columns()),
-              HiveIcebergInputFormat.residualForReaderPruning(task, job));
+              HiveIcebergInputFormat.residualForReaderPruning(task, job),
+              table.io());
           break;
         default:
           throw new UnsupportedOperationException("Vectorized Hive reading unimplemented for format: " + format);
@@ -234,7 +237,7 @@ public class HiveVectorizedReader {
 
   private static RecordReader<NullWritable, VectorizedRowBatch> parquetRecordReader(JobConf job, Reporter reporter,
       FileScanTask task, Path path, long start, long length, SyntheticFileId fileId,
-      Map<String, Object> initialColumnDefaults, Expression residual) throws IOException {
+      Map<String, Object> initialColumnDefaults, Expression residual, FileIO io) throws IOException {
     InputSplit split = new FileSplit(path, start, length, job);
     VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
 
@@ -247,7 +250,7 @@ public class HiveVectorizedReader {
 
     ParquetMetadata parquetMetadata = footerData != null ?
         ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER) :
-        ParquetFileReader.readFooter(job, path);
+        HiveParquetUtil.readFooter(task.file(), io, job);
     MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
     ParquetMetadata prunedMetadata =
         VariantParquetFilters.pruneVariantRowGroups(parquetMetadata, fileSchema, residual);

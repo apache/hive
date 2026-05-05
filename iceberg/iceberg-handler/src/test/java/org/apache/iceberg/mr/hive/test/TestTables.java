@@ -46,6 +46,7 @@ import org.apache.iceberg.Tables;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.encryption.UnitestKMS;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
@@ -626,7 +627,8 @@ public abstract class TestTables {
 
     HiveTestTables(Configuration conf, TemporaryFolder temp, String catalogName) {
       super(CatalogUtil.loadCatalog(HiveCatalog.class.getName(), CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
-              ImmutableMap.of(), conf), temp, catalogName);
+              ImmutableMap.of(CatalogProperties.ENCRYPTION_KMS_IMPL, UnitestKMS.class.getCanonicalName()), conf), temp,
+          catalogName);
     }
 
     @Override

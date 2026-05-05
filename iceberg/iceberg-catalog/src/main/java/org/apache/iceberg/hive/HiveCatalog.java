@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.hive;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,8 @@ import org.apache.iceberg.Transaction;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.encryption.EncryptionUtil;
+import org.apache.iceberg.encryption.KeyManagementClient;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchIcebergViewException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
@@ -97,6 +100,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   private String name;
   private Configuration conf;
   private FileIO fileIO;
+  private KeyManagementClient keyManagementClient;
   private ClientPool<IMetaStoreClient, TException> clients;
   private boolean listAllTables = false;
   private Map<String, String> catalogProperties;
@@ -136,6 +140,10 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
     } else {
       this.fileIO = CatalogUtil.loadFileIO(fileIOImpl, properties, conf);
     }
+    if (catalogProperties.containsKey(CatalogProperties.ENCRYPTION_KMS_IMPL)) {
+      this.keyManagementClient = EncryptionUtil.createKmsClient(properties);
+    }
+
     this.clients = new CachedClientPool(conf, properties);
   }
 
@@ -677,7 +685,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   public TableOperations newTableOps(TableIdentifier tableIdentifier) {
     String dbName = tableIdentifier.namespace().level(0);
     String tableName = tableIdentifier.name();
-    return new HiveTableOperations(conf, clients, fileIO, name, dbName, tableName);
+    return new HiveTableOperations(conf, clients, fileIO, keyManagementClient, name, dbName, tableName);
   }
 
   @Override
@@ -808,6 +816,15 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   @Override
   public Map<String, String> properties() {
     return catalogProperties == null ? ImmutableMap.of() : catalogProperties;
+  }
+
+  @Override
+  public void close() throws IOException {
+    super.close();
+
+    if (keyManagementClient != null) {
+      keyManagementClient.close();
+    }
   }
 
   @VisibleForTesting
