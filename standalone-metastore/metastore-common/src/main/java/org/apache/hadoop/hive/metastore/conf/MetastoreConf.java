@@ -1935,6 +1935,10 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
+    ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
+        "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
+        "A comma separated list of custom Iceberg Metrics Reporting plugins."
+    ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,
             "HMS embedded HTTP server minimum number of threads."
@@ -2514,6 +2518,24 @@ public class MetastoreConf {
     String val = conf.get(var.varname);
     return val == null ? conf.getClass(var.hiveName, defaultValue, xface) :
         conf.getClass(var.varname, defaultValue, xface);
+  }
+
+  /**
+   * Get class instances based on a configuration value
+   * @param conf configuration file to retrieve it from
+   * @param var variable to retrieve
+   * @return instances of the classes
+   */
+  public static Class<?>[] getClasses(Configuration conf, ConfVars var) {
+    assert var.defaultVal.getClass() == String.class;
+    Class<?> defaultClass;
+    try {
+      defaultClass = Class.forName((String) var.defaultVal);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("The default class " + var.defaultVal + " does not exist");
+    }
+    String val = conf.get(var.varname);
+    return val == null ? conf.getClasses(var.hiveName, defaultClass) : conf.getClasses(var.varname, defaultClass);
   }
 
   /**

@@ -100,6 +100,12 @@ public class HMSCatalogServlet extends HttpServlet {
     };
   }
 
+  @Override
+  public void destroy() {
+    super.destroy();
+    restCatalogAdapter.close();
+  }
+
   public static class ServletRequestContext {
     private HTTPMethod method;
     private String path;
@@ -147,8 +153,15 @@ public class HMSCatalogServlet extends HttpServlet {
       Route route = routeContext.first();
       Object requestBody = null;
       if (route.requestClass() != null) {
-        requestBody =
-            RESTObjectMapper.mapper().readValue(request.getReader(), route.requestClass());
+        try {
+          requestBody = RESTObjectMapper.mapper().readValue(request.getReader(), route.requestClass());
+        } catch (Exception e) {
+          return new ServletRequestContext(ErrorResponse.builder()
+              .responseCode(400)
+              .withType(e.getClass().getSimpleName())
+              .withMessage(e.getMessage())
+              .build());
+        }
       }
 
       Map<String, String> queryParams =

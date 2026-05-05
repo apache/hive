@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.rest.extension;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
@@ -60,6 +61,9 @@ public class RESTCatalogServer {
 
     String uniqueTestKey = String.format("RESTCatalogServer_%s", UUID.randomUUID());
     warehouseDir = Path.of(MetaStoreTestUtils.getTestWarehouseDir(uniqueTestKey));
+    Files.createDirectories(warehouseDir);
+    System.setProperty("derby.stream.error.file",
+        warehouseDir.resolve("derby.log").toAbsolutePath().toString());
     String jdbcUrl = String.format("jdbc:derby:memory:%s;create=true",
         warehouseDir.resolve("metastore_db").toAbsolutePath());
     MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, jdbcUrl);

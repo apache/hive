@@ -18,6 +18,8 @@
  */
 package org.apache.iceberg.rest;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
 
 /**
  * Catalog &amp; servlet factory.
@@ -109,7 +112,21 @@ public class HMSCatalogFactory {
     // Iceberg REST client uses "catalog" by default
     List<String> scopes = Collections.singletonList("catalog");
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
-    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
+    String catalogName = MetastoreConf.getVar(configuration, ConfVars.CATALOG_DEFAULT);
+    List<IcebergMetricsReporter> reporters = createReporters();
+    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalogName, catalog, reporters)));
+  }
+
+  private List<IcebergMetricsReporter> createReporters() {
+    final var classes = MetastoreConf.getClasses(configuration, ConfVars.ICEBERG_CATALOG_METRICS_REPORTERS);
+    return Arrays.stream(classes).map(clazz -> {
+      try {
+        final var constructor = clazz.getDeclaredConstructor(Configuration.class);
+        return (IcebergMetricsReporter) constructor.newInstance(configuration);
+      } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        throw new IllegalArgumentException("Failed to instantiate IcebergMetricsReporter: " + clazz.getName(), e);
+      }
+    }).toList();
   }
 
   /**
