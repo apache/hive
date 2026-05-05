@@ -1,0 +1,157 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.metastore.datasource;
+
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Timer;
+import com.zaxxer.hikari.HikariDataSource;
+
+import javax.sql.DataSource;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.derby.impl.jdbc.EmbedConnection;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.HMSHandlerContext;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+@Category(MetastoreUnitTest.class)
+public class TestMetastoreConnection {
+  private Configuration conf;
+  private Counter slowQuery;
+
+  @Before
+  public void init() {
+    conf = MetastoreDriver.getConfiguration();
+    conf.set(MetastoreStatement.EXEC_HOOK, MetastoreStatementTestHook.class.getName());
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, 1000);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_THRIFT_APIS, "test_metastore_statement");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, "dummyUser");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, "dummyPass");
+    conf.unset(MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE.getVarname());
+
+    Metrics.initialize(conf);
+    slowQuery = Metrics.getOrCreateCounter(MetricsConstants.JDBC_SLOW_QUERIES);
+  }
+
+  @Test
+  public void testDefaultHikariCp() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    verify(ds.getConnection());
+  }
+
+  @Test
+  public void testDbCpDataSource() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE, DbCPDataSourceProvider.DBCP);
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof PoolingDataSource);
+    verify(ds.getConnection());
+  }
+
+  private void verify(Connection connection) throws Exception {
+    Assert.assertTrue(connection.unwrap(MetastoreConnection.class).delegate() instanceof EmbedConnection);
+    long slowNum = slowQuery.getCount();
+    Timer timer = Metrics.getOrCreateTimer(MetastoreStatementTestHook.TEST_METRIC_NAME);
+    Assert.assertNotNull(timer);
+    long timeCount = timer.getCount();
+    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_metastore_statement", 1500)) {
+      try (Statement statement = connection.createStatement();
+           ResultSet rs = statement.executeQuery("VALUES 1")) {
+        Assert.assertTrue(rs.next());
+      }
+    }
+    Assert.assertEquals(slowNum + 1, slowQuery.getCount());
+    Assert.assertEquals(timeCount + 1, timer.getCount());
+    Assert.assertTrue(timer.getSnapshot().getMean() > 1000);
+
+    // Test a method outside of monitor
+    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_statement_outside", 1500)) {
+      try (Statement statement = connection.createStatement();
+           ResultSet rs = statement.executeQuery("VALUES 1")) {
+        Assert.assertTrue(rs.next());
+      }
+    }
+    // record the slow query though
+    Assert.assertEquals(slowNum + 2, slowQuery.getCount());
+    // don't count this un-interested method
+    Assert.assertEquals(timeCount + 1, timer.getCount());
+  }
+
+  public static class MetastoreStatementTestHook extends MetastoreStatement.JdbcProfilerUtils {
+    static final String TEST_METRIC_NAME = "MetastoreStatementTestHook_" + System.currentTimeMillis();
+    static final String ENABLE_SLEEP_FOR_QUERY = "MetastoreStatementTestHook.should.sleep";
+    static final String SLEEP_MILLIS = "MetastoreStatementTestHook.sleep.ms";
+    private final boolean shouldSleep;
+    private final long sleepMs;
+    public MetastoreStatementTestHook(Configuration configuration) {
+      super(configuration);
+      shouldSleep = configuration.getBoolean(ENABLE_SLEEP_FOR_QUERY, false);
+      sleepMs = configuration.getLong(SLEEP_MILLIS, 1000);
+    }
+
+    @Override
+    public void preRun(Method method, Object[] args) {
+      if (shouldSleep &&
+          MetastoreStatement.JdbcProfilerUtils.QUERY_EXECUTION.contains(method.getName())) {
+        try {
+          Thread.sleep(sleepMs);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
+
+    @Override
+    public String getMetricName(Method method, Object[] args) {
+      return TEST_METRIC_NAME;
+    }
+
+    public static AutoCloseable testConnection(String method, long sleepMs) {
+      Configuration configuration = MetastoreDriver.getConfiguration();
+      configuration.setLong(SLEEP_MILLIS, sleepMs);
+      configuration.setBoolean(ENABLE_SLEEP_FOR_QUERY, true);
+      HMSHandlerContext.setCallId(Pair.of(method, System.currentTimeMillis()));
+      return () -> {
+        configuration.unset(ENABLE_SLEEP_FOR_QUERY);
+        configuration.unset(SLEEP_MILLIS);
+        HMSHandlerContext.setCallId(null);
+      };
+    }
+  }
+}
