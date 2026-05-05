@@ -66,10 +66,7 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
 
   private List<FieldSchema> getCols() throws HiveException {
     Table table = context.getDb().getTable(desc.getTableName());
-    List<FieldSchema> allColumns = new ArrayList<>();
-    allColumns.addAll(table.getCols());
-    allColumns.addAll(table.getPartCols());
-    return allColumns;
+    return new ArrayList<>(table.getAllCols());
   }
 
   private Matcher getMatcher() {
@@ -94,13 +91,7 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
     }
 
     if (desc.isSorted()) {
-      result.sort(
-          new Comparator<FieldSchema>() {
-            @Override
-            public int compare(FieldSchema f1, FieldSchema f2) {
-              return f1.getName().compareTo(f2.getName());
-            }
-          });
+      result.sort(Comparator.comparing(FieldSchema::getName));
     }
     return result;
   }

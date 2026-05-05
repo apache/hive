@@ -57,7 +57,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   private static final Interner<Class<?>> CLASS_INTERNER = Interners.newWeakInterner();
 
   private TableDesc tableDesc;
-  private LinkedHashMap<String, String> partSpec;
+  private Map<String, String> partSpec;
   private Class<? extends InputFormat> inputFileFormatClass;
   private Class<? extends OutputFormat> outputFileFormatClass;
   private Properties properties;
@@ -73,7 +73,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   public PartitionDesc() {
   }
 
-  public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
+  public PartitionDesc(final TableDesc table, final Map<String, String> partSpec) {
     this.tableDesc = table;
     setPartSpec(partSpec);
   }
@@ -138,11 +138,11 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   @Explain(displayName = "partition values", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public LinkedHashMap<String, String> getPartSpec() {
+  public Map<String, String> getPartSpec() {
     return partSpec;
   }
 
-  public void setPartSpec(final LinkedHashMap<String, String> partSpec) {
+  public void setPartSpec(final Map<String, String> partSpec) {
     StringInternUtils.internValuesInMap(partSpec);
     this.partSpec = partSpec;
   }
