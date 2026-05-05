@@ -180,6 +180,75 @@ POSTHOOK: Input: ice_rest@ice_orc2
 fn1	ln1	1	10	100
 fn2	ln2	2	20	100
 fn3	ln3	3	30	100
+PREHOOK: query: create view ice_v1 as select * from ice_orc1 stored by iceberg
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: ice_rest@ice_orc1
+PREHOOK: Output: database:ice_rest
+PREHOOK: Output: ice_rest@ice_v1
+POSTHOOK: query: create view ice_v1 as select * from ice_orc1 stored by iceberg
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: ice_rest@ice_orc1
+POSTHOOK: Output: database:ice_rest
+POSTHOOK: Output: ice_rest@ice_v1
+POSTHOOK: Lineage: ice_v1.company_id SIMPLE [(ice_orc1)ice_orc1.FieldSchema(name:company_id, type:bigint, comment:Transform: identity), ]
+POSTHOOK: Lineage: ice_v1.dept_id SIMPLE [(ice_orc1)ice_orc1.FieldSchema(name:dept_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: ice_v1.first_name SIMPLE [(ice_orc1)ice_orc1.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: ice_v1.last_name SIMPLE [(ice_orc1)ice_orc1.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: ice_v1.team_id SIMPLE [(ice_orc1)ice_orc1.FieldSchema(name:team_id, type:bigint, comment:null), ]
+PREHOOK: query: create view ice_v2 as select * from ice_orc2 stored by iceberg
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: ice_rest@ice_orc2
+PREHOOK: Output: database:ice_rest
+PREHOOK: Output: ice_rest@ice_v2
+POSTHOOK: query: create view ice_v2 as select * from ice_orc2 stored by iceberg
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: ice_rest@ice_orc2
+POSTHOOK: Output: database:ice_rest
+POSTHOOK: Output: ice_rest@ice_v2
+POSTHOOK: Lineage: ice_v2.company_id SIMPLE [(ice_orc2)ice_orc2.FieldSchema(name:company_id, type:bigint, comment:Transform: identity), ]
+POSTHOOK: Lineage: ice_v2.dept_id SIMPLE [(ice_orc2)ice_orc2.FieldSchema(name:dept_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: ice_v2.first_name SIMPLE [(ice_orc2)ice_orc2.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: ice_v2.last_name SIMPLE [(ice_orc2)ice_orc2.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: ice_v2.team_id SIMPLE [(ice_orc2)ice_orc2.FieldSchema(name:team_id, type:bigint, comment:null), ]
+PREHOOK: query: select * from ice_v1
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_rest@ice_orc1
+PREHOOK: Input: ice_rest@ice_v1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_rest@ice_orc1
+POSTHOOK: Input: ice_rest@ice_v1
+#### A masked pattern was here ####
+PREHOOK: query: select * from ice_v2
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_rest@ice_orc2
+PREHOOK: Input: ice_rest@ice_v2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_rest@ice_orc2
+POSTHOOK: Input: ice_rest@ice_v2
+#### A masked pattern was here ####
+fn1	ln1	1	10	100
+fn2	ln2	2	20	100
+fn3	ln3	3	30	100
+PREHOOK: query: drop view ice_v1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: ice_rest@ice_v1
+PREHOOK: Output: ice_rest@ice_v1
+POSTHOOK: query: drop view ice_v1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: ice_rest@ice_v1
+POSTHOOK: Output: ice_rest@ice_v1
+PREHOOK: query: drop view ice_v2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: ice_rest@ice_v2
+PREHOOK: Output: ice_rest@ice_v2
+POSTHOOK: query: drop view ice_v2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: ice_rest@ice_v2
+POSTHOOK: Output: ice_rest@ice_v2
 PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:ice_rest

@@ -1653,6 +1653,7 @@ createViewStatement
         tablePropertiesPrefixed?
         KW_AS
         selectStatementWithCTE
+        (viewStoredFormat=tableFileFormat)?
     -> ^(TOK_CREATEVIEW $name orReplace?
          ifNotExists?
          columnNameCommentList?
@@ -1660,6 +1661,7 @@ createViewStatement
          viewPartition?
          tablePropertiesPrefixed?
          selectStatementWithCTE
+         $viewStoredFormat?
         )
     ;
 

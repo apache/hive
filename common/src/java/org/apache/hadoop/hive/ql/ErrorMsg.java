@@ -445,6 +445,8 @@ public enum ErrorMsg {
   @Deprecated // kept for backwards reference
   REPLACE_VIEW_WITH_MATERIALIZED(10400, "Attempt to replace view {0} with materialized view", true),
   REPLACE_MATERIALIZED_WITH_VIEW(10401, "Attempt to replace materialized view {0} with view", true),
+  VIEW_STORAGE_HANDLER_UNSUPPORTED(10448, "CREATE VIEW only supports STORED BY ICEBERG for native "
+      + "Iceberg views; unsupported storage clause: {0}", true),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
   MATERIALIZED_VIEW_DEF_EMPTY(10403, "Query for the materialized view rebuild could not be retrieved"),
   MERGE_PREDIACTE_REQUIRED(10404, "MERGE statement with both UPDATE and DELETE clauses " +
