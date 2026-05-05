@@ -1,0 +1,113 @@
+PREHOOK: query: CREATE TABLE hive_29481_io(id INT) STORED AS ORC 
+#### A masked pattern was here ####
+TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29481_io
+POSTHOOK: query: CREATE TABLE hive_29481_io(id INT) STORED AS ORC 
+#### A masked pattern was here ####
+TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29481_io
+PREHOOK: query: INSERT INTO hive_29481_io VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_29481_io
+POSTHOOK: query: INSERT INTO hive_29481_io VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_29481_io
+POSTHOOK: Lineage: hive_29481_io.id SCRIPT []
+PREHOOK: query: INSERT INTO hive_29481_io VALUES (4),(5),(6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_29481_io
+POSTHOOK: query: INSERT INTO hive_29481_io VALUES (4),(5),(6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_29481_io
+POSTHOOK: Lineage: hive_29481_io.id SCRIPT []
+PREHOOK: query: SELECT * FROM hive_29481_io
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_29481_io
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_29481_io
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_29481_io
+#### A masked pattern was here ####
+1
+4
+5
+6
+PREHOOK: query: CREATE TABLE hive_29481_crud(id INT, val STRING) STORED AS ORC 
+#### A masked pattern was here ####
+TBLPROPERTIES('transactional'='true')
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29481_crud
+POSTHOOK: query: CREATE TABLE hive_29481_crud(id INT, val STRING) STORED AS ORC 
+#### A masked pattern was here ####
+TBLPROPERTIES('transactional'='true')
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29481_crud
+PREHOOK: query: INSERT INTO hive_29481_crud VALUES (1, 'a'), (2, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_29481_crud
+POSTHOOK: query: INSERT INTO hive_29481_crud VALUES (1, 'a'), (2, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_29481_crud
+POSTHOOK: Lineage: hive_29481_crud.id SCRIPT []
+POSTHOOK: Lineage: hive_29481_crud.val SCRIPT []
+PREHOOK: query: UPDATE hive_29481_crud SET val = 'updated' WHERE id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_29481_crud
+PREHOOK: Output: default@hive_29481_crud
+PREHOOK: Output: default@hive_29481_crud
+POSTHOOK: query: UPDATE hive_29481_crud SET val = 'updated' WHERE id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_29481_crud
+POSTHOOK: Output: default@hive_29481_crud
+POSTHOOK: Output: default@hive_29481_crud
+POSTHOOK: Lineage: hive_29481_crud.id SIMPLE []
+POSTHOOK: Lineage: hive_29481_crud.val SIMPLE []
+PREHOOK: query: DELETE FROM hive_29481_crud WHERE id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_29481_crud
+PREHOOK: Output: default@hive_29481_crud
+POSTHOOK: query: DELETE FROM hive_29481_crud WHERE id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_29481_crud
+POSTHOOK: Output: default@hive_29481_crud
+PREHOOK: query: SELECT * FROM hive_29481_crud
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_29481_crud
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_29481_crud
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_29481_crud
+#### A masked pattern was here ####
+1	updated
+PREHOOK: query: DROP TABLE hive_29481_io
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive_29481_io
+PREHOOK: Output: default@hive_29481_io
+POSTHOOK: query: DROP TABLE hive_29481_io
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive_29481_io
+POSTHOOK: Output: default@hive_29481_io
+PREHOOK: query: DROP TABLE hive_29481_crud
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive_29481_crud
+PREHOOK: Output: default@hive_29481_crud
+POSTHOOK: query: DROP TABLE hive_29481_crud
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive_29481_crud
+POSTHOOK: Output: default@hive_29481_crud

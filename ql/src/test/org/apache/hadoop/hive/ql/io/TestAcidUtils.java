@@ -166,6 +166,31 @@ public class TestAcidUtils {
   }
 
   @Test
+  public void testParsingCopySuffix() throws Exception {
+    AcidUtils.ParsedDeltaLight p = AcidUtils.ParsedDeltaLight.parse(new Path("mock:/tmp/delta_0000001_0000001_0000_copy_1"));
+    assertEquals(1, p.getMinWriteId());
+    assertEquals(1, p.getMaxWriteId());
+    assertEquals(0, p.getStatementId());
+  }
+
+  @Test
+  public void testParsingBaseCopySuffix() throws Exception {
+    AcidUtils.ParsedBaseLight p = AcidUtils.ParsedBaseLight.parseBase(new Path("mock:/tmp/base_0000123_copy_1"));
+    assertEquals(123, p.getWriteId());
+  }
+
+  @Test
+  public void testBucketMetaDataParsing() throws Exception {
+    AcidUtils.BucketMetaData b = AcidUtils.BucketMetaData.parse("bucket_-001_copy_1");
+    assertEquals(-1, b.bucketId);
+    assertEquals(1, b.copyNumber);
+
+    b = AcidUtils.BucketMetaData.parse("bucket_00123_copy_5");
+    assertEquals(123, b.bucketId);
+    assertEquals(5, b.copyNumber);
+  }
+
+  @Test
   public void testOriginal() throws Exception {
     Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
@@ -196,6 +221,30 @@ public class TestAcidUtils {
     assertEquals("mock:/tbl/part1/random", result.get(5).getFileStatus().getPath().toString());
     assertEquals("mock:/tbl/part1/subdir/000000_0",
         result.get(6).getFileStatus().getPath().toString());
+  }
+
+  @Test
+  public void testGetAcidStateWithNullValidTxnList() throws Exception {
+    Configuration conf = new Configuration();
+    MockFileSystem fs = new MockFileSystem(conf,
+        new MockFile("mock:/tbl/part1/delta_0000001_0000001/bucket_0", 500, new byte[0]));
+    // Not setting VALID_TXNS_KEY in conf, so validTxnList will be null
+    AcidDirectory dir = AcidUtils.getAcidState(fs, new MockPath(fs, "mock:/tbl/part1"), conf,
+        new ValidReaderWriteIdList("tbl:100:" + Long.MAX_VALUE + ":"), null, false);
+    assertEquals(1, dir.getCurrentDirectories().size());
+    assertEquals("mock:/tbl/part1/delta_0000001_0000001", dir.getCurrentDirectories().get(0).getPath().toString());
+  }
+
+  @Test
+  public void testGetAcidStateWithDeltaZero() throws Exception {
+    Configuration conf = new Configuration();
+    MockFileSystem fs = new MockFileSystem(conf,
+        new MockFile("mock:/tbl/part1/delta_0000000_0000000_-001/bucket_0", 500, new byte[0]));
+    // For non-transactional tables, the writeIdList might be empty or start from 0
+    AcidDirectory dir = AcidUtils.getAcidState(fs, new MockPath(fs, "mock:/tbl/part1"), conf,
+        new ValidReaderWriteIdList("tbl:100:0:"), null, false);
+    // This is currently failing (returns 0) but should return 1
+    assertEquals(1, dir.getCurrentDirectories().size());
   }
 
   @Test
