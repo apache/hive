@@ -179,6 +179,7 @@ public class TestStatisticsManagement {
         ColumnStatistics cs = new ColumnStatistics();
         ColumnStatisticsDesc desc = new ColumnStatisticsDesc(true, db, tbl);
         desc.setCatName("hive");
+        cs.setStatsDesc(desc);
         cs.addToStatsObj(obj);
 
         client.updateTableColumnStatistics(cs);

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -40,7 +39,7 @@ import javax.jdo.Query;
  * If some table or partition column statistics are older than the configured retention interval
  * (MetastoreConf.ConfVars.STATISTICS_RETENTION_PERIOD), they are deleted when this metastore task runs periodically.
  */
-public class StatisticsManagementTask implements MetastoreTaskThread {
+public class StatisticsManagementTask extends ObjectStore implements MetastoreTaskThread {
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsManagementTask.class);
 
     // The 2 configs for users to set in the conf
@@ -59,7 +58,8 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
     @Override
     public void setConf(Configuration configuration) {
         // we modify conf in setupConf(), so we make a copy
-        this.conf = configuration;
+        this.conf = new Configuration(configuration);
+        super.setConf(configuration);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
     @Override
     public void run() {
         LOG.debug("Auto statistics deletion started. Cleaning up table/partition column statistics over the retention period.");
-        long retentionMillis = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars. STATISTICS_RETENTION_PERIOD, TimeUnit.MILLISECONDS);
+        long retentionMillis = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.STATISTICS_RETENTION_PERIOD, TimeUnit.MILLISECONDS);
         if (retentionMillis <= 0 || !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATISTICS_AUTO_DELETION)) {
             LOG.info("Statistics auto deletion is set to off currently.");
             return;
@@ -87,16 +87,16 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
 
             String filter = "lastAnalyzed < threshold";
             String paramStr = "long threshold";
-            try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
-                RawStore ms = HMSHandler.getMSForConf(conf);
-                PersistenceManager pm = ((ObjectStore) ms).getPersistenceManager();
 
+            PersistenceManager pm = getPersistenceManager();
+            boolean committed = false;
+            openTransaction();                                // open JDO transaction
+            try {
                 Query q = null;
                 try {
                     q = pm.newQuery(MTableColumnStatistics.class);
                     q.setFilter(filter);
                     q.declareParameters(paramStr);
-                    // only fetch required fields, avoid loading heavy MTable objects
                     q.setResult(
                             "table.database.name, " +
                                     "table.tableName, " +
@@ -106,29 +106,32 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
                     @SuppressWarnings("unchecked")
                     List<Object[]> rows = (List<Object[]>) q.execute(lastAnalyzedThreshold);
 
-                    for (Object[] row : rows) {
-                        String dbName = (String) row[0];
-                        String tblName = (String) row[1];
-                        String partName = (String) row[2];     // can be null for table-level stats
-                        String excludeVal = (String) row[3];   // can be null
+                    try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
+                        for (Object[] row : rows) {
+                            String dbName = (String) row[0];
+                            String tblName = (String) row[1];
+                            String partName = (String) row[2];
+                            String excludeVal = (String) row[3];
 
-                        // exclude check uses projected param value
-                        if (excludeVal != null) {
-                            LOG.info("Skipping auto deletion of stats for table {}.{} due to STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY property being set on the table.", dbName, tblName);
-                            continue;
+                            if (excludeVal != null) {
+                                LOG.info("Skipping auto deletion of stats for table {}.{} due to STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY property being set on the table.", dbName, tblName);
+                                continue;
+                            }
+                            DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
+                            request.setEngine("hive");
+                            request.setTableLevel(partName == null);
+                            msc.deleteColumnStatistics(request);
                         }
-                        DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
-                        request.setEngine("hive");
-
-                        // decide tableLevel based on whether this stat row is table-level or partition-level
-                        // avoids loading table partition keys / MTable
-                        request.setTableLevel(partName == null);
-                        msc.deleteColumnStatistics(request);
                     }
                 } finally {
                     if (q != null) {
                         q.closeAll();
                     }
+                }
+                committed = commitTransaction();
+            } finally {
+                if (!committed) {
+                    rollbackTransaction();
                 }
             }
         } catch (Exception e) {
@@ -137,5 +140,4 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
             lock.unlock();
         }
     }
-
 }
