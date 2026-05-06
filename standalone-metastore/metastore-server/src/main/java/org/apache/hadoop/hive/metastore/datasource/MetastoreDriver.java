@@ -44,11 +44,10 @@ import static java.sql.DriverManager.registerDriver;
 public class MetastoreDriver implements Driver {
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MetastoreDriver.class);
   private static final String URL_PREFIX = "jdbc:metastore://";
+  private static final Configuration configuration;
   private static int majorVersion = -1;
   private static int minorVersion = -1;
-  private static final Configuration configuration;
-  private static final Driver delegateDriver;
-  private static final String jdbcUrl;
+  private static volatile Driver delegateDriver;
   static {
     try {
       registerDriver(new MetastoreDriver());
@@ -61,14 +60,13 @@ public class MetastoreDriver implements Driver {
         minorVersion = Integer.parseInt(versionNums[1]);
       }
       configuration = MetastoreConf.newMetastoreConf();
-      jdbcUrl = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECT_URL_KEY);
-      delegateDriver = findRegisteredDriver(configuration);
     } catch (Exception e) {
       throw new RuntimeException("Failed to register Metastore driver", e);
     }
   }
 
-  private static Driver findRegisteredDriver(Configuration configuration) throws SQLException {
+  private synchronized static Driver
+      findRegisteredDriver(String jdbcUrl, String driverClassName) throws SQLException {
     List<Driver> candidates = new ArrayList<>();
     for (Enumeration<Driver> drivers = DriverManager.getDrivers(); drivers.hasMoreElements();) {
       Driver driver = drivers.nextElement();
@@ -80,7 +78,6 @@ public class MetastoreDriver implements Driver {
       }
     }
 
-    String driverClassName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECTION_DRIVER);
     if (candidates.isEmpty()) {
       Class<Driver> driverClz = tryLoadDriver(driverClassName, Thread.currentThread().getContextClassLoader(),
           MetastoreDriver.class.getClassLoader());
@@ -88,7 +85,7 @@ public class MetastoreDriver implements Driver {
         try {
           Driver driver = driverClz.getDeclaredConstructor().newInstance();
           if (!driver.acceptsURL(jdbcUrl)) {
-            throw new Error("Driver " + driverClassName + " cannot accept jdbcUrl");
+            throw new RuntimeException("Driver " + driverClassName + " cannot accept jdbcUrl");
           }
           candidates.add(driver);
         } catch (Exception e) {
@@ -96,7 +93,8 @@ public class MetastoreDriver implements Driver {
         }
       }
     }
-    return candidates.isEmpty() ? DriverManager.getDriver(jdbcUrl) : candidates.getFirst();
+    delegateDriver = candidates.isEmpty() ? DriverManager.getDriver(jdbcUrl) : candidates.getFirst();
+    return delegateDriver;
   }
 
   private static Class<Driver> tryLoadDriver(String driverClassName, ClassLoader... loaders) {
@@ -114,12 +112,25 @@ public class MetastoreDriver implements Driver {
 
   @Override
   public Connection connect(String url, Properties info) throws SQLException {
-    return new MetastoreConnection(delegateDriver.connect(jdbcUrl, info), configuration);
+    if (!acceptsURL(url)) {
+      return null;
+    }
+
+    String driverAndUrl = url.substring(URL_PREFIX.length());
+    String defaultDriverClz =  driverAndUrl.split(":")[0];
+    String jdbcUrl = driverAndUrl.substring(defaultDriverClz.length() + 1);
+    Connection connection;
+    Driver driver = delegateDriver;
+    if (driver == null || !driver.acceptsURL(jdbcUrl)) {
+      driver = findRegisteredDriver(jdbcUrl, defaultDriverClz);
+    }
+    connection = driver.connect(jdbcUrl, info);
+    return connection == null ? null : new MetastoreConnection(connection, configuration);
   }
 
   @Override
   public boolean acceptsURL(String url) throws SQLException {
-    return Pattern.matches(URL_PREFIX + ".*", url);
+    return url != null && Pattern.matches(URL_PREFIX + ".*", url);
   }
 
   @Override
@@ -149,7 +160,9 @@ public class MetastoreDriver implements Driver {
   }
 
   public static String getMetastoreDbUrl(Configuration configuration) {
-    return MetastoreDriver.URL_PREFIX + "internal-delegate-url";
+    String delegateUrl = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+    String driverClz = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECTION_DRIVER);
+    return MetastoreDriver.URL_PREFIX  + driverClz + ":" + delegateUrl;
   }
 
   @VisibleForTesting

@@ -23,11 +23,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jdo.JDOException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -94,17 +94,18 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
         boolean clearLocal = false;
         try {
           if (!local) {
-            Optional<Pair<String, Long>> previousCall = HMSHandlerContext.getCallId();
+            Optional<HMSHandlerContext.CallCtx> previousCall = HMSHandlerContext.getCallCtx();
             if (previousCall.isEmpty()) {
-              Pair<String, Long> currentCall = Pair.of(method.getName(), System.currentTimeMillis());
-              HMSHandlerContext.setCallId(currentCall);
+              HMSHandlerContext.CallCtx currentCall =
+                  new HMSHandlerContext.CallCtx(method.getName(), System.currentTimeMillis(), new AtomicLong());
+              HMSHandlerContext.setCallCtx(currentCall);
               clearLocal = true;
             }
           }
           object = method.invoke(baseHandler, args);
         } finally {
           if (clearLocal) {
-            HMSHandlerContext.setCallId(null);
+            HMSHandlerContext.setCallCtx(null);
           }
           if (isStarted) {
             Deadline.stopTimer();

@@ -34,11 +34,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -55,8 +53,8 @@ import static org.apache.hadoop.hive.metastore.datasource.MetastoreStatement.Jdb
 @SuppressWarnings("unchecked")
 public final class MetastoreStatement implements InvocationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreStatement.class);
+  private static final ThreadLocal<HMSHandlerContext.CallCtx> CALL_CTX = new ThreadLocal<>();
   static final String EXEC_HOOK = "metastore.jdbc.execution.hook";
-  static final ThreadLocal<Pair<Pair<String, Long>, LongAdder>> CURRENT_CALL = new ThreadLocal<>();
 
   private final String rawSql;
   private final Statement delegate;
@@ -86,32 +84,37 @@ public final class MetastoreStatement implements InvocationHandler {
         ClassUtils.getAllInterfaces(delegate.getClass()).toArray(new Class[0]), handler);
   }
 
+  private void logSummary(boolean monitor) {
+    Optional<HMSHandlerContext.CallCtx> ctxCall = HMSHandlerContext.getCallCtx();
+    HMSHandlerContext.CallCtx previousCall = CALL_CTX.get();
+    if (ctxCall.isPresent()) {
+      if (previousCall == null) {
+        if (monitor) {
+          CALL_CTX.set(ctxCall.get());
+        }
+      } else if (!ctxCall.get().equals(previousCall)) {
+        // we approach the end of previous thrift call
+        long totalSpent = previousCall.totalTime().get();
+        LOG.debug("{} took {} ms to complete all queries", previousCall.methodName(), totalSpent);
+        if (isSlowExecution(configuration, totalSpent)) {
+          LOG.warn("{} took {} ms to complete all queries", previousCall.methodName(), totalSpent);
+        }
+        if (monitor) {
+          CALL_CTX.set(ctxCall.get());
+        } else {
+          CALL_CTX.remove();
+        }
+      }
+    }
+  }
+
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Timer.Context ctx = null;
     try {
-      LongAdder adder = null;
-      boolean shouldMonitor = hook.profile(rawSql, method, args);
-      if (Metrics.getRegistry() != null && shouldMonitor) {
-        Optional<Pair<String, Long>> ctxCall = HMSHandlerContext.getCallId();
-        Pair<Pair<String, Long>, LongAdder> previousCall = CURRENT_CALL.get();
-        if (ctxCall.isPresent()) {
-          if ((previousCall == null || !ctxCall.get().equals(previousCall.getLeft()))) {
-            // we approach the end of previous thrift call
-            if (previousCall != null) {
-              Pair<String, Long> call = previousCall.getLeft();
-              long totalSpent = previousCall.getRight().longValue();
-              LOG.debug("{} took {} ms to complete all jdbc queries", call.getLeft(), totalSpent);
-              if (isSlowExecution(configuration, totalSpent)) {
-                LOG.info("{} took {} ms to complete all jdbc queries", call.getLeft(), totalSpent);
-              }
-            }
-            adder = new LongAdder();
-            CURRENT_CALL.set(Pair.of(ctxCall.get(), adder));
-          } else {
-            adder = previousCall.getRight();
-          }
-        }
+      boolean monitor = hook.profile(rawSql, method, args);
+      logSummary(monitor);
+      if (Metrics.getRegistry() != null && monitor) {
         String metricName = hook.getMetricName(method, args);
         Timer timer = Metrics.getOrCreateTimer(metricName);
         if (timer != null) {
@@ -123,14 +126,14 @@ public final class MetastoreStatement implements InvocationHandler {
       Object result = method.invoke(delegate, args);
       hook.postRun(method, args, result);
       long timeSpent = System.currentTimeMillis() - start;
-      if (shouldMonitor) {
+      if (monitor) {
         String statement = rawSql != null ? rawSql : (args != null && args.length > 0 ? (String) args[0] : "no sql found");
-        LOG.debug("SQL query: {} completed in {} ms", statement, timeSpent);
+        LOG.debug("Jdbc query: {} completed in {} ms", statement, timeSpent);
+        if (CALL_CTX.get() != null) {
+          CALL_CTX.get().totalTime().addAndGet(timeSpent);
+        }
       }
       logSlowExecution(timeSpent, configuration, rawSql, method, args);
-      if (adder != null) {
-        adder.add(timeSpent);
-      }
       return result;
     } catch (InvocationTargetException | UndeclaredThrowableException e) {
       throw e.getCause();
@@ -201,8 +204,11 @@ public final class MetastoreStatement implements InvocationHandler {
             }
             String thriftApis = MetastoreConf.getVar(configuration,
                 MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_THRIFT_APIS);
-            if (StringUtils.isNotEmpty(thriftApis)) {
-              PROFILED_APIS.addAll(Arrays.asList(thriftApis.split(",")));
+            for (String thriftApi : thriftApis.split(",")) {
+              String trimmedThriftApi = thriftApi.trim();
+              if (!trimmedThriftApi.isEmpty()) {
+                PROFILED_APIS.add(trimmedThriftApi);
+              }
             }
           }
         }
@@ -241,9 +247,9 @@ public final class MetastoreStatement implements InvocationHandler {
         // no api configured to profile
         return false;
       }
-      Optional<Pair<String, Long>> ctxCall = HMSHandlerContext.getCallId();
+      Optional<HMSHandlerContext.CallCtx> ctxCall = HMSHandlerContext.getCallCtx();
       if (ctxCall.isPresent()) {
-        String call = ctxCall.get().getLeft();
+        String call = ctxCall.get().methodName();
         return PROFILED_APIS.contains(call);
       }
       return false;
