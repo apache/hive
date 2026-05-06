@@ -272,6 +272,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       for (int i = 0; i < valueList.size(); i++) {
         if (valueList.get(i) == null) {
           lcv.child.isNull[i] = true;
+          lcv.child.noNulls = false;
         } else {
           ((LongColumnVector) lcv.child).vector[i] = ((List<Integer>) valueList).get(i);
         }
@@ -287,6 +288,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       for (int i = 0; i < valueList.size(); i++) {
         if (valueList.get(i) == null) {
           lcv.child.isNull[i] = true;
+          lcv.child.noNulls = false;
         } else {
           ((LongColumnVector) lcv.child).vector[i] = ((List<Long>) valueList).get(i);
         }
@@ -297,6 +299,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       for (int i = 0; i < valueList.size(); i++) {
         if (valueList.get(i) == null) {
           lcv.child.isNull[i] = true;
+          lcv.child.noNulls = false;
         } else {
           ((DoubleColumnVector) lcv.child).vector[i] = ((List<Double>) valueList).get(i);
         }
@@ -313,6 +316,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
         if (src == null) {
           ((BytesColumnVector) lcv.child).setRef(i, src, 0, 0);
           lcv.child.isNull[i] = true;
+          lcv.child.noNulls = false;
         } else {
           ((BytesColumnVector) lcv.child).setRef(i, src, 0, src.length);
         }
@@ -323,6 +327,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       for (int i = 0; i < valueList.size(); i++) {
         if (valueList.get(i) == null) {
           lcv.child.isNull[i] = true;
+          lcv.child.noNulls = false;
         } else {
           ((DoubleColumnVector) lcv.child).vector[i] = ((List<Float>) valueList).get(i);
         }
@@ -337,6 +342,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       for (int i = 0; i < valueList.size(); i++) {
         if (valueList.get(i) == null) {
           lcv.child.isNull[i] = true;
+          lcv.child.noNulls = false;
         } else {
           ((DecimalColumnVector) lcv.child).vector[i].set(((List<byte[]>) valueList).get(i), scale);
         }

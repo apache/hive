@@ -125,8 +125,8 @@ public class Select {
               exec.signal(Signal.Type.TOO_MANY_ROWS);
             }
           } else {
-            exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
-            exec.signal(Signal.Type.NOTFOUND);
+            exec.setSqlNoData();
+            exec.signal(Signal.Type.NOTFOUND, null, null);
           }
         }
       } else if (ctx.parent instanceof HplsqlParser.StmtContext) { // Print all results for standalone SELECT statement
@@ -156,7 +156,7 @@ public class Select {
           exec.setSqlSuccess();
         } else {
           evalNull();
-          exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
+          exec.setSqlNoData();
         }
       }
     } catch (QueryException e) {

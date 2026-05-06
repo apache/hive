@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -63,9 +64,15 @@ public class IcebergSummaryHandler implements MetaSummaryHandler {
     Map<String, String> propertiesMap = Maps.newHashMap();
     LOG.info("Initializing iceberg summary handler with warehouse:{}，external warehouse:{}，uris:{}",
         mgdWarehouse, extWarehouse, uris);
-    propertiesMap.put("warehouse", mgdWarehouse);
-    propertiesMap.put("externalwarehouse", extWarehouse);
-    propertiesMap.put("uri", uris);
+    if (!StringUtils.isEmpty(mgdWarehouse)) {
+      propertiesMap.put(CatalogProperties.WAREHOUSE_LOCATION, mgdWarehouse);
+    }
+    if (!StringUtils.isEmpty(extWarehouse)) {
+      propertiesMap.put(HiveCatalog.EXTERNAL_WAREHOUSE_LOCATION, extWarehouse);
+    }
+    if (!StringUtils.isEmpty(uris)) {
+      propertiesMap.put(CatalogProperties.URI, uris);
+    }
     PrivilegedAction<HiveCatalog> action = () -> {
       HiveCatalog hiveCatalog = new HiveCatalog();
       hiveCatalog.setConf(configuration);

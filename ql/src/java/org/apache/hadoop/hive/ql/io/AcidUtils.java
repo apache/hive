@@ -1558,6 +1558,10 @@ public class AcidUtils {
         FileStatus fStatus = itr.next();
         Path fPath = fStatus.getPath();
         if (fStatus.isDirectory()) {
+          if (baseFileFilter.accept(fPath) || deltaFileFilter.accept(fPath)
+              || deleteEventDeltaDirFilter.accept(fPath)) {
+            addToSnapshot(dirToSnapshots, fPath);
+          }
           stack.push(FileUtils.listStatusIterator(fs, fPath, acidHiddenFileFilter));
         } else {
           Path parentDirPath = fPath.getParent();

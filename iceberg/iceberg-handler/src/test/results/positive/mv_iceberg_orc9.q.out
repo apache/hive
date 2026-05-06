@@ -1,0 +1,156 @@
+PREHOOK: query: create table ice_basetable (a int, b string) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_basetable
+POSTHOOK: query: create table ice_basetable (a int, b string) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_basetable
+PREHOOK: query: insert into ice_basetable values (1, 'alfred'),(2, 'bob'),(2, 'bonnie'),(3, 'calvin'),(3, 'charlie')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_basetable
+POSTHOOK: query: insert into ice_basetable values (1, 'alfred'),(2, 'bob'),(2, 'bonnie'),(3, 'calvin'),(3, 'charlie')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_basetable
+PREHOOK: query: create materialized view mv_acid  STORED AS ORC TBLPROPERTIES ('transactional'='true') as
+select b, a from ice_basetable
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@ice_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_acid
+POSTHOOK: query: create materialized view mv_acid  STORED AS ORC TBLPROPERTIES ('transactional'='true') as
+select b, a from ice_basetable
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@ice_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_acid
+POSTHOOK: Lineage: mv_acid.a SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_acid.b SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: create materialized view mv_insert_only STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select b, a from ice_basetable
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@ice_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_insert_only
+POSTHOOK: query: create materialized view mv_insert_only STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select b, a from ice_basetable
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@ice_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_insert_only
+POSTHOOK: Lineage: mv_insert_only.a SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_insert_only.b SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: select * from mv_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_acid
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mv_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_acid
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+alfred	1
+bob	2
+bonnie	2
+calvin	3
+charlie	3
+PREHOOK: query: select * from mv_insert_only
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_insert_only
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mv_insert_only
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_insert_only
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+alfred	1
+bob	2
+bonnie	2
+calvin	3
+charlie	3
+PREHOOK: query: insert into ice_basetable values (5, 'amia')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_basetable
+POSTHOOK: query: insert into ice_basetable values (5, 'amia')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_basetable
+PREHOOK: query: alter materialized view mv_acid rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@ice_basetable
+PREHOOK: Output: default@mv_acid
+POSTHOOK: query: alter materialized view mv_acid rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@ice_basetable
+POSTHOOK: Output: default@mv_acid
+POSTHOOK: Lineage: mv_acid.a SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_acid.b SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: alter materialized view mv_insert_only rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@ice_basetable
+PREHOOK: Output: default@mv_insert_only
+POSTHOOK: query: alter materialized view mv_insert_only rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@ice_basetable
+POSTHOOK: Output: default@mv_insert_only
+POSTHOOK: Lineage: mv_insert_only.a SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_insert_only.b SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: insert into ice_basetable values (4, 'mania')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_basetable
+POSTHOOK: query: insert into ice_basetable values (4, 'mania')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_basetable
+PREHOOK: query: alter materialized view mv_acid rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@ice_basetable
+PREHOOK: Output: default@mv_acid
+POSTHOOK: query: alter materialized view mv_acid rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@ice_basetable
+POSTHOOK: Output: default@mv_acid
+POSTHOOK: Lineage: mv_acid.a SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_acid.b SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: alter materialized view mv_insert_only rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@ice_basetable
+PREHOOK: Output: default@mv_insert_only
+POSTHOOK: query: alter materialized view mv_insert_only rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@ice_basetable
+POSTHOOK: Output: default@mv_insert_only
+POSTHOOK: Lineage: mv_insert_only.a SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_insert_only.b SIMPLE [(ice_basetable)ice_basetable.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: select * from mv_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_acid
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mv_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_acid
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+alfred	1
+amia	5
+bob	2
+bonnie	2
+calvin	3
+charlie	3
+mania	4
+PREHOOK: query: select * from mv_insert_only
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_insert_only
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mv_insert_only
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_insert_only
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+alfred	1
+amia	5
+bob	2
+bonnie	2
+calvin	3
+charlie	3
+mania	4

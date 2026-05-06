@@ -67,10 +67,12 @@ public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
 
   /**
-   * Returns a valid txn list for cleaner.
-   * @param txns Response containing open txns list.
-   * @param minOpenTxn Minimum open txn which is min open write txn on the table in the case of abort cleanup.
-   * @param isAbortCleanup Whether the request is for abort cleanup.
+   * Returns a valid txn list for the cleaner. The high watermark is set to {@code minOpenTxn - 1}
+   * so the cleaner only sees transactions that committed before the oldest open write txn on the table.
+   *
+   * @param txns response containing the currently open txns list
+   * @param minOpenTxn minimum open write txn id on the table being cleaned
+   * @param isAbortCleanup whether the request is for abort cleanup
    * @return a valid txn list
    */
   public static ValidTxnList createValidTxnListForCleaner(GetOpenTxnsResponse txns, long minOpenTxn, boolean isAbortCleanup) {
@@ -104,6 +106,18 @@ public class TxnUtils {
     } else {
       return new ValidReadTxnList(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
     }
+  }
+
+  /**
+   * Returns a valid txn list for the compaction worker. The high watermark is capped at {@code compactionTxnId}
+   * and the compaction transaction itself is kept in the exceptions list as OPEN.
+   *
+   * @param txns open txns response from the metastore
+   * @param compactionTxnId the transaction ID of the compaction
+   * @return a valid txn list
+   */
+  public static ValidTxnList createValidTxnListForCompactor(GetOpenTxnsResponse txns, long compactionTxnId) {
+    return TxnCommonUtils.createValidReadTxnList(txns, compactionTxnId, false);
   }
 
   /**

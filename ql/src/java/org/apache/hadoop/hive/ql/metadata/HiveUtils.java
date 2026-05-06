@@ -31,7 +31,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.CostLessRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -354,13 +353,34 @@ public final class HiveUtils {
             throws SemanticException {
       UnparseTranslator unparseTranslator = ((QuotedIdExpressionContext)procCtx).getUnparseTranslator();
       ASTNode identifier = (ASTNode) nd;
-      String id = identifier.getText();
-      if (FunctionRegistry.getFunctionInfo(id) != null){
+      if (isFunctionNameToken(identifier)) {
         return null;
       }
 
       unparseTranslator.addIdentifierTranslation(identifier);
       return null;
+    }
+
+    /*
+     * Quote identifiers during unparse.
+     *
+     * Only skip quoting for function names.
+     * Always quote column names, even if they match function names.
+     * For example, use `alias`.`date` instead of `alias`.date.
+     */
+    private static boolean isFunctionNameToken(ASTNode identifier) {
+      ASTNode parent = (ASTNode) identifier.getParent();
+      if (parent == null || parent.getChildCount() == 0) {
+        return false;
+      }
+
+      int parentType = parent.getType();
+      boolean isFunctionNode =
+          parentType == HiveParser.TOK_FUNCTION
+              || parentType == HiveParser.TOK_FUNCTIONDI
+              || parentType == HiveParser.TOK_FUNCTIONSTAR;
+
+      return isFunctionNode && parent.getChild(0) == identifier;
     }
   }
 

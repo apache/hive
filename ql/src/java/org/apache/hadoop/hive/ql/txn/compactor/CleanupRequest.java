@@ -30,6 +30,8 @@ public class CleanupRequest {
   private final String location;
   private final List<Path> obsoleteDirs;
   private final boolean purge;
+  private final boolean softDelete;
+  private final boolean sourceOfReplication;
   private final String runAs;
   private final String dbName;
   private final String fullPartitionName;
@@ -38,6 +40,8 @@ public class CleanupRequest {
     this.location = builder.location;
     this.obsoleteDirs = builder.obsoleteDirs;
     this.purge = builder.purge;
+    this.softDelete = builder.softDelete;
+    this.sourceOfReplication = builder.sourceOfReplication;
     this.runAs = builder.runAs;
     this.dbName = builder.dbName;
     this.fullPartitionName = builder.fullPartitionName;
@@ -53,6 +57,14 @@ public class CleanupRequest {
 
   public boolean isPurge() {
     return purge;
+  }
+
+  public boolean isSoftDelete() {
+    return softDelete;
+  }
+
+  public boolean isSourceOfReplication() {
+    return sourceOfReplication;
   }
 
   public String runAs() {
@@ -74,6 +86,8 @@ public class CleanupRequest {
     private String location;
     private List<Path> obsoleteDirs;
     private boolean purge;
+    private boolean softDelete;
+    private boolean sourceOfReplication;
     private String runAs;
     private String dbName;
     private String fullPartitionName;
@@ -90,6 +104,16 @@ public class CleanupRequest {
 
     public CleanupRequestBuilder setPurge(boolean purge) {
       this.purge = purge;
+      return this;
+    }
+
+    public CleanupRequestBuilder setSoftDelete(boolean softDelete) {
+      this.softDelete = softDelete;
+      return this;
+    }
+
+    public CleanupRequestBuilder setSourceOfReplication(boolean sourceOfReplication) {
+      this.sourceOfReplication = sourceOfReplication;
       return this;
     }
 

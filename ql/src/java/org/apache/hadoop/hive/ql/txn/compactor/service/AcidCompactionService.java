@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -184,10 +184,13 @@ public class AcidCompactionService extends CompactionService {
        * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
       compactionTxn.open(ci);
 
-      final ValidTxnList validTxnList = msc.getValidTxns(compactionTxn.getTxnId());
+      final ValidTxnList validTxnList =
+          TxnUtils.createValidTxnListForCompactor(msc.getOpenTxns(), compactionTxn.getTxnId());
       //with this ValidWriteIdList is capped at whatever HWM validTxnList has
-      tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(msc.getValidWriteIds(
-          Collections.singletonList(fullTableName), validTxnList.writeToString()).get(0));
+      tblValidWriteIds =
+          TxnUtils.createValidCompactWriteIdList(
+              msc.getValidWriteIds(List.of(fullTableName), validTxnList.writeToString()).get(0)
+          );
       LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
       conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 

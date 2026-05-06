@@ -19,7 +19,11 @@ select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
 create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
 
+create materialized view mat2 stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c <= 52;
+
 select * from mat1;
+select * from mat2;
 
 alter materialized view mat1 disable rewrite;
 
@@ -37,6 +41,15 @@ insert into tbl_ice values (10, 'ten', 60);
 
 explain cbo
 alter materialized view mat1 rebuild;
+
+alter materialized view mat1 rebuild;
+alter materialized view mat2 rebuild;
+
+select * from mat1;
+select * from mat2;
+
+-- test subsequent MV rebuilds
+insert into tbl_ice values (20, 'twenty', 80);
 
 alter materialized view mat1 rebuild;
 

@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
-
 /**
  * JUnit TestRule for Oracle.
  */
@@ -29,8 +27,9 @@ public class Oracle extends DatabaseRule {
   private final DockerImageName name =
       DockerImageName.parse("abstractdog/oracle-xe:18.4.0-slim").asCompatibleSubstituteFor("gvenzl/oracle-xe");
   private final OracleContainer container = new OracleContainer(name).withEnv("ORACLE_PASSWORD", "oracle");
+
   @Override
-  public void before() throws IOException, InterruptedException {
+  public void before() {
     container.start();
   }
 

@@ -51,8 +51,12 @@ public class JvmMetrics implements MetricsSource {
     JvmMetrics impl;
 
     synchronized JvmMetrics init(String processName, String sessionId) {
+      return init(processName, sessionId, DefaultMetricsSystem.instance());
+    }
+
+    synchronized JvmMetrics init(String processName, String sessionId, MetricsSystem ms) {
       if (impl == null) {
-        impl = create(processName, sessionId, DefaultMetricsSystem.instance());
+        impl = create(processName, sessionId, ms);
       }
       return impl;
     }
@@ -85,6 +89,10 @@ public class JvmMetrics implements MetricsSource {
 
   public static JvmMetrics initSingleton(String processName, String sessionId) {
     return Singleton.INSTANCE.init(processName, sessionId);
+  }
+
+  public static JvmMetrics initSingleton(String processName, String sessionId, MetricsSystem ms) {
+    return Singleton.INSTANCE.init(processName, sessionId, ms);
   }
 
   @Override

@@ -65,5 +65,6 @@ public class VectorizedMapColumnReader implements VectorizedColumnReader {
     mapColumnVector.childCount = keyListColumnVector.childCount;
     mapColumnVector.isRepeating = keyListColumnVector.isRepeating
         && valueListColumnVector.isRepeating;
+    mapColumnVector.noNulls = keyListColumnVector.noNulls && valueListColumnVector.noNulls;
   }
 }

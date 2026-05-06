@@ -41,6 +41,11 @@ public class TxnCommonUtils {
    * @return a valid txn list.
    */
   public static ValidTxnList createValidReadTxnList(GetOpenTxnsResponse txns, long currentTxn) {
+    return createValidReadTxnList(txns, currentTxn, true);
+  }
+
+  static ValidTxnList createValidReadTxnList(GetOpenTxnsResponse txns, long currentTxn,
+      boolean excludeCurrentTxn) {
     assert currentTxn <= txns.getTxn_high_water_mark();
     /*
      * The highWaterMark should be min(currentTxn,txns.getTxn_high_water_mark()) assuming currentTxn>0
@@ -61,7 +66,13 @@ public class TxnCommonUtils {
     // txn is read-only or aborted by AcidHouseKeeperService and compactor actually cleans up the aborted txns.
     // So, for such cases, we get negative value for sizeToHwm with found position for currentTxn, and so,
     // we just negate it to get the size.
-    int sizeToHwm = (currentTxn > 0) ? Math.abs(Collections.binarySearch(openTxns, currentTxn)) : openTxns.size();
+    int sizeToHwm;
+    if (currentTxn > 0) {
+      int pos = Collections.binarySearch(openTxns, currentTxn);
+      sizeToHwm = (pos >= 0 && !excludeCurrentTxn) ? pos + 1 : Math.abs(pos);
+    } else {
+      sizeToHwm = openTxns.size();
+    }
     sizeToHwm = Math.min(sizeToHwm, openTxns.size());
     long[] exceptions = new long[sizeToHwm];
     BitSet inAbortedBits = BitSet.valueOf(txns.getAbortedBits());
@@ -70,8 +81,9 @@ public class TxnCommonUtils {
     int i = 0;
     for (long txn : openTxns) {
       // For snapshot isolation, we don't care about txns greater than current txn and so stop here.
-      // Also, we need not include current txn to exceptions list.
-      if ((currentTxn > 0) && (txn >= currentTxn)) {
+      // When excludeCurrentTxn is true, we also exclude current txn from the exceptions list
+      // (own-txn exclusion for regular reads). When false, we include it (compaction worker).
+      if ((currentTxn > 0) && (excludeCurrentTxn ? txn >= currentTxn : txn > currentTxn)) {
         break;
       }
       if (inAbortedBits.get(i)) {

@@ -24,6 +24,7 @@ import com.facebook.fb303.fb_status;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.Striped;
 
 import javax.jdo.JDOException;
@@ -89,12 +90,10 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
-import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -123,7 +122,6 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 /**
  * This class serves as the super class for all handlers that implement the IHMSHandler
@@ -878,36 +876,6 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     return new CmRecycleResponse();
   }
 
-  /**
-   * filters out the table meta for which read database access is not granted
-   * @param catName catalog name
-   * @param tableMetas list of table metas
-   * @return filtered list of table metas
-   * @throws RuntimeException
-   * @throws NoSuchObjectException
-   */
-  protected List<TableMeta> filterReadableTables(String catName, List<TableMeta> tableMetas)
-      throws RuntimeException, NoSuchObjectException {
-    List<TableMeta> finalT = new ArrayList<>();
-    Map<String, Boolean> databaseNames = new HashMap();
-    for (TableMeta tableMeta : tableMetas) {
-      String fullDbName = prependCatalogToDbName(catName, tableMeta.getDbName(), conf);
-      if (databaseNames.get(fullDbName) == null) {
-        boolean isExecptionThrown = false;
-        try {
-          fireReadDatabasePreEvent(fullDbName);
-        } catch (MetaException e) {
-          isExecptionThrown = true;
-        }
-        databaseNames.put(fullDbName, isExecptionThrown);
-      }
-      if (!databaseNames.get(fullDbName)) {
-        finalT.add(tableMeta);
-      }
-    }
-    return finalT;
-  }
-
   @Override
   public void setMetaConf(String key, String value) throws MetaException {
     MetastoreConf.ConfVars confVar = MetastoreConf.getMetaConf(key);
@@ -981,27 +949,6 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     return getConf().get(key, confVar.getDefaultVal().toString());
   }
 
-  /**
-   * Fire a pre-event for read database operation, if there are any
-   * pre-event listeners registered
-   */
-  protected void fireReadDatabasePreEvent(final String name)
-      throws MetaException, RuntimeException, NoSuchObjectException {
-    if(preListeners.size() > 0) {
-      String[] parsedDbName = parseDbName(name, conf);
-      Database db = null;
-      try {
-        db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-        if (db == null) {
-          throw new NoSuchObjectException("Database: " + name + " not found");
-        }
-      } catch(MetaException | NoSuchObjectException e) {
-        throw new RuntimeException(e);
-      }
-      firePreEvent(new PreReadDatabaseEvent(db, this));
-    }
-  }
-
   public void firePreEvent(PreEventContext event) throws MetaException {
     for (MetaStorePreEventListener listener : preListeners) {
       try {
@@ -1012,5 +959,12 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
         throw new MetaException(e.getMessage());
       }
     }
+  }
+
+  public void firePreEvent(Supplier<PreEventContext> supplier) throws MetaException {
+    if (preListeners.isEmpty()) {
+      return;
+    }
+    firePreEvent(supplier.get());
   }
 }

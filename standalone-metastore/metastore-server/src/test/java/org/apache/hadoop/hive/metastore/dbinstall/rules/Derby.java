@@ -82,7 +82,7 @@ public class Derby extends DatabaseRule {
   };
 
   @Override
-  public void before() throws Exception {
+  public void before() {
     MetastoreSchemaTool.setHomeDirForTesting();
   }
 

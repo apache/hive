@@ -36,7 +36,7 @@ if [ "$revision" = "" ]; then
         revision=`git log -1 --pretty=format:"%H"`
         hostname=`hostname`
         branch=`git branch | sed -n -e 's/^* //p'`
-        url="git://${hostname}${cwd}"
+        url="https://github.com/apache/hive.git"
     elif [ -d .svn ]; then
         revision=`svn info ../ | sed -n -e 's/Last Changed Rev: \(.*\)/\1/p'`
         url=`svn info ../ | sed -n -e 's/^URL: \(.*\)/\1/p'`

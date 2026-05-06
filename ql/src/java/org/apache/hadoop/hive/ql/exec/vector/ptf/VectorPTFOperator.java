@@ -578,6 +578,10 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.TIMESTAMP_TYPE_NAME);
     case LONG:
       return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.INT_TYPE_NAME);
+    case INTERVAL_DAY_TIME:
+      return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
+    case VOID:
+      return TypeInfoUtils.getTypeInfoFromTypeString(serdeConstants.VOID_TYPE_NAME);
     default:
       throw new RuntimeException("Cannot convert column vector type: '" + type + "' to TypeInfo");
     }

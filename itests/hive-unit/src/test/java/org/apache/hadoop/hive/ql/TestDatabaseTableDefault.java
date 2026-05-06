@@ -98,6 +98,7 @@ public class TestDatabaseTableDefault {
         TestTxnDbUtil.prepDb(hiveConf);
 
         SessionState.start(new SessionState(hiveConf));
+        MetastoreConf.setBoolVar(hiveConf, ConfVars.HIVE_IN_TEST, false);
         d = DriverFactory.newDriver(hiveConf);
 
         wh = new File(System.getProperty("java.io.tmpdir") + File.separator +
@@ -110,7 +111,6 @@ public class TestDatabaseTableDefault {
 
         MetastoreConf.setVar(hiveConf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS,
                 "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer");
-        MetastoreConf.setBoolVar(hiveConf, ConfVars.HIVE_IN_TEST, false);
         MetastoreConf.setVar(hiveConf, ConfVars.WAREHOUSE, wh.getCanonicalPath());
         MetastoreConf.setVar(hiveConf, ConfVars.WAREHOUSE_EXTERNAL, ext_wh.getCanonicalPath());
         MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);

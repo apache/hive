@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -1935,6 +1936,10 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
+    ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
+        "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
+        "A comma separated list of custom Iceberg Metrics Reporting plugins."
+    ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,
             "HMS embedded HTTP server minimum number of threads."
@@ -2514,6 +2519,30 @@ public class MetastoreConf {
     String val = conf.get(var.varname);
     return val == null ? conf.getClass(var.hiveName, defaultValue, xface) :
         conf.getClass(var.varname, defaultValue, xface);
+  }
+
+  /**
+   * Get class instances based on a configuration value.
+   *
+   * @param conf configuration file to retrieve it from
+   * @param confVar variable to retrieve
+   * @return instances of the classes
+   */
+  public static Class<?>[] getClasses(Configuration conf, ConfVars confVar) {
+    Preconditions.checkArgument(confVar.defaultVal.getClass() == String.class);
+    Class<?> defaultClass;
+    try {
+      defaultClass = Class.forName((String) confVar.defaultVal);
+    } catch (ClassNotFoundException e) {
+      throw new IllegalArgumentException(
+          String.format("Failed to load the the default value of %s: %s", confVar.defaultVal, confVar.varname),
+          e
+      );
+    }
+    String val = conf.get(confVar.varname);
+    return val == null
+        ? conf.getClasses(confVar.hiveName, defaultClass)
+        : conf.getClasses(confVar.varname, defaultClass);
   }
 
   /**

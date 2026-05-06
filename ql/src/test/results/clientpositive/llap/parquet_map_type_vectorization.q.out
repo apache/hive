@@ -125,7 +125,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: parquet_map_type
-                  Statistics: Num rows: 1023 Data size: 2183412 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1023 Data size: 2092958 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                   Limit
@@ -133,7 +133,7 @@ STAGE PLANS:
                     Limit Vectorization:
                         className: VectorLimitOperator
                         native: true
-                    Statistics: Num rows: 10 Data size: 21340 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 21460 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: stringmap (type: map<string,string>), intmap (type: map<int,int>), doublemap (type: map<double,double>), stringmap['k2'] (type: string), intmap[456] (type: int), doublemap[123.123] (type: double), stringmap[stringindex] (type: string), intmap[intindex] (type: int), doublemap[doubleindex] (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -142,13 +142,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [1, 2, 3, 9, 10, 11, 12, 13, 14]
                           selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k2) -> 9:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 456) -> 10:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 11:double, VectorUDFMapIndexStringCol(col 1:map<string,string>, key: col 4:string) -> 12:string, VectorUDFMapIndexLongCol(col 2:map<int,int>, key: col 5:int) -> 13:int, VectorUDFMapIndexDoubleCol(col 3:map<double,double>, key: col 6:double) -> 14:double
-                      Statistics: Num rows: 10 Data size: 21340 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 24400 Basic stats: COMPLETE Column stats: PARTIAL
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 10 Data size: 21340 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 24400 Basic stats: COMPLETE Column stats: PARTIAL
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -284,6 +284,22 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
   }
 
   @Test
+  void testInitializeCatalogWithExternalWarehouseProperty() {
+    Map<String, String> properties = Maps.newHashMap();
+    properties.put("warehouse", "/user/hive/testwarehouse/");
+    properties.put(HiveCatalog.EXTERNAL_WAREHOUSE_LOCATION, "/user/hive/external/");
+    HiveCatalog hiveCatalog = new HiveCatalog();
+    hiveCatalog.initialize("hive", properties);
+
+    // Both warehouse properties should be propagated to the Hadoop configuration
+    // and trailing slashes should be stripped (matching the managed warehouse behavior).
+    assertThat(hiveCatalog.getConf().get("hive.metastore.warehouse.dir"))
+        .isEqualTo("/user/hive/testwarehouse");
+    assertThat(hiveCatalog.getConf().get("hive.metastore.warehouse.external.dir"))
+        .isEqualTo("/user/hive/external");
+  }
+
+  @Test
   public void testCreateTableTxnBuilder() throws Exception {
     Schema schema = getTestSchema();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");

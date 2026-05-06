@@ -768,7 +768,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
    */
   public void setSqlNoData() {
     setSqlCode(SqlCodes.NO_DATA_FOUND);
-    setSqlState("01000");
+    setSqlState("02000");
   }
 
   public Integer run(String[] args) throws Exception {

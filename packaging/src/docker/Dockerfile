@@ -67,7 +67,8 @@ RUN tar -xzv \
     tar -xzv \
       --exclude="apache-tez-$TEZ_VERSION-bin/share" \
       -f /opt/apache-tez-$TEZ_VERSION-bin.tar.gz \
-      -C /opt
+      -C /opt; \
+    mkdir -p /opt/tez-snapshot;
 
 FROM eclipse-temurin:21-jdk-ubi9-minimal AS run
 
@@ -75,11 +76,13 @@ ARG UID=1000
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
+ARG TEZ_SNAPSHOT_VERSION=
+ARG TEZ_SNAPSHOT_REPO_URL=https://repository.apache.org/content/repositories/snapshots
 
 # Install dependencies
 RUN set -ex; \
     microdnf update -y; \
-    microdnf -y install procps gettext; \
+    microdnf -y install procps gettext wget xmlstarlet; \
     microdnf clean all; \
     useradd --no-create-home -s /sbin/nologin -c "" --uid $UID hive
 
@@ -94,6 +97,38 @@ ENV PATH=$HIVE_HOME/bin:$HADOOP_HOME/bin:$PATH
 COPY --from=env --chown=hive /opt/hadoop-$HADOOP_VERSION $HADOOP_HOME
 COPY --from=env --chown=hive /opt/apache-hive-$HIVE_VERSION-bin $HIVE_HOME
 COPY --from=env --chown=hive /opt/apache-tez-$TEZ_VERSION-bin $TEZ_HOME
+COPY --from=env --chown=hive /opt/tez-snapshot /opt/tez-snapshot
+
+# When TEZ_SNAPSHOT_VERSION is set, fetch Tez snapshot jars from the Maven snapshot repository
+# and place them under /opt/tez-snapshot. At runtime, entrypoint.sh symlinks these into
+# $HIVE_HOME/lib with a "0-" prefix so they sort first in bin/hive's classpath glob, ensuring
+# snapshot classes take precedence over the Tez release jars bundled with Hive.
+# Maven snapshot repositories use timestamped filenames (e.g. tez-api-1.0.0-20250101.jar),
+# so we fetch maven-metadata.xml first to resolve the exact filename before downloading the jar.
+RUN set -eux; \
+    mkdir -p /opt/tez-snapshot-download; \
+    if [[ -n "${TEZ_SNAPSHOT_VERSION}" ]]; then \
+      base_url="${TEZ_SNAPSHOT_REPO_URL}/org/apache/tez"; \
+      for artifact in tez-common tez-api tez-dag tez-mapreduce tez-runtime-internals tez-runtime-library; do \
+        version_url="${base_url}/${artifact}/${TEZ_SNAPSHOT_VERSION}"; \
+        metadata_url="${version_url}/maven-metadata.xml"; \
+        metadata_file="/opt/tez-snapshot-download/${artifact}-maven-metadata.xml"; \
+        echo "metadata_url=${metadata_url}"; \
+        wget -q "${metadata_url}" -O "${metadata_file}"; \
+        snapshot_value="$(xmlstarlet sel -t -v "string(/metadata/versioning/snapshotVersions/snapshotVersion[extension='jar' and not(classifier)]/value)" "${metadata_file}")"; \
+        test -n "${snapshot_value}"; \
+        jar_file="${artifact}-${snapshot_value}.jar"; \
+        jar_url="${version_url}/${jar_file}"; \
+        echo "jar_url=${jar_url}"; \
+        wget -q "${jar_url}" -O "/opt/tez-snapshot/${jar_file}"; \
+      done; \
+      echo "Downloaded Tez snapshot jars under /opt/tez-snapshot:"; \
+      ls -1 /opt/tez-snapshot/*.jar; \
+    else \
+      echo "TEZ_SNAPSHOT_VERSION not set. Skipping Tez snapshot download."; \
+    fi; \
+    rm -rf /opt/tez-snapshot-download
+
 
 COPY --chown=hive entrypoint.sh /
 COPY --chown=hive conf $HIVE_HOME/conf
@@ -104,7 +139,8 @@ RUN chmod +x /entrypoint.sh && \
     mkdir -p $HIVE_HOME/scratch && \
     chown hive $HIVE_HOME/scratch && \
     mkdir -p /home/hive/.beeline && \
-    chown hive /home/hive/.beeline
+    chown hive /home/hive/.beeline && \
+    chown -R hive /opt/tez-snapshot
 
 USER hive
 WORKDIR $HIVE_HOME

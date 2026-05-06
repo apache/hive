@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -207,13 +208,15 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
       this.ctx.addSubContext(ctx);
 
-      if (!this.ctx.isExplainPlan() && (AcidUtils.isTransactionalTable(table) ||
-              table.isNonNative() && table.getStorageHandler().areSnapshotsSupported())) {
+      if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(table)) {
         // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a
         // given time, as otherwise we might produce incorrect results if incremental maintenance is triggered.
         HiveTxnManager txnManager = getTxnMgr();
         LockState state;
         try {
+          if (!txnManager.isTxnOpen()) {
+            txnManager.openTxn(ctx, conf.getUser(), TxnType.MATER_VIEW_REBUILD);
+          }
           state = txnManager.acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(tableName.getCat(),
               tableName.getDb(), tableName.getTable(), txnManager.getCurrentTxnId())).getState();
         } catch (LockException e) {

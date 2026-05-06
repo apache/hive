@@ -21,8 +21,6 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
-
 /**
  * JUnit TestRule for Mssql.
  */
@@ -31,7 +29,7 @@ public class Mssql extends DatabaseRule {
       new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/mssql/server:2019-latest")).acceptLicense();
 
   @Override
-  public void before() throws IOException, InterruptedException {
+  public void before() {
     container.start();
   }
 

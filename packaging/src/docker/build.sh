@@ -20,13 +20,15 @@ set -eux
 HIVE_VERSION=
 HADOOP_VERSION=
 TEZ_VERSION=
+TEZ_SNAPSHOT_VERSION=
 usage() {
     cat <<EOF 1>&2
-Usage: $0 [-h] [-hadoop <Hadoop version>] [-tez <Tez version>] [-hive <Hive version>] [-repo <Docker repo>]
+Usage: $0 [-h] [-hadoop <Hadoop version>] -tez <Tez release version> [-tez-snapshot [<Maven snapshot version>]] [-hive <Hive version>] [-repo <Docker repo>]
 Build the Hive Docker image (reused for LLAP too)
 -help                Display help
--hadoop              Build image with the specified Hadoop version
--tez                 Build image with the specified Tez version
+-hadoop              Build image with the specified Hadoop version (default: from Maven pom)
+-tez                 Required. Tez release tarball version (apache-tez-\$TEZ_VERSION-bin.tar.gz from archive)
+-tez-snapshot <ver>  Optional. When a snapshot version is given, fetch Tez Maven snapshot jars into the image. With no version, snapshot prefetch is skipped.
 -hive                Build image with the specified Hive version
 -repo                Docker repository
 EOF
@@ -48,6 +50,13 @@ while [ $# -gt 0 ]; do
       TEZ_VERSION=$1
       shift
       ;;
+    -tez-snapshot)
+      shift
+      if [ $# -gt 0 ] && [[ "$1" != -* ]]; then
+        TEZ_SNAPSHOT_VERSION=$1
+        shift
+      fi
+      ;;
     -hive)
       shift
       HIVE_VERSION=$1
@@ -63,6 +72,12 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+if [ -z "${TEZ_VERSION}" ]; then
+  echo "Error: -tez <Tez version> is required." >&2
+  usage
+  exit 1
+fi
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 SOURCE_DIR=${SOURCE_DIR:-"$SCRIPT_DIR/../../.."}
@@ -123,12 +138,20 @@ cp "$CACHE_DIR/apache-tez-$TEZ_VERSION-bin.tar.gz" "$WORK_DIR/"
 cp -R "$SOURCE_DIR/packaging/src/docker/conf" "$WORK_DIR/"
 cp -R "$SOURCE_DIR/packaging/src/docker/entrypoint.sh" "$WORK_DIR/"
 cp    "$SOURCE_DIR/packaging/src/docker/Dockerfile" "$WORK_DIR/"
+
+DOCKER_BUILD_ARGS=(
+  --build-arg "HIVE_VERSION=$HIVE_VERSION"
+  --build-arg "HADOOP_VERSION=$HADOOP_VERSION"
+  --build-arg "TEZ_VERSION=$TEZ_VERSION"
+)
+if [ -n "$TEZ_SNAPSHOT_VERSION" ]; then
+  DOCKER_BUILD_ARGS+=(--build-arg "TEZ_SNAPSHOT_VERSION=$TEZ_SNAPSHOT_VERSION")
+fi
+
 docker build \
         "$WORK_DIR" \
         -f "$WORK_DIR/Dockerfile" \
         -t "$repo/hive:$HIVE_VERSION" \
-        --build-arg "HIVE_VERSION=$HIVE_VERSION" \
-        --build-arg "HADOOP_VERSION=$HADOOP_VERSION" \
-        --build-arg "TEZ_VERSION=$TEZ_VERSION"
+        "${DOCKER_BUILD_ARGS[@]}"
 
 rm -r "${WORK_DIR}"

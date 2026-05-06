@@ -455,7 +455,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       pauseMonitor.start();
       String displayName = "LlapTaskSchedulerMetrics-" + MetricsUtils.getHostName();
       String sessionId = conf.get("llap.daemon.metrics.sessionid");
-      // TODO: Not sure about the use of this. Should we instead use workerIdentity as sessionId?
+      // TODO: HIVE-29569: Not sure about the use of this. Should we instead use workerIdentity as sessionId?
       this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId);
     } else {
       this.metrics = null;

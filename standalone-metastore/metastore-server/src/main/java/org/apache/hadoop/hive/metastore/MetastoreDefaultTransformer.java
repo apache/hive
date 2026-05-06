@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
@@ -630,10 +629,6 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       params = new HashMap<>();
     }
     String tableType = newTable.getTableType();
-    String txnal = null;
-    String txn_properties = null;
-    boolean isInsertAcid = false;
-
     String dbName = table.getDbName();
     Database db = null;
     try {
@@ -642,13 +637,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       throw new MetaException("Database " + dbName + " for table " + table.getTableName() + " could not be found");
     }
 
-      if (TableType.MANAGED_TABLE.name().equals(tableType)) {
+    if (TableType.MANAGED_TABLE.name().equals(tableType)) {
       LOG.debug("Table is a MANAGED_TABLE");
-      txnal = params.get(TABLE_IS_TRANSACTIONAL);
-      txn_properties = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
-      isInsertAcid = (txn_properties != null && txn_properties.equalsIgnoreCase("insert_only"));
-      boolean ctas_legacy_config = params.containsKey(CTAS_LEGACY_CONFIG) && params.get(CTAS_LEGACY_CONFIG).equalsIgnoreCase("true") ? true : false;
-      if (((txnal == null || txnal.equalsIgnoreCase("FALSE")) && !isInsertAcid) || (ctas_legacy_config && (txnal == null || txnal.equalsIgnoreCase("FALSE")))) { // non-ACID MANAGED TABLE
+      if (!Boolean.parseBoolean(params.get(TABLE_IS_TRANSACTIONAL))) { // non-ACID MANAGED TABLE
         LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
         newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
         params.remove(TABLE_IS_TRANSACTIONAL);
@@ -682,9 +673,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
         }
 
-
         newTable = validateTablePaths(table);
-        if (isInsertAcid) { // MICRO_MANAGED Tables
+        if (MetaStoreUtils.isInsertOnlyTableParam(table.getParameters())) { // MICRO_MANAGED Tables
           if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE)) {
             LOG.debug("Processor has required capabilities to be able to create INSERT-only tables");
             return newTable;

@@ -32,12 +32,13 @@ for arg in "$@"; do
       SCALE="--scale llapdaemon=2"
       export HIVE_ZOOKEEPER_QUORUM=zookeeper:2181
       export HIVE_LLAP_DAEMON_SERVICE_HOSTS=@llap0
+      export HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS=true
+      export TEZ_FRAMEWORK_MODE=STANDALONE_ZOOKEEPER
       ;;
---ozone)
-      COMPOSE_FILES="docker-compose.yml:storage/ozone/docker-compose.yml"
+    --ozone)
+      COMPOSE_FILES+=":storage/ozone/docker-compose.yml"
       # DEFAULT_FS defines the bucket authority
       export DEFAULT_FS="s3a://hive"
-
       export HIVE_WAREHOUSE_PATH="/warehouse"
 
       export S3_ENDPOINT_URL="http://s3.ozone:9878"
@@ -54,6 +55,6 @@ done
 export HIVE_EXECUTION_MODE="$MODE"
 export COMPOSE_FILE="$COMPOSE_FILES"
 
-echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE, compose_files=$COMPOSE_FILE)"
+echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE)"
 
 docker compose $PROFILE up -d $SCALE
