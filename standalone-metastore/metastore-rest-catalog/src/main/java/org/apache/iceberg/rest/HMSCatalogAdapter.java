@@ -448,7 +448,7 @@ public class HMSCatalogAdapter implements Closeable {
       case REGISTER_TABLE -> (T) registerTable(vars, body);
       case UPDATE_TABLE -> (T) updateTable(vars, body);
       case RENAME_TABLE -> (T) renameTable(body);
-      case REPORT_METRICS -> (T) reportMetrics(body);
+      case REPORT_METRICS -> (T) reportMetrics(vars, body);
       case COMMIT_TRANSACTION -> (T) commitTransaction(body);
       case LIST_VIEWS -> (T) listViews(vars);
       case CREATE_VIEW -> (T) createView(vars, body);
