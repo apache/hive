@@ -577,7 +577,10 @@ public class HMSCatalogAdapter implements Closeable {
     errorBuilder.responseCode(errorCode).withType(exc.getClass().getSimpleName()).withMessage(exc.getMessage());
     // avoid exposing stack traces for client errors but include them for server errors to aid debugging
     if (errorCode >= 500) {
+      LOG.error("A server error happened while processing REST request", exc);
       errorBuilder.withStackTrace(exc);
+    } else {
+      LOG.info("A client error happened while processing REST request: {}", exc.getMessage());
     }
   }
 
