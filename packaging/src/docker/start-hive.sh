@@ -32,6 +32,8 @@ for arg in "$@"; do
       SCALE="--scale llapdaemon=2"
       export HIVE_ZOOKEEPER_QUORUM=zookeeper:2181
       export HIVE_LLAP_DAEMON_SERVICE_HOSTS=@llap0
+      export HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS=true
+      export TEZ_FRAMEWORK_MODE=STANDALONE_ZOOKEEPER
       ;;
     --ozone)
       COMPOSE_FILES+=":storage/ozone/docker-compose.yml"

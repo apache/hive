@@ -19,11 +19,15 @@
 package org.apache.iceberg.rest;
 
 import com.google.common.base.Preconditions;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.Table;
@@ -45,13 +49,13 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
-import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
+import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
 import org.apache.iceberg.rest.requests.CommitTransactionRequest;
 import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
@@ -73,14 +77,18 @@ import org.apache.iceberg.rest.responses.HMSCacheStatsResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
-public class HMSCatalogAdapter implements RESTClient {
-  private static final String V1_CACHE_STATS = "v1/cache/stats";
+
+public class HMSCatalogAdapter implements Closeable {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/');
+  private static final String V1_CACHE_STATS = "v1/cache/stats";
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -101,17 +109,21 @@ public class HMSCatalogAdapter implements RESTClient {
           .put(CommitStateUnknownException.class, 500)
           .buildOrThrow();
 
+  private final String catalogName;
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
+  private final List<IcebergMetricsReporter> metricsReporters;
+  private final Clock clock = Clock.systemUTC();
 
-
-  public HMSCatalogAdapter(Catalog catalog) {
+  public HMSCatalogAdapter(String catalogName, Catalog catalog, List<IcebergMetricsReporter> metricsReporters) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
     Preconditions.checkArgument(catalog instanceof ViewCatalog);
+    this.catalogName = catalogName;
     this.catalog = catalog;
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
+    this.metricsReporters = metricsReporters;
   }
 
   enum Route {
@@ -326,9 +338,11 @@ public class HMSCatalogAdapter implements RESTClient {
     return null;
   }
 
-  private RESTResponse reportMetrics(Object body) {
-    // nothing to do here other than checking that we're getting the correct request
-    castRequest(ReportMetricsRequest.class, body);
+  private RESTResponse reportMetrics(Map<String, String> vars, Object body) {
+    final TableIdentifier ident = identFromPathVars(vars);
+    final var report = castRequest(ReportMetricsRequest.class, body).report();
+    final var receivedAt = clock.instant();
+    metricsReporters.forEach(reporter -> reporter.report(catalogName, ident, report, receivedAt));
     return null;
   }
 
@@ -447,13 +461,12 @@ public class HMSCatalogAdapter implements RESTClient {
     };
   }
 
-
   <T extends RESTResponse> T execute(
       HTTPMethod method,
       String path,
       Map<String, String> queryParams,
       Object body,
-      Consumer<ErrorResponse> errorHandler) {
+      HttpServletResponse response) throws IOException {
     ErrorResponse.Builder errorBuilder = ErrorResponse.builder();
     Pair<Route, Map<String, String>> routeAndVars = Route.from(method, path);
     if (routeAndVars != null) {
@@ -474,68 +487,21 @@ public class HMSCatalogAdapter implements RESTClient {
           .withMessage(String.format("No route for request: %s %s", method, path));
     }
     ErrorResponse error = errorBuilder.build();
-    errorHandler.accept(error);
-    // if the error handler doesn't throw an exception, throw a generic one
-    throw new RESTException("Unhandled error: %s", error);
-  }
-
-  @Override
-  public <T extends RESTResponse> T delete(
-      String path,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.DELETE, path, null, null, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T delete(
-      String path,
-      Map<String, String> queryParams,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.DELETE, path, queryParams, null, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T post(
-      String path,
-      RESTRequest body,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.POST, path, null, body, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T get(
-      String path,
-      Map<String, String> queryParams,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.GET, path, queryParams, null, errorHandler);
-  }
-
-  @Override
-  public void head(String path, Map<String, String> headers, Consumer<ErrorResponse> errorHandler) {
-    execute(HTTPMethod.HEAD, path, null, headers, errorHandler);
-  }
-
-  @Override
-  public <T extends RESTResponse> T postForm(
-      String path,
-      Map<String, String> formData,
-      Class<T> responseType,
-      Map<String, String> headers,
-      Consumer<ErrorResponse> errorHandler) {
-    return execute(HTTPMethod.POST, path, null, formData, errorHandler);
+    response.setStatus(error.code());
+    RESTObjectMapper.mapper().writeValue(response.getWriter(), error);
+    return null;
   }
 
   @Override
   public void close() {
     // The caller is responsible for closing the underlying catalog backing this REST catalog.
+    for (IcebergMetricsReporter reporter : metricsReporters) {
+      try {
+        reporter.close();
+      } catch (IOException e) {
+        LOG.error("Failed to close metrics reporter: {}", reporter, e);
+      }
+    }
   }
 
   private static class BadResponseType extends RuntimeException {
@@ -567,14 +533,14 @@ public class HMSCatalogAdapter implements RESTClient {
 
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
-    int errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);
-    errorBuilder
-        .responseCode(errorCode)
-        .withType(exc.getClass().getSimpleName())
-        .withMessage(exc.getMessage());
-    // avoid exposing stack traces for client errors, but include them for server errors to aid debugging
-    if (errorCode == 500) {
+    var errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);
+    errorBuilder.responseCode(errorCode).withType(exc.getClass().getSimpleName()).withMessage(exc.getMessage());
+    // avoid exposing stack traces for client errors but include them for server errors to aid debugging
+    if (errorCode >= 500) {
+      LOG.error("A server error happened while processing REST request", exc);
       errorBuilder.withStackTrace(exc);
+    } else {
+      LOG.info("A client error happened while processing REST request: {}", exc.getMessage());
     }
   }
 

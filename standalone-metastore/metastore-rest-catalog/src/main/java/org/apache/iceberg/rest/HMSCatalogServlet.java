@@ -19,10 +19,8 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -77,7 +75,7 @@ public class HMSCatalogServlet extends HttpServlet {
               context.path(),
               context.queryParams(),
               context.body(),
-              handle(response));
+              response);
 
       if (responseBody != null) {
         RESTObjectMapper.mapper().writeValue(response.getWriter(), responseBody);
@@ -88,21 +86,15 @@ public class HMSCatalogServlet extends HttpServlet {
       // It is not an unexpected server failure, so log at DEBUG to avoid flooding the console.
       LOG.debug("REST request resulted in a client error (already handled): {}", e.getMessage());
     } catch (RuntimeException | IOException e) {
-      // Genuine unexpected server error – log the full stack trace.
       LOG.error("Error processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
   }
 
-  private Consumer<ErrorResponse> handle(HttpServletResponse response) {
-    return errorResponse -> {
-      response.setStatus(errorResponse.code());
-      try {
-        RESTObjectMapper.mapper().writeValue(response.getWriter(), errorResponse);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    };
+  @Override
+  public void destroy() {
+    super.destroy();
+    restCatalogAdapter.close();
   }
 
   public static class ServletRequestContext {
@@ -152,8 +144,15 @@ public class HMSCatalogServlet extends HttpServlet {
       Route route = routeContext.first();
       Object requestBody = null;
       if (route.requestClass() != null) {
-        requestBody =
-            RESTObjectMapper.mapper().readValue(request.getReader(), route.requestClass());
+        try {
+          requestBody = RESTObjectMapper.mapper().readValue(request.getReader(), route.requestClass());
+        } catch (Exception e) {
+          return new ServletRequestContext(ErrorResponse.builder()
+              .responseCode(400)
+              .withType(e.getClass().getSimpleName())
+              .withMessage(e.getMessage())
+              .build());
+        }
       }
 
       Map<String, String> queryParams =
