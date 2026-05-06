@@ -92,6 +92,7 @@ public class DropTableHandler
       isReplicated = isDbReplicationTarget(db);
       EnvironmentContext context = request.getEnvContext();
       if (!request.isDeleteData() && context != null && ReplChangeManager.isSourceOfReplication(db)) {
+        // Needed when the table data is asynchronously removed(soft delete)
         context.putToProperties(ReplConst.SOURCE_OF_REPLICATION, Boolean.TRUE.toString());
       }
       checkInterrupted();

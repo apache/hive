@@ -68,7 +68,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
                 "(\"CQ_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CQ_PARTITION\" = :partName OR :partName IS NULL) AND " +
                 "(\"CQ_TXN_ID\" != :txnId OR :txnId IS NULL) AND " +
-                "(\"CQ_TYPE\" != :compactionType)");
+                "(\"CQ_TYPE\" != :cType)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE " +
                 "\"CC_DATABASE\" = :dbName AND " +
@@ -126,7 +126,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
             .addValue("tableName", null, Types.VARCHAR)
             .addValue("partName", null, Types.VARCHAR)
             .addValue("txnId", txnId, Types.BIGINT)
-            .addValue("compactionType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
+            .addValue("cType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
         break;
       }
       case TABLE: {
@@ -140,7 +140,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
             .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
             .addValue("partName", null, Types.VARCHAR)
             .addValue("txnId", null, Types.BIGINT)
-            .addValue("compactionType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
+            .addValue("cType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
         break;
       }
       case PARTITION: {
@@ -159,7 +159,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
               .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
               .addValue("partName", Warehouse.makePartName(partCols, partVals), Types.VARCHAR)
               .addValue("txnId", null, Types.BIGINT)
-              .addValue("compactionType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
+              .addValue("cType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
         }
       }
     }
