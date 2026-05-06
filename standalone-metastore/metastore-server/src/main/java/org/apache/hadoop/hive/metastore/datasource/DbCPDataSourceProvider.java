@@ -119,8 +119,16 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
         objectPool.setSoftMinEvictableIdleDuration(Duration.ofMillis(600 * 1000));
       }
     }
-    DataSourceProvider.preparePool(hdpConfig, stmt -> poolableConnFactory.setConnectionInitSql(Collections.singletonList(stmt)),
-        kv ->  dbcpDs.setConnectionProperties(kv.getKey() + "=" + kv.getValue()));
+    StringBuilder connectionProperties = new StringBuilder();
+    DataSourceProvider.preparePool(hdpConfig,
+        stmt -> poolableConnFactory.setConnectionInitSql(Collections.singletonList(stmt)),
+        kv -> {
+          if (!connectionProperties.isEmpty()) {
+            connectionProperties.append(';');
+          }
+          connectionProperties.append(kv.getKey()).append('=').append(kv.getValue());
+          dbcpDs.setConnectionProperties(connectionProperties.toString());
+        });
     return new PoolingDataSource(objectPool);
   }
 

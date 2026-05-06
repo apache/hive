@@ -75,7 +75,7 @@ public final class MetastoreStatement implements InvocationHandler {
         hook = JavaUtils.newInstance(JavaUtils.getClass(className.trim(), MetastoreStatementHook.class),
             new Class[] { Configuration.class}, new Object[] {conf});
       } catch (MetaException e) {
-        throw new RuntimeException(e.getMessage());
+        throw new RuntimeException(e.getMessage(), e);
       }
     }
   }
@@ -217,7 +217,7 @@ public final class MetastoreStatement implements InvocationHandler {
           printableArgs = new Object[10];
           System.arraycopy(args, 0, printableArgs, 0, 7);
           System.arraycopy(args, args.length - 2, printableArgs, 8, 2);
-          args[7] = "....";
+          printableArgs[7] = "....";
         }
         LOG.warn("Slow execution detected, method: {}, time taken: {} ms, args size: {}, args: {}{}",
             method.getName(), timeSpent,

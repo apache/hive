@@ -144,7 +144,8 @@ public record MetastoreConnection(Connection delegate, Configuration configurati
 
   @Override
   public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-    return delegate.createStatement(resultSetType, resultSetConcurrency);
+    return MetastoreStatement.getProxyStatement(configuration,
+        delegate.createStatement(resultSetType, resultSetConcurrency), null);
   }
 
   @Override
@@ -318,11 +319,14 @@ public record MetastoreConnection(Connection delegate, Configuration configurati
 
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
+    if (iface.isInstance(this)) {
+      return iface.cast(this);
+    }
     return delegate.unwrap(iface);
   }
 
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
-    return delegate.isWrapperFor(iface);
+    return iface.isInstance(this) || delegate.isWrapperFor(iface);
   }
 }

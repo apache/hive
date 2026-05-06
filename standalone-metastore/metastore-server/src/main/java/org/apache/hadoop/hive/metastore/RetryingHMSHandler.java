@@ -91,17 +91,19 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
         }
         Object object = null;
         boolean isStarted = Deadline.startTimer(method.getName());
+        boolean clearLocal = false;
         try {
           if (!local) {
-            Pair<String, Long> currentCall = Pair.of(method.getName(), System.currentTimeMillis());
-            Optional<Pair<String, Long>> previous = HMSHandlerContext.getCallId();
-            previous.ifPresent(
-                pc -> LOG.debug("Previous call {} will be taken over by {}", pc, currentCall));
-            HMSHandlerContext.setCallId(currentCall);
+            Optional<Pair<String, Long>> previousCall = HMSHandlerContext.getCallId();
+            if (previousCall.isEmpty()) {
+              Pair<String, Long> currentCall = Pair.of(method.getName(), System.currentTimeMillis());
+              HMSHandlerContext.setCallId(currentCall);
+              clearLocal = true;
+            }
           }
           object = method.invoke(baseHandler, args);
         } finally {
-          if (!local) {
+          if (clearLocal) {
             HMSHandlerContext.setCallId(null);
           }
           if (isStarted) {

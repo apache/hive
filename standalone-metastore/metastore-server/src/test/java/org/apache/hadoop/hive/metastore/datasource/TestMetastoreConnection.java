@@ -133,6 +133,7 @@ public class TestMetastoreConnection {
         try {
           Thread.sleep(sleepMs);
         } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
         }
       }
     }
