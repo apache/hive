@@ -38,11 +38,8 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.hadoop.conf.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public record MetastoreConnection(Connection delegate, Configuration configuration) implements Connection {
-  private static final Logger LOG = LoggerFactory.getLogger(MetastoreConnection.class);
   @Override
   public Statement createStatement() throws SQLException {
     return MetastoreStatement.getProxyStatement(configuration, delegate.createStatement(), null);
@@ -85,10 +82,6 @@ public record MetastoreConnection(Connection delegate, Configuration configurati
 
   @Override
   public void close() throws SQLException {
-    // Sometimes we want to see who closes the connection at when
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Connection is being closed", new RuntimeException());
-    }
     delegate.close();
   }
 

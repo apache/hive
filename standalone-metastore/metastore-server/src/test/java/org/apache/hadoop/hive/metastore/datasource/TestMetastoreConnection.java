@@ -27,9 +27,10 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.derby.impl.jdbc.EmbedConnection;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HMSHandlerContext;
@@ -51,7 +52,7 @@ public class TestMetastoreConnection {
   public void init() {
     conf = MetastoreDriver.getConfiguration();
     conf.set(MetastoreStatement.EXEC_HOOK, MetastoreStatementTestHook.class.getName());
-    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, 1000);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, 200);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_THRIFT_APIS, "test_metastore_statement");
@@ -91,7 +92,7 @@ public class TestMetastoreConnection {
     Timer timer = Metrics.getOrCreateTimer(MetastoreStatementTestHook.TEST_METRIC_NAME);
     Assert.assertNotNull(timer);
     long timeCount = timer.getCount();
-    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_metastore_statement", 1500)) {
+    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_metastore_statement", 300)) {
       try (Statement statement = connection.createStatement();
            ResultSet rs = statement.executeQuery("VALUES 1")) {
         Assert.assertTrue(rs.next());
@@ -99,10 +100,10 @@ public class TestMetastoreConnection {
     }
     Assert.assertEquals(slowNum + 1, slowQuery.getCount());
     Assert.assertEquals(timeCount + 1, timer.getCount());
-    Assert.assertTrue(timer.getSnapshot().getMean() > 1000);
+    Assert.assertTrue(timer.getSnapshot().getMean() > TimeUnit.MILLISECONDS.toNanos(300));
 
     // Test a method outside of monitor
-    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_statement_outside", 1500)) {
+    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_statement_outside", 300)) {
       try (Statement statement = connection.createStatement();
            ResultSet rs = statement.executeQuery("VALUES 1")) {
         Assert.assertTrue(rs.next());
@@ -147,11 +148,12 @@ public class TestMetastoreConnection {
       Configuration configuration = MetastoreDriver.getConfiguration();
       configuration.setLong(SLEEP_MILLIS, sleepMs);
       configuration.setBoolean(ENABLE_SLEEP_FOR_QUERY, true);
-      HMSHandlerContext.setCallId(Pair.of(method, System.currentTimeMillis()));
+      HMSHandlerContext
+          .setCallCtx(new HMSHandlerContext.CallCtx(method, System.currentTimeMillis(), new AtomicLong()));
       return () -> {
         configuration.unset(ENABLE_SLEEP_FOR_QUERY);
         configuration.unset(SLEEP_MILLIS);
-        HMSHandlerContext.setCallId(null);
+        HMSHandlerContext.setCallCtx(null);
       };
     }
   }
