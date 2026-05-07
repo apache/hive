@@ -72,7 +72,9 @@ public class TestMetastoreConnection {
     Assert.assertNotNull(dsp);
     DataSource ds = dsp.create(conf);
     Assert.assertTrue(ds instanceof HikariDataSource);
-    verify(ds.getConnection());
+    try (Connection connection = ds.getConnection()) {
+      verify(connection);
+    }
   }
 
   @Test
@@ -83,7 +85,9 @@ public class TestMetastoreConnection {
     Assert.assertNotNull(dsp);
     DataSource ds = dsp.create(conf);
     Assert.assertTrue(ds instanceof PoolingDataSource);
-    verify(ds.getConnection());
+    try (Connection connection = ds.getConnection()) {
+      verify(connection);
+    }
   }
 
   private void verify(Connection connection) throws Exception {

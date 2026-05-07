@@ -123,7 +123,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     DataSourceProvider.preparePool(hdpConfig,
         stmt -> poolableConnFactory.setConnectionInitSql(Collections.singletonList(stmt)),
         kv -> {
-          if (!connectionProperties.isEmpty()) {
+          if (connectionProperties.length() > 0) {
             connectionProperties.append(';');
           }
           connectionProperties.append(kv.getKey()).append('=').append(kv.getValue());

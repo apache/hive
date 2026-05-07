@@ -67,6 +67,10 @@ public class MetastoreDriver implements Driver {
 
   private synchronized static Driver
       findRegisteredDriver(String jdbcUrl, String driverClassName) throws SQLException {
+    if (delegateDriver != null && delegateDriver.acceptsURL(jdbcUrl)) {
+      // Use the cached driver
+      return delegateDriver;
+    }
     List<Driver> candidates = new ArrayList<>();
     for (Enumeration<Driver> drivers = DriverManager.getDrivers(); drivers.hasMoreElements();) {
       Driver driver = drivers.nextElement();
@@ -115,7 +119,8 @@ public class MetastoreDriver implements Driver {
     if (!acceptsURL(url)) {
       return null;
     }
-
+    // The url should match jdbc:metastore://<driverClass>:<jdbcUrl>, the <jdbcUrl> is
+    // the real database this MetastoreDriver should connect to.
     String driverAndUrl = url.substring(URL_PREFIX.length());
     String defaultDriverClz =  driverAndUrl.split(":")[0];
     String jdbcUrl = driverAndUrl.substring(defaultDriverClz.length() + 1);
