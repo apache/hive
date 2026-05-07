@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -39,6 +38,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.thrift.TException;
@@ -50,6 +50,11 @@ import org.junit.experimental.categories.Category;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
+/**
+ * Unit tests for {@link StatisticsManagementTask}, verifying that expired table-level column
+ * statistics are deleted on schedule and that tables marked with the exclude property are left
+ * untouched.
+ */
 @Category(MetastoreUnitTest.class)
 public class TestStatisticsManagement {
 
@@ -64,9 +69,9 @@ public class TestStatisticsManagement {
         conf.setBoolean(ConfVars.MULTITHREADED.getVarname(), false);
         conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
 
-        // enable stats auto deletion, set up a short retention so threshold check triggers easily
-        MetastoreConf.setBoolVar(conf, ConfVars.STATISTICS_AUTO_DELETION, true);
-        MetastoreConf.setTimeVar(conf, ConfVars.STATISTICS_RETENTION_PERIOD, 1, TimeUnit.DAYS);
+        // Enable stats auto deletion with a short retention so the threshold check triggers easily.
+        MetastoreConf.setBoolVar(conf, ConfVars.COLUMN_STATISTICS_AUTO_DELETION, true);
+        MetastoreConf.setTimeVar(conf, ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD, 1, TimeUnit.DAYS);
 
         MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
         TestTxnDbUtil.setConfValues(conf);
@@ -78,7 +83,7 @@ public class TestStatisticsManagement {
     @After
     public void tearDown() throws Exception {
         if (client != null) {
-            // Drop any leftover databases, similar to TestPartitionManagement.java
+            // Drop any leftover databases, similar to TestPartitionManagement.java.
             List<String> dbs = client.getAllDatabases(DEFAULT_CATALOG_NAME);
             for (String db : dbs) {
                 if (!db.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
@@ -100,14 +105,12 @@ public class TestStatisticsManagement {
         String dbName = "stats_db1";
         String tableName = "tbl1";
         createDbAndTable(dbName, tableName, false);
-        // create a column stats entry (table-level)
         writeTableLevelColStats(dbName, tableName, "c1");
-        // ensure stats exists
         assertHasTableColStats(dbName, tableName, "c1");
-        // make lastAnalyzed older than the threshold
         makeAllTableColStatsOlderThanRetention(dbName, tableName);
 
         runStatisticsManagementTask(conf);
+
         assertNoTableColStats(dbName, tableName, "c1");
     }
 
@@ -115,20 +118,24 @@ public class TestStatisticsManagement {
     public void testExcludedTableStatsAreNotDeleted() throws Exception {
         String dbName = "stats_db2";
         String tableName = "tbl2";
-        // Create a database and table that ARE excluded from auto deletion.
         createDbAndTable(dbName, tableName, true);
         writeTableLevelColStats(dbName, tableName, "c1");
         assertHasTableColStats(dbName, tableName, "c1");
-
-        // Manually set lastAnalyzed to a very old timestamp so it would normally be expired.
         makeAllTableColStatsOlderThanRetention(dbName, tableName);
 
         runStatisticsManagementTask(conf);
 
-        // Verify that stats are still present because the table is excluded.
+        // Stats must still be present because the table is marked as excluded.
         assertHasTableColStats(dbName, tableName, "c1");
     }
 
+    /**
+     * Creates a database (unless it is the default database) and a simple two-column test table.
+     *
+     * @param dbName    name of the database to create
+     * @param tableName name of the table to create
+     * @param exclude   if {@code true}, sets the auto-deletion exclude property on the table
+     */
     private void createDbAndTable(String dbName, String tableName, boolean exclude) throws Exception {
         Database db;
         if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
@@ -140,7 +147,6 @@ public class TestStatisticsManagement {
             db = client.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
         }
 
-        // Build a simple test table with two columns.
         TableBuilder tb = new TableBuilder()
                 .inDb(db)
                 .setTableName(tableName)
@@ -150,22 +156,26 @@ public class TestStatisticsManagement {
                 .setOutputFormat("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat");
 
         Table t = tb.build(conf);
-
-        // If requested, mark this table as excluded from automatic stats deletion.
         if (exclude) {
-            t.getParameters().put(StatisticsManagementTask.STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY, "true");
+            t.getParameters().put(
+                    StatisticsManagementTask.STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY, "true");
         }
         client.createTable(t);
         client.flushCache();
     }
 
+    /**
+     * Writes minimal table-level column statistics for the given column via the metastore client.
+     *
+     * @param db  database name
+     * @param tbl table name
+     * @param col column name
+     */
     private void writeTableLevelColStats(String db, String tbl, String col) throws TException {
-        // Create a stats object for one column.
         ColumnStatisticsObj obj = new ColumnStatisticsObj();
         obj.setColName(col);
         obj.setColType("double");
 
-        // Fill in minimal double-column statistics data.
         DoubleColumnStatsData doubleData = new DoubleColumnStatsData();
         doubleData.setNumNulls(0);
         doubleData.setNumDVs(1);
@@ -176,51 +186,70 @@ public class TestStatisticsManagement {
         data.setDoubleStats(doubleData);
         obj.setStatsData(data);
 
-        ColumnStatistics cs = new ColumnStatistics();
         ColumnStatisticsDesc desc = new ColumnStatisticsDesc(true, db, tbl);
         desc.setCatName("hive");
+
+        ColumnStatistics cs = new ColumnStatistics();
         cs.setStatsDesc(desc);
         cs.addToStatsObj(obj);
 
         client.updateTableColumnStatistics(cs);
     }
 
+    /**
+     * Asserts that at least one column statistics object exists for the specified column.
+     *
+     * @param db  database name
+     * @param tbl table name
+     * @param col column name
+     */
     private void assertHasTableColStats(String db, String tbl, String col) throws TException {
         List<ColumnStatisticsObj> objs = client.getTableColumnStatistics(db, tbl, List.of(col), "hive");
         assertTrue("Expected stats for " + db + "." + tbl + "." + col, objs != null && !objs.isEmpty());
     }
 
+    /**
+     * Asserts that no column statistics exist for the specified column.
+     * A {@link NoSuchObjectException} from the server is also treated as an acceptable absence signal.
+     *
+     * @param db  database name
+     * @param tbl table name
+     * @param col column name
+     */
     private void assertNoTableColStats(String db, String tbl, String col) throws TException {
         try {
             List<ColumnStatisticsObj> objs = client.getTableColumnStatistics(db, tbl, List.of(col), "hive");
             assertTrue("Expected no stats for " + db + "." + tbl + "." + col, objs == null || objs.isEmpty());
         } catch (NoSuchObjectException e) {
-            // acceptable: server may throw if stats absent depending on impl
+            // Acceptable: server may throw if stats are absent depending on implementation.
         }
     }
 
+    /**
+     * Backdates the {@code lastAnalyzed} field of all {@code MTableColumnStatistics} rows for the
+     * given table to 400 days ago, making them appear expired relative to any reasonable retention
+     * period. Uses a fresh {@link ObjectStore} instance to bypass the proxy wrapper returned by
+     * {@code HMSHandler.getMSForConf()}.
+     *
+     * @param db  database name
+     * @param tbl table name
+     */
     private void makeAllTableColStatsOlderThanRetention(String db, String tbl) throws Exception {
-        // We update via ObjectStore/PM directly to avoid relying on params "lastAnalyzed".
-        RawStore ms = HMSHandler.getMSForConf(conf);
-        ObjectStore os = (ObjectStore) ms;
+        // Instantiate ObjectStore directly; HMSHandler.getMSForConf() returns a proxy that
+        // cannot be cast to ObjectStore and does not expose getPersistenceManager().
+        ObjectStore os = new ObjectStore();
         os.setConf(conf);
 
-        // Compute an old timestamp in seconds, here we use 400 days ago.
         long oldSeconds = (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(400)) / 1000;
-
-        // NOTE: exact JDO classes/field paths sometimes vary; adjust filter if needed based on MTableColumnStatistics mapping
         PersistenceManager pm = os.getPersistenceManager();
         Query q = null;
         try {
-            // Query MTableColumnStatistics rows for the target table.
-            q = pm.newQuery(org.apache.hadoop.hive.metastore.model.MTableColumnStatistics.class);
+            q = pm.newQuery(MTableColumnStatistics.class);
             q.setFilter("table.tableName == t && table.database.name == d");
             q.declareParameters("java.lang.String t, java.lang.String d");
             @SuppressWarnings("unchecked")
-            List<org.apache.hadoop.hive.metastore.model.MTableColumnStatistics> rows =
-                    (List<org.apache.hadoop.hive.metastore.model.MTableColumnStatistics>) q.execute(tbl, db);
-            // Make all matching column stats rows to look old/expired.
-            for (org.apache.hadoop.hive.metastore.model.MTableColumnStatistics r : rows) {
+            List<MTableColumnStatistics> rows = (List<MTableColumnStatistics>) q.execute(tbl, db);
+            for (MTableColumnStatistics r : rows) {
                 r.setLastAnalyzed(oldSeconds);
             }
             pm.flush();
@@ -232,9 +261,14 @@ public class TestStatisticsManagement {
         }
     }
 
-    private void runStatisticsManagementTask(Configuration conf) {
+    /**
+     * Instantiates and runs a {@link StatisticsManagementTask} with the given configuration.
+     *
+     * @param configuration the HMS configuration to pass to the task
+     */
+    private void runStatisticsManagementTask(Configuration configuration) {
         StatisticsManagementTask task = new StatisticsManagementTask();
-        task.setConf(conf);
+        task.setConf(configuration);
         task.run();
     }
 }

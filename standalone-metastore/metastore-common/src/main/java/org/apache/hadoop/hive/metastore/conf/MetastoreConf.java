@@ -1291,19 +1291,20 @@ public class MetastoreConf {
       "metastore.partition.management.table.pattern", "*",
       "Automatic partition management will look for tables using the specified table pattern"),
 
-    STATISTICS_MANAGEMENT_TASK_FREQUENCY("metastore.statistics.management.task.frequency",
-            "metastore.statistics.management.task.frequency",
+    COLUMN_STATISTICS_MANAGEMENT_TASK_FREQUENCY("metastore.column.statistics.management.task.frequency",
+            "metastore.column.statistics.management.task.frequency",
             7, TimeUnit.DAYS, "Frequency at which timer task runs to do automatic statistics \n" +
             "management for tables. Statistics management include 2 configs. \n" +
-            "One is 'statistics.auto.deletion', and the other is 'metastore.statistics.retention.period'. \n" +
-            "When 'statistics.auto.deletion'='true' is set, statistics management will look for tables which their\n " +
+            "One is 'metastore.column.statistics.auto.deletion', and the other is 'metastore.column.statistics.retention.period'. \n" +
+            "When 'metastore.column.statistics.auto.deletion'='true' is set, statistics management will look for tables which their\n" +
             "column statistics are over the retention period, and then delete the column stats. \n"),
-    STATISTICS_RETENTION_PERIOD("metastore.statistics.retention.period",
-            "metastore.statistics.retention.period", 365, TimeUnit.DAYS, "The retention period " +
+
+    COLUMN_STATISTICS_RETENTION_PERIOD("metastore.column.statistics.retention.period",
+            "metastore.column.statistics.retention.period", 365, TimeUnit.DAYS, "The retention period " +
             "that we want to keep the stats for each table, which means if the stats are older than this period\n" +
             "of time, the stats will be automatically deleted. \n"),
 
-    STATISTICS_AUTO_DELETION("metastore.statistics.auto.deletion", "metastore.statistics.auto.deletion", false,
+    COLUMN_STATISTICS_AUTO_DELETION("metastore.column.statistics.auto.deletion", "metastore.column.statistics.auto.deletion", false,
             "Whether table/partition column statistics will be auto deleted after retention period"),
 
     METASTORE_METADATA_TRANSFORMER_CLASS("metastore.metadata.transformer.class", "metastore.metadata.transformer.class",
