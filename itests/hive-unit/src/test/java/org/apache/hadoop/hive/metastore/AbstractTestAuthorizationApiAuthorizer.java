@@ -90,7 +90,7 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
         // authorization checks passed.
         String exStackString = ExceptionUtils.getStackTrace(e);
         assertTrue("Verifying this exception came after authorization check",
-                exStackString.contains("org.apache.hadoop.hive.metastore.ObjectStore"));
+                exStackString.contains("org.apache.hadoop.hive.metastore.RawStore"));
         // If its not an exception caused by auth check, ignore it
       }
       assertFalse("Authz Exception should have been thrown in remote mode", isRemoteMetastoreMode);

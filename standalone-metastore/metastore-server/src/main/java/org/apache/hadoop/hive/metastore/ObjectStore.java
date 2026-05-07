@@ -526,11 +526,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
     String implClassName = conf.get("metastore." + descriptor.alias() + ".store.impl", "");
     T impl = (T) cachedImpls.get(iface);
-    if (impl != null && impl.getClass().getName().equals(implClassName)) {
+    if (impl != null &&
+        (StringUtils.isEmpty(implClassName) || impl.getClass().getName().equals(implClassName))) {
       return impl;
     }
 
-    Class<?> ifaceImpl = conf.getClass(implClassName, descriptor.defaultImpl());
+    Class<?> ifaceImpl = descriptor.defaultImpl();
+    if (StringUtils.isNotEmpty(implClassName)) {
+      ifaceImpl = conf.getClass(implClassName, ifaceImpl);
+    }
     T simpl = (T) JavaUtils.newInstance(ifaceImpl);
     List<Query> trackOpenedQueries = new LinkedList<>();
     if (simpl instanceof RawStoreAware rsa) {

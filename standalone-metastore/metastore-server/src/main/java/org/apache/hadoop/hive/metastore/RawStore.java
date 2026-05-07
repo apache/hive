@@ -374,7 +374,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException something went wrong in the RDBMS
    */
   default Table getTable(String catalogName, String dbName, String tableName) throws MetaException {
-    return unwrap(TableStore.class).getTable(new TableName(catalogName, dbName, tableName), null, -1);
+    return getTable(catalogName, dbName, tableName, null, -1);
   }
 
   /**
@@ -389,7 +389,7 @@ public interface RawStore extends Configurable {
    */
   default Table getTable(String catalogName, String dbName, String tableName,
                  String writeIdList) throws MetaException {
-    return unwrap(TableStore.class).getTable(new TableName(catalogName, dbName, tableName), writeIdList, -1);
+    return getTable(catalogName, dbName, tableName, writeIdList, -1);
   }
 
   /**
