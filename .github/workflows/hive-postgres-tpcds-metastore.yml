@@ -1,0 +1,57 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Build and Publish Postgres TPC-DS Metastore Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: 'Docker image tag. Use "test" for experimentation purposes and proper semantic versioning (e.g., 1.4) when pushing to production. CAUTION: Choose the tag carefully to avoid overwriting existing images.'
+        required: false
+        default: 'test'
+      pushImage:
+        description: 'Push image to Docker Hub? (true/false)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.inputs.pushImage == 'true' }}
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and optionally push Docker image
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294
+        with:
+          context: ./standalone-metastore/metastore-server/docker/hive-postgres-tpcds-metastore/
+          file: ./standalone-metastore/metastore-server/docker/hive-postgres-tpcds-metastore/Dockerfile
+          push: ${{ github.event.inputs.pushImage == 'true' }}
+          tags: ${{ github.repository_owner }}/hive-postgres-tpcds-metastore:${{ github.event.inputs.imageTag }}
