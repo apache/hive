@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.RawStore;
 
-public record TransactionHandler<T> (RawStore rs, T simpl, List<Query> closeQueriesAfterUse)
+public record TransactionHandler<T> (RawStore rs, T simpl, List<Query> openQueries)
     implements InvocationHandler {
 
   @SuppressWarnings("unchecked")
@@ -61,10 +61,10 @@ public record TransactionHandler<T> (RawStore rs, T simpl, List<Query> closeQuer
       if (openTxn && !success) {
         rs.rollbackTransaction();
       }
-      for (Query q : closeQueriesAfterUse) {
+      for (Query q : openQueries) {
         q.closeAll();
       }
-      closeQueriesAfterUse.clear();
+      openQueries.clear();
     }
   }
 }

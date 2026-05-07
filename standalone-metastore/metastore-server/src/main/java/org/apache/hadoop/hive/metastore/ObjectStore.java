@@ -488,6 +488,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.close();
       pm = null;
     }
+    cachedImpls.clear();
   }
 
   /**
@@ -525,25 +526,25 @@ public class ObjectStore implements RawStore, Configurable {
       throw new IllegalArgumentException("Unable to unwrap the store as " + iface);
     }
     String implClassName = conf.get("metastore." + descriptor.alias() + ".store.impl", "");
+    T simpl;
     T impl = (T) cachedImpls.get(iface);
     if (impl != null &&
         (StringUtils.isEmpty(implClassName) || impl.getClass().getName().equals(implClassName))) {
-      return impl;
+      simpl = impl;
+    } else {
+      Class<?> ifaceImpl = descriptor.defaultImpl();
+      if (StringUtils.isNotEmpty(implClassName)) {
+        ifaceImpl = conf.getClass(implClassName, ifaceImpl);
+      }
+      simpl = (T) JavaUtils.newInstance(ifaceImpl);
+      cachedImpls.put(iface, simpl);
     }
-
-    Class<?> ifaceImpl = descriptor.defaultImpl();
-    if (StringUtils.isNotEmpty(implClassName)) {
-      ifaceImpl = conf.getClass(implClassName, ifaceImpl);
-    }
-    T simpl = (T) JavaUtils.newInstance(ifaceImpl);
-    List<Query> trackOpenedQueries = new LinkedList<>();
+    List<Query> openQueries = new LinkedList<>();
     if (simpl instanceof RawStoreAware rsa) {
       rsa.setBaseStore(this);
-      rsa.setPersistentManager(PersistenceManagerProxy.getProxy(pm, trackOpenedQueries));
+      rsa.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
     }
-    impl = TransactionHandler.getProxy(iface, new TransactionHandler<>(this, simpl, trackOpenedQueries));
-    cachedImpls.put(iface, impl);
-    return impl;
+    return TransactionHandler.getProxy(iface, new TransactionHandler<>(this, simpl, openQueries));
   }
 
   @Override
@@ -7498,7 +7499,6 @@ public class ObjectStore implements RawStore, Configurable {
    * ~ COLUMN_STATE_ACCURATE(CSA) state is true
    * ~ Isolation-level (snapshot) compliant with the query
    * @param queryValidWriteIdList  valid writeId list of the query
-   * @Precondition   "part" should be retrieved from the PARTITIONS table.
    */
   // TODO: move to somewhere else
   public static boolean isCurrentStatsValidForTheQuery(

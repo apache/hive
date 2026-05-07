@@ -188,10 +188,10 @@ final class PartitionTree {
           "Partition with partition values " + Arrays.toString(oldPartitionVals.toArray()) + " is not found.");
     }
     if (!oldPartition.getDbName().equals(newPartition.getDbName())) {
-      throw new InvalidOperationException("Db name cannot be altered.");
+      throw new MetaException("Db name cannot be altered.");
     }
     if (!oldPartition.getTableName().equals(newPartition.getTableName())) {
-      throw new InvalidOperationException("Table name cannot be altered.");
+      throw new MetaException("Table name cannot be altered.");
     }
     if (isRename) {
       newPartition.getSd().setLocation(oldPartition.getSd().getLocation());
