@@ -234,14 +234,14 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
 
     switch (tableType) {
-      case EXTERNAL_TABLE:
-      case MANAGED_TABLE:
+      case EXTERNAL_TABLE,
+           MANAGED_TABLE:
         hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
                 BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
         break;
-      case VIRTUAL_VIEW:
-      case MATERIALIZED_VIEW:
-      case EXTERNAL_MATERIALIZED_VIEW:
+      case VIRTUAL_VIEW,
+           MATERIALIZED_VIEW,
+           EXTERNAL_MATERIALIZED_VIEW:
         hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
                 HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
         break;
@@ -566,9 +566,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         Table tbl;
         String formatVersion;
         switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
-          case MANAGED_TABLE:
-          case EXTERNAL_TABLE:
-          case MATERIALIZED_VIEW:
+          case MANAGED_TABLE,
+               EXTERNAL_TABLE,
+               MATERIALIZED_VIEW:
             tbl = IcebergTableUtil.getTable(conf, hmsTable);
             formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
             break;

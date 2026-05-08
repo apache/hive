@@ -232,8 +232,8 @@ public class IcebergTableUtil {
               });
         }
 
-        if (resource.get() instanceof Catalogs.MaterializedView) {
-          return ((Catalogs.MaterializedView) resource.get()).getStorageTable();
+        if (resource.get() instanceof Catalogs.MaterializedView materializedView) {
+          return materializedView.getStorageTable();
         }
       }
 

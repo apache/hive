@@ -156,7 +156,6 @@ public interface ViewMetadata extends Serializable {
     private String location;
     private String uuid;
     private String metadataLocation;
-    private Long maxStalenessMs;
 
     // internal change tracking
     private Integer lastAddedVersionId = null;
@@ -292,43 +291,42 @@ public interface ViewMetadata extends Serializable {
                 changes(MetadataUpdate.AddViewVersion.class)
                         .anyMatch(added -> added.viewVersion().versionId() == newVersionId);
         this.lastAddedVersionId = addedInBuilder ? newVersionId : null;
-        return newVersionId;
-      }
-
-      if (version.schemaId() == LAST_ADDED) {
-        ValidationException.check(
-                lastAddedSchemaId != null, "Cannot set last added schema: no schema has been added");
-        version = ImmutableViewVersion.builder().from(version).schemaId(lastAddedSchemaId).build();
-      }
-
-      Preconditions.checkArgument(
-              schemasById.containsKey(version.schemaId()),
-              "Cannot add version with unknown schema: %s",
-              version.schemaId());
-
-      Set<String> dialects = Sets.newHashSet();
-      for (ViewRepresentation repr : version.representations()) {
-        if (repr instanceof SQLViewRepresentation) {
-          SQLViewRepresentation sql = (SQLViewRepresentation) repr;
-          Preconditions.checkArgument(
-                  dialects.add(sql.dialect().toLowerCase(Locale.ROOT)),
-                  "Invalid view version: Cannot add multiple queries for dialect %s",
-                  sql.dialect().toLowerCase(Locale.ROOT));
-        }
-      }
-
-      versions.add(version);
-      versionsById.put(version.versionId(), version);
-
-      if (null != lastAddedSchemaId && version.schemaId() == lastAddedSchemaId) {
-        changes.add(
-                new MetadataUpdate.AddViewVersion(
-                        ImmutableViewVersion.builder().from(version).schemaId(LAST_ADDED).build()));
       } else {
-        changes.add(new MetadataUpdate.AddViewVersion(version));
-      }
 
-      this.lastAddedVersionId = newVersionId;
+        if (version.schemaId() == LAST_ADDED) {
+          ValidationException.check(
+                  lastAddedSchemaId != null, "Cannot set last added schema: no schema has been added");
+          version = ImmutableViewVersion.builder().from(version).schemaId(lastAddedSchemaId).build();
+        }
+
+        Preconditions.checkArgument(
+                schemasById.containsKey(version.schemaId()),
+                "Cannot add version with unknown schema: %s",
+                version.schemaId());
+
+        Set<String> dialects = Sets.newHashSet();
+        for (ViewRepresentation repr : version.representations()) {
+          if (repr instanceof SQLViewRepresentation sql) {
+            Preconditions.checkArgument(
+                    dialects.add(sql.dialect().toLowerCase(Locale.ROOT)),
+                    "Invalid view version: Cannot add multiple queries for dialect %s",
+                    sql.dialect().toLowerCase(Locale.ROOT));
+          }
+        }
+
+        versions.add(version);
+        versionsById.put(version.versionId(), version);
+
+        if (null != lastAddedSchemaId && version.schemaId() == lastAddedSchemaId) {
+          changes.add(
+                  new MetadataUpdate.AddViewVersion(
+                          ImmutableViewVersion.builder().from(version).schemaId(LAST_ADDED).build()));
+        } else {
+          changes.add(new MetadataUpdate.AddViewVersion(version));
+        }
+
+        this.lastAddedVersionId = newVersionId;
+      }
 
       return newVersionId;
     }

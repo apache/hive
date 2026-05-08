@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog implements ViewCatalog {
   private static final Logger LOG = LoggerFactory.getLogger(BaseMetastoreViewCatalog.class);
-  private static final int startingVersionId = 1;
+  private static final int STARTING_VERSION_ID = 1;
 
   protected abstract ViewOperations newViewOps(TableIdentifier identifier);
 
@@ -228,7 +228,7 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
 
       ViewVersion viewVersion =
               ImmutableViewVersion.builder()
-                      .versionId(startingVersionId)
+                      .versionId(STARTING_VERSION_ID)
                       .schemaId(schema.schemaId())
                       .addAllRepresentations(representations)
                       .defaultNamespace(defaultNamespace)

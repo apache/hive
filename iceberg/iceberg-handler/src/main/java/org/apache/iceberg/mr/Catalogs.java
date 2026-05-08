@@ -415,12 +415,11 @@ public final class Catalogs {
   }
 
   public static MaterializedView loadMaterializedView(Configuration conf, Properties props) {
-    return loadMaterializedView(conf, props.getProperty(NAME), props.getProperty(LOCATION),
-            props.getProperty(InputFormatConfig.CATALOG_NAME));
+    return loadMaterializedView(conf, props.getProperty(NAME), props.getProperty(InputFormatConfig.CATALOG_NAME));
   }
 
   public static MaterializedView loadMaterializedView(
-          Configuration conf, String tableIdentifier, String tableLocation, String catalogName) {
+          Configuration conf, String tableIdentifier, String catalogName) {
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
 
     if (catalog.isPresent()) {
