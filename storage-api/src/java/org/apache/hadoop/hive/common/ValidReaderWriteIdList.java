@@ -267,6 +267,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
 
   public void setHighWatermark(long value) {
     this.highWatermark = value;
+    this.minOpenWriteId = Math.min(minOpenWriteId, value + 1);
   }
 }
 

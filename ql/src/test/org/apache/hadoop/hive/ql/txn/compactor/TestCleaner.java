@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
 import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandler;
 import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandlerFactory;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -1194,5 +1197,153 @@ public class TestCleaner extends CompactorTest {
     }
     assertTrue(sawBase);
     assertTrue(sawDelta);
+  }
+
+  @org.junit.Test
+  public void testCompactionHwmIsHonoredWithMinOpenWriteIdSet() throws Exception {
+
+    String dbName = "default";
+    String tableName = "campcnb";
+
+    Table table = newTable(dbName, tableName, false);
+
+    // Create deltas and run 3 MAJOR compactions
+    createDeltasAndRunMajorCompaction(table, 1L, 3);
+    createDeltasAndRunMajorCompaction(table, 4L, 3);
+    createDeltasAndRunMajorCompaction(table, 7L, 3);
+
+    // Before the cleaner starts, the house keeper service cleans up the TXN_TO_WRITE_ID table
+    // The purpose of this is to hit the code path in GetValidWriteIdsForTableFunction
+    // where there is no writeIds allocated by txns under txnHwm, so the writeHwm will be get from NEXT_WRITE_ID.
+    txnHandler.cleanTxnToWriteIdTable();
+
+    // Then a new insert is started on the table and it will be open when the cleaner starts.
+    // With this open transaction, the minOpenWriteId will be set in the GetValidWriteIdsForTableFunction
+    long txnId = openTxn(TxnType.DEFAULT);
+    long writeId = allocateWriteId(dbName, tableName, txnId);
+    addDeltaFile(table, null, writeId, writeId, 1);
+
+    List<String> expectedDirs = Arrays.asList("base_3_v0000004", "base_6_v0000008", "base_9_v0000012",
+        "delta_0000001_0000001", "delta_0000002_0000002", "delta_0000003_0000003", "delta_0000004_0000004",
+        "delta_0000005_0000005", "delta_0000006_0000006", "delta_0000007_0000007", "delta_0000008_0000008",
+        "delta_0000009_0000009", "delta_0000010_0000010");
+    verifyDirectories(table, expectedDirs);
+
+    // This cleaner picks up the first compaction, and it should delete the directories made obsolete by the first
+    // compaction. It should not delete anything above the first compactions's highWaterMark.
+    // It means, it should delete delta_0000001_0000001, delta_0000002_0000002 and delta_0000003_0000003 only.
+    startCleaner();
+    expectedDirs = Arrays.asList("base_3_v0000004", "base_6_v0000008", "base_9_v0000012",
+        "delta_0000004_0000004", "delta_0000005_0000005", "delta_0000006_0000006", "delta_0000007_0000007",
+        "delta_0000008_0000008", "delta_0000009_0000009", "delta_0000010_0000010");
+    verifyDirectories(table, expectedDirs);
+
+    // Commit the open transaction, so the cleaner would run after that
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
+
+    // This cleaner picks up the second compaction, and it should delete base_3_v0000004, delta_0000004_0000004,
+    // delta_0000005_0000005 and delta_0000006_0000006.
+    startCleaner();
+    expectedDirs = Arrays.asList("base_6_v0000008", "base_9_v0000012", "delta_0000007_0000007",
+        "delta_0000008_0000008", "delta_0000009_0000009", "delta_0000010_0000010");
+    verifyDirectories(table, expectedDirs);
+
+    // This cleaner picks up the third compaction, and it should delete base_6_v0000008,
+    // .delta_0000007_0000007, delta_0000008_0000008 and delta_0000009_0000009
+    startCleaner();
+    expectedDirs = Arrays.asList("base_9_v0000012", "delta_0000010_0000010");
+    verifyDirectories(table, expectedDirs);
+
+    ShowCompactResponse scr = scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(3, scr.getCompactsSize());
+    for (ShowCompactResponseElement scre: scr.getCompacts()) {
+      Assert.assertEquals("succeeded", scre.getState());
+    }
+  }
+
+  @org.junit.Test
+  public void testCompactionHwmIsHonoredWithMinOpenWriteIdSetAndAbortedIOW() throws Exception {
+    String dbName = "default";
+    String tableName = "campcnb";
+
+    Table table = newTable(dbName, tableName, false);
+
+    // Create deltas and run 2 MAJOR compactions
+    createDeltasAndRunMajorCompaction(table, 1L, 3);
+    createDeltasAndRunMajorCompaction(table, 4L, 3);
+
+    // Create an aborted insert overwrite, this will create a base directory.
+    long txnId1 = openTxn(TxnType.DEFAULT);
+    long writeId1 = allocateWriteId(dbName, tableName, txnId1);
+    addBaseFile(table, null, writeId1, 1, 0);
+    txnHandler.abortTxn(new AbortTxnRequest(txnId1));
+
+    // Before the cleaner starts, the house keeper service cleans up the TXN_TO_WRITE_ID table
+    // The purpose of this is to hit the code path in GetValidWriteIdsForTableFunction
+    // where there is no writeIds allocated by txns under txnHwm, so the writeHwm will be fetched from NEXT_WRITE_ID.
+    txnHandler.cleanTxnToWriteIdTable();
+
+    // Then a new insert is started on the table, and it will be open when the cleaner starts.
+    // With this open transaction, the minOpenWriteId will be set in the GetValidWriteIdsForTableFunction
+    long txnId = openTxn(TxnType.DEFAULT);
+    long writeId = allocateWriteId(dbName, tableName, txnId);
+    addDeltaFile(table, null, writeId, writeId, 1);
+
+    List<String> expectedDirs = Arrays.asList("base_3_v0000004", "base_6_v0000008", "base_7", "delta_0000001_0000001",
+        "delta_0000002_0000002", "delta_0000003_0000003", "delta_0000004_0000004", "delta_0000005_0000005",
+        "delta_0000006_0000006", "delta_0000008_0000008");
+    verifyDirectories(table, expectedDirs);
+
+    // This cleaner picks up the first compaction, and it should delete the directories made obsolete by the first
+    // compaction. It should not delete anything above the first compactions's highWaterMark.
+    // It means, it should delete delta_0000001_0000001, delta_0000002_0000002 and delta_0000003_0000003 only.
+    startCleaner();
+    expectedDirs = Arrays.asList("base_3_v0000004", "base_6_v0000008", "base_7", "delta_0000004_0000004",
+        "delta_0000005_0000005", "delta_0000006_0000006", "delta_0000008_0000008");
+    verifyDirectories(table, expectedDirs);
+
+    // Commit the open transaction, so the cleaner would run after that
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
+
+    // This cleaner picks up the second compaction, and it should delete base_3_v0000004, delta_0000004_0000004,
+    // delta_0000005_0000005 and delta_0000006_0000006.
+    // base_6_v0000008 is the latest valid base
+    // base_7 is the directory of the aborted insert overwrite. This shouldn't been deleted by this cleaner
+    // because its writeId (7) > cleaner's watermark (6)
+    // delta_0000008_0000008 is created after the second compaction
+    startCleaner();
+    expectedDirs = Arrays.asList("base_6_v0000008", "base_7", "delta_0000008_0000008");
+    verifyDirectories(table, expectedDirs);
+
+    createDeltasAndRunMajorCompaction(table, 9L, 2);
+    // This cleaner picks up the third compaction and it should delete base_7 as well
+    startCleaner();
+    expectedDirs = Arrays.asList("base_10_v0000013");
+    verifyDirectories(table, expectedDirs);
+
+    ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(3, scr.getCompactsSize());
+    for (ShowCompactResponseElement scre: scr.getCompacts()) {
+      Assert.assertEquals("succeeded", scre.getState());
+    }
+  }
+
+  private void createDeltasAndRunMajorCompaction(Table table, long minTxnId, int numberOfDeltas) throws Exception {
+    String dbName = table.getDbName();
+    String tableName = table.getTableName();
+    for (int i = 0; i < numberOfDeltas; i++) {
+      addDeltaFile(table, null, minTxnId + i, minTxnId + i, 1);
+    }
+    burnThroughTransactions(dbName, tableName, numberOfDeltas, null, null);
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    long compactTxn = compactInTxn(rqst);
+    long maxTxnId = minTxnId + numberOfDeltas - 1;
+    addBaseFile(table, null, maxTxnId, (int)maxTxnId, compactTxn);
+  }
+
+  private void verifyDirectories(Table table, List<String> expectedDirs) throws Exception {
+    List<Path> paths = getDirectories(conf, table, null);
+    List<String> actualDirs = paths.stream().map(path -> path.getName()).sorted().collect(Collectors.toList());
+    Assert.assertEquals(expectedDirs, actualDirs);
   }
 }
