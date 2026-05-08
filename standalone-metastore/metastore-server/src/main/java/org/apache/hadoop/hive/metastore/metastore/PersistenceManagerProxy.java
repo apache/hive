@@ -23,8 +23,10 @@ import javax.jdo.Query;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,21 +57,25 @@ public class PersistenceManagerProxy implements InvocationHandler  {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    // Redirect if the interface method "getExecutionContext" is called
-    if (method.getName().equals("getExecutionContext")) {
-      MethodHandle boundGetExecutionContext = getExecutionContext.bindTo(target);
-      return args == null ? boundGetExecutionContext.invokeWithArguments()
-          : boundGetExecutionContext.invokeWithArguments(args);
-    } else if (method.getName().equals("newQuery")) {
-      Object result = method.invoke(target, args);
-      openedQueries.add((Query) result);
-      return result;
+    try {
+      // Redirect if the interface method "getExecutionContext" is called
+      if (method.getName().equals("getExecutionContext")) {
+        MethodHandle boundGetExecutionContext = getExecutionContext.bindTo(target);
+        return args == null ? boundGetExecutionContext.invokeWithArguments() :
+            boundGetExecutionContext.invokeWithArguments(args);
+      } else if (method.getName().equals("newQuery")) {
+        Object result = method.invoke(target, args);
+        openedQueries.add((Query) result);
+        return result;
+      }
+      // Otherwise, proceed with the standard call
+      return method.invoke(target, args);
+    } catch (InvocationTargetException | UndeclaredThrowableException e) {
+      throw e.getCause();
     }
-    // Otherwise, proceed with the standard call
-    return method.invoke(target, args);
   }
 
-  //  PersistenceManager doesn't provide a way to get the ExecutionContext
+  // PersistenceManager doesn't provide a way to get the ExecutionContext
   // if we create a proxy around the JDOPersistenceManager, which we use it
   // to save a savepoint, or generate the primary key.
   public interface ExecutionContextReference {

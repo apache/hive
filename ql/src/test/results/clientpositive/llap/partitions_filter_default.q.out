@@ -14,8 +14,8 @@ POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1',
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ptestfilter
-POSTHOOK: Output: default@ptestfilter@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: ptestfilter PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Output: default@ptestfilter@c=abc
+POSTHOOK: Lineage: ptestfilter PARTITION(c=abc).a SIMPLE []
 PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col2', 5
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -33,18 +33,18 @@ POSTHOOK: query: show partitions ptestfilter
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@ptestfilter
 c=5
-c=__HIVE_DEFAULT_PARTITION__
+c=abc
 PREHOOK: query: select * from ptestfilter
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ptestfilter
 PREHOOK: Input: default@ptestfilter@c=5
-PREHOOK: Input: default@ptestfilter@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@ptestfilter@c=abc
 #### A masked pattern was here ####
 POSTHOOK: query: select * from ptestfilter
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ptestfilter
 POSTHOOK: Input: default@ptestfilter@c=5
-POSTHOOK: Input: default@ptestfilter@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@ptestfilter@c=abc
 #### A masked pattern was here ####
 Col2	5
 Col1	NULL
