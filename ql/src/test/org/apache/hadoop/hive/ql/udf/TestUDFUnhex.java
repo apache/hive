@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.udf;
 
 
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 /**
@@ -40,8 +42,41 @@ public class TestUDFUnhex {
     UDFUnhex udf = new UDFUnhex();
     byte[] output = udf.evaluate(hex);
     assertEquals(expected.length,output.length);
-    for (int i = 0; i < expected.length; i++){
-      assertEquals(expected[i], output[i]);
-    }
+    assertArrayEquals(expected, output);
+  }
+
+  @Test
+  public void testUnhexOddLength() {
+    UDFUnhex udf = new UDFUnhex();
+
+    Text hex1 = new Text("A");
+    byte[] expected1 = new byte[] { (byte) 0x0A };
+    assertArrayEquals(expected1, udf.evaluate(hex1));
+
+    Text hex2 = new Text("123");
+    byte[] expected2 = new byte[] { (byte) 0x01, (byte) 0x23 };
+    assertArrayEquals(expected2, udf.evaluate(hex2));
+  }
+
+  @Test
+  public void testUnhexInvalidCharacters() {
+    UDFUnhex udf = new UDFUnhex();
+
+    Text hex = new Text("7374G9");
+    assertNull("Should return null for invalid hex characters", udf.evaluate(hex));
+
+    Text hexOddInvalid = new Text("12G");
+    assertNull("Should return null for invalid hex characters in odd length string", udf.evaluate(hexOddInvalid));
+  }
+
+  @Test
+  public void testUnhexNullEmptyCases() {
+    UDFUnhex udf = new UDFUnhex();
+
+    assertNull(udf.evaluate(null));
+
+    Text hexEmpty = new Text("");
+    byte[] expectedEmpty = new byte[0];
+    assertArrayEquals(expectedEmpty, udf.evaluate(hexEmpty));
   }
 }

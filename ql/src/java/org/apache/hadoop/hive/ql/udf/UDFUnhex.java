@@ -42,32 +42,59 @@ import org.apache.hadoop.io.Text;
 public class UDFUnhex extends UDF {
 
   /**
-   * Convert every two hex digits in s into.
-   *
+   * Convert every two hex digits in s into a byte.
    */
   public byte[] evaluate(Text s) {
     if (s == null) {
       return null;
     }
 
-    // append a leading 0 if needed
-    String str;
-    if (s.getLength() % 2 == 1) {
-      str = "0" + s.toString();
-    } else {
-      str = s.toString();
+    int len = s.getLength();
+    if (len == 0) {
+      return new byte[0];
     }
 
-    byte[] result = new byte[str.length() / 2];
-    for (int i = 0; i < str.length(); i += 2) {
-      try {
-        result[i / 2] = ((byte) Integer.parseInt(str.substring(i, i + 2), 16));
-      } catch (NumberFormatException e) {
-        // invalid character present, return null
+    byte[] textBytes = s.getBytes();
+
+    // (len + 1) / 2 ensures right size for odd lengths
+    byte[] result = new byte[(len + 1) / 2];
+
+    int i = 0;
+    int resIdx = 0;
+
+    // If length is odd, the first character acts as the first byte avoiding adding "0" prefix
+    if (len % 2 != 0) {
+      int val = decodeHexChar(textBytes[i++]);
+      if (val == -1) {
         return null;
       }
+      result[resIdx++] = (byte) val;
+    }
+
+    while (i < len) {
+      int high = decodeHexChar(textBytes[i++]);
+      int low  = decodeHexChar(textBytes[i++]);
+
+      if (high == -1 || low == -1) {
+        return null;
+      }
+
+      result[resIdx++] = (byte) ((high << 4) | low);
     }
 
     return result;
+  }
+
+  private int decodeHexChar(byte b) {
+    if (b >= '0' && b <= '9') {
+      return b - '0';
+    }
+    if (b >= 'a' && b <= 'f') {
+      return b - 'a' + 10;
+    }
+    if (b >= 'A' && b <= 'F') {
+      return b - 'A' + 10;
+    }
+    return -1;
   }
 }
