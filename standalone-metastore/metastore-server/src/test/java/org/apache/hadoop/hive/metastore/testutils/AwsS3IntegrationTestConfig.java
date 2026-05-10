@@ -44,7 +44,7 @@ import software.amazon.awssdk.regions.Region;
  *   --bucket "${HIVE_IT_S3_BUCKET}" \
  *   --versioning-configuration Status=Enabled
  *
- * cat > trust-policy.json <<EOF
+ * cat &gt; trust-policy.json &lt;&lt;EOF
  * {
  *   "Version": "2012-10-17",
  *   "Statement": [
@@ -68,7 +68,7 @@ import software.amazon.awssdk.regions.Region;
  *   --role-name "${ROLE_NAME}" \
  *   --assume-role-policy-document file://trust-policy.json
  *
- * cat > role-policy.json <<EOF
+ * cat &gt; role-policy.json &lt;&lt;EOF
  * {
  *   "Version": "2012-10-17",
  *   "Statement": [

@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 @Category(MetastoreUnitTest.class)
 public class TestS3Location {
