@@ -50,11 +50,11 @@ public class TestUDFUnhex {
     UDFUnhex udf = new UDFUnhex();
 
     Text hex1 = new Text("A");
-    byte[] expected1 = new byte[] { (byte) 0x0A };
+    byte[] expected1 = new byte[] {(byte) 0x0A};
     assertArrayEquals(expected1, udf.evaluate(hex1));
 
     Text hex2 = new Text("123");
-    byte[] expected2 = new byte[] { (byte) 0x01, (byte) 0x23 };
+    byte[] expected2 = new byte[] {(byte) 0x01, (byte) 0x23};
     assertArrayEquals(expected2, udf.evaluate(hex2));
   }
 
