@@ -77,8 +77,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private boolean isRewritten;
 
   private boolean isTableLevel;
-  private List<String> colNames;
-  private List<String> colType;
+  private List<FieldSchema> rewrittenColumnSchemas;
   private Table tbl;
 
   public ColumnStatsSemanticAnalyzer(QueryState queryState) throws SemanticException {
@@ -644,8 +643,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
           partTransformSpecs = tbl.getStorageHandler().getPartitionTransformSpecs(tbl);
         }
       }
-      colNames = Utilities.getColumnNamesFromFieldSchema(columnSchemas);
-      colType = Utilities.getColumnTypesFromFieldSchema(columnSchemas);
+      rewrittenColumnSchemas = columnSchemas;
       isTableLevel = !isPartitionStats;
 
       rewrittenQuery = String.join(" union all ",
@@ -669,8 +667,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       analyzeRewrite = new AnalyzeRewriteContext();
       analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
       analyzeRewrite.setTblLvl(isTableLevel);
-      analyzeRewrite.setColName(colNames);
-      analyzeRewrite.setColType(colType);
+      analyzeRewrite.setColumnSchemas(rewrittenColumnSchemas);
       qbp.setAnalyzeRewrite(analyzeRewrite);
       origCtx.addSubContext(ctx);
       initCtx(ctx);
@@ -716,8 +713,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         partTransformSpec = tbl.getStorageHandler().getPartitionTransformSpec(tbl);
       }
     }
-    colNames = Utilities.getColumnNamesFromFieldSchema(columnSchemas);
-    colType = Utilities.getColumnTypesFromFieldSchema(columnSchemas);
+    rewrittenColumnSchemas = columnSchemas;
     isTableLevel = !isPartitionStats;
 
     rewrittenQuery = genRewrittenQuery(columnSchemas, conf, partTransformSpec, -1,
@@ -747,8 +743,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     AnalyzeRewriteContext analyzeRewrite = new AnalyzeRewriteContext();
     analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
     analyzeRewrite.setTblLvl(isTableLevel);
-    analyzeRewrite.setColName(colNames);
-    analyzeRewrite.setColType(colType);
+    analyzeRewrite.setColumnSchemas(rewrittenColumnSchemas);
     return analyzeRewrite;
   }
 
@@ -756,9 +751,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     AnalyzeRewriteContext analyzeRewrite = new AnalyzeRewriteContext();
     analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
     analyzeRewrite.setTblLvl(!(conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()));
-    List<FieldSchema> columnSchemas = getStatsEligibleFieldSchemas(tbl);
-    analyzeRewrite.setColName(Utilities.getColumnNamesFromFieldSchema(columnSchemas));
-    analyzeRewrite.setColType(Utilities.getColumnTypesFromFieldSchema(columnSchemas));
+    analyzeRewrite.setColumnSchemas(getStatsEligibleFieldSchemas(tbl));
     return analyzeRewrite;
   }
 

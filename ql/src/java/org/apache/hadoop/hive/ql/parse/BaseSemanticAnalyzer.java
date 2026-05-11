@@ -1416,8 +1416,7 @@ public abstract class BaseSemanticAnalyzer {
   public static class AnalyzeRewriteContext {
 
     private String tableName;
-    private List<String> colName;
-    private List<String> colType;
+    private List<FieldSchema> columnSchemas;
     private boolean tblLvl;
 
     public String getTableName() {
@@ -1428,12 +1427,16 @@ public abstract class BaseSemanticAnalyzer {
       this.tableName = tableName;
     }
 
-    public List<String> getColName() {
-      return colName;
+    public List<FieldSchema> getColumnSchemas() {
+      return columnSchemas;
     }
 
-    public void setColName(List<String> colName) {
-      this.colName = colName;
+    public void setColumnSchemas(List<FieldSchema> columnSchemas) {
+      this.columnSchemas = columnSchemas;
+    }
+
+    public List<String> getColName() {
+      return columnSchemas == null ? null : Utilities.getColumnNamesFromFieldSchema(columnSchemas);
     }
 
     public boolean isTblLvl() {
@@ -1445,11 +1448,7 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     public List<String> getColType() {
-      return colType;
-    }
-
-    public void setColType(List<String> colType) {
-      this.colType = colType;
+      return columnSchemas == null ? null : Utilities.getColumnTypesFromFieldSchema(columnSchemas);
     }
 
   }
