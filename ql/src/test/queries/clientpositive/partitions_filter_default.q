@@ -1,4 +1,5 @@
-SET hive.exec.default.partition.name=abc;
+-- Derby might hit the HIVE-25965, change it to postgres, which the forwarded query is the same as Derby.
+--!qt:database:postgres:pfd
 
 create table ptestfilter (a string) partitioned by (c int);
 INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1', null;
