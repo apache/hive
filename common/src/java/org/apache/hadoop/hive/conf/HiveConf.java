@@ -5600,6 +5600,7 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.access.key"
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password"
+        + ",iceberg.mr.vended.storage.credentials"
         + ",dfs.adls.oauth2.credential"
         + ",fs.adl.oauth2.credential"
         + ",fs.azure.account.oauth2.client.secret"
