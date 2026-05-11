@@ -119,6 +119,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   }
 
   private List<String> getExplicitColumnNamesFromAst(ASTNode tree) throws SemanticException {
+    // The parser stores this statement as three pieces in order: which table (or partition) to
+    // analyze, a flag that this is column-level stats (not scanning the whole table for table
+    // stats alone), then the listed column names from "FOR COLUMNS (a, b, ...)". That layout is the reason
+    // we expect exactly three children and read the identifiers from the last one.
     if (tree.getChildCount() != 3) {
       throw new SemanticException("Internal error. Expected number of children of ASTNode should be 3. Found : "
           + tree.getChildCount());
