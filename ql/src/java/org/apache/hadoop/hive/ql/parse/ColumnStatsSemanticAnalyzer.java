@@ -236,10 +236,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return result;
   }
 
-  private String genRewrittenQuery(List<String> colNames, List<String> colTypes, HiveConf conf,
+  private String genRewrittenQuery(List<FieldSchema> columnSchemas, HiveConf conf,
       List<TransformSpec> partTransformSpec, int specId, Map<String, String> partSpec, 
       boolean isPartitionStats) {
-    String rewritten = genRewrittenQuery(tbl, colNames, colTypes, conf, partTransformSpec, specId, partSpec, 
+    String rewritten = genRewrittenQuery(tbl, columnSchemas, conf, partTransformSpec, specId, partSpec,
         isPartitionStats, false);
     isRewritten = true;
     return rewritten;
@@ -252,29 +252,27 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   protected static String genRewrittenQuery(Table tbl,
       HiveConf conf, List<TransformSpec> partTransformSpec, Map<String, String> partSpec, 
       boolean isPartitionStats) {
-    List<FieldSchema> columnSchemas = getStatsEligibleFieldSchemas(tbl);
     return ColumnStatsSemanticAnalyzer.genRewrittenQuery(
-        tbl, Utilities.getColumnNamesFromFieldSchema(columnSchemas),
-        Utilities.getColumnTypesFromFieldSchema(columnSchemas), conf, partTransformSpec, -1, partSpec,
-        isPartitionStats, true);
+        tbl, getStatsEligibleFieldSchemas(tbl), conf, partTransformSpec, -1, partSpec, isPartitionStats, true);
   }
 
-  private static String genRewrittenQuery(Table tbl, List<String> colNames, List<String> colTypes,
+  private static String genRewrittenQuery(Table tbl, List<FieldSchema> columnSchemas,
       HiveConf conf, List<TransformSpec> partTransformSpec, int specId, Map<String, String> partSpec, 
       boolean isPartitionStats, boolean useTableValues) {
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
 
     StringBuilder columnNamesBuilder = new StringBuilder();
     StringBuilder columnDummyValuesBuilder = new StringBuilder();
-    for (int i = 0; i < colNames.size(); i++) {
+    for (int i = 0; i < columnSchemas.size(); i++) {
       if (i > 0) {
         rewrittenQueryBuilder.append(", ");
         columnNamesBuilder.append(", ");
         columnDummyValuesBuilder.append(", ");
       }
 
-      final String columnName = unparseIdentifier(colNames.get(i), conf);
-      final TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(colTypes.get(i));
+      FieldSchema columnSchema = columnSchemas.get(i);
+      final String columnName = unparseIdentifier(columnSchema.getName(), conf);
+      final TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(columnSchema.getType());
       
       try {
         genComputeStats(rewrittenQueryBuilder, conf, i, columnName, typeInfo);
@@ -652,7 +650,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
       rewrittenQuery = String.join(" union all ",
         Maps.transformEntries(partTransformSpecs, (specId, partTransformSpec) ->
-            genRewrittenQuery(colNames, colType, conf, partTransformSpec, specId, partSpec, isPartitionStats))
+            genRewrittenQuery(columnSchemas, conf, partTransformSpec, specId, partSpec, isPartitionStats))
           .values());
       
       rewrittenTree = genRewrittenTree(rewrittenQuery);
@@ -722,7 +720,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     colType = Utilities.getColumnTypesFromFieldSchema(columnSchemas);
     isTableLevel = !isPartitionStats;
 
-    rewrittenQuery = genRewrittenQuery(colNames, colType, conf, partTransformSpec, -1, 
+    rewrittenQuery = genRewrittenQuery(columnSchemas, conf, partTransformSpec, -1,
         partSpec, isPartitionStats);
     rewrittenTree = genRewrittenTree(rewrittenQuery);
 
