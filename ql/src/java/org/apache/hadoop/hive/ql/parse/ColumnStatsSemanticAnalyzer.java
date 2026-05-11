@@ -77,7 +77,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private boolean isRewritten;
 
   private boolean isTableLevel;
-  private List<FieldSchema> rewrittenColumnSchemas;
+  private FieldSchemas rewrittenColumnSchemas;
   private Table tbl;
 
   public ColumnStatsSemanticAnalyzer(QueryState queryState) throws SemanticException {
@@ -105,7 +105,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * Get the Field Schemas of the columns that support column statistics.
    */
-  private static List<FieldSchema> getStatsEligibleFieldSchemas(Table tbl) {
+  private static FieldSchemas getStatsEligibleFieldSchemas(Table tbl) {
     List<FieldSchema> result = new ArrayList<>();
     for (FieldSchema col : tbl.getCols()) {
       String type = col.getType();
@@ -115,7 +115,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         result.add(col);
       }
     }
-    return result;
+    return new FieldSchemas(result);
   }
 
   private List<String> getExplicitColumnNamesFromAst(ASTNode tree) throws SemanticException {
@@ -256,7 +256,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       HiveConf conf, List<TransformSpec> partTransformSpec, Map<String, String> partSpec, 
       boolean isPartitionStats) {
     return ColumnStatsSemanticAnalyzer.genRewrittenQuery(
-        tbl, getStatsEligibleFieldSchemas(tbl), conf, partTransformSpec, -1, partSpec, isPartitionStats, true);
+        tbl, getStatsEligibleFieldSchemas(tbl).getSchemas(), conf, partTransformSpec, -1, partSpec, isPartitionStats, true);
   }
 
   private static String genRewrittenQuery(Table tbl, List<FieldSchema> columnSchemas,
@@ -647,7 +647,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
           partTransformSpecs = tbl.getStorageHandler().getPartitionTransformSpecs(tbl);
         }
       }
-      rewrittenColumnSchemas = columnSchemas;
+      rewrittenColumnSchemas = new FieldSchemas(columnSchemas);
       isTableLevel = !isPartitionStats;
 
       rewrittenQuery = String.join(" union all ",
@@ -671,7 +671,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       analyzeRewrite = new AnalyzeRewriteContext();
       analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
       analyzeRewrite.setTblLvl(isTableLevel);
-      analyzeRewrite.setColumnSchemas(rewrittenColumnSchemas);
+      analyzeRewrite.setFieldSchemas(rewrittenColumnSchemas);
       qbp.setAnalyzeRewrite(analyzeRewrite);
       origCtx.addSubContext(ctx);
       initCtx(ctx);
@@ -717,7 +717,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         partTransformSpec = tbl.getStorageHandler().getPartitionTransformSpec(tbl);
       }
     }
-    rewrittenColumnSchemas = columnSchemas;
+    rewrittenColumnSchemas = new FieldSchemas(columnSchemas);
     isTableLevel = !isPartitionStats;
 
     rewrittenQuery = genRewrittenQuery(columnSchemas, conf, partTransformSpec, -1,
@@ -731,8 +731,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     List<FieldSchema> statsEligibleFS = null;
     List<String> columnNames;
     if (ast.getChildCount() == 2) {
-      statsEligibleFS = getStatsEligibleFieldSchemas(tbl);
-      columnNames = Utilities.getColumnNamesFromFieldSchema(statsEligibleFS);
+      FieldSchemas eligibleFS = getStatsEligibleFieldSchemas(tbl);
+      statsEligibleFS = eligibleFS.getSchemas();
+      columnNames = eligibleFS.getColName();
     } else {
       columnNames = getExplicitColumnNamesFromAst(ast);
     }
@@ -747,7 +748,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     AnalyzeRewriteContext analyzeRewrite = new AnalyzeRewriteContext();
     analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
     analyzeRewrite.setTblLvl(isTableLevel);
-    analyzeRewrite.setColumnSchemas(rewrittenColumnSchemas);
+    analyzeRewrite.setFieldSchemas(rewrittenColumnSchemas);
     return analyzeRewrite;
   }
 
@@ -755,7 +756,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     AnalyzeRewriteContext analyzeRewrite = new AnalyzeRewriteContext();
     analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
     analyzeRewrite.setTblLvl(!(conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && tbl.isPartitioned()));
-    analyzeRewrite.setColumnSchemas(getStatsEligibleFieldSchemas(tbl));
+    analyzeRewrite.setFieldSchemas(getStatsEligibleFieldSchemas(tbl));
     return analyzeRewrite;
   }
 

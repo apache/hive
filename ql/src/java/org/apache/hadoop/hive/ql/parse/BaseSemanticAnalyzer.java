@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1413,10 +1414,46 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  /**
+   * Holds table column {@link FieldSchema} entries and lazily derived parallel name/type string
+   * lists for analyze / column-stats compilation.
+   */
+  public static final class FieldSchemas implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private final List<FieldSchema> schemas;
+
+    private transient List<String> colNames;
+    private transient List<String> colTypes;
+
+    public FieldSchemas(List<FieldSchema> schemas) {
+      this.schemas = schemas != null ? schemas : Collections.emptyList();
+    }
+
+    public List<FieldSchema> getSchemas() {
+      return schemas;
+    }
+
+    public List<String> getColName() {
+      if (colNames == null) {
+        colNames = Utilities.getColumnNamesFromFieldSchema(schemas);
+      }
+      return colNames;
+    }
+
+    public List<String> getColType() {
+      if (colTypes == null) {
+        colTypes = Utilities.getColumnTypesFromFieldSchema(schemas);
+      }
+      return colTypes;
+    }
+  }
+
   public static class AnalyzeRewriteContext {
 
     private String tableName;
-    private List<FieldSchema> columnSchemas;
+    private FieldSchemas fieldSchemas;
     private boolean tblLvl;
 
     public String getTableName() {
@@ -1427,16 +1464,12 @@ public abstract class BaseSemanticAnalyzer {
       this.tableName = tableName;
     }
 
-    public List<FieldSchema> getColumnSchemas() {
-      return columnSchemas;
+    public FieldSchemas getFieldSchemas() {
+      return fieldSchemas;
     }
 
-    public void setColumnSchemas(List<FieldSchema> columnSchemas) {
-      this.columnSchemas = columnSchemas;
-    }
-
-    public List<String> getColName() {
-      return columnSchemas == null ? null : Utilities.getColumnNamesFromFieldSchema(columnSchemas);
+    public void setFieldSchemas(FieldSchemas fieldSchemas) {
+      this.fieldSchemas = fieldSchemas;
     }
 
     public boolean isTblLvl() {
@@ -1445,10 +1478,6 @@ public abstract class BaseSemanticAnalyzer {
 
     public void setTblLvl(boolean isTblLvl) {
       this.tblLvl = isTblLvl;
-    }
-
-    public List<String> getColType() {
-      return columnSchemas == null ? null : Utilities.getColumnTypesFromFieldSchema(columnSchemas);
     }
 
   }
