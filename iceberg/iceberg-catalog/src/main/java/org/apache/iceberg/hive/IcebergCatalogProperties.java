@@ -32,6 +32,15 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 public class IcebergCatalogProperties {
   public static final String CATALOG_NAME = "iceberg.catalog";
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
+
+  /**
+   * Optional comma-separated Iceberg REST access delegation modes for catalog HTTP requests (for example
+   * {@code vended-credentials}). Hive maps this to the {@code X-Iceberg-Access-Delegation} header when initializing the
+   * REST catalog client, unless {@code iceberg.catalog.<name>.header.X-Iceberg-Access-Delegation} is set explicitly.
+   *
+   * @see <a href="https://github.com/apache/iceberg/blob/main/open-api/rest-catalog-open-api.yaml">REST catalog spec</a>
+   */
+  public static final String REST_ACCESS_DELEGATION = "rest.access-delegation";
   public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
   public static final String CATALOG_IMPL_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
   public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";

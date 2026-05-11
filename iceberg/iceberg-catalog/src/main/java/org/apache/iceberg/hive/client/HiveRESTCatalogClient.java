@@ -64,6 +64,12 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   public static final String DB_OWNER = "owner";
   public static final String DB_OWNER_TYPE = "ownerType";
 
+  /**
+   * Iceberg REST catalog property prefix recognized by {@link org.apache.iceberg.rest.RESTUtil#configHeaders}; values
+   * are sent as HTTP headers on REST requests.
+   */
+  public static final String ICEBERG_ACCESS_DELEGATION_HEADER_PROPERTY = "header.X-Iceberg-Access-Delegation";
+
   private static final Logger LOG = LoggerFactory.getLogger(HiveRESTCatalogClient.class);
 
   private RESTCatalog restCatalog;
@@ -81,8 +87,42 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   public void reconnect()  {
     close();
     String catName = MetaStoreUtils.getDefaultCatalog(conf);
-    Map<String, String> properties = IcebergCatalogProperties.getCatalogProperties(conf);
+    Map<String, String> properties =
+        applyAccessDelegationHeader(IcebergCatalogProperties.getCatalogProperties(conf));
     restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catName, properties, null);
+  }
+
+  /**
+   * Maps Hive catalog property {@link IcebergCatalogProperties#REST_ACCESS_DELEGATION} to the Iceberg REST
+   * {@code X-Iceberg-Access-Delegation} header so any spec-compliant catalog may attach vended (or other delegated)
+   * storage credentials to load responses. An explicit {@link #ICEBERG_ACCESS_DELEGATION_HEADER_PROPERTY} entry
+   * always wins and is left unchanged.
+   */
+  static Map<String, String> applyAccessDelegationHeader(Map<String, String> catalogProps) {
+    if (catalogProps.containsKey(ICEBERG_ACCESS_DELEGATION_HEADER_PROPERTY)) {
+      return catalogProps;
+    }
+    String delegation = trimToNull(catalogProps.get(IcebergCatalogProperties.REST_ACCESS_DELEGATION));
+    if (delegation == null) {
+      return catalogProps;
+    }
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+    catalogProps.forEach(
+        (key, value) -> {
+          if (!IcebergCatalogProperties.REST_ACCESS_DELEGATION.equals(key)) {
+            builder.put(key, value);
+          }
+        });
+    builder.put(ICEBERG_ACCESS_DELEGATION_HEADER_PROPERTY, delegation);
+    return builder.build();
+  }
+
+  private static String trimToNull(String value) {
+    if (value == null) {
+      return null;
+    }
+    String trimmed = value.trim();
+    return trimmed.isEmpty() ? null : trimmed;
   }
 
   @Override

@@ -44,6 +44,7 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -134,6 +135,37 @@ public class TestHiveRESTCatalogClient {
   @AfterEach
   public void after() {
 
+  }
+
+  @Test
+  public void applyAccessDelegationHeaderMapsToIcebergRestHeader() {
+    Map<String, String> in = Maps.newHashMap();
+    in.put("uri", "http://localhost");
+    in.put(IcebergCatalogProperties.REST_ACCESS_DELEGATION, "vended-credentials");
+    Map<String, String> out = HiveRESTCatalogClient.applyAccessDelegationHeader(in);
+    assertThat(out.get(HiveRESTCatalogClient.ICEBERG_ACCESS_DELEGATION_HEADER_PROPERTY))
+        .isEqualTo("vended-credentials");
+    assertThat(out.containsKey(IcebergCatalogProperties.REST_ACCESS_DELEGATION)).isFalse();
+    assertThat(out.get("uri")).isEqualTo("http://localhost");
+  }
+
+  @Test
+  public void applyAccessDelegationHeaderExplicitHeaderWins() {
+    Map<String, String> in = Maps.newHashMap();
+    in.put(IcebergCatalogProperties.REST_ACCESS_DELEGATION, "vended-credentials");
+    in.put(HiveRESTCatalogClient.ICEBERG_ACCESS_DELEGATION_HEADER_PROPERTY, "remote-signing");
+    Map<String, String> out = HiveRESTCatalogClient.applyAccessDelegationHeader(in);
+    assertThat(out).isSameAs(in);
+    assertThat(out.get(HiveRESTCatalogClient.ICEBERG_ACCESS_DELEGATION_HEADER_PROPERTY))
+        .isEqualTo("remote-signing");
+  }
+
+  @Test
+  public void applyAccessDelegationHeaderNoOpWhenUnset() {
+    Map<String, String> in = Maps.newHashMap();
+    in.put("uri", "http://localhost");
+    Map<String, String> out = HiveRESTCatalogClient.applyAccessDelegationHeader(in);
+    assertThat(out).isSameAs(in);
   }
 
   @Test
