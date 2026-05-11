@@ -761,22 +761,22 @@ Stripe Statistics:
   Stripe 1:
     Column 0: count: 242 hasNull: false
     Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-    Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
+    Column 2: count: 242 hasNull: false bytesOnDisk: 914 min: val_0 max: val_97 sum: 1646
 
 File Statistics:
   Column 0: count: 242 hasNull: false
   Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
+  Column 2: count: 242 hasNull: false bytesOnDisk: 914 min: val_0 max: val_97 sum: 1646
 
 Stripes:
-  Stripe: offset: 3 data: 1399 rows: 242 tail: 73 index: 77
+  Stripe: offset: 3 data: 1403 rows: 242 tail: 73 index: 77
     Stream: column 0 section ROW_INDEX start: 3 length 12
     Stream: column 1 section ROW_INDEX start: 15 length 28
     Stream: column 2 section ROW_INDEX start: 43 length 37
     Stream: column 1 section DATA start: 80 length 489
     Stream: column 2 section DATA start: 569 length 247
-    Stream: column 2 section LENGTH start: 816 length 71
-    Stream: column 2 section DICTIONARY_DATA start: 887 length 592
+    Stream: column 2 section LENGTH start: 816 length 72
+    Stream: column 2 section DICTIONARY_DATA start: 888 length 595
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[153]
@@ -787,7 +787,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
-File length: 1763 bytes
+File length: 1767 bytes
 File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
@@ -813,22 +813,22 @@ Stripe Statistics:
   Stripe 1:
     Column 0: count: 242 hasNull: false
     Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-    Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
+    Column 2: count: 242 hasNull: false bytesOnDisk: 914 min: val_0 max: val_97 sum: 1646
 
 File Statistics:
   Column 0: count: 242 hasNull: false
   Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false bytesOnDisk: 910 min: val_0 max: val_97 sum: 1646
+  Column 2: count: 242 hasNull: false bytesOnDisk: 914 min: val_0 max: val_97 sum: 1646
 
 Stripes:
-  Stripe: offset: 3 data: 1399 rows: 242 tail: 73 index: 77
+  Stripe: offset: 3 data: 1403 rows: 242 tail: 73 index: 77
     Stream: column 0 section ROW_INDEX start: 3 length 12
     Stream: column 1 section ROW_INDEX start: 15 length 28
     Stream: column 2 section ROW_INDEX start: 43 length 37
     Stream: column 1 section DATA start: 80 length 489
     Stream: column 2 section DATA start: 569 length 247
-    Stream: column 2 section LENGTH start: 816 length 71
-    Stream: column 2 section DICTIONARY_DATA start: 887 length 592
+    Stream: column 2 section LENGTH start: 816 length 72
+    Stream: column 2 section DICTIONARY_DATA start: 888 length 595
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[153]
@@ -839,7 +839,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
-File length: 1763 bytes
+File length: 1767 bytes
 File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
