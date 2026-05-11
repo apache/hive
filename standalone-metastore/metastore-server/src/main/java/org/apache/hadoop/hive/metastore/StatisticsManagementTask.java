@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
@@ -38,34 +41,43 @@ import javax.jdo.Query;
  * Statistics management task responsible for periodic auto-deletion of table and partition column
  * statistics based on a configured retention interval.
  *
- * <p>When {@code metastore.statistics.auto.deletion} is enabled, this task scans
+ * <p>When {@code metastore.column.statistics.auto.deletion} is enabled, this task scans
  * {@code TAB_COL_STATS} and {@code PART_COL_STATS} for rows whose {@code lastAnalyzed} timestamp
- * is older than {@code metastore.statistics.retention.period}, and deletes them.
+ * is older than {@code metastore.column.statistics.retention.period}, and deletes them.
  * Individual tables may opt out by setting the table property
- * {@value #STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY} to any non-null value.
+ * {@value #STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY} to {@code "true"}.
  */
 public class StatisticsManagementTask extends ObjectStore implements MetastoreTaskThread {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatisticsManagementTask.class);
 
   /**
-   * Table property key that, when present on a table, excludes it from automatic statistics
-   * deletion regardless of the global retention setting.
+   * Table property key that, when set to {@code "true"} on a table, excludes it from automatic
+   * statistics deletion regardless of the global retention setting.
    */
   public static final String STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY =
       "statistics.auto.deletion.exclude";
+
+  /** Separator used when building composite map keys; chosen to be safe in HMS identifiers. */
+  private static final String KEY_SEP = "\0";
 
   private static final Lock LOCK = new ReentrantLock();
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_MANAGEMENT_TASK_FREQUENCY, unit);
+    if (!MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_AUTO_DELETION)
+        || MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD,
+        TimeUnit.MILLISECONDS) <= 0) {
+      return Long.MAX_VALUE;
+    }
+    return MetastoreConf.getTimeVar(conf,
+        MetastoreConf.ConfVars.COLUMN_STATISTICS_MANAGEMENT_TASK_FREQUENCY, unit);
   }
 
   @Override
   public void setConf(Configuration configuration) {
     this.conf = new Configuration(configuration);
-    super.setConf(configuration);
+    super.setConf(this.conf);
   }
 
   @Override
@@ -75,10 +87,12 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
 
   @Override
   public void run() {
-    LOG.debug("Auto statistics deletion started. Cleaning up table/partition column statistics over the retention period.");
-    long retentionMillis =
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD, TimeUnit.MILLISECONDS);
-    if (retentionMillis <= 0 || !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_AUTO_DELETION)) {
+    LOG.debug("Auto statistics deletion started. Cleaning up table/partition column statistics"
+        + " over the retention period.");
+    long retentionMillis = MetastoreConf.getTimeVar(
+        conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD, TimeUnit.MILLISECONDS);
+    if (retentionMillis <= 0
+        || !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_AUTO_DELETION)) {
       LOG.info("Statistics auto deletion is set to off currently.");
       return;
     }
@@ -88,20 +102,22 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
     try {
       long now = System.currentTimeMillis();
       long lastAnalyzedThreshold = (now - retentionMillis) / 1000;
-      PersistenceManager pm = getPersistenceManager();
+      List<Object[]> expiredTblRows;
+      List<Object[]> expiredPartRows;
       boolean committed = false;
       openTransaction();
       try {
-        try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
-          deleteExpiredTableColStats(pm, msc, lastAnalyzedThreshold);
-          deleteExpiredPartitionColStats(pm, msc, lastAnalyzedThreshold);
-        }
+        PersistenceManager pm = getPersistenceManager();
+        expiredTblRows = collectExpiredTableColStats(pm, lastAnalyzedThreshold);
+        expiredPartRows = collectExpiredPartitionColStats(pm, lastAnalyzedThreshold);
         committed = commitTransaction();
       } finally {
         if (!committed) {
           rollbackTransaction();
         }
       }
+      deleteExpiredTableColStats(expiredTblRows);
+      deleteExpiredPartitionColStats(expiredPartRows);
     } catch (Exception e) {
       LOG.error("Error during statistics auto deletion", e);
     } finally {
@@ -110,81 +126,150 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
   }
 
   /**
-   * Deletes expired table-level column statistics from {@code TAB_COL_STATS}.
-   * Tables with the {@value #STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY} property set are skipped.
+   * Queries {@code TAB_COL_STATS} for rows whose {@code lastAnalyzed} is older than the given
+   * threshold. Results are copied into an {@link ArrayList} so they remain accessible after
+   * the enclosing JDO transaction is committed.
    *
    * @param pm                    the JDO persistence manager to use for the query
-   * @param msc                   the metastore client used to issue delete requests
    * @param lastAnalyzedThreshold epoch seconds; rows with lastAnalyzed below this value are expired
-   * @throws Exception if the JDO query or the delete request fails
+   * @return list of projected rows: [catName, dbName, tblName, colName, excludeVal]
+   * @throws Exception if the JDO query fails
    */
-  private void deleteExpiredTableColStats(PersistenceManager pm, IMetaStoreClient msc,
-                                          long lastAnalyzedThreshold) throws Exception {
-
+  private List<Object[]> collectExpiredTableColStats(PersistenceManager pm,
+                                                     long lastAnalyzedThreshold) throws Exception {
     try (Query tblQuery = pm.newQuery(MTableColumnStatistics.class)) {
       tblQuery.setFilter("lastAnalyzed < threshold");
       tblQuery.declareParameters("long threshold");
-      // partitionName does not exist on MTableColumnStatistics; omitted here
       tblQuery.setResult(
-          "table.database.name, "
+          "table.database.catalogName, "
+              + "table.database.name, "
               + "table.tableName, "
+              + "colName, "
               + "table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\")");
       @SuppressWarnings("unchecked")
-      List<Object[]> tblRows = (List<Object[]>) tblQuery.execute(lastAnalyzedThreshold);
-      for (Object[] row : tblRows) {
-        String dbName = (String) row[0];
-        String tblName = (String) row[1];
-        String excludeVal = (String) row[2];
-        if (Boolean.parseBoolean(excludeVal)) {
-          LOG.info("Skipping auto deletion of table stats for {}.{} due to exclude property.",
-              dbName, tblName);
-          continue;
+      List<Object[]> rows = (List<Object[]>) tblQuery.execute(lastAnalyzedThreshold);
+      return new ArrayList<>(rows);
+    }
+  }
+
+  /**
+   * Groups expired table-level column stats by {@code (catName, dbName, tblName)}, then deletes
+   * all expired columns for each table in a single {@link RawStore} call and a dedicated
+   * transaction. This avoids duplicate listener events for the same table.
+   * Tables whose exclude property is set to {@code "true"} are skipped entirely.
+   *
+   * @param expiredTblRows projected rows from {@link #collectExpiredTableColStats}
+   * @throws Exception if a delete operation fails
+   */
+  private void deleteExpiredTableColStats(List<Object[]> expiredTblRows) throws Exception {
+    // key: catName + SEP + dbName + SEP + tblName, value: list of expired colNames
+    Map<String, List<String>> tblToColsMap = new LinkedHashMap<>();
+    // keep a parallel map to reconstruct the key parts when issuing deletes
+    Map<String, String[]> keyToCoords = new LinkedHashMap<>();
+
+    for (Object[] row : expiredTblRows) {
+      String catName   = (String) row[0];
+      String dbName    = (String) row[1];
+      String tblName   = (String) row[2];
+      String colName   = (String) row[3];
+      String excludeVal = (String) row[4];
+      if (Boolean.parseBoolean(excludeVal)) {
+        LOG.info("Skipping auto deletion of table stats for {}.{} due to exclude property.",
+            dbName, tblName);
+        continue;
+      }
+      String key = catName + KEY_SEP + dbName + KEY_SEP + tblName;
+      tblToColsMap.computeIfAbsent(key, k -> new ArrayList<>()).add(colName);
+      keyToCoords.putIfAbsent(key, new String[]{catName, dbName, tblName});
+    }
+
+    // one transaction per table, delete all expired columns in a single call
+    for (Map.Entry<String, List<String>> entry : tblToColsMap.entrySet()) {
+      String[] coords = keyToCoords.get(entry.getKey());
+      boolean committed = false;
+      openTransaction();
+      try {
+        deleteTableColumnStatistics(coords[0], coords[1], coords[2], entry.getValue(), "hive");
+        committed = commitTransaction();
+      } finally {
+        if (!committed) {
+          rollbackTransaction();
         }
-        DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
-        request.setEngine("hive");
-        request.setTableLevel(true);
-        msc.deleteColumnStatistics(request);
       }
     }
   }
 
   /**
-   * Deletes expired partition-level column statistics from {@code PART_COL_STATS}.
-   * Tables with the {@value #STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY} property set are skipped.
+   * Queries {@code PART_COL_STATS} for rows whose {@code lastAnalyzed} is older than the given
+   * threshold. Results are copied into an {@link ArrayList} so they remain accessible after
+   * the enclosing JDO transaction is committed.
    *
    * @param pm                    the JDO persistence manager to use for the query
-   * @param msc                   the metastore client used to issue delete requests
    * @param lastAnalyzedThreshold epoch seconds; rows with lastAnalyzed below this value are expired
-   * @throws Exception if the JDO query or the delete request fails
+   * @return list of projected rows: [catName, dbName, tblName, partName, colName, excludeVal]
+   * @throws Exception if the JDO query fails
    */
-  private void deleteExpiredPartitionColStats(PersistenceManager pm, IMetaStoreClient msc,
-                                              long lastAnalyzedThreshold) throws Exception {
+  private List<Object[]> collectExpiredPartitionColStats(PersistenceManager pm,
+                                                         long lastAnalyzedThreshold) throws Exception {
     try (Query partQuery = pm.newQuery(MPartitionColumnStatistics.class)) {
       partQuery.setFilter("lastAnalyzed < threshold");
       partQuery.declareParameters("long threshold");
-      // project via partition navigation to reach partitionName and the table exclude property
       partQuery.setResult(
-          "partition.table.database.name, "
+          "partition.table.database.catalogName, "
+              + "partition.table.database.name, "
               + "partition.table.tableName, "
               + "partition.partitionName, "
+              + "colName, "
               + "partition.table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\")");
       @SuppressWarnings("unchecked")
-      List<Object[]> partRows = (List<Object[]>) partQuery.execute(lastAnalyzedThreshold);
-      for (Object[] row : partRows) {
-        String dbName = (String) row[0];
-        String tblName = (String) row[1];
-        String partName = (String) row[2];
-        String excludeVal = (String) row[3];
-        if (excludeVal != null) {
-          LOG.info("Skipping auto deletion of partition stats for {}.{} due to exclude property.",
-              dbName, tblName);
-          continue;
+      List<Object[]> rows = (List<Object[]>) partQuery.execute(lastAnalyzedThreshold);
+      return new ArrayList<>(rows);
+    }
+  }
+
+  /**
+   * Groups expired partition-level column stats by {@code (catName, dbName, tblName, partName)},
+   * then deletes all expired columns for each partition in a single {@link RawStore} call and a
+   * dedicated transaction. This avoids duplicate listener events for the same partition.
+   * Tables whose exclude property is set to {@code "true"} are skipped entirely.
+   *
+   * @param expiredPartRows projected rows from {@link #collectExpiredPartitionColStats}
+   * @throws Exception if a delete operation fails
+   */
+  private void deleteExpiredPartitionColStats(List<Object[]> expiredPartRows) throws Exception {
+    // key: catName + SEP + dbName + SEP + tblName + SEP + partName, value: list of expired colNames
+    Map<String, List<String>> partToColsMap = new LinkedHashMap<>();
+    Map<String, String[]> keyToCoords = new LinkedHashMap<>();
+    for (Object[] row : expiredPartRows) {
+      String catName   = (String) row[0];
+      String dbName    = (String) row[1];
+      String tblName   = (String) row[2];
+      String partName  = (String) row[3];
+      String colName   = (String) row[4];
+      String excludeVal = (String) row[5];
+      if (Boolean.parseBoolean(excludeVal)) {
+        LOG.info("Skipping auto deletion of partition stats for {}.{} due to exclude property.",
+            dbName, tblName);
+        continue;
+      }
+      String key = catName + KEY_SEP + dbName + KEY_SEP + tblName + KEY_SEP + partName;
+      partToColsMap.computeIfAbsent(key, k -> new ArrayList<>()).add(colName);
+      keyToCoords.putIfAbsent(key, new String[]{catName, dbName, tblName, partName});
+    }
+
+    // one transaction per partition, delete all expired columns in a single call
+    for (Map.Entry<String, List<String>> entry : partToColsMap.entrySet()) {
+      String[] coords = keyToCoords.get(entry.getKey());
+      boolean committed = false;
+      openTransaction();
+      try {
+        deletePartitionColumnStatistics(coords[0], coords[1], coords[2],
+            Collections.singletonList(coords[3]), entry.getValue(), "hive");
+        committed = commitTransaction();
+      } finally {
+        if (!committed) {
+          rollbackTransaction();
         }
-        DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
-        request.setEngine("hive");
-        request.setTableLevel(false);
-        request.addToPart_names(partName);
-        msc.deleteColumnStatistics(request);
       }
     }
   }

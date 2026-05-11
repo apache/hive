@@ -21,7 +21,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,11 +35,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -51,9 +56,9 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 /**
- * Unit tests for {@link StatisticsManagementTask}, verifying that expired table-level column
- * statistics are deleted on schedule and that tables marked with the exclude property are left
- * untouched.
+ * Unit tests for {@link StatisticsManagementTask}, verifying that expired table-level and
+ * partition-level column statistics are deleted on schedule, and that tables marked with the
+ * exclude property are left untouched.
  */
 @Category(MetastoreUnitTest.class)
 public class TestStatisticsManagement {
@@ -157,6 +162,50 @@ public class TestStatisticsManagement {
   }
 
   /**
+   * Verifies that expired partition-level column statistics are deleted when the task runs.
+   */
+  @Test
+  public void testExpiredPartitionColStatsAreDeleted() throws Exception {
+    String dbName = "stats_db4";
+    String tableName = "tbl4";
+    String partVal = "p1";
+    createDbAndPartitionedTable(dbName, tableName, false);
+    createPartition(dbName, tableName, partVal);
+
+    String partName = "part_col=" + partVal;
+    writePartitionLevelColStats(dbName, tableName, partName, "c1");
+    assertHasPartitionColStats(dbName, tableName, partName, "c1");
+    makeAllPartitionColStatsOlderThanRetention(dbName, tableName);
+
+    runStatisticsManagementTask(conf);
+
+    assertNoPartitionColStats(dbName, tableName, partName, "c1");
+  }
+
+  /**
+   * Verifies that partition-level column statistics are not deleted when the table has the
+   * exclude property set to {@code "true"}.
+   */
+  @Test
+  public void testExcludedTablePartitionStatsAreNotDeleted() throws Exception {
+    String dbName = "stats_db5";
+    String tableName = "tbl5";
+    String partVal = "p1";
+    createDbAndPartitionedTable(dbName, tableName, true);
+    createPartition(dbName, tableName, partVal);
+
+    String partName = "part_col=" + partVal;
+    writePartitionLevelColStats(dbName, tableName, partName, "c1");
+    assertHasPartitionColStats(dbName, tableName, partName, "c1");
+    makeAllPartitionColStatsOlderThanRetention(dbName, tableName);
+
+    runStatisticsManagementTask(conf);
+
+    // Stats must still be present because the table is marked as excluded.
+    assertHasPartitionColStats(dbName, tableName, partName, "c1");
+  }
+
+  /**
    * Creates a database (unless it is the default database) and a simple two-column test table.
    *
    * @param dbName    name of the database to create
@@ -192,6 +241,54 @@ public class TestStatisticsManagement {
   }
 
   /**
+   * Creates a database and a partitioned test table with one partition key {@code part_col}.
+   *
+   * @param dbName    name of the database to create
+   * @param tableName name of the table to create
+   * @param exclude   if {@code true}, sets the auto-deletion exclude property on the table
+   */
+  private void createDbAndPartitionedTable(String dbName, String tableName,
+                                           boolean exclude) throws Exception {
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(DEFAULT_CATALOG_NAME)
+        .create(client, conf);
+
+    TableBuilder tb = new TableBuilder()
+        .inDb(db)
+        .setTableName(tableName)
+        .addCol("c1", "double")
+        .addCol("c2", "string")
+        .addPartCol("part_col", "string")
+        .setInputFormat("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat")
+        .setOutputFormat("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat");
+
+    Table t = tb.build(conf);
+    if (exclude) {
+      t.getParameters().put(
+          StatisticsManagementTask.STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY, "true");
+    }
+    client.createTable(t);
+    client.flushCache();
+  }
+
+  /**
+   * Adds a single partition with the given value for {@code part_col} to the specified table.
+   *
+   * @param dbName    database name
+   * @param tableName table name
+   * @param partVal   value for the {@code part_col} partition key
+   */
+  private void createPartition(String dbName, String tableName, String partVal) throws Exception {
+    Table t = client.getTable(dbName, tableName);
+    Partition partition = new PartitionBuilder()
+        .inTable(t)
+        .addValue(partVal)
+        .build(conf);
+    client.add_partition(partition);
+  }
+
+  /**
    * Writes minimal table-level column statistics for the given column via the metastore client.
    *
    * @param db  database name
@@ -199,19 +296,7 @@ public class TestStatisticsManagement {
    * @param col column name
    */
   private void writeTableLevelColStats(String db, String tbl, String col) throws TException {
-    ColumnStatisticsObj obj = new ColumnStatisticsObj();
-    obj.setColName(col);
-    obj.setColType("double");
-
-    DoubleColumnStatsData doubleData = new DoubleColumnStatsData();
-    doubleData.setNumNulls(0);
-    doubleData.setNumDVs(1);
-    doubleData.setLowValue(1.0);
-    doubleData.setHighValue(1.0);
-
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    data.setDoubleStats(doubleData);
-    obj.setStatsData(data);
+    ColumnStatisticsObj obj = buildDoubleColStatsObj(col);
 
     ColumnStatisticsDesc desc = new ColumnStatisticsDesc(true, db, tbl);
     desc.setCatName("hive");
@@ -224,6 +309,52 @@ public class TestStatisticsManagement {
   }
 
   /**
+   * Writes minimal partition-level column statistics for the given column via the metastore client.
+   *
+   * @param db       database name
+   * @param tbl      table name
+   * @param partName partition name (e.g. {@code "part_col=p1"})
+   * @param col      column name
+   */
+  private void writePartitionLevelColStats(String db, String tbl, String partName,
+                                           String col) throws TException {
+    ColumnStatisticsObj obj = buildDoubleColStatsObj(col);
+
+    ColumnStatisticsDesc desc = new ColumnStatisticsDesc(false, db, tbl);
+    desc.setCatName("hive");
+    desc.setPartName(partName);
+
+    ColumnStatistics cs = new ColumnStatistics();
+    cs.setStatsDesc(desc);
+    cs.addToStatsObj(obj);
+
+    client.updatePartitionColumnStatistics(cs);
+  }
+
+  /**
+   * Builds a minimal {@link ColumnStatisticsObj} for a double-typed column.
+   *
+   * @param col column name
+   * @return a populated {@link ColumnStatisticsObj}
+   */
+  private ColumnStatisticsObj buildDoubleColStatsObj(String col) {
+    DoubleColumnStatsData doubleData = new DoubleColumnStatsData();
+    doubleData.setNumNulls(0);
+    doubleData.setNumDVs(1);
+    doubleData.setLowValue(1.0);
+    doubleData.setHighValue(1.0);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setDoubleStats(doubleData);
+
+    ColumnStatisticsObj obj = new ColumnStatisticsObj();
+    obj.setColName(col);
+    obj.setColType("double");
+    obj.setStatsData(data);
+    return obj;
+  }
+
+  /**
    * Asserts that at least one column statistics object exists for the specified column.
    *
    * @param db  database name
@@ -231,8 +362,10 @@ public class TestStatisticsManagement {
    * @param col column name
    */
   private void assertHasTableColStats(String db, String tbl, String col) throws TException {
-    List<ColumnStatisticsObj> objs = client.getTableColumnStatistics(db, tbl, List.of(col), "hive");
-    assertTrue("Expected stats for " + db + "." + tbl + "." + col, objs != null && !objs.isEmpty());
+    List<ColumnStatisticsObj> objs =
+        client.getTableColumnStatistics(db, tbl, Collections.singletonList(col), "hive");
+    assertTrue("Expected stats for " + db + "." + tbl + "." + col,
+        objs != null && !objs.isEmpty());
   }
 
   /**
@@ -245,8 +378,50 @@ public class TestStatisticsManagement {
    */
   private void assertNoTableColStats(String db, String tbl, String col) throws TException {
     try {
-      List<ColumnStatisticsObj> objs = client.getTableColumnStatistics(db, tbl, List.of(col), "hive");
-      assertTrue("Expected no stats for " + db + "." + tbl + "." + col, objs == null || objs.isEmpty());
+      List<ColumnStatisticsObj> objs =
+          client.getTableColumnStatistics(db, tbl, Collections.singletonList(col), "hive");
+      assertTrue("Expected no stats for " + db + "." + tbl + "." + col,
+          objs == null || objs.isEmpty());
+    } catch (NoSuchObjectException e) {
+      // Acceptable: server may throw if stats are absent depending on implementation.
+    }
+  }
+
+  /**
+   * Asserts that at least one partition-level column statistics object exists for the specified
+   * column and partition.
+   *
+   * @param db       database name
+   * @param tbl      table name
+   * @param partName partition name
+   * @param col      column name
+   */
+  private void assertHasPartitionColStats(String db, String tbl, String partName,
+                                          String col) throws TException {
+    Map<String, List<ColumnStatisticsObj>> statsMap = client.getPartitionColumnStatistics(
+        db, tbl, Collections.singletonList(partName), Collections.singletonList(col), "hive");
+    List<ColumnStatisticsObj> objs = statsMap == null ? null : statsMap.get(partName);
+    assertTrue("Expected partition stats for " + db + "." + tbl + "/" + partName + "." + col,
+        objs != null && !objs.isEmpty());
+  }
+
+  /**
+   * Asserts that no partition-level column statistics exist for the specified column and partition.
+   * A {@link NoSuchObjectException} from the server is also treated as an acceptable absence signal.
+   *
+   * @param db       database name
+   * @param tbl      table name
+   * @param partName partition name
+   * @param col      column name
+   */
+  private void assertNoPartitionColStats(String db, String tbl, String partName,
+                                         String col) throws TException {
+    try {
+      Map<String, List<ColumnStatisticsObj>> statsMap = client.getPartitionColumnStatistics(
+          db, tbl, Collections.singletonList(partName), Collections.singletonList(col), "hive");
+      List<ColumnStatisticsObj> objs = statsMap == null ? null : statsMap.get(partName);
+      assertTrue("Expected no partition stats for " + db + "." + tbl + "/" + partName + "." + col,
+          objs == null || objs.isEmpty());
     } catch (NoSuchObjectException e) {
       // Acceptable: server may throw if stats are absent depending on implementation.
     }
@@ -262,16 +437,12 @@ public class TestStatisticsManagement {
    * @param tbl table name
    */
   private void makeAllTableColStatsOlderThanRetention(String db, String tbl) throws Exception {
-    // Instantiate ObjectStore directly; HMSHandler.getMSForConf() returns a proxy that
-    // cannot be cast to ObjectStore and does not expose getPersistenceManager().
     ObjectStore os = new ObjectStore();
     os.setConf(conf);
 
     long oldSeconds = (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(400)) / 1000;
     PersistenceManager pm = os.getPersistenceManager();
-    Query q = null;
-    try {
-      q = pm.newQuery(MTableColumnStatistics.class);
+    try (Query q = pm.newQuery(MTableColumnStatistics.class)) {
       q.setFilter("table.tableName == t && table.database.name == d");
       q.declareParameters("java.lang.String t, java.lang.String d");
       @SuppressWarnings("unchecked")
@@ -281,9 +452,34 @@ public class TestStatisticsManagement {
       }
       pm.flush();
     } finally {
-      if (q != null) {
-        q.closeAll();
+      pm.close();
+    }
+  }
+
+  /**
+   * Backdates the {@code lastAnalyzed} field of all {@code MPartitionColumnStatistics} rows for
+   * the given table to 400 days ago. Uses a fresh {@link ObjectStore} instance directly.
+   *
+   * @param db  database name
+   * @param tbl table name
+   */
+  private void makeAllPartitionColStatsOlderThanRetention(String db, String tbl) throws Exception {
+    ObjectStore os = new ObjectStore();
+    os.setConf(conf);
+
+    long oldSeconds = (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(400)) / 1000;
+    PersistenceManager pm = os.getPersistenceManager();
+    try (Query q = pm.newQuery(MPartitionColumnStatistics.class)) {
+      q.setFilter("partition.table.tableName == t && partition.table.database.name == d");
+      q.declareParameters("java.lang.String t, java.lang.String d");
+      @SuppressWarnings("unchecked")
+      List<MPartitionColumnStatistics> rows =
+          (List<MPartitionColumnStatistics>) q.execute(tbl, db);
+      for (MPartitionColumnStatistics r : rows) {
+        r.setLastAnalyzed(oldSeconds);
       }
+      pm.flush();
+    } finally {
       pm.close();
     }
   }
