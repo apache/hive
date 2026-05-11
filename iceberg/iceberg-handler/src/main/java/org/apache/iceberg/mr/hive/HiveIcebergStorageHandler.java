@@ -285,6 +285,21 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
+    if (!IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
+      return;
+    }
+    try {
+      Table table =
+          IcebergVendedCredentialUtil.getTableWithVendedCredentials(tableDesc.getProperties(), conf);
+      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+      IcebergVendedCredentialUtil.propagateToJob(table, catalogName, null, secrets, conf);
+    } catch (NoSuchTableException ex) {
+      // Table may not exist yet for CTAS; credentials will not be available.
+    }
+  }
+
+  @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
     // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
@@ -335,32 +350,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
-    if (tableDesc != null && tableDesc.getProperties() != null &&
-        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) != null) {
-      String tableName = tableDesc.getTableName();
-      String opKey = InputFormatConfig.OPERATION_TYPE_PREFIX + tableName;
-      // set operation type into job conf too
-      jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
-      Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
-          "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
-      if (HiveCustomStorageHandlerUtils.getWriteOperation(tableDesc.getProperties()::getProperty, tableName) != null) {
-        HiveCustomStorageHandlerUtils.setWriteOperation(jobConf, tableName,
-            Operation.valueOf(tableDesc.getProperties().getProperty(
-                HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName)));
-      }
-      boolean isMergeTaskEnabled = Boolean.parseBoolean(tableDesc.getProperty(
-          HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
-      if (isMergeTaskEnabled) {
-        HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, true);
-      }
-      String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
-      tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
-      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
-
-      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
-      if (catalogName != null) {
-        jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
-      }
+    configureOutputTableJobConf(tableDesc, jobConf);
+    if (IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
+      IcebergVendedCredentialUtil.refreshVendedCredentialsIfMissing(tableDesc, jobConf, conf);
+      IcebergVendedCredentialUtil.applyJobSecretsToJobConf(tableDesc, jobConf);
     }
     try {
       if (!jobConf.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
@@ -370,6 +363,37 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private static void configureOutputTableJobConf(TableDesc tableDesc, JobConf jobConf) {
+    if (tableDesc == null || tableDesc.getProperties() == null ||
+        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) == null) {
+      return;
+    }
+    String tableName = tableDesc.getTableName();
+    String opKey = InputFormatConfig.OPERATION_TYPE_PREFIX + tableName;
+    // set operation type into job conf too
+    jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
+    Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
+        "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
+    if (HiveCustomStorageHandlerUtils.getWriteOperation(tableDesc.getProperties()::getProperty, tableName) != null) {
+      HiveCustomStorageHandlerUtils.setWriteOperation(jobConf, tableName,
+          Operation.valueOf(tableDesc.getProperties().getProperty(
+              HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName)));
+    }
+    boolean isMergeTaskEnabled = Boolean.parseBoolean(tableDesc.getProperty(
+        HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
+    if (isMergeTaskEnabled) {
+      HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, true);
+    }
+    String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
+    tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
+    jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
+
+    String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+    if (catalogName != null) {
+      jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
     }
   }
 
@@ -1667,7 +1691,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     PartitionSpec spec;
     String bytes;
     try {
-      Table table = IcebergTableUtil.getTable(configuration, props);
+      boolean isVendedCredentials =
+          IcebergVendedCredentialUtil.requestsVendedCredentials(props, configuration);
+      Table table = isVendedCredentials ?
+          IcebergVendedCredentialUtil.getTableWithVendedCredentials(props, configuration) :
+          IcebergTableUtil.getTable(configuration, props);
       location = table.location();
       // set table format-version and write-mode information from tableDesc
       bytes = HiveTableUtil.serializeTable(table, configuration, props,
@@ -1676,6 +1704,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
               TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE));
       schema = table.schema();
       spec = table.spec();
+
+      String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+      if (isVendedCredentials) {
+        IcebergVendedCredentialUtil.propagateToJob(table, catalogName, map, null, configuration);
+      }
 
       // For intra-txn read-after-write: if the table has in-memory metadata with no metadata file
       // (i.e. uncommitted changes from a prior statement in the same txn), write the metadata to
