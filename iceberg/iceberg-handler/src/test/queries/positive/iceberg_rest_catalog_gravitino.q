@@ -3,6 +3,10 @@
 --! qt:replace:/(\s+neededVirtualColumns:\s)(.*)/$1#Masked#/
 -- Mask random uuid
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
+-- Mask Iceberg metadata file name (sequence id + UUID) in show create table
+--! qt:replace:/('metadata_location'=')[^']+(')/$1#Masked#$2/
+-- Mask metadata_location path in describe formatted ('|' delimiter: regex contains s3:// so '/' breaks QTestReplaceHandler).
+--! qt:replace:|(metadata_location)(\s+)(s3://\S+)|$1$2#Masked#|
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask a random snapshot id
@@ -24,9 +28,10 @@ set hive.stats.autogather=false;
 set metastore.client.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 set metastore.catalog.default=ice01;
 set iceberg.catalog.ice01.type=rest;
+set iceberg.catalog.ice01.header.X-Iceberg-Access-Delegation=vended-credentials;
 
---! This config is set in the driver setup (see TestIcebergRESTCatalogLlapLocalCliDriver.java)   
---! conf.set('iceberg.catalog.ice01.uri', <RESTServer URI>);
+--! REST URI, OAuth, MinIO + Gravitino S3 warehouse / credential vending, and host S3A are set in
+--! TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.
 
 create database ice_rest;
 use ice_rest;
@@ -63,11 +68,6 @@ show create table ice_orc2;
 
 insert into ice_orc2 partition (company_id=100) 
 VALUES ('fn1','ln1', 1, 10), ('fn2','ln2', 2, 20), ('fn3','ln3', 3, 30);
-
---! In CI, Testcontainers' .withFileSystemBind() is not able to bind the same host path to the same container path,
---! so as a workaround, the .metadata.json files from container are manually synced in a daemon process,
---! since the sync can take some time, need to wait for it to happen after the insert operation.
-! sleep 20;
 
 describe formatted ice_orc2;
 select * from ice_orc2;
