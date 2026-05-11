@@ -735,17 +735,14 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     if (ast.getChildCount() == 2) {
       statsEligibleFS = getStatsEligibleFieldSchemas(tbl);
       columnNames = Utilities.getColumnNamesFromFieldSchema(statsEligibleFS);
-    } else{
+    } else {
       columnNames = getExplicitColumnNamesFromAst(ast);
     }
 
     checkForPartitionColumns(columnNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
     validateSpecifiedColumnNames(columnNames);
 
-    if (statsEligibleFS != null) {
-      return statsEligibleFS;
-    }
-    return getFieldSchemasByColName(tbl, columnNames);
+    return statsEligibleFS != null ? statsEligibleFS : getFieldSchemasByColName(tbl, columnNames);
   }
 
   AnalyzeRewriteContext getAnalyzeRewriteContext() {
