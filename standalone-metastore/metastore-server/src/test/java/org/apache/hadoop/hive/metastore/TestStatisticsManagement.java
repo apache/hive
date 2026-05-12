@@ -206,6 +206,49 @@ public class TestStatisticsManagement {
   }
 
   /**
+   * Verifies that fresh table-level column statistics whose {@code lastAnalyzed} is within the
+   * retention period are not deleted when the task runs.
+   */
+  @Test
+  public void testFreshTableColStatsAreNotDeleted() throws Exception {
+    String dbName = "stats_db6";
+    String tableName = "tbl6";
+    createDbAndTable(dbName, tableName, false);
+
+    // Write stats but do NOT backdate lastAnalyzed — they are within the retention period.
+    writeTableLevelColStats(dbName, tableName, "c1");
+    assertHasTableColStats(dbName, tableName, "c1");
+
+    runStatisticsManagementTask(conf);
+
+    // Stats are fresh and must not be deleted.
+    assertHasTableColStats(dbName, tableName, "c1");
+  }
+
+  /**
+   * Verifies that fresh partition-level column statistics whose {@code lastAnalyzed} is within the
+   * retention period are not deleted when the task runs.
+   */
+  @Test
+  public void testFreshPartitionColStatsAreNotDeleted() throws Exception {
+    String dbName = "stats_db7";
+    String tableName = "tbl7";
+    String partVal = "p1";
+    createDbAndPartitionedTable(dbName, tableName, false);
+    createPartition(dbName, tableName, partVal);
+
+    // Write stats but do NOT backdate lastAnalyzed — they are within the retention period.
+    String partName = "part_col=" + partVal;
+    writePartitionLevelColStats(dbName, tableName, partName, "c1");
+    assertHasPartitionColStats(dbName, tableName, partName, "c1");
+
+    runStatisticsManagementTask(conf);
+
+    // Stats are fresh and must not be deleted.
+    assertHasPartitionColStats(dbName, tableName, partName, "c1");
+  }
+
+  /**
    * Creates a database (unless it is the default database) and a simple two-column test table.
    *
    * @param dbName    name of the database to create
