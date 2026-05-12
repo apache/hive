@@ -31,6 +31,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
@@ -466,9 +467,27 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
+  public void testComputeRangePredicateSelectivityBetweenWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int1, int3);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6923076923076923, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
   public void testComputeRangePredicateSelectivityBetweenFromMinToMax() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int1, int7);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityBetweenFromMinToMaxWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int1, int7);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -482,9 +501,27 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
+  public void testComputeRangePredicateSelectivityBetweenFromLowerThanMinToHigherThanMaxWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int0, int8);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
   public void testComputeRangePredicateSelectivityBetweenLeftLowerThanMin() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int0, int3);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6923076923076923, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityBetweenLeftLowerThanMinWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int0, int3);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0.6923076923076923, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -498,9 +535,27 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
+  public void testComputeRangePredicateSelectivityBetweenRightLowerThanMinWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeBetween(inputRef0, intMinus1, int0);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
   public void testComputeRangePredicateSelectivityBetweenLeftHigherThanMax() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int10, int11);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityBetweenLeftHigherThanMaxWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int10, int11);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
   }
@@ -518,6 +573,17 @@ public class TestFilterSelectivityEstimator {
     verify(tableMock, never()).getColStat(any());
     doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int3, int3);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    // this is what FilterSelectivityEstimator returns for a generic "function" based on NDV values, in this case 1 / 10
+    Assert.assertEquals(0.1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityBetweenLeftEqualsRightWithSearch() {
+    verify(tableMock, never()).getColStat(any());
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode filter = REX_BUILDER.makeBetween(inputRef0, int3, int3);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     // this is what FilterSelectivityEstimator returns for a generic "function" based on NDV values, in this case 1 / 10
     Assert.assertEquals(0.1, estimator.estimateSelectivity(filter), DELTA);
@@ -930,7 +996,6 @@ public class TestFilterSelectivityEstimator {
     float invExpectedSelectivity = (universe - expectedEntries) / total;
     Assert.assertEquals(invMessage, invExpectedSelectivity, estimator.estimateSelectivity(invBetween), DELTA);
   }
-
 
   private RexNode cast(String fieldname, SqlTypeName typeName) {
     return cast(fieldname, type(typeName));

@@ -746,7 +746,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         selectivityList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
       }
 
-      return computeDisjunctionSelectivity(selectivityList);
+      return selectivityList.size() == 1 ? selectivityList.get(0) : computeDisjunctionSelectivity(selectivityList);
     }
   }
 
