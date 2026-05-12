@@ -72,7 +72,7 @@
     <commons-dbcp2.version>2.14.0</commons-dbcp2.version>
     <datasketches.version>2.0.0</datasketches.version>
     <datanucleus-api-jdo.version>6.0.5</datanucleus-api-jdo.version>
-    <datanucleus-core.version>6.0.10</datanucleus-core.version>
+    <datanucleus-core.version>6.0.11</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>6.0.11</datanucleus-rdbms.version>
     <derby.version>10.17.1.0</derby.version>
