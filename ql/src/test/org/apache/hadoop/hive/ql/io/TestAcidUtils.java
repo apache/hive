@@ -886,56 +886,93 @@ public class TestAcidUtils {
         "Non-compacted base with writeId greater than highWaterMark should not be valid");
   }
 
-  private void checkNotCompactedBase(long writeId, ValidWriteIdList cleanerWriteIdList, boolean valid, String errorMessage)
-      throws IOException {
+  private void checkNotCompactedBase(long writeId, ValidWriteIdList cleanerWriteIdList, boolean valid,
+      String errorMessage) throws IOException {
     checkBase(writeId, 0L, cleanerWriteIdList, valid, errorMessage);
   }
 
-  private void checkBase(long writeId, long visibilityTxnId, ValidWriteIdList cleanerWriteIdList, boolean valid, String errorMessage)
-      throws IOException {
-    AcidUtils.ParsedBaseLight p = new AcidUtils.ParsedBaseLight(writeId, visibilityTxnId, new Path("testpath"));
+  private void checkBase(long writeId, long visibilityTxnId, ValidWriteIdList cleanerWriteIdList, boolean valid,
+      String errorMessage) throws IOException {
+    AcidUtils.ParsedBaseLight p = new AcidUtils.ParsedBaseLight(writeId, visibilityTxnId,
+        new Path("testpath"));
     if (valid) {
-      Assert.assertTrue(errorMessage, AcidUtils.isValidBase(p, cleanerWriteIdList, null, new MockHdfsDirSnapshotImpl()));
+      Assert.assertTrue(errorMessage, AcidUtils.isValidBase(p, cleanerWriteIdList, null,
+          new MockHdfsDirSnapshotImpl()));
     } else {
-      Assert.assertFalse(errorMessage, AcidUtils.isValidBase(p, cleanerWriteIdList, null, new MockHdfsDirSnapshotImpl()));
+      Assert.assertFalse(errorMessage, AcidUtils.isValidBase(p, cleanerWriteIdList, null,
+          new MockHdfsDirSnapshotImpl()));
     }
   }
 
-  private class MockHdfsDirSnapshotImpl implements AcidUtils.HdfsDirSnapshot {
+  private final class MockHdfsDirSnapshotImpl implements AcidUtils.HdfsDirSnapshot {
     @Override
-    public Path getPath() {return null;}
+    public Path getPath() {
+      return null;
+    }
     @Override
-    public void addOrcAcidFormatFile(FileStatus fStatus) {}
+    public void addOrcAcidFormatFile(FileStatus fStatus) {
+      // this method is not used by the tests, no need to add an implementation
+    }
     @Override
-    public FileStatus getOrcAcidFormatFile() {return null;}
+    public FileStatus getOrcAcidFormatFile() {
+      return null;
+    }
     @Override
-    public void addMetadataFile(FileStatus fStatus) {}
+    public void addMetadataFile(FileStatus fStatus) {
+      // this method is not used by the tests, no need to add an implementation
+    }
     @Override
-    public FileStatus getMetadataFile() {return null;}
+    public FileStatus getMetadataFile() {
+      return null;
+    }
     @Override
-    public List<FileStatus> getFiles() {return null;}
+    public List<FileStatus> getFiles() {
+      return null;
+    }
     @Override
-    public void addFile(FileStatus file) {}
+    public void addFile(FileStatus file) {
+      // this method is not used by the tests, no need to add an implementation
+    }
     @Override
-    public Long getFileId() {return null;}
+    public Long getFileId() {
+      return null;
+    }
     @Override
-    public Boolean isRawFormat() {return null;}
+    public Boolean isRawFormat() {
+      return null;
+    }
     @Override
-    public void setIsRawFormat(boolean isRawFormat) {}
+    public void setIsRawFormat(boolean isRawFormat) {
+      // this method is not used by the tests, no need to add an implementation
+    }
     @Override
-    public Boolean isBase() {return null;}
+    public Boolean isBase() {
+      return null;
+    }
     @Override
-    public void setIsBase(boolean isBase) {}
+    public void setIsBase(boolean isBase) {
+      // this method is not used by the tests, no need to add an implementation
+    }
     @Override
-    public Boolean isValidBase() {return null;}
+    public Boolean isValidBase() {
+      return null;
+    }
     @Override
-    public void setIsValidBase(boolean isValidBase) {}
+    public void setIsValidBase(boolean isValidBase) {
+      // this method is not used by the tests, no need to add an implementation
+    }
     @Override
-    public Boolean isCompactedBase() {return null;}
+    public Boolean isCompactedBase() {
+      return null;
+    }
     @Override
-    public void setIsCompactedBase(boolean isCompactedBase) {}
+    public void setIsCompactedBase(boolean isCompactedBase) {
+      // this method is not used by the tests, no need to add an implementation
+    }
     @Override
-    public boolean contains(Path path) {return false;}
+    public boolean contains(Path path) {
+      return false;
+    }
   }
 
 }
