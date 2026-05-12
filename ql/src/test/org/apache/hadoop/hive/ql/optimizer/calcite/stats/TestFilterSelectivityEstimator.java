@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
+import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -30,6 +31,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -456,6 +458,58 @@ public class TestFilterSelectivityEstimator {
     RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, inputRef0, int10);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  private RexNode simplify(RexNode e) {
+    return new RexSimplify(REX_BUILDER, RelOptPredicateList.EMPTY, RexUtil.EXECUTOR).simplify(e);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityOpenOpenWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, int1),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int4));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityClosedOpenWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, inputRef0, int2),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int4));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityOpenClosedWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, int1),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, inputRef0, int3));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangePredicateSelectivityClosedClosedWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, inputRef0, int2),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, inputRef0, int3));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
