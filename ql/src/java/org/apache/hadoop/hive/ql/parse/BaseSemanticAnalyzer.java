@@ -1435,6 +1435,14 @@ public abstract class BaseSemanticAnalyzer {
       return schemas;
     }
 
+    public int size() {
+      return schemas.size();
+    }
+
+    public FieldSchema get(int index) {
+      return schemas.get(index);
+    }
+
     public List<String> getColName() {
       if (colNames == null) {
         colNames = Utilities.getColumnNamesFromFieldSchema(schemas);

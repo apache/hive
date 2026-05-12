@@ -239,7 +239,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return result;
   }
 
-  private String genRewrittenQuery(List<FieldSchema> columnSchemas, HiveConf conf,
+  private String genRewrittenQuery(FieldSchemas columnSchemas, HiveConf conf,
       List<TransformSpec> partTransformSpec, int specId, Map<String, String> partSpec, 
       boolean isPartitionStats) {
     String rewritten = genRewrittenQuery(tbl, columnSchemas, conf, partTransformSpec, specId, partSpec,
@@ -255,11 +255,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   protected static String genRewrittenQuery(Table tbl,
       HiveConf conf, List<TransformSpec> partTransformSpec, Map<String, String> partSpec, 
       boolean isPartitionStats) {
-    return ColumnStatsSemanticAnalyzer.genRewrittenQuery(
-        tbl, getStatsEligibleFieldSchemas(tbl).getSchemas(), conf, partTransformSpec, -1, partSpec, isPartitionStats, true);
+    return ColumnStatsSemanticAnalyzer.genRewrittenQuery(tbl, getStatsEligibleFieldSchemas(tbl), conf,
+        partTransformSpec, -1, partSpec, isPartitionStats, true);
   }
 
-  private static String genRewrittenQuery(Table tbl, List<FieldSchema> columnSchemas,
+  private static String genRewrittenQuery(Table tbl, FieldSchemas columnSchemas,
       HiveConf conf, List<TransformSpec> partTransformSpec, int specId, Map<String, String> partSpec, 
       boolean isPartitionStats, boolean useTableValues) {
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
@@ -652,7 +652,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
       rewrittenQuery = String.join(" union all ",
         Maps.transformEntries(partTransformSpecs, (specId, partTransformSpec) ->
-            genRewrittenQuery(columnSchemas, conf, partTransformSpec, specId, partSpec, isPartitionStats))
+            genRewrittenQuery(rewrittenColumnSchemas, conf, partTransformSpec, specId, partSpec, isPartitionStats))
           .values());
       
       rewrittenTree = genRewrittenTree(rewrittenQuery);
@@ -720,7 +720,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenColumnSchemas = new FieldSchemas(columnSchemas);
     isTableLevel = !isPartitionStats;
 
-    rewrittenQuery = genRewrittenQuery(columnSchemas, conf, partTransformSpec, -1,
+    rewrittenQuery = genRewrittenQuery(rewrittenColumnSchemas, conf, partTransformSpec, -1,
         partSpec, isPartitionStats);
     rewrittenTree = genRewrittenTree(rewrittenQuery);
 
