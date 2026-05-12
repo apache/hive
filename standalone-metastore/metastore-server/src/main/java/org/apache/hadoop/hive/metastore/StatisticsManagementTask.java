@@ -68,7 +68,7 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
     if (!MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_AUTO_DELETION)
         || MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD,
         TimeUnit.MILLISECONDS) <= 0) {
-      return Long.MAX_VALUE;
+      return 0;
     }
     return MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.COLUMN_STATISTICS_MANAGEMENT_TASK_FREQUENCY, unit);
@@ -138,14 +138,17 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
   private List<Object[]> collectExpiredTableColStats(PersistenceManager pm,
                                                      long lastAnalyzedThreshold) throws Exception {
     try (Query tblQuery = pm.newQuery(MTableColumnStatistics.class)) {
-      tblQuery.setFilter("lastAnalyzed < threshold");
+      tblQuery.setFilter(
+          "lastAnalyzed < threshold "
+              + "&& table.parameters.get(\""
+              + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") != \"true\"");
       tblQuery.declareParameters("long threshold");
+      tblQuery.setRange(0, 1000);
       tblQuery.setResult(
           "table.database.catalogName, "
               + "table.database.name, "
               + "table.tableName, "
-              + "colName, "
-              + "table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\")");
+              + "colName");
       @SuppressWarnings("unchecked")
       List<Object[]> rows = (List<Object[]>) tblQuery.execute(lastAnalyzedThreshold);
       return new ArrayList<>(rows);
@@ -172,12 +175,6 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
       String dbName    = (String) row[1];
       String tblName   = (String) row[2];
       String colName   = (String) row[3];
-      String excludeVal = (String) row[4];
-      if (Boolean.parseBoolean(excludeVal)) {
-        LOG.info("Skipping auto deletion of table stats for {}.{} due to exclude property.",
-            dbName, tblName);
-        continue;
-      }
       String key = catName + KEY_SEP + dbName + KEY_SEP + tblName;
       tblToColsMap.computeIfAbsent(key, k -> new ArrayList<>()).add(colName);
       keyToCoords.putIfAbsent(key, new String[]{catName, dbName, tblName});
@@ -212,15 +209,18 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
   private List<Object[]> collectExpiredPartitionColStats(PersistenceManager pm,
                                                          long lastAnalyzedThreshold) throws Exception {
     try (Query partQuery = pm.newQuery(MPartitionColumnStatistics.class)) {
-      partQuery.setFilter("lastAnalyzed < threshold");
+      partQuery.setFilter(
+          "lastAnalyzed < threshold "
+              + "&& partition.table.parameters.get(\""
+              + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") != \"true\"");
       partQuery.declareParameters("long threshold");
+      partQuery.setRange(0, 1000);
       partQuery.setResult(
           "partition.table.database.catalogName, "
               + "partition.table.database.name, "
               + "partition.table.tableName, "
               + "partition.partitionName, "
-              + "colName, "
-              + "partition.table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\")");
+              + "colName");
       @SuppressWarnings("unchecked")
       List<Object[]> rows = (List<Object[]>) partQuery.execute(lastAnalyzedThreshold);
       return new ArrayList<>(rows);
@@ -246,12 +246,6 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
       String tblName   = (String) row[2];
       String partName  = (String) row[3];
       String colName   = (String) row[4];
-      String excludeVal = (String) row[5];
-      if (Boolean.parseBoolean(excludeVal)) {
-        LOG.info("Skipping auto deletion of partition stats for {}.{} due to exclude property.",
-            dbName, tblName);
-        continue;
-      }
       String key = catName + KEY_SEP + dbName + KEY_SEP + tblName + KEY_SEP + partName;
       partToColsMap.computeIfAbsent(key, k -> new ArrayList<>()).add(colName);
       keyToCoords.putIfAbsent(key, new String[]{catName, dbName, tblName, partName});
