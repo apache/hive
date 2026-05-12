@@ -18,6 +18,9 @@
 
 package org.apache.iceberg.hive;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -30,9 +33,6 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.thrift.TException;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  * Fetches the location of a given metadata table.
  * <p>Since the location mutates with each transaction, this allows determining if a cached version of the
@@ -40,9 +40,10 @@ import java.util.List;
  */
 public class MetadataLocator {
   private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MetadataLocator.class);
-  private static final GetProjectionsSpec PARAM_SPEC = new GetTableProjectionsSpecBuilder()
-      .includeParameters()  // only fetches table.parameters
-      .build();
+  private static final GetProjectionsSpec PARAM_SPEC =
+      new GetTableProjectionsSpecBuilder()
+          .includeParameters() // only fetches table.parameters
+          .build();
   private final HiveCatalog catalog;
 
   public MetadataLocator(HiveCatalog catalog) {
@@ -77,19 +78,22 @@ public class MetadataLocator {
     String database = baseTableIdentifier.namespace().level(0);
     String tableName = baseTableIdentifier.name();
     try {
-      List<Table> tables = clients.run(
-          client -> client.getTables(catName, database, Collections.singletonList(tableName), PARAM_SPEC)
-      );
-      return tables == null || tables.isEmpty()
-          ? null
-          : tables.getFirst().getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-    } catch (NoSuchTableException e) {
-      LOGGER.debug("Table {} not found: {}", baseTableIdentifier, e.getMessage());
-      throw e;
+      List<Table> tables =
+          clients.run(client -> client.getTables(catName, database, Collections.singletonList(tableName), PARAM_SPEC));
+      if (tables != null && !tables.isEmpty()) {
+        Table table = tables.getFirst();
+        if (table != null) {
+          HiveOperationsBase.validateTableIsIceberg(table, tableName);
+          return table.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+        }
+      }
+      return null;
     } catch (NoSuchObjectException e) {
-      throw new NoSuchTableException("Table %s not found: %s", baseTableIdentifier, e.getMessage());
+      // NoSuchObjectException is a TException subclass that HMS may raise for an unknown database or catalog.
+      LOGGER.debug("Table {} not found: {}", baseTableIdentifier, e.getMessage());
+      throw new NoSuchTableException(e, "Table %s not found: %s", baseTableIdentifier, e.getMessage());
     } catch (TException e) {
-      LOGGER.info("Table {} parameters fetch failed: {}", baseTableIdentifier, e.getMessage());
+      LOGGER.warn("Table {} parameters fetch failed: {}", baseTableIdentifier, e.getMessage());
       throw new RuntimeException("Failed to fetch table parameters for " + baseTableIdentifier, e);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();

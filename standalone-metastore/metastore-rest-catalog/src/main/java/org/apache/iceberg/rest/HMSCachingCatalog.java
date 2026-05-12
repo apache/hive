@@ -18,8 +18,8 @@
 
 package org.apache.iceberg.rest;
 
-import com.github.benmanes.caffeine.cache.Ticker;
-
+import java.io.Closeable;
+import java.lang.management.ManagementFactory;
 import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -28,6 +28,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+
+import javax.management.JMException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -54,17 +58,21 @@ import org.jetbrains.annotations.TestOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.benmanes.caffeine.cache.Ticker;
+
 /**
  * Class that wraps an Iceberg Catalog to cache tables.
  */
-public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
+public class HMSCachingCatalog extends CachingCatalog
+    implements SupportsNamespaces, ViewCatalog, HMSCachingCatalogMXBean, Closeable {
   protected static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
 
   @TestOnly
   private static SoftReference<HMSCachingCatalog> cacheRef = new SoftReference<>(null);
 
-  @TestOnly @SuppressWarnings("unchecked")
-  public static <C extends Catalog> C  getLatestCache(Function<HMSCachingCatalog, C> extractor) {
+  @TestOnly
+  @SuppressWarnings("unchecked")
+  public static <C extends Catalog> C getLatestCache(Function<HMSCachingCatalog, C> extractor) {
     HMSCachingCatalog cache = cacheRef.get();
     if (cache == null) {
       return null;
@@ -100,6 +108,12 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   private final AtomicLong cacheLoadCount = new AtomicLong(0);
   private final AtomicLong cacheInvalidateCount = new AtomicLong(0);
   private final AtomicLong cacheMetaLoadCount = new AtomicLong(0);
+  // L1 cache metrics: counted only when the L2 (Caffeine) cache already has the entry.
+  private final AtomicLong l1CacheHitCount = new AtomicLong(0);
+  private final AtomicLong l1CacheMissCount = new AtomicLong(0);
+
+  // JMX ObjectName under which this instance is registered (may be null if registration failed).
+  private ObjectName jmxObjectName;
 
   public HMSCachingCatalog(HiveCatalog catalog, long expirationMs) {
     this(catalog, expirationMs, /*caseSensitive*/ true);
@@ -118,18 +132,42 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     int l1size = conf.getInt("hms.caching.catalog.l1.cache.size", 32);
     int l1ttl = conf.getInt("hms.caching.catalog.l1.cache.ttl", 3_000);
     if (l1size > 0 && l1ttl > 0) {
-       l1Cache = Collections.synchronizedMap(new LinkedHashMap<TableIdentifier, Long>() {
+      l1Cache = Collections.synchronizedMap(new LinkedHashMap<TableIdentifier, Long>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<TableIdentifier, Long> eldest) {
           return size() > l1CacheSize;
         }
       });
-       l1Ttl = l1ttl;
-       l1CacheSize = l1size;
+      l1Ttl = l1ttl;
+      l1CacheSize = l1size;
     } else {
-       l1Cache = Collections.emptyMap();
-       l1Ttl = 0;
-       l1CacheSize = 0;
+      l1Cache = Collections.emptyMap();
+      l1Ttl = 0;
+      l1CacheSize = 0;
+    }
+    registerJmx(catalog.name());
+  }
+
+  /**
+   * Registers this instance as a JMX MBean.
+   *
+   * @param catalogName the catalog name, used to build the {@link ObjectName}
+   */
+  private void registerJmx(String catalogName) {
+    try {
+      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+      String sanitized = catalogName == null || catalogName.isEmpty()
+        ? "default"
+        : catalogName.replaceAll("[^a-zA-Z0-9.\\\\-]", "_");
+      ObjectName name = new ObjectName("org.apache.iceberg.rest:type=HMSCachingCatalog,name=" + sanitized);
+      if (mbs.isRegistered(name)) {
+        mbs.unregisterMBean(name);
+      }
+      mbs.registerMBean(this, name);
+      this.jmxObjectName = name;
+      LOG.info("Registered JMX MBean: {}", name);
+    } catch (JMException e) {
+      LOG.warn("Failed to register JMX MBean for HMSCachingCatalog", e);
     }
   }
 
@@ -183,50 +221,113 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     LOG.debug("Cache meta-load {}: {}", tid, count);
   }
 
+  /**
+   * Callback when an L1 cache hit occurs for a given table identifier.
+   * Only fired when the L2 cache also has the entry.
+   *
+   * @param tid the table identifier
+   */
+  protected void onL1CacheHit(TableIdentifier tid) {
+    long count = l1CacheHitCount.incrementAndGet();
+    LOG.debug("L1 cache hit {}: {}", tid, count);
+  }
+
+  /**
+   * Callback when an L1 cache miss occurs for a given table identifier.
+   * Only fired when the L2 cache has the entry but L1 is absent or expired.
+   *
+   * @param tid the table identifier
+   */
+  protected void onL1CacheMiss(TableIdentifier tid) {
+    long count = l1CacheMissCount.incrementAndGet();
+    LOG.debug("L1 cache miss {}: {}", tid, count);
+  }
+
   // Getter methods for accessing metrics
+  @Override
   public long getCacheHitCount() {
     return cacheHitCount.get();
   }
 
+  @Override
   public long getCacheMissCount() {
     return cacheMissCount.get();
   }
 
+  @Override
   public long getCacheLoadCount() {
     return cacheLoadCount.get();
   }
 
+  @Override
   public long getCacheInvalidateCount() {
     return cacheInvalidateCount.get();
   }
 
+  @Override
   public long getCacheMetaLoadCount() {
     return cacheMetaLoadCount.get();
   }
 
+  @Override
   public double getCacheHitRate() {
     long hits = cacheHitCount.get();
     long total = hits + cacheMissCount.get();
     return total == 0 ? 0.0 : (double) hits / total;
   }
 
-  /**
-   * Generates a map of this cache's performance metrics, including hit count,
-   * miss count, load count, invalidate count, meta-load count, and hit rate.
-   * This can be used for monitoring and debugging purposes to understand the effectiveness of the cache.
-   * @return a map of cache performance metrics
-   */
-  public Map<String, Number> cacheStats() {
-    return Map.of(
-            "hit", getCacheHitCount(),
-            "miss", getCacheMissCount(),
-            "load", getCacheLoadCount(),
-            "invalidate", getCacheInvalidateCount(),
-            "metaload", getCacheMetaLoadCount(),
-            "hit-rate", getCacheHitRate()
-    );
+  @Override
+  public long getL1CacheHitCount() {
+    return l1CacheHitCount.get();
   }
 
+  @Override
+  public long getL1CacheMissCount() {
+    return l1CacheMissCount.get();
+  }
+
+  @Override
+  public double getL1CacheHitRate() {
+    long hits = l1CacheHitCount.get();
+    long total = hits + l1CacheMissCount.get();
+    return total == 0 ? 0.0 : (double) hits / total;
+  }
+
+  @Override
+  public void resetCacheStats() {
+    cacheHitCount.set(0);
+    cacheMissCount.set(0);
+    cacheLoadCount.set(0);
+    cacheInvalidateCount.set(0);
+    cacheMetaLoadCount.set(0);
+    l1CacheHitCount.set(0);
+    l1CacheMissCount.set(0);
+    LOG.debug("Cache stats reset");
+  }
+
+  @Override
+  public void close() {
+    unregisterJmx();
+  }
+
+  /**
+   * Unregisters this instance from the platform MBeanServer.
+   */
+  private void unregisterJmx() {
+    if (jmxObjectName != null) {
+      try {
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        if (mbs.isRegistered(jmxObjectName)) {
+          mbs.unregisterMBean(jmxObjectName);
+          LOG.info("Unregistered JMX MBean: {}", jmxObjectName);
+        }
+      } catch (JMException e) {
+        LOG.warn("Failed to unregister JMX MBean: {}", jmxObjectName, e);
+      } finally {
+        jmxObjectName = null;
+      }
+    }
+  }
 
   @Override
   public void createNamespace(Namespace namespace, Map<String, String> map) {
@@ -267,11 +368,15 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
       if (lastCached != null) {
         if (now - lastCached < l1Ttl) {
           LOG.debug("Table {} is in L1 cache, returning cached table", canonicalized);
+          onL1CacheHit(canonicalized);
           onCacheHit(canonicalized);
           return cachedTable;
         } else {
           l1Cache.remove(canonicalized);
+          onL1CacheMiss(canonicalized);
         }
+      } else {
+        onL1CacheMiss(canonicalized);
       }
       // If the table is no longer in L1 cache, we need to check the location.
       final String location = metadataLocator.getLocation(canonicalized);
@@ -281,9 +386,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
         l1Cache.put(canonicalized, now);
         return cachedTable;
       }
-      String cachedLocation = cachedTable instanceof HasTableOperations tableOps
-              ? tableOps.operations().current().metadataFileLocation()
-              : null;
+      String cachedLocation =
+          cachedTable instanceof HasTableOperations tableOps ? tableOps.operations().current().metadataFileLocation() : null;
       if (location.equals(cachedLocation)) {
         onCacheHit(canonicalized);
         l1Cache.put(canonicalized, now);
@@ -310,7 +414,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
         MetadataTableType type = MetadataTableType.from(canonicalized.name());
         // Defensive: CachingCatalog doesn't perform this check
         if (type != null) {
-          Table metadataTable = MetadataTableUtils.createMetadataTableInstance(ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
+          Table metadataTable =
+              MetadataTableUtils.createMetadataTableInstance(ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
           tableCache.put(canonicalized, metadataTable);
           l1Cache.put(canonicalized, now);
           onCacheMetaLoad(canonicalized);
@@ -326,7 +431,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   }
 
   private Table loadTableWithoutCache(TableIdentifier identifier) {
-      return hiveCatalog.loadTable(identifier);
+    return hiveCatalog.loadTable(identifier);
   }
 
   @Override

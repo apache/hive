@@ -73,7 +73,6 @@ import org.apache.iceberg.rest.responses.ListNamespacesResponse;
 import org.apache.iceberg.rest.responses.ListTablesResponse;
 import org.apache.iceberg.rest.responses.LoadTableResponse;
 import org.apache.iceberg.rest.responses.LoadViewResponse;
-import org.apache.iceberg.rest.responses.HMSCacheStatsResponse;
 import org.apache.iceberg.rest.responses.UpdateNamespacePropertiesResponse;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
@@ -88,7 +87,6 @@ import org.slf4j.LoggerFactory;
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/');
-  private static final String V1_CACHE_STATS = "v1/cache/stats";
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -150,8 +148,7 @@ public class HMSCatalogAdapter implements Closeable {
     CREATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEWS, CreateViewRequest.class),
     UPDATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW, UpdateTableRequest.class),
     RENAME_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW_RENAME, RenameTableRequest.class),
-    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW),
-    CACHE_STATS(HTTPMethod.GET, V1_CACHE_STATS);
+    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW);
 
     private final HTTPMethod method;
     private final int requiredLength;
@@ -223,14 +220,6 @@ public class HMSCatalogAdapter implements Closeable {
     public Class<? extends RESTRequest> requestClass() {
       return requestClass;
     }
-  }
-
-  private HMSCacheStatsResponse cacheStats() {
-    Map<String, Number> stats = Collections.emptyMap();
-    if (catalog instanceof HMSCachingCatalog hmsCatalog) {
-      stats = hmsCatalog.cacheStats();
-    }
-    return castResponse(HMSCacheStatsResponse.class, new HMSCacheStatsResponse(stats));
   }
 
   private ConfigResponse config() {
@@ -457,7 +446,6 @@ public class HMSCatalogAdapter implements Closeable {
       case UPDATE_VIEW -> (T) updateView(vars, body);
       case RENAME_VIEW -> (T) renameView(body);
       case DROP_VIEW -> (T) dropView(vars);
-      case CACHE_STATS -> (T) cacheStats();
     };
   }
 
