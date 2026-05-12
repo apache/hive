@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.TableFetcher;
@@ -101,6 +100,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.stats.HiveColumnStatisticsObj;
 import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
 import org.apache.iceberg.puffin.PuffinReader;
@@ -256,7 +256,7 @@ public class IcebergTableUtil {
     return table.statisticsFiles().stream()
       .filter(stats -> stats.snapshotId() == snapshotId)
       .filter(stats -> stats.blobMetadata().stream()
-        .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
+        .anyMatch(metadata -> HiveColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
       )
       .map(StatisticsFile::path)
       .findAny().orElse(null);

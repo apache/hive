@@ -239,22 +239,29 @@ public class StatsUtils {
     return aggregateStat.getNumRows();
   }
 
-  private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
+  private static List<ColStatistics> estimateStatsForMissingCols(
+      List<String> neededColumns, List<ColStatistics> existingColStats,
       HiveConf conf, long nr, List<ColumnInfo> schema) {
 
     Set<String> neededCols = new HashSet<>(neededColumns);
     Set<String> colsWithStats = new HashSet<>();
+    List<ColStatistics> neededColStats = new ArrayList<>(neededCols.size());
 
-    for (ColStatistics cstats : columnStats) {
-      colsWithStats.add(cstats.getColumnName());
+    for (ColStatistics colStatistics : existingColStats) {
+      colsWithStats.add(colStatistics.getColumnName());
+      if (neededCols.contains(colStatistics.getColumnName())) {
+        neededColStats.add(colStatistics);
+      }
     }
 
     List<String> missingColStats = new ArrayList<>(Sets.difference(neededCols, colsWithStats));
 
     if (!missingColStats.isEmpty()) {
-      columnStats.addAll(
+      neededColStats.addAll(
           estimateStats(schema, missingColStats, conf, nr));
     }
+
+    return neededColStats;
   }
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
@@ -300,7 +307,7 @@ public class StatsUtils {
       if (needColStats && !metaTable) {
         colStats = getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
         if (estimateStats) {
-          estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
+          colStats = estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
         }
         // we should have stats for all columns (estimated or actual)
         if (neededColumns.size() == colStats.size()) {
@@ -386,7 +393,7 @@ public class StatsUtils {
         boolean statsRetrieved = aggrStats != null &&
             aggrStats.getColStats() != null && aggrStats.getColStatsSize() != 0;
         if (neededColumns.isEmpty() || (!neededColsToRetrieve.isEmpty() && !statsRetrieved)) {
-          estimateStatsForMissingCols(neededColsToRetrieve, columnStats, conf, nr, schema);
+          columnStats = estimateStatsForMissingCols(neededColsToRetrieve, columnStats, conf, nr, schema);
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
           // state/initialize structures.

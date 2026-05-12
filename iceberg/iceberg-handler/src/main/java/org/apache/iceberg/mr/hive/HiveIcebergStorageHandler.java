@@ -188,6 +188,9 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
 import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
+import org.apache.iceberg.mr.hive.stats.ColumnStatsConverter;
+import org.apache.iceberg.mr.hive.stats.HiveColumnStatistics;
+import org.apache.iceberg.mr.hive.stats.HiveColumnStatisticsObj;
 import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
 import org.apache.iceberg.puffin.Blob;
 import org.apache.iceberg.puffin.BlobMetadata;
@@ -644,8 +647,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           Map<String, String> properties = isTblLevel ? Map.of() :
               Map.of(PARTITION, String.valueOf(stats.getStatsDesc().getPartName()));
 
-          List<? extends Serializable> statsObjects = isTblLevel ?
-              stats.getStatsObj() : List.of(stats);
+          List<? extends Serializable> statsObjects;
+          if (isTblLevel) {
+            statsObjects = stats.getStatsObj().stream().map(ColumnStatsConverter::fromThrift).toList();
+          } else {
+            statsObjects = List.of(ColumnStatsConverter.fromThrift(stats));
+          }
 
           List<Integer> fieldIds = null;
 
@@ -664,11 +671,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
             if (isTblLevel) {
               fieldIds = List.of(schema.findField(
-                  ((ColumnStatisticsObj) statsObj).getColName()).fieldId());
+                  ((HiveColumnStatisticsObj) statsObj).colName()).fieldId());
             }
 
             writer.add(new Blob(
-                ColumnStatisticsObj.class.getSimpleName(),
+                HiveColumnStatisticsObj.class.getSimpleName(),
                 fieldIds,
                 snapshotId,
                 snapshotSequenceNumber,
@@ -753,7 +760,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       filter = null;
     }
 
-    return IcebergTableUtil.readColStats(table, snapshot.snapshotId(), filter);
+    List<HiveColumnStatisticsObj> columnStatisticsObjList =
+        IcebergTableUtil.readColStats(table, snapshot.snapshotId(), filter);
+    return columnStatisticsObjList.stream().map(ColumnStatsConverter::toThrift).toList();
   }
 
   @Override
@@ -773,7 +782,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Set<String> partitions = Sets.newHashSet(partNames);
     Predicate<BlobMetadata> filter = metadata -> partitions.contains(metadata.properties().get(PARTITION));
 
-    List<ColumnStatistics> partStats = IcebergTableUtil.readColStats(table, snapshot.snapshotId(), filter);
+    List<HiveColumnStatistics> storedStats =
+        IcebergTableUtil.readColStats(table, snapshot.snapshotId(), filter);
+    List<ColumnStatistics> partStats = storedStats.stream().map(ColumnStatsConverter::toThrift).toList();
 
     partStats.forEach(colStats ->
         colStats.getStatsObj().removeIf(statsObj -> !colNames.contains(statsObj.getColName())));
@@ -831,13 +842,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       boolean isTblLevel = statsNew.getFirst().getStatsDesc().isIsTblLevel();
       Map<String, ColumnStatistics> oldStatsMap = Maps.newHashMap();
 
-      List<?> statsOld = IcebergTableUtil.readColStats(tbl, previousSnapshotId, null);
-
+      List<?> statsOld;
       if (!isTblLevel) {
+        List<HiveColumnStatistics> storedStats = IcebergTableUtil.readColStats(tbl, previousSnapshotId, null);
+        statsOld = storedStats.stream().map(ColumnStatsConverter::toThrift).toList();
+
         for (ColumnStatistics statsObjOld : (List<ColumnStatistics>) statsOld) {
           oldStatsMap.put(statsObjOld.getStatsDesc().getPartName(), statsObjOld);
         }
       } else {
+        List<HiveColumnStatisticsObj> storedStatObjects = IcebergTableUtil.readColStats(tbl, previousSnapshotId, null);
+        statsOld = storedStatObjects.stream().map(ColumnStatsConverter::toThrift).toList();
         statsOld = Collections.singletonList(
             new ColumnStatistics(null, (List<ColumnStatisticsObj>) statsOld));
       }
