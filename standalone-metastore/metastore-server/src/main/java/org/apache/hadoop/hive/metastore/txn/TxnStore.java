@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionMetricsData;
 import org.apache.hadoop.hive.metastore.txn.entities.MetricsInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.retry.SqlRetry;
 import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryException;
@@ -335,6 +336,10 @@ public interface TxnStore extends Configurable {
   @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   void addWriteIdsToMinHistory(long txnId, Map<String, Long> minOpenWriteIds) throws MetaException;
+
+  @SqlRetry(lockInternally = true, retryOnDuplicateKey = true)
+  @Transactional(POOL_TX)
+  public TxnStatus getTransactionStatus(long txnId) throws MetaException;
 
   /**
    * Allocate a write ID for the given table and associate it with a transaction

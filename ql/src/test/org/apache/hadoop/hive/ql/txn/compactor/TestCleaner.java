@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
 import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandler;
@@ -63,6 +66,10 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEAN
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.CLEANING_RESPONSE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.INITIATED_STATE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.WORKING_RESPONSE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.WORKING_STATE;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.addVisibilitySuffix;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -1347,7 +1354,86 @@ public class TestCleaner extends CompactorTest {
     }
   }
 
-  private String createDeltasAndRunMajorCompaction(Table table, long minTxnId, int numberOfDeltas) throws Exception {
+  @Test
+  public void testCleanerRunsWithOpenCompactionTxn() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 0L);
+
+    String dbName = "default";
+    String tblName = "campcnb";
+    Table t = newTable(dbName, tblName, false);
+    addDeltaFile(t, null, 1L, 1L, 1);
+    addDeltaFile(t, null, 2L, 2L, 1);
+    addDeltaFile(t, null, 3L, 3L, 1);
+    addDeltaFile(t, null, 4L, 4L, 1);
+    burnThroughTransactions(dbName, tblName, 4, null, null);
+
+    // trigger compaction
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    long txnId = compactInTxn(rqst, CommitAction.MARK_COMPACTED);
+    addBaseFile(t, null, 4L, 6, txnId);
+    String deltaName1 = "base_4_v0000005";
+
+    // should not clean anything since the compaction txn is still open
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(1, rsp.getCompactsSize());
+    assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    String deltaName2 = createDeltasAndRunMajorCompaction(t, 5, 2);
+
+    // should not clean anything since the compaction txn is still open
+    startCleaner();
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(2, rsp.getCompactsSize());
+    assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+    assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    String deltaName3 = createDeltasAndRunMajorCompaction(t, 7, 2);
+
+    //Abort the compaction txn
+    txnHandler.abortTxns(new AbortTxnsRequest(Collections.singletonList(txnId)));
+    Thread.sleep(10000L);
+
+    Set<String> expectedDirs = new HashSet<>();
+    expectedDirs.add(deltaName1);
+    expectedDirs.add(deltaName2);
+    expectedDirs.add(deltaName3);
+    for (int i = 1; i < 9; i++) {
+      expectedDirs.add(makeDeltaDirName(i, i));
+    }
+    verifyDirectories(t, expectedDirs);
+    // Should mark the compaction 1 failed as its txn is aborted
+    startCleaner();
+    verifyDirectories(t, expectedDirs);
+
+    // Should find the second compaction
+    startCleaner();
+    expectedDirs.remove(deltaName1);
+    for (int i = 1; i < 7; i++) {
+      expectedDirs.remove(makeDeltaDirName(i, i));
+    }
+    verifyDirectories(t, expectedDirs);
+    // Should find the third compaction and deletes the directories accordingly
+    startCleaner();
+    expectedDirs.remove(deltaName2);
+    for (int i = 7; i < 9; i++) {
+      expectedDirs.remove(makeDeltaDirName(i, i));
+    }
+    verifyDirectories(t, expectedDirs);
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(3, rsp.getCompactsSize());
+    assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+    assertEquals(TxnStore.FAILED_RESPONSE, rsp.getCompacts().get(2).getState());
+    assertEquals("Invalid state: the compaction txn (" + txnId + ") is already aborted.",
+        rsp.getCompacts().get(2).getErrorMessage());
+  }
+
+  private String createDeltasAndRunMajorCompaction(Table table, long minTxnId, int numberOfDeltas)
+      throws Exception {
     String dbName = table.getDbName();
     String tableName = table.getTableName();
     for (int i = 0; i < numberOfDeltas; i++) {

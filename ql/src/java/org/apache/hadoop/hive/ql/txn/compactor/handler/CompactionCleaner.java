@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest.CleanupRequestBuilder;
@@ -98,6 +100,18 @@ class CompactionCleaner extends TaskHandler {
   private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
     LOG.info("Starting cleaning for {}, based on min open {}", ci,
         (ci.minOpenWriteId > 0) ? "writeId: " + ci.minOpenWriteId : "txnId: " + minOpenTxn);
+
+    if (ci.nextTxnId == 0 && ci.txnId > 0 &&
+        (ci.type == CompactionType.MAJOR || ci.type == CompactionType.MINOR || ci.type == CompactionType.REBALANCE)) {
+      TxnStatus status = txnHandler.getTransactionStatus(ci.txnId);
+      if (TxnStatus.ABORTED == status) {
+        LOG.warn("The compaction {} is in invalid state. The compaction is marked as 'ready for cleaning', " +
+            "but its txn is in aborted state. Marking this compaction as failed.");
+        ci.errorMessage = "Invalid state: the compaction txn (" + ci.txnId + ") is already aborted.";
+        txnHandler.markFailed(ci);
+        return;
+      }
+    }
 
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +

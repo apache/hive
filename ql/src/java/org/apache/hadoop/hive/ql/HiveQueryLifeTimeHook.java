@@ -97,7 +97,7 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
         if (table != null) {
           LOG.info("Performing cleanup as part of rollback: {}", table.getFullTableName().toString());
           try {
-            CompactionRequest request = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            CompactionRequest request = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.DEFERRED_CLEANUP);
             request.setRunas(TxnUtils.findUserToRunAs(tblPath.toString(), table.getTTable(), conf));
             request.putToProperties(META_TABLE_LOCATION, tblPath.toString());
             request.putToProperties(IF_PURGE, Boolean.toString(true));

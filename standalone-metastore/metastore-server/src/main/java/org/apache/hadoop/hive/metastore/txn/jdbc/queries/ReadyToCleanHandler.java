@@ -62,7 +62,7 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
     String queryStr =
         " \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
             "  \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\", " +
-            "  \"CQ_NEXT_TXN_ID\"";
+            "  \"CQ_TXN_ID\", \"CQ_NEXT_TXN_ID\"";
     if (TxnHandler.ConfVars.useMinHistoryWriteId()) {
       queryStr += ", \"MIN_OPEN_WRITE_ID\"";
     }
@@ -118,9 +118,10 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
       info.highestWriteId = rs.getLong(7);
       info.properties = rs.getString(8);
       info.retryRetention = rs.getInt(9);
-      info.nextTxnId = rs.getLong(10);
+      info.txnId = rs.getLong(10);
+      info.nextTxnId = rs.getLong(11);
       if (TxnHandler.ConfVars.useMinHistoryWriteId()) {
-        long value = rs.getLong(11);
+        long value = rs.getLong(12);
         info.minOpenWriteId = !rs.wasNull() ? value : Long.MAX_VALUE;
       }
       infos.add(info);

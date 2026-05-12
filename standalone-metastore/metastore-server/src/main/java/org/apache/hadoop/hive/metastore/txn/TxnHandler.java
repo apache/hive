@@ -1100,8 +1100,13 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static void shouldNeverHappen(long txnid) {
     throw new RuntimeException("This should never happen: " + JavaUtils.txnIdToString(txnid));
-  }  
-  
+  }
+
+  public TxnStatus getTransactionStatus(long txnId) throws MetaException {
+    TxnStatus status = jdbcResource.execute(new FindTxnStateHandler(txnId));
+    return status;
+  }
+
   private void deleteInvalidOpenTransactions(List<Long> txnIds) throws MetaException {
     try {
       sqlRetryHandler.executeWithRetry(new SqlRetryCallProperties().withCallerId("deleteInvalidOpenTransactions"),
