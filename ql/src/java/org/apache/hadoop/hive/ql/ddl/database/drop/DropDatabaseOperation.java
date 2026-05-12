@@ -57,7 +57,7 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
         ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
       }
       // Unregister the functions as well
-      if (desc.isCasdade()) {
+      if (desc.isCascade()) {
         FunctionRegistry.unregisterPermanentFunctions(dbName); // TODO catalog. add catalog for unregistering functions. Depend on HIVE-29282
       }
     } catch (NoSuchObjectException ex) {

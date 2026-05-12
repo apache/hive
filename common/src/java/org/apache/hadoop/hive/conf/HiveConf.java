@@ -3858,6 +3858,8 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore password for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
         "SSL certificate keystore type for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_INCLUDE_CIPHERSUITES("hive.server2.webui.include.ciphersuites", "",
+        "SSL a list of include cipher suite names separated by colon for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES("hive.server2.webui.exclude.ciphersuites", "",
         "SSL a list of exclude cipher suite names or regular expressions separated by comma"
         + " for HiveServer2 WebUI."),
@@ -4375,6 +4377,8 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore type."),
     HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.keymanagerfactory.algorithm", "",
         "SSL certificate keystore algorithm."),
+    HIVE_SERVER2_SSL_HTTP_INCLUDE_CIPHERSUITES("hive.server2.http.include.ciphersuites", "",
+        "SSL a list of include cipher suite names separated by colon for HiveServer2 http server."),
     HIVE_SERVER2_SSL_HTTP_EXCLUDE_CIPHERSUITES("hive.server2.http.exclude.ciphersuites", "",
         "SSL a list of exclude cipher suite names or regular expressions separated by comma "
         + "for HiveServer2 http server."),

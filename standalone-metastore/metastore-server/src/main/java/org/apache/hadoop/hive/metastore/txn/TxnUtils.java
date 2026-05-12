@@ -612,6 +612,8 @@ public class TxnUtils {
         return CompactionType.ABORT_TXN_CLEANUP;
       case TxnStore.SMART_OPTIMIZE_TYPE:
         return CompactionType.SMART_OPTIMIZE;
+      case TxnStore.DEFERRED_CLEANUP:
+        return CompactionType.DEFERRED_CLEANUP;
       default:
         throw new SQLException("Unexpected compaction type " + dbValue);
     }
@@ -629,6 +631,8 @@ public class TxnUtils {
         return TxnStore.ABORT_TXN_CLEANUP_TYPE;
       case SMART_OPTIMIZE:
         return TxnStore.SMART_OPTIMIZE_TYPE;
+      case DEFERRED_CLEANUP:
+        return TxnStore.DEFERRED_CLEANUP;
       default:
         throw new MetaException("Unexpected compaction type " + ct);
     }

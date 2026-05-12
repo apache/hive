@@ -121,7 +121,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public void create_database(final Database db) throws TException {
+  public final void create_database(final Database db) throws TException {
     CreateDatabaseRequest req = new CreateDatabaseRequest(db.getName());
     req.setDescription(db.getDescription());
     req.setLocationUri(db.getLocationUri());
@@ -144,7 +144,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public Database get_database(final String name) throws TException {
+  public final Database get_database(final String name) throws TException {
     GetDatabaseRequest request = new GetDatabaseRequest();
     String[] parsedDbName = parseDbName(name, conf);
     request.setName(parsedDbName[DB_NAME]);
@@ -156,14 +156,14 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public void alter_database(final String dbName, final Database newDB) throws TException {
+  public final void alter_database(final String dbName, final Database newDB) throws TException {
     AlterDatabaseRequest alterDbReq = new AlterDatabaseRequest(dbName, newDB);
     alter_database_req(alterDbReq);
   }
 
   @Override
   @Deprecated
-  public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
+  public final void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
       throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
 
@@ -177,14 +177,14 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public void create_table(final Table tbl) throws TException {
+  public final void create_table(final Table tbl) throws TException {
     CreateTableRequest createTableReq = new CreateTableRequest(tbl);
     create_table_req(createTableReq);
   }
 
   @Override
   @Deprecated
-  public void create_table_with_environment_context(final Table tbl,
+  public final void create_table_with_environment_context(final Table tbl,
       final EnvironmentContext envContext)
       throws AlreadyExistsException, MetaException, InvalidObjectException,
       InvalidInputException {
@@ -209,7 +209,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public void create_table_with_constraints(final Table tbl,
+  public final void create_table_with_constraints(final Table tbl,
       final List<SQLPrimaryKey> primaryKeys, final List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints,
       List<SQLNotNullConstraint> notNullConstraints,
@@ -242,7 +242,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public void drop_table(final String dbname, final String name, final boolean deleteData) throws TException {
+  public final void drop_table(final String dbname, final String name, final boolean deleteData) throws TException {
     String[] parsedDbName = parseDbName(dbname, conf);
     DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
     dropTableReq.setDeleteData(deleteData);
@@ -253,7 +253,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
+  public final void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
       final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(dbname, conf);
     DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
@@ -266,7 +266,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void truncate_table(final String dbName, final String tableName, List<String> partNames) throws TException {
+  public final void truncate_table(final String dbName, final String tableName, List<String> partNames) throws TException {
     // Deprecated path, won't work for txn tables.
     TruncateTableRequest truncateTableReq = new TruncateTableRequest(dbName, tableName);
     truncateTableReq.setPartNames(partNames);
@@ -275,7 +275,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public Partition append_partition(final String dbName, final String tableName,
+  public final Partition append_partition(final String dbName, final String tableName,
       final List<String> part_vals) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
     AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest();
@@ -288,7 +288,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public Partition append_partition_with_environment_context(final String dbName,
+  public final Partition append_partition_with_environment_context(final String dbName,
       final String tableName, final List<String> part_vals, final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
     AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest();
@@ -302,7 +302,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public int add_partitions(final List<Partition> parts) throws MetaException,
+  public final int add_partitions(final List<Partition> parts) throws MetaException,
       InvalidObjectException, AlreadyExistsException {
     if (parts == null) {
       throw new MetaException("Partition list cannot be null.");
@@ -345,14 +345,14 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public Partition add_partition(final Partition part)
+  public final Partition add_partition(final Partition part)
       throws InvalidObjectException, AlreadyExistsException, MetaException {
     return add_partition_with_environment_context(part, null);
   }
 
   @Deprecated
   @Override
-  public Partition add_partition_with_environment_context( final Partition part, EnvironmentContext envContext)
+  public final Partition add_partition_with_environment_context( final Partition part, EnvironmentContext envContext)
       throws InvalidObjectException, AlreadyExistsException, MetaException {
     if (part == null) {
       throw new MetaException("Partition cannot be null.");
@@ -370,7 +370,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public boolean drop_partition(final String db_name, final String tbl_name,
+  public final boolean drop_partition(final String db_name, final String tbl_name,
       final List<String> part_vals, final boolean deleteData)
       throws TException {
     return drop_partition_with_environment_context(db_name, tbl_name, part_vals, deleteData,
@@ -380,7 +380,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public boolean drop_partition_with_environment_context(final String db_name, final String tbl_name, final List<String> part_vals,
+  public final boolean drop_partition_with_environment_context(final String db_name, final String tbl_name, final List<String> part_vals,
       final boolean deleteData, final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
     DropPartitionRequest dropPartitionReq = new DropPartitionRequest(parsedDbName[DB_NAME], tbl_name);
@@ -397,7 +397,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
    */
   @Override
   @Deprecated
-  public Partition get_partition(final String db_name, final String tbl_name,
+  public final Partition get_partition(final String db_name, final String tbl_name,
       final List<String> part_vals) throws MetaException, NoSuchObjectException {
     try {
       String[] parsedDbName = parseDbName(db_name, conf);
@@ -412,7 +412,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public Partition get_partition_with_auth(final String db_name,
+  public final Partition get_partition_with_auth(final String db_name,
       final String tbl_name, final List<String> part_vals,
       final String user_name, final List<String> group_names)
       throws TException {
@@ -439,7 +439,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
    */
   @Override
   @Deprecated
-  public List<Partition> get_partitions(final String db_name, final String tbl_name,
+  public final List<Partition> get_partitions(final String db_name, final String tbl_name,
       final short max_parts) throws NoSuchObjectException, MetaException {
     String[] parsedDbName = parseDbName(db_name, conf);
     TableName tableName = new TableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
@@ -452,7 +452,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public List<Partition> get_partitions_with_auth(final String dbName,
+  public final List<Partition> get_partitions_with_auth(final String dbName,
       final String tblName, final short maxParts, final String userName,
       final List<String> groupNames) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
@@ -467,7 +467,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public List<PartitionSpec> get_partitions_pspec(final String db_name, final String tbl_name, final int max_parts)
+  public final List<PartitionSpec> get_partitions_pspec(final String db_name, final String tbl_name, final int max_parts)
       throws NoSuchObjectException, MetaException  {
 
     String[] parsedDbName = parseDbName(db_name, conf);
@@ -512,7 +512,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public List<String> get_partition_names(final String db_name, final String tbl_name,
+  public final List<String> get_partition_names(final String db_name, final String tbl_name,
       final short max_parts) throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
     PartitionsRequest partitionReq = new PartitionsRequest(parsedDbName[DB_NAME], tbl_name);
@@ -523,7 +523,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void alter_partition(final String db_name, final String tbl_name,
+  public final void alter_partition(final String db_name, final String tbl_name,
       final Partition new_part)
       throws TException {
     rename_partition(db_name, tbl_name, null, new_part);
@@ -531,7 +531,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void alter_partition_with_environment_context(final String dbName,
+  public final void alter_partition_with_environment_context(final String dbName,
       final String tableName, final Partition newPartition,
       final EnvironmentContext envContext)
       throws TException {
@@ -542,7 +542,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void rename_partition(final String db_name, final String tbl_name,
+  public final void rename_partition(final String db_name, final String tbl_name,
       final List<String> part_vals, final Partition new_part)
       throws TException {
     // Call alter_partition_core without an environment context.
@@ -610,7 +610,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void alter_partitions(final String db_name, final String tbl_name,
+  public final void alter_partitions(final String db_name, final String tbl_name,
       final List<Partition> new_parts)
       throws TException {
     String[] o = parseDbName(db_name, conf);
@@ -622,7 +622,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
   // The old API we are keeping for backward compat. Not used within Hive.
   @Deprecated
   @Override
-  public void alter_partitions_with_environment_context(final String db_name, final String tbl_name,
+  public final void alter_partitions_with_environment_context(final String db_name, final String tbl_name,
       final List<Partition> new_parts, EnvironmentContext environmentContext)
       throws TException {
     String[] o = parseDbName(db_name, conf);
@@ -634,7 +634,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void alter_table(final String dbname, final String name,
+  public final void alter_table(final String dbname, final String name,
       final Table newTable) throws TException {
     // Do not set an environment context.
     String[] parsedDbName = parseDbName(dbname, conf);
@@ -645,7 +645,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void alter_table_with_cascade(final String dbname, final String name,
+  public final void alter_table_with_cascade(final String dbname, final String name,
       final Table newTable, final boolean cascade) throws TException {
     EnvironmentContext envContext = null;
     if (cascade) {
@@ -661,7 +661,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public void alter_table_with_environment_context(final String dbname,
+  public final void alter_table_with_environment_context(final String dbname,
       final String name, final Table newTable,
       final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(dbname, conf);
@@ -677,13 +677,13 @@ public abstract class DeprecatedHandler extends BaseHandler {
    */
   @Override
   @Deprecated
-  public List<FieldSchema> get_fields(String db, String tableName) throws TException {
+  public final List<FieldSchema> get_fields(String db, String tableName) throws TException {
     return get_fields_with_environment_context(db, tableName, null);
   }
 
   @Override
   @Deprecated
-  public List<FieldSchema> get_fields_with_environment_context(String db, String tableName,
+  public final List<FieldSchema> get_fields_with_environment_context(String db, String tableName,
       final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(db, conf);
     GetFieldsRequest req = new GetFieldsRequest(parsedDbName[DB_NAME], tableName);
@@ -699,7 +699,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
    */
   @Override
   @Deprecated
-  public List<FieldSchema> get_schema(String db, String tableName) throws TException {
+  public final List<FieldSchema> get_schema(String db, String tableName) throws TException {
     return get_schema_with_environment_context(db,tableName, null);
   }
 
@@ -720,7 +720,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
    */
   @Override
   @Deprecated
-  public List<FieldSchema> get_schema_with_environment_context(String db, String tableName,
+  public final List<FieldSchema> get_schema_with_environment_context(String db, String tableName,
       final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(db, conf);
     GetSchemaRequest req = new GetSchemaRequest(parsedDbName[DB_NAME], tableName);
@@ -731,7 +731,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public Partition get_partition_by_name(final String db_name, final String tbl_name,
+  public final Partition get_partition_by_name(final String db_name, final String tbl_name,
       final String part_name) throws TException {
     if (StringUtils.isBlank(part_name)) {
       throw new MetaException("The part_name in get_partition_by_name cannot be null or empty");
@@ -750,14 +750,14 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public Partition append_partition_by_name(final String db_name, final String tbl_name,
+  public final Partition append_partition_by_name(final String db_name, final String tbl_name,
       final String part_name) throws TException {
     return append_partition_by_name_with_environment_context(db_name, tbl_name, part_name, null);
   }
 
   @Deprecated
   @Override
-  public Partition append_partition_by_name_with_environment_context(final String db_name,
+  public final Partition append_partition_by_name_with_environment_context(final String db_name,
       final String tbl_name, final String part_name, final EnvironmentContext env_context)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
@@ -772,7 +772,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public boolean drop_partition_by_name(final String db_name, final String tbl_name,
+  public final boolean drop_partition_by_name(final String db_name, final String tbl_name,
       final String part_name, final boolean deleteData) throws TException {
     return drop_partition_by_name_with_environment_context(db_name, tbl_name, part_name,
         deleteData, null);
@@ -780,7 +780,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public boolean drop_partition_by_name_with_environment_context(final String db_name,
+  public final boolean drop_partition_by_name_with_environment_context(final String db_name,
       final String tbl_name, final String part_name, final boolean deleteData,
       final EnvironmentContext envContext) throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
@@ -794,7 +794,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public List<Partition> get_partitions_ps(final String db_name,
+  public final List<Partition> get_partitions_ps(final String db_name,
       final String tbl_name, final List<String> part_vals,
       final short max_parts) throws TException {
     return get_partitions_ps_with_auth(db_name, tbl_name, part_vals, max_parts, null, null);
@@ -806,7 +806,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
    */
   @Override
   @Deprecated
-  public List<Partition> get_partitions_ps_with_auth(final String db_name,
+  public final List<Partition> get_partitions_ps_with_auth(final String db_name,
       final String tbl_name, final List<String> part_vals,
       final short max_parts, final String userName,
       final List<String> groupNames) throws TException {
@@ -827,7 +827,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
    */
   @Override
   @Deprecated
-  public List<String> get_partition_names_ps(final String db_name,
+  public final List<String> get_partition_names_ps(final String db_name,
       final String tbl_name, final List<String> part_vals, final short max_parts)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
@@ -853,7 +853,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public ColumnStatistics get_table_column_statistics(String dbName, String tableName,
+  public final ColumnStatistics get_table_column_statistics(String dbName, String tableName,
       String colName) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
     parsedDbName[CAT_NAME] = parsedDbName[CAT_NAME].toLowerCase();
@@ -879,7 +879,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public ColumnStatistics get_partition_column_statistics(String dbName, String tableName,
+  public final ColumnStatistics get_partition_column_statistics(String dbName, String tableName,
       String partName, String colName) throws TException {
     // Note: this method appears to be unused within Hive.
     //       It doesn't take txn stats into account.
@@ -912,7 +912,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public boolean delete_partition_column_statistics(String dbName, String tableName,
+  public final boolean delete_partition_column_statistics(String dbName, String tableName,
       String partName, String colName, String engine) throws TException {
     dbName = dbName.toLowerCase();
     String[] parsedDbName = parseDbName(dbName, conf);
@@ -932,7 +932,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Deprecated
   @Override
-  public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
+  public final boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
       throws TException {
     dbName = dbName.toLowerCase();
     tableName = tableName.toLowerCase();
@@ -951,7 +951,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public List<Partition> get_partitions_by_filter(final String dbName, final String tblName,
+  public final List<Partition> get_partitions_by_filter(final String dbName, final String tblName,
       final String filter, final short maxParts)
       throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
@@ -964,7 +964,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public List<PartitionSpec> get_part_specs_by_filter(final String dbName, final String tblName,
+  public final List<PartitionSpec> get_part_specs_by_filter(final String dbName, final String tblName,
       final String filter, final int maxParts)
       throws TException {
 
@@ -1002,7 +1002,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public int get_num_partitions_by_filter(final String dbName,
+  public final int get_num_partitions_by_filter(final String dbName,
       final String tblName, final String filter)
       throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
@@ -1029,7 +1029,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
 
   @Override
   @Deprecated
-  public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
+  public final List<Partition> get_partitions_by_names(final String dbName, final String tblName,
       final List<String> partNames)
       throws TException {
     if (partNames == null) {
@@ -1041,7 +1041,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
   }
 
   @Override
-  public GetFileMetadataByExprResult get_file_metadata_by_expr(GetFileMetadataByExprRequest req)
+  public final GetFileMetadataByExprResult get_file_metadata_by_expr(GetFileMetadataByExprRequest req)
       throws TException {
     GetFileMetadataByExprResult result = new GetFileMetadataByExprResult();
     RawStore ms = getMS();
@@ -1082,7 +1082,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
   }
 
   @Override
-  public GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req) throws TException {
+  public final GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req) throws TException {
     GetFileMetadataResult result = new GetFileMetadataResult();
     RawStore ms = getMS();
     if (!ms.isFileMetadataSupported()) {
@@ -1122,7 +1122,7 @@ public abstract class DeprecatedHandler extends BaseHandler {
   }
 
   @Override
-  public PutFileMetadataResult put_file_metadata(PutFileMetadataRequest req) throws TException {
+  public final PutFileMetadataResult put_file_metadata(PutFileMetadataRequest req) throws TException {
     RawStore ms = getMS();
     if (ms.isFileMetadataSupported()) {
       ms.putFileMetadata(req.getFileIds(), req.getMetadata(), req.getType());
@@ -1131,14 +1131,14 @@ public abstract class DeprecatedHandler extends BaseHandler {
   }
 
   @Override
-  public ClearFileMetadataResult clear_file_metadata(ClearFileMetadataRequest req)
+  public final ClearFileMetadataResult clear_file_metadata(ClearFileMetadataRequest req)
       throws TException {
     getMS().putFileMetadata(req.getFileIds(), null, null);
     return new ClearFileMetadataResult();
   }
 
   @Override
-  public CacheFileMetadataResult cache_file_metadata(
+  public final CacheFileMetadataResult cache_file_metadata(
       CacheFileMetadataRequest req) throws TException {
     RawStore ms = getMS();
     if (!ms.isFileMetadataSupported()) {

@@ -50,7 +50,7 @@ public class MarkCleanedFunction implements TransactionalFunction<Void> {
   public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     NamedParameterJdbcTemplate jdbcTemplate = jdbcResource.getJdbcTemplate();
     MapSqlParameterSource param;
-    if (info.isSoftDelete()) {
+    if (info.isDeferredCleanup()) {
       // Remove compaction queue record and return
       removeCompactionAndAbortRetryEntries(info, jdbcTemplate);
       return null;

@@ -311,9 +311,11 @@ class TextDescTableFormatter extends DescTableFormatter {
     formatOutput("InputFormat:", storageDesc.getInputFormat(), tableInfo);
     formatOutput("OutputFormat:", storageDesc.getOutputFormat(), tableInfo);
     formatOutput("Compressed:", storageDesc.isCompressed() ? "Yes" : "No", tableInfo);
+    // Show bucket columns for Native table or Iceberg table with CLUSTERED BY (Hive-style bucketing)
+    boolean hasClusteredBy = storageDesc.getNumBuckets() > 0
+            && CollectionUtils.isNotEmpty(storageDesc.getBucketCols());
     if (!table.isNonNative() || table.getStorageHandler() == null ||
-        !table.getStorageHandler().supportsPartitionTransform()) {
-      // The Iceberg partition transform already contains the bucketing information, and these are not relevant there
+        !table.getStorageHandler().supportsPartitionTransform() || hasClusteredBy) {
       formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
       formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
     }

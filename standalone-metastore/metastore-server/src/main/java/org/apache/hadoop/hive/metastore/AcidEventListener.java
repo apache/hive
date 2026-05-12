@@ -88,7 +88,8 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
         
         if (currentTxn > 0) {
           try {
-            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(),
+                CompactionType.DEFERRED_CLEANUP);
             rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
             rqst.putToProperties("location", table.getSd().getLocation());
             rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(tableEvent.getEnvironmentContext(), table)));

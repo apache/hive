@@ -163,6 +163,7 @@ public class HttpServer {
     private String keyStorePath;
     private String keyStoreType;
     private String keyManagerFactoryAlgorithm;
+    private String includeCiphersuites;
     private String excludeCiphersuites;
     private String spnegoPrincipal;
     private String spnegoKeytab;
@@ -243,6 +244,11 @@ public class HttpServer {
 
     public Builder setKeyManagerFactoryAlgorithm(String keyManagerFactoryAlgorithm) {
       this.keyManagerFactoryAlgorithm = keyManagerFactoryAlgorithm;
+      return this;
+    }
+
+    public Builder setIncludeCiphersuites(String includeCiphersuites) {
+      this.includeCiphersuites = includeCiphersuites;
       return this;
     }
 
@@ -668,12 +674,18 @@ public class HttpServer {
       sslContextFactory.setKeyManagerFactoryAlgorithm(
           b.keyManagerFactoryAlgorithm == null || b.keyManagerFactoryAlgorithm.isEmpty()?
           KeyManagerFactory.getDefaultAlgorithm() : b.keyManagerFactoryAlgorithm);
+      if (b.includeCiphersuites != null && !b.includeCiphersuites.trim().isEmpty()) {
+        Set<String> includeCS = Sets.newHashSet(
+            Splitter.on(":").trimResults().omitEmptyStrings().split(b.includeCiphersuites));
+        if (!includeCS.isEmpty()) {
+          sslContextFactory.setIncludeCipherSuites(includeCS.toArray(new String[0]));
+        }
+      }
       if (b.excludeCiphersuites != null && !b.excludeCiphersuites.trim().isEmpty()) {
         Set<String> excludeCS = Sets.newHashSet(
-            Splitter.on(",").trimResults().omitEmptyStrings().split(b.excludeCiphersuites.trim()));
-        int eSize = excludeCS.size();
-        if (eSize > 0) {
-          sslContextFactory.setExcludeCipherSuites(excludeCS.toArray(new String[eSize]));
+            Splitter.on(",").trimResults().omitEmptyStrings().split(b.excludeCiphersuites));
+        if (!excludeCS.isEmpty()) {
+          sslContextFactory.setExcludeCipherSuites(excludeCS.toArray(new String[0]));
         }
       }
       Set<String> excludedSSLProtocols = Sets.newHashSet(

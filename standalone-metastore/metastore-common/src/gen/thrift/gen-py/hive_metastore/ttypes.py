@@ -158,6 +158,7 @@ class CompactionType(object):
     REBALANCE = 3
     ABORT_TXN_CLEANUP = 4
     SMART_OPTIMIZE = 5
+    DEFERRED_CLEANUP = 6
 
     _VALUES_TO_NAMES = {
         1: "MINOR",
@@ -165,6 +166,7 @@ class CompactionType(object):
         3: "REBALANCE",
         4: "ABORT_TXN_CLEANUP",
         5: "SMART_OPTIMIZE",
+        6: "DEFERRED_CLEANUP",
     }
 
     _NAMES_TO_VALUES = {
@@ -173,6 +175,7 @@ class CompactionType(object):
         "REBALANCE": 3,
         "ABORT_TXN_CLEANUP": 4,
         "SMART_OPTIMIZE": 5,
+        "DEFERRED_CLEANUP": 6,
     }
 
 
