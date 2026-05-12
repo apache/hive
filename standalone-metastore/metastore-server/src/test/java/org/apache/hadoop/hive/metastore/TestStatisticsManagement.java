@@ -299,7 +299,7 @@ public class TestStatisticsManagement {
     ColumnStatisticsObj obj = buildDoubleColStatsObj(col);
 
     ColumnStatisticsDesc desc = new ColumnStatisticsDesc(true, db, tbl);
-    desc.setCatName("hive");
+    desc.setCatName(DEFAULT_CATALOG_NAME);
 
     ColumnStatistics cs = new ColumnStatistics();
     cs.setStatsDesc(desc);
@@ -321,7 +321,7 @@ public class TestStatisticsManagement {
     ColumnStatisticsObj obj = buildDoubleColStatsObj(col);
 
     ColumnStatisticsDesc desc = new ColumnStatisticsDesc(false, db, tbl);
-    desc.setCatName("hive");
+    desc.setCatName(DEFAULT_CATALOG_NAME);
     desc.setPartName(partName);
 
     ColumnStatistics cs = new ColumnStatistics();
@@ -443,10 +443,12 @@ public class TestStatisticsManagement {
     long oldSeconds = (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(400)) / 1000;
     PersistenceManager pm = os.getPersistenceManager();
     try (Query q = pm.newQuery(MTableColumnStatistics.class)) {
-      q.setFilter("table.tableName == t && table.database.name == d");
-      q.declareParameters("java.lang.String t, java.lang.String d");
+      q.setFilter("table.tableName == t && table.database.name == d"
+          + " && table.database.catalogName == c");
+      q.declareParameters("java.lang.String t, java.lang.String d, java.lang.String c");
       @SuppressWarnings("unchecked")
-      List<MTableColumnStatistics> rows = (List<MTableColumnStatistics>) q.execute(tbl, db);
+      List<MTableColumnStatistics> rows =
+          (List<MTableColumnStatistics>) q.execute(tbl, db, DEFAULT_CATALOG_NAME);
       for (MTableColumnStatistics r : rows) {
         r.setLastAnalyzed(oldSeconds);
       }
@@ -470,11 +472,12 @@ public class TestStatisticsManagement {
     long oldSeconds = (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(400)) / 1000;
     PersistenceManager pm = os.getPersistenceManager();
     try (Query q = pm.newQuery(MPartitionColumnStatistics.class)) {
-      q.setFilter("partition.table.tableName == t && partition.table.database.name == d");
-      q.declareParameters("java.lang.String t, java.lang.String d");
+      q.setFilter("partition.table.tableName == t && partition.table.database.name == d"
+          + " && partition.table.database.catalogName == c");
+      q.declareParameters("java.lang.String t, java.lang.String d, java.lang.String c");
       @SuppressWarnings("unchecked")
       List<MPartitionColumnStatistics> rows =
-          (List<MPartitionColumnStatistics>) q.execute(tbl, db);
+          (List<MPartitionColumnStatistics>) q.execute(tbl, db, DEFAULT_CATALOG_NAME);
       for (MPartitionColumnStatistics r : rows) {
         r.setLastAnalyzed(oldSeconds);
       }

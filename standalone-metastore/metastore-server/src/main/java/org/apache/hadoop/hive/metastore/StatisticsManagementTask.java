@@ -132,7 +132,7 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
    *
    * @param pm                    the JDO persistence manager to use for the query
    * @param lastAnalyzedThreshold epoch seconds; rows with lastAnalyzed below this value are expired
-   * @return list of projected rows: [catName, dbName, tblName, colName, excludeVal]
+   * @return list of projected rows: [catName, dbName, tblName, colName]
    * @throws Exception if the JDO query fails
    */
   private List<Object[]> collectExpiredTableColStats(PersistenceManager pm,
@@ -140,8 +140,9 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
     try (Query tblQuery = pm.newQuery(MTableColumnStatistics.class)) {
       tblQuery.setFilter(
           "lastAnalyzed < threshold "
-              + "&& table.parameters.get(\""
-              + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") != \"true\"");
+              + "&& engine == \"hive\" "
+              + "&& (table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") == null "
+              + "|| table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") != \"true\")");
       tblQuery.declareParameters("long threshold");
       tblQuery.setRange(0, 1000);
       tblQuery.setResult(
@@ -203,7 +204,7 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
    *
    * @param pm                    the JDO persistence manager to use for the query
    * @param lastAnalyzedThreshold epoch seconds; rows with lastAnalyzed below this value are expired
-   * @return list of projected rows: [catName, dbName, tblName, partName, colName, excludeVal]
+   * @return list of projected rows: [catName, dbName, tblName, partName, colName]
    * @throws Exception if the JDO query fails
    */
   private List<Object[]> collectExpiredPartitionColStats(PersistenceManager pm,
@@ -211,8 +212,9 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
     try (Query partQuery = pm.newQuery(MPartitionColumnStatistics.class)) {
       partQuery.setFilter(
           "lastAnalyzed < threshold "
-              + "&& partition.table.parameters.get(\""
-              + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") != \"true\"");
+              + "&& engine == \"hive\" "
+              + "&& (partition.table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") == null "
+              + "|| partition.table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\") != \"true\")");
       partQuery.declareParameters("long threshold");
       partQuery.setRange(0, 1000);
       partQuery.setResult(
