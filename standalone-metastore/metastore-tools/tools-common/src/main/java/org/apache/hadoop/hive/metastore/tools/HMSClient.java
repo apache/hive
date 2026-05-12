@@ -456,10 +456,12 @@ final class HMSClient implements AutoCloseable {
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
       String trustStoreAlgorithm =
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
-
+      String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
+      String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
       // Create an SSL socket and connect
       transport = SecurityUtils.getSSLSocket(host, port, clientSocketTimeout, connectionTimeout,
-          trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+          trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm,
+          includeProtocols, includeCipherSuites);
       LOG.info("Opened an SSL connection to metastore, current connections");
     }
 

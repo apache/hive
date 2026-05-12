@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
 
 import com.google.common.base.Preconditions;
+
+import java.security.KeyStore;
 import java.util.List;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
@@ -30,6 +32,7 @@ import org.apache.hadoop.hive.metastore.auth.oauth2.OAuth2Authenticator;
 import org.apache.hadoop.hive.metastore.auth.oauth2.OAuth2AuthenticatorFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -39,6 +42,7 @@ import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -359,7 +363,14 @@ public class ServletSecurity {
     if (LOG.isInfoEnabled()) {
       LOG.info("HTTP Server SSL: adding excluded protocols: {}", Arrays.toString(excludedProtocols));
     }
+    String[] includeProtocols = SecurityUtils.parseIncludeProtocols(
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS));
+    String[] includeCipherSuites = SecurityUtils.parseIncludeCipherSuites(
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES));
     SslContextFactory factory = new SslContextFactory.Server();
+    if (includeProtocols.length > 0) {
+      factory.setIncludeProtocols(includeProtocols);
+    }
     factory.addExcludeProtocols(excludedProtocols);
     if (LOG.isInfoEnabled()) {
       LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = {}",
@@ -367,8 +378,12 @@ public class ServletSecurity {
     }
     factory.setKeyStorePath(keyStorePath);
     factory.setKeyStorePassword(keyStorePassword);
-    factory.setKeyStoreType(keyStoreType);
-    factory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
+    factory.setKeyStoreType(keyStoreType.isEmpty() ? KeyStore.getDefaultType() : keyStoreType);
+    factory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm.isEmpty() ?
+        KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm);
+    if (includeCipherSuites.length > 0) {
+      factory.setIncludeCipherSuites(includeCipherSuites);
+    }
     return factory;
   }
 }
