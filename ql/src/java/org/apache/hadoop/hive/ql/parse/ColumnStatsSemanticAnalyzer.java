@@ -25,9 +25,11 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Maps;
@@ -583,27 +585,31 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  // fail early if the columns specified for column statistics are not valid
-  private void validateSpecifiedColumnNames(List<String> specifiedCols)
-      throws SemanticException {
-    List<String> tableCols = Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
+  private void validateSpecifiedColumnNames(List<String> specifiedCols) throws SemanticException {
+    FieldSchemas tableCols = new FieldSchemas(tbl.getCols());
+    Set<String> tableColNamesLc = new HashSet<>();
+    for (FieldSchema fs : tableCols.getSchemas()) {
+      tableColNamesLc.add(fs.getName().toLowerCase());
+    }
+    List<String> tableColNames = tableCols.getColName();
     for (String sc : specifiedCols) {
-      if (!tableCols.contains(sc.toLowerCase())) {
-        String msg = "'" + sc + "' (possible columns are " + tableCols + ")";
+      if (!tableColNamesLc.contains(sc.toLowerCase())) {
+        String msg = "'" + sc + "' (possible columns are " + tableColNames + ")";
         throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(msg));
       }
     }
   }
 
-  private void checkForPartitionColumns(List<String> specifiedCols, List<String> partCols)
-      throws SemanticException {
-    // Raise error if user has specified partition column for stats
-    for (String pc : partCols) {
-      for (String sc : specifiedCols) {
-        if (pc.equalsIgnoreCase(sc)) {
-          throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_COLUMN.getMsg()
-              + " [Try removing column '" + sc + "' from column list]");
-        }
+  private void checkForPartitionColumns(List<String> specifiedCols) throws SemanticException {
+    Map<String, String> specifiedColsMap = new HashMap<>();
+    for (String sc : specifiedCols) {
+      specifiedColsMap.put(sc.toLowerCase(), sc);
+    }
+    for (FieldSchema pk : tbl.getPartitionKeys()) {
+      String specifiedCol = specifiedColsMap.get(pk.getName().toLowerCase());
+      if (specifiedCol != null) {
+        throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_COLUMN.getMsg()
+            + " [Try removing column '" + specifiedCol + "' from column list]");
       }
     }
   }
@@ -738,7 +744,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       columnNames = getExplicitColumnNamesFromAst(ast);
     }
 
-    checkForPartitionColumns(columnNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
+    checkForPartitionColumns(columnNames);
     validateSpecifiedColumnNames(columnNames);
 
     return statsEligibleFS != null ? statsEligibleFS : getFieldSchemasByColName(tbl, columnNames);
