@@ -646,9 +646,12 @@ public class SharedWorkOptimizer extends Transform {
       return false;
     }
 
-    // HIVE-29509: Include snapshotRef to ensure different Iceberg branches/tags are treated as distinct tables
-    if (!Objects.equals(tsOp1.getConf().getSnapshotRef(), tsOp2.getConf().getSnapshotRef())) {
-      LOG.debug("Snapshot Ref differ {} ~ {}", tsOp1.getConf().getSnapshotRef(), tsOp2.getConf().getSnapshotRef());
+    // Time-travel qualifier (snapshotRef, asOfVersion, asOfTimestamp) must match,
+    // otherwise the two scans address different snapshots of the same table.
+    String qualifier1 = tsOp1.getConf().getTableMetadata().getQualifier();
+    String qualifier2 = tsOp2.getConf().getTableMetadata().getQualifier();
+    if (!Objects.equals(qualifier1, qualifier2)) {
+      LOG.debug("Qualifier differ {} ~ {}", qualifier1, qualifier2);
       return false;
     }
     // If partitions do not match, we currently do not merge

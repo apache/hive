@@ -1359,7 +1359,6 @@ public class Table implements Serializable {
   public String getQualifier() {
     return Stream.of(metaTable, snapshotRef, asOfVersion, asOfTimestamp)
         .filter(Objects::nonNull).findFirst()
-        .map(s -> "." + s)
         .orElse("");
   }
 

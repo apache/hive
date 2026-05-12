@@ -23,7 +23,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_t
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT `committed_at` AS `ice_t.snapshots.committed_at`, `snapshot_id` AS `ice_t.snapshots.snapshot_id`, `parent_id` AS `ice_t.snapshots.parent_id`, `operation` AS `ice_t.snapshots.operation`, `manifest_list` AS `ice_t.snapshots.manifest_list`, `summary` AS `ice_t.snapshots.summary`
-FROM `default`.`ice_t`
+FROM `default`.`ice_t`.`snapshots`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
