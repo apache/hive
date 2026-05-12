@@ -138,6 +138,7 @@ public class TestFilterSelectivityEstimator {
   private static RexNode int3;
   private static RexNode int4;
   private static RexNode int5;
+  private static RexNode int6;
   private static RexNode int7;
   private static RexNode int8;
   private static RexNode int10;
@@ -169,6 +170,7 @@ public class TestFilterSelectivityEstimator {
     int3 = REX_BUILDER.makeLiteral(3, integerType, true);
     int4 = REX_BUILDER.makeLiteral(4, integerType, true);
     int5 = REX_BUILDER.makeLiteral(5, integerType, true);
+    int6 = REX_BUILDER.makeLiteral(6, integerType, true);
     int7 = REX_BUILDER.makeLiteral(7, integerType, true);
     int8 = REX_BUILDER.makeLiteral(8, integerType, true);
     int10 = REX_BUILDER.makeLiteral(10, integerType, true);
@@ -212,6 +214,7 @@ public class TestFilterSelectivityEstimator {
         new HiveTableScan(relOptCluster, relOptCluster.traitSetOf(HiveRelNode.CONVENTION), tableMock, "table", null,
             false, false);
     scan = relBuilder.push(tableScan).build();
+    when(mq.getRowCount(scan)).thenAnswer(a -> (double) currentValuesSize);
     inputRef0 = REX_BUILDER.makeInputRef(scan, 0);
     currentInputRef = inputRef0;
 
@@ -510,6 +513,34 @@ public class TestFilterSelectivityEstimator {
     Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeSeveralRangesPredicateSelectivityWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.OR,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+            REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, int1),
+            REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int4)),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+            REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, int6),
+            REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int10)));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeSeveralSingleSideRangesPredicateSelectivityWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.OR,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int2),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, int4));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.23076923076923073, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
