@@ -49,4 +49,17 @@ public class ValidCleanerWriteIdList extends ValidReaderWriteIdList {
     }
     return super.isWriteIdRangeValid(minWriteId, maxWriteId);
   }
+
+  /**
+   * Only consider the writeIds below the highWaterMark. This is to prevent the cleaner
+   * from deleting above its highWaterMark, even in case of aborted directories.
+   * otherwise uses {@link ValidReaderWriteIdList#isWriteIdAborted(long)}
+   */
+  @Override
+  public boolean isWriteIdAborted(long writeId) {
+    if (writeId > highWatermark) {
+      return false;
+    }
+    return super.isWriteIdAborted(writeId);
+  }
 }

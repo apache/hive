@@ -1781,7 +1781,7 @@ public class AcidUtils {
    * causes anything written previously to be ignored (hence the overwrite).  In this case, base_x
    * is visible if writeid:x is committed for current reader.
    */
-  private static boolean isValidBase(ParsedBaseLight parsedBase, ValidWriteIdList writeIdList, FileSystem fs,
+  static boolean isValidBase(ParsedBaseLight parsedBase, ValidWriteIdList writeIdList, FileSystem fs,
       HdfsDirSnapshot dirSnapshot) throws IOException {
     boolean isValidBase;
     if (dirSnapshot != null && dirSnapshot.isValidBase() != null) {
@@ -1791,13 +1791,12 @@ public class AcidUtils {
         //such base is created by 1st compaction in case of non-acid to acid table conversion
         //By definition there are no open txns with id < 1.
         isValidBase = true;
-      } else if (writeIdList.getMinOpenWriteId() != null && parsedBase.getWriteId() <= writeIdList
-          .getMinOpenWriteId()) {
-        isValidBase = true;
       } else if (isCompactedBase(parsedBase, fs, dirSnapshot)) {
+        // Compacted base covers range [1..writeId]; require no open writeId in that range
+        // and writeId within reader's high watermark.
         isValidBase = writeIdList.isValidBase(parsedBase.getWriteId());
       } else {
-        // if here, it's a result of IOW
+        // IOW base: a single writeId. Visible only if that writeId is committed for this reader.
         isValidBase = writeIdList.isWriteIdValid(parsedBase.getWriteId());
       }
       if (dirSnapshot != null) {

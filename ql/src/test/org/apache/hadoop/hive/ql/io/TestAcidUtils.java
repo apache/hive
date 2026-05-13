@@ -32,12 +32,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidCleanerWriteIdList;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -749,4 +752,227 @@ public class TestAcidUtils {
       Assert.fail("Should not throw FileNotFoundException when a directory is removed while fetching HDFSSnapshots");
     }
   }
+
+  @Test
+  public void testIsValidBaseCompactedBaseOnlyHighWaterMarkSet() throws Exception {
+    // Only highWaterMark is set in the validWriteIdList. minOpenWriteId is not set and there are no exceptions
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {}, new BitSet(), 10L));
+
+    checkBase(0L, Long.MIN_VALUE, cleanerWriteIdList, true,
+        "Base after first compaction in case of non-acid to acid table conversion is always valid");
+    checkBase(2L, 2L, cleanerWriteIdList, true,
+        "Base with writeId smaller than highWaterMark should be valid");
+    checkBase(10L, 10L, cleanerWriteIdList, true,
+        "Base with writeId equals to highWaterMark should be valid");
+    checkBase(11L, 11L, cleanerWriteIdList, false,
+        "Base with writeId greater than highWaterMark should not be valid");
+  }
+
+  @Test
+  public void testIsValidBaseNotCompactedBaseOnlyHighWaterMarkSet() throws Exception {
+    // Only highWaterMark is set in the validWriteIdList. minOpenWriteId is not set and there are no exceptions
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {}, new BitSet(), 10L));
+
+    checkNotCompactedBase(2L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId smaller than highWaterMark should be valid");
+    checkNotCompactedBase(10L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId equals to highWaterMark should be valid");
+    checkNotCompactedBase(11L, cleanerWriteIdList, false,
+        "Non-compacted base with writeId greater than highWaterMark should not be valid");
+  }
+
+  @Test
+  public void testIsValidBaseCompactedBaseMinOpenWriteIdGreaterThanHighWaterMark() throws Exception {
+    // Both highWaterMark and the minOpenWriteId are set and minOpenWriteId > highWaterMark
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {13L}, new BitSet(), 10L, 13L));
+
+    checkBase(5L, 5L, cleanerWriteIdList, true,
+        "Base with writeId smaller than highWaterMark and minOpenWriteId should be valid");
+    checkBase(10L, 10L, cleanerWriteIdList, true,
+        "Base with writeId equals to highWaterMark and smaller than minOpenWriteId should be valid");
+    checkBase(11L, 11L, cleanerWriteIdList, false,
+        "Base with writeId greater than highWaterMark and smaller than minOpenWriteId should not be valid");
+  }
+
+  @Test
+  public void testIsValidBaseNotCompactedBaseMinOpenWriteIdGreaterThanHighWaterMark() throws Exception {
+    // Both highWaterMark and the minOpenWriteId are set and minOpenWriteId > highWaterMark
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {13L}, new BitSet(), 10L, 13L));
+
+    checkNotCompactedBase(5L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId smaller than highWaterMark and minOpenWriteId should be valid");
+    checkNotCompactedBase(10L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId equals to highWaterMark and smaller than minOpenWriteId should be valid");
+    checkNotCompactedBase(11L, cleanerWriteIdList, false,
+        "Non-compacted base with writeId greater than highWaterMark and smaller than minOpenWriteId should not be valid");
+  }
+
+  @Test
+  public void testIsValidBaseCompactedBaseMinOpenWriteIdSmallerThanHighWaterMark() throws Exception {
+    // Both highWaterMark and minOpenWriteId are set and minOpenWriteId < highWaterMark
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {4L}, new BitSet(), 10L, 4L));
+
+    checkBase(2L, 2L, cleanerWriteIdList, true,
+        "Base with writeId smaller than highWaterMark and minOpenWriteId should be valid");
+    checkBase(4L, 4L, cleanerWriteIdList, false,
+        "Base with writeId smaller than highWaterMark and equals to minOpenWriteId should not be valid");
+    checkBase(5L, 5L, cleanerWriteIdList, false,
+        "Base with writeId smaller than highWaterMark and greater than minOpenWriteId should not be valid");
+  }
+
+  @Test
+  public void testIsValidBaseNotCompactedBaseMinOpenWriteIdSmallerThanHighWaterMark() throws Exception {
+    // Both highWaterMark and minOpenWriteId are set and minOpenWriteId < highWaterMark
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {4L}, new BitSet(), 10L, 4L));
+
+    checkNotCompactedBase(2L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId smaller than highWaterMark and minOpenWriteId should be valid");
+    checkNotCompactedBase(4L, cleanerWriteIdList, false,
+        "Non-compacted base with writeId smaller than highWaterMark and equals to minOpenWriteId should not be valid");
+    checkNotCompactedBase(5L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId smaller than highWaterMark and greater than minOpenWriteId should be valid");
+  }
+
+  @Test
+  public void testIsValidBaseCompactedBaseWithAbortedWriteIds() throws Exception {
+    // minOpenWriteId is not set, but there are aborted writeIds
+    // For compacted base directories, the writeId is not checked against the exception list, as it is checked earlier
+    BitSet aborted = new BitSet();
+    aborted.set(0);
+    aborted.set(1);
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {3L, 5L}, aborted, 10L));
+
+    checkBase(2L, 2L, cleanerWriteIdList, true,
+        "Base with writeId smaller than highWaterMark should be valid");
+    checkBase(3L, 3L, cleanerWriteIdList, true,
+        "Base with writeId smaller than highWaterMark should be valid");
+    checkBase(5L, 5L, cleanerWriteIdList, true,
+        "Base with writeId smaller than highWaterMark should be valid");
+    checkBase(10L, 10L, cleanerWriteIdList, true,
+        "Base with writeId equals to highWaterMark should be valid");
+    checkBase(12L, 12L, cleanerWriteIdList, false,
+        "Base with writeId greater than highWaterMark should not be valid");
+  }
+
+  @Test
+  public void testIsValidBaseNotCompactedBaseWithAbortedWriteIds() throws Exception {
+    // minOpenWriteId is not set, but there are aborted writeIds
+    // For not compacted base directories, the writeId is checked if it is present in the exception list. If it is
+    // listed as exception, it should not be valid.
+    BitSet aborted = new BitSet();
+    aborted.set(0);
+    aborted.set(1);
+    ValidWriteIdList cleanerWriteIdList = new ValidCleanerWriteIdList(
+        new ValidReaderWriteIdList("testBaseTable", new long[] {3L, 5L}, aborted, 10L));
+
+    checkNotCompactedBase(0L, cleanerWriteIdList, true,
+        "Non-compacted base after first compaction in case of non-acid to acid table conversion is always valid");
+    checkNotCompactedBase(2L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId smaller than highWaterMark should be valid");
+    checkNotCompactedBase(3L, cleanerWriteIdList, false,
+        "Non-compacted base with aborted writeId should not be valid");
+    checkNotCompactedBase(5L, cleanerWriteIdList, false,
+        "Non-compacted base with aborted writeId should not be valid");
+    checkNotCompactedBase(10L, cleanerWriteIdList, true,
+        "Non-compacted base with writeId equals to highWaterMark should be valid");
+    checkNotCompactedBase(12L, cleanerWriteIdList, false,
+        "Non-compacted base with writeId greater than highWaterMark should not be valid");
+  }
+
+  private void checkNotCompactedBase(long writeId, ValidWriteIdList cleanerWriteIdList, boolean valid,
+      String errorMessage) throws IOException {
+    checkBase(writeId, 0L, cleanerWriteIdList, valid, errorMessage);
+  }
+
+  private void checkBase(long writeId, long visibilityTxnId, ValidWriteIdList cleanerWriteIdList, boolean valid,
+      String errorMessage) throws IOException {
+    AcidUtils.ParsedBaseLight p = new AcidUtils.ParsedBaseLight(writeId, visibilityTxnId,
+        new Path("testpath"));
+    if (valid) {
+      Assert.assertTrue(errorMessage, AcidUtils.isValidBase(p, cleanerWriteIdList, null,
+          new MockHdfsDirSnapshotImpl()));
+    } else {
+      Assert.assertFalse(errorMessage, AcidUtils.isValidBase(p, cleanerWriteIdList, null,
+          new MockHdfsDirSnapshotImpl()));
+    }
+  }
+
+  private final class MockHdfsDirSnapshotImpl implements AcidUtils.HdfsDirSnapshot {
+    @Override
+    public Path getPath() {
+      return null;
+    }
+    @Override
+    public void addOrcAcidFormatFile(FileStatus fStatus) {
+      // this method is not used by the tests, no need to add an implementation
+    }
+    @Override
+    public FileStatus getOrcAcidFormatFile() {
+      return null;
+    }
+    @Override
+    public void addMetadataFile(FileStatus fStatus) {
+      // this method is not used by the tests, no need to add an implementation
+    }
+    @Override
+    public FileStatus getMetadataFile() {
+      return null;
+    }
+    @Override
+    public List<FileStatus> getFiles() {
+      return null;
+    }
+    @Override
+    public void addFile(FileStatus file) {
+      // this method is not used by the tests, no need to add an implementation
+    }
+    @Override
+    public Long getFileId() {
+      return null;
+    }
+    @Override
+    public Boolean isRawFormat() {
+      return null;
+    }
+    @Override
+    public void setIsRawFormat(boolean isRawFormat) {
+      // this method is not used by the tests, no need to add an implementation
+    }
+    @Override
+    public Boolean isBase() {
+      return null;
+    }
+    @Override
+    public void setIsBase(boolean isBase) {
+      // this method is not used by the tests, no need to add an implementation
+    }
+    @Override
+    public Boolean isValidBase() {
+      return null;
+    }
+    @Override
+    public void setIsValidBase(boolean isValidBase) {
+      // this method is not used by the tests, no need to add an implementation
+    }
+    @Override
+    public Boolean isCompactedBase() {
+      return null;
+    }
+    @Override
+    public void setIsCompactedBase(boolean isCompactedBase) {
+      // this method is not used by the tests, no need to add an implementation
+    }
+    @Override
+    public boolean contains(Path path) {
+      return false;
+    }
+  }
+
 }
