@@ -85,6 +85,8 @@ public class UDFLike extends UDF {
         sb.append(".");
       } else if (n == '%') {
         sb.append(greedyMatch ? ".*" : ".*?");
+      } else if (n == '*' && !literalize) {
+        sb.append(greedyMatch ? ".*" : ".*?");
       } else {
         sb.append(literalize ? Pattern.quote(Character.toString(n)) : n);
       }

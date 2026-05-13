@@ -1,0 +1,93 @@
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS col_test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:col_test_db
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS col_test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:col_test_db
+PREHOOK: query: USE col_test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:col_test_db
+POSTHOOK: query: USE col_test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:col_test_db
+PREHOOK: query: CREATE TABLE wildcard_table (
+  id_primary INT,
+  id_secondary INT,
+  name_first STRING,
+  name_last STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: col_test_db@wildcard_table
+PREHOOK: Output: database:col_test_db
+POSTHOOK: query: CREATE TABLE wildcard_table (
+  id_primary INT,
+  id_secondary INT,
+  name_first STRING,
+  name_last STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: col_test_db@wildcard_table
+POSTHOOK: Output: database:col_test_db
+PREHOOK: query: SHOW TABLES LIKE 'wild%'
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:col_test_db
+POSTHOOK: query: SHOW TABLES LIKE 'wild%'
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:col_test_db
+wildcard_table
+PREHOOK: query: SHOW TABLES LIKE 'wild*'
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:col_test_db
+POSTHOOK: query: SHOW TABLES LIKE 'wild*'
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:col_test_db
+wildcard_table
+PREHOOK: query: SHOW TABLES LIKE 'none|wildcard_table'
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:col_test_db
+POSTHOOK: query: SHOW TABLES LIKE 'none|wildcard_table'
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:col_test_db
+wildcard_table
+PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id%'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: col_test_db@wildcard_table
+POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id%'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: col_test_db@wildcard_table
+id_primary          
+id_secondary        
+PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'name_%'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: col_test_db@wildcard_table
+POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'name_%'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: col_test_db@wildcard_table
+name_first          
+name_last           
+PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: col_test_db@wildcard_table
+POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: col_test_db@wildcard_table
+id_primary          
+id_secondary        
+PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id_primary|name_first'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: col_test_db@wildcard_table
+POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id_primary|name_first'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: col_test_db@wildcard_table
+id_primary          
+name_first          
+PREHOOK: query: DROP DATABASE col_test_db CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:col_test_db
+PREHOOK: Output: col_test_db@wildcard_table
+PREHOOK: Output: database:col_test_db
+POSTHOOK: query: DROP DATABASE col_test_db CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:col_test_db
+POSTHOOK: Output: col_test_db@wildcard_table
+POSTHOOK: Output: database:col_test_db

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 
 /**
  * Operation process of showing the columns.
@@ -77,10 +78,9 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
     if (columnPattern == null) {
       columnPattern = "*";
     }
-    columnPattern = columnPattern.toLowerCase();
-    columnPattern = columnPattern.replaceAll("\\*", ".*");
 
-    Pattern pattern = Pattern.compile(columnPattern);
+    String regex = UDFLike.likePatternToRegExp(columnPattern, false, true);
+    Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     return pattern.matcher("");
   }
 
