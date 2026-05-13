@@ -75,7 +75,7 @@ public class TestStatisticsManagement {
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
 
     // Enable stats auto deletion with a short retention so the threshold check triggers easily.
-    MetastoreConf.setBoolVar(conf, ConfVars.COLUMN_STATISTICS_AUTO_DELETION, true);
+    MetastoreConf.setTimeVar(conf, ConfVars.COLUMN_STATISTICS_MANAGEMENT_TASK_FREQUENCY, 1, TimeUnit.DAYS);
     MetastoreConf.setTimeVar(conf, ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD, 1, TimeUnit.DAYS);
 
     MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);

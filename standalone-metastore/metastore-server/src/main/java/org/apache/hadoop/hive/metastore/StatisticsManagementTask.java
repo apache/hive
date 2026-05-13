@@ -65,8 +65,8 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
 
   @Override
   public long runFrequency(TimeUnit unit) {
-    if (!MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_AUTO_DELETION)
-        || MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD,
+    // when frequency=0, the auto deletion task is not being run
+    if (MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD,
         TimeUnit.MILLISECONDS) <= 0) {
       return 0;
     }
@@ -91,8 +91,7 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
         + " over the retention period.");
     long retentionMillis = MetastoreConf.getTimeVar(
         conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_RETENTION_PERIOD, TimeUnit.MILLISECONDS);
-    if (retentionMillis <= 0
-        || !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.COLUMN_STATISTICS_AUTO_DELETION)) {
+    if (retentionMillis <= 0) {
       LOG.info("Statistics auto deletion is set to off currently.");
       return;
     }

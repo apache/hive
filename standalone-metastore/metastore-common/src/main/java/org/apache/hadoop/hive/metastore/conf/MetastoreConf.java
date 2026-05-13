@@ -1292,20 +1292,18 @@ public class MetastoreConf {
       "Automatic partition management will look for tables using the specified table pattern"),
 
     COLUMN_STATISTICS_MANAGEMENT_TASK_FREQUENCY("metastore.column.statistics.management.task.frequency",
-            "metastore.column.statistics.management.task.frequency",
-            7, TimeUnit.DAYS, "Frequency at which timer task runs to do automatic statistics \n" +
-            "management for tables. Statistics management include 2 configs. \n" +
-            "One is 'metastore.column.statistics.auto.deletion', and the other is 'metastore.column.statistics.retention.period'. \n" +
-            "When 'metastore.column.statistics.auto.deletion'='true' is set, statistics management will look for tables which their\n" +
-            "column statistics are over the retention period, and then delete the column stats. \n"),
+        "metastore.column.statistics.management.task.frequency",
+        0, TimeUnit.DAYS,
+        "Frequency at which the statistics management task runs to automatically delete expired " +
+            "column statistics. A value of 0 (the default) disables the task entirely. " +
+            "Set to a positive duration (e.g. 7d) to enable periodic deletion. " +
+            "Rows whose lastAnalyzed timestamp is older than " +
+            "'metastore.column.statistics.retention.period' will be deleted."),
 
     COLUMN_STATISTICS_RETENTION_PERIOD("metastore.column.statistics.retention.period",
-            "metastore.column.statistics.retention.period", 365, TimeUnit.DAYS, "The retention period " +
-            "that we want to keep the stats for each table, which means if the stats are older than this period\n" +
-            "of time, the stats will be automatically deleted. \n"),
-
-    COLUMN_STATISTICS_AUTO_DELETION("metastore.column.statistics.auto.deletion", "metastore.column.statistics.auto.deletion", false,
-            "Whether table/partition column statistics will be auto deleted after retention period"),
+        "metastore.column.statistics.retention.period", 365, TimeUnit.DAYS,
+        "The retention period for column statistics. Statistics older than this period " +
+            "will be deleted when the statistics management task is enabled."),
 
     METASTORE_METADATA_TRANSFORMER_CLASS("metastore.metadata.transformer.class", "metastore.metadata.transformer.class",
         "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer",
