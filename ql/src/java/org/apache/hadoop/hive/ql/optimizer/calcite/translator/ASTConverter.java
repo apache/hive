@@ -703,14 +703,21 @@ public class ASTConverter {
     sel.add(selexpr.node());
 
     // place the SELECT clause under the LATERAL VIEW clause
-    ASTBuilder lateralview = ASTBuilder.construct(HiveParser.TOK_LATERAL_VIEW, "TOK_LATERAL_VIEW");
-    lateralview.add(sel.node());
+    final boolean isOuterLateralView = tfs instanceof HiveTableFunctionScan htfs && htfs.isOuter();
+    final int lateralViewToken = isOuterLateralView
+        ? HiveParser.TOK_LATERAL_VIEW_OUTER
+        : HiveParser.TOK_LATERAL_VIEW;
+    final String lateralViewText = isOuterLateralView
+        ? "TOK_LATERAL_VIEW_OUTER"
+        : "TOK_LATERAL_VIEW";
+    ASTBuilder lateralView = ASTBuilder.construct(lateralViewToken, lateralViewText);
+    lateralView.add(sel.node());
 
     // finally, add the LATERAL VIEW clause under the left side source which is the base table.
-    lateralview.add(tableFunctionSource.ast);
+    lateralView.add(tableFunctionSource.ast);
 
     Schema outputSchema = new Schema(tableFunctionSource.schema, new Schema(alias, lvFields));
-    return new QueryBlockInfo(outputSchema, lateralview.node());
+    return new QueryBlockInfo(outputSchema, lateralView.node());
   }
 
   private boolean isLateralView(RelNode relNode) {

@@ -25,6 +25,7 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.metadata.RelColumnMapping;
 import org.apache.calcite.rel.type.RelDataType;
@@ -33,6 +34,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 
 public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelNode {
+
+  // Whether this is a LATERAL VIEW OUTER
+  private final boolean outer;
 
   /**
    * @param cluster
@@ -49,28 +53,54 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
    *          rowType - Row type produced by function
    * @param columnMappings
    *          columnMappings - Column mappings associated with this function
+   * @param outer
+   *          outer - true if this is a LATERAL VIEW OUTER 
    */
   protected HiveTableFunctionScan(RelOptCluster cluster, RelTraitSet traitSet, List<RelNode> inputs,
-      RexNode rexCall, Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings) {
+      RexNode rexCall, Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings,
+      boolean outer) {
     super(cluster, traitSet, inputs, rexCall, elementType, rowType, columnMappings);
+    this.outer = outer;
   }
 
   public HiveTableFunctionScan(RelInput input) {
     super(input);
+    this.outer = input.getBoolean("outer", false);
   }
 
   public static HiveTableFunctionScan create(RelOptCluster cluster, RelTraitSet traitSet,
       List<RelNode> inputs, RexNode rexCall, Type elementType, RelDataType rowType,
       Set<RelColumnMapping> columnMappings) throws CalciteSemanticException {
     return new HiveTableFunctionScan(cluster, traitSet, inputs, rexCall, elementType, rowType,
-        columnMappings);
+        columnMappings, false);
+  }
+
+  public static HiveTableFunctionScan create(RelOptCluster cluster, RelTraitSet traitSet,
+      List<RelNode> inputs, RexNode rexCall, Type elementType, RelDataType rowType,
+      Set<RelColumnMapping> columnMappings, boolean outer) throws CalciteSemanticException {
+    return new HiveTableFunctionScan(cluster, traitSet, inputs, rexCall, elementType, rowType,
+        columnMappings, outer);
+  }
+
+  /** Returns true if this represents a LATERAL VIEW OUTER. */
+  public boolean isOuter() {
+    return outer;
+  }
+
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    super.explainTerms(pw);
+    if (outer) {
+      pw.item("outer", true);
+    }
+    return pw;
   }
 
   @Override
   public TableFunctionScan copy(RelTraitSet traitSet, List<RelNode> inputs, RexNode rexCall,
       Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings) {
     return new HiveTableFunctionScan(getCluster(), traitSet, inputs, rexCall,
-        elementType, rowType, columnMappings);
+        elementType, rowType, columnMappings, outer);
   }
 
   /**
