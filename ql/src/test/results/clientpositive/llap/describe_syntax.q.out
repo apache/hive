@@ -284,6 +284,79 @@ num_falses
 bit_vector          	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{}                  
+PREHOOK: query: DESCRIBE t1 ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE t1 ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+ds                  	string              	                    
+PREHOOK: query: DESCRIBE EXTENDED t1 ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE EXTENDED t1 ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+ds                  	string              	                    
+PREHOOK: query: DESCRIBE FORMATTED t1 ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE FORMATTED t1 ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+col_name            	ds                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	100.0               
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}
+PREHOOK: query: DESCRIBE db1.t1 ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE db1.t1 ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+ds                  	string              	                    
+PREHOOK: query: DESCRIBE EXTENDED db1.t1 ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE EXTENDED db1.t1 ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+ds                  	string              	                    
+PREHOOK: query: DESCRIBE FORMATTED db1.t1 ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE FORMATTED db1.t1 ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+col_name            	ds                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	100.0               
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}
+PREHOOK: query: DESCRIBE t1 PART
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE t1 PART
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+part                	string              	                    
 PREHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
@@ -424,3 +497,35 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+PREHOOK: query: DESCRIBE t1 PARTITION(ds='3', part='3') ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE t1 PARTITION(ds='3', part='3') ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+ds                  	string              	                    
+PREHOOK: query: DESCRIBE EXTENDED t1 PARTITION(ds='4', part='5') part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE EXTENDED t1 PARTITION(ds='4', part='5') part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+part                	string              	                    
+PREHOOK: query: DESCRIBE FORMATTED t1 PARTITION(ds='3', part='3') ds
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: db1@t1
+POSTHOOK: query: DESCRIBE FORMATTED t1 PARTITION(ds='3', part='3') ds
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: db1@t1
+col_name            	ds                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
