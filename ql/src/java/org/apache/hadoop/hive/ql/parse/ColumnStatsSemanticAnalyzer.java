@@ -25,11 +25,9 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Maps;
@@ -218,24 +216,43 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     throw new RuntimeException("Unknown partition key : " + partKey);
   }
 
-  protected static List<FieldSchema> getFieldSchemasByColName(Table tbl, List<String> colNames) {
-    List<FieldSchema> cols = tbl.getCols();
-    Map<String, FieldSchema> colFsMap = new HashMap<>();
-    for (FieldSchema col : cols) {
-      colFsMap.put(col.getName().toLowerCase(), col);
-    }
-    List<FieldSchema> result = new ArrayList<>();
+  protected static List<FieldSchema> getFieldSchemasByColName(Table tbl, List<String> colNames)
+      throws SemanticException {
+    Map<String, FieldSchema> specifiedColsMap = new HashMap<>();
     for (String colName : colNames) {
-      FieldSchema fs = colFsMap.get(colName.toLowerCase());
+      specifiedColsMap.put(colName.toLowerCase(), new FieldSchema(colName, null, null));
+    }
+
+    for (FieldSchema pk : tbl.getPartitionKeys()) {
+      FieldSchema fs = specifiedColsMap.get(pk.getName().toLowerCase());
       if (fs != null) {
-        String type = fs.getType();
-        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
-        boolean isSupported = ColumnStatsAutoGatherContext.isColumnSupported(typeInfo.getCategory(), () -> typeInfo);
-        if (!isSupported) {
-          logTypeWarning(colName, type);
-        } else {
-          result.add(new FieldSchema(colName, type, fs.getComment()));
-        }
+        throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_COLUMN.getMsg()
+            + " [Try removing column '" + fs.getName() + "' from column list]");
+      }
+    }
+
+    for (FieldSchema col : tbl.getCols()) {
+      specifiedColsMap.computeIfPresent(col.getName().toLowerCase(), (key, value) -> col);
+    }
+
+    List<FieldSchema> result = new ArrayList<>();
+    List<String> tableColNames = new FieldSchemas(tbl.getCols()).getColName();
+    for (String colName : colNames) {
+      FieldSchema fs = specifiedColsMap.get(colName.toLowerCase());
+
+      // If the type is null, the column does not exist as its FieldSchema was not populated from tbl.getCols()
+      if (fs.getType() == null) {
+        String msg = "'" + colName + "' (possible columns are " + tableColNames + ")";
+        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(msg));
+      }
+
+      String type = fs.getType();
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
+      boolean isSupported = ColumnStatsAutoGatherContext.isColumnSupported(typeInfo.getCategory(), () -> typeInfo);
+      if (!isSupported) {
+        logTypeWarning(colName, type);
+      } else {
+        result.add(new FieldSchema(colName, type, fs.getComment()));
       }
     }
     return result;
@@ -585,35 +602,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  private void validateSpecifiedColumnNames(List<String> specifiedCols) throws SemanticException {
-    FieldSchemas tableCols = new FieldSchemas(tbl.getCols());
-    Set<String> tableColNamesLc = new HashSet<>();
-    for (FieldSchema fs : tableCols.getSchemas()) {
-      tableColNamesLc.add(fs.getName().toLowerCase());
-    }
-    List<String> tableColNames = tableCols.getColName();
-    for (String sc : specifiedCols) {
-      if (!tableColNamesLc.contains(sc.toLowerCase())) {
-        String msg = "'" + sc + "' (possible columns are " + tableColNames + ")";
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(msg));
-      }
-    }
-  }
-
-  private void checkForPartitionColumns(List<String> specifiedCols) throws SemanticException {
-    Map<String, String> specifiedColsMap = new HashMap<>();
-    for (String sc : specifiedCols) {
-      specifiedColsMap.put(sc.toLowerCase(), sc);
-    }
-    for (FieldSchema pk : tbl.getPartitionKeys()) {
-      String specifiedCol = specifiedColsMap.get(pk.getName().toLowerCase());
-      if (specifiedCol != null) {
-        throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_COLUMN.getMsg()
-            + " [Try removing column '" + specifiedCol + "' from column list]");
-      }
-    }
-  }
-
   private static void logTypeWarning(String colName, String colType) {
     String warning = "Only primitive type arguments are accepted but " + colType
         + " is passed for " + colName + ".";
@@ -743,9 +731,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     } else {
       columnNames = getExplicitColumnNamesFromAst(ast);
     }
-
-    checkForPartitionColumns(columnNames);
-    validateSpecifiedColumnNames(columnNames);
 
     return statsEligibleFS != null ? statsEligibleFS : getFieldSchemasByColName(tbl, columnNames);
   }
