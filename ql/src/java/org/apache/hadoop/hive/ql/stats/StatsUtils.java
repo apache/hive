@@ -2115,7 +2115,9 @@ public class StatsUtils {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         long ndv = cs.getCountDistint();
-        if (cs.getNumNulls() > 0 && (ndv > 0 || cs.isConst())) {
+        if (cs.isConst()) {
+          ndv = 1;
+        } else if (ndv > 0 && cs.getNumNulls() > 0) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }
         ndvValues.add(ndv);

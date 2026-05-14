@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.google.common.collect.Sets;
@@ -623,6 +624,30 @@ class TestStatsUtils {
     cs.setConst(false);
     assertEquals(false, cs.isConst(), "setConst(false) should clear the flag");
     assertEquals(true, clone.isConst(), "Clone should be independent of source after mutation");
+  }
+
+  @ParameterizedTest(name = "isConst=true => NDV contribution = 1 (countDistint={0}, numNulls={1})")
+  @CsvSource({"1, 0", "0, 10", "1, 10", "0, 0"})
+  void testComputeNDVGroupingColumnsConstColumnContributesOne(long countDistint, long numNulls) {
+    ColStatistics cs = new ColStatistics("c", "int");
+    cs.setCountDistint(countDistint);
+    cs.setNumNulls(numNulls);
+    cs.setConst(true);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Collections.singletonList(cs), new Statistics(), false);
+
+    assertEquals(1L, ndv);
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsNonConstWithNullsAddsOne() {
+    ColStatistics cs = new ColStatistics("c", "int");
+    cs.setCountDistint(7);
+    cs.setNumNulls(3);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Collections.singletonList(cs), new Statistics(), false);
+
+    assertEquals(8L, ndv);
   }
 
 }
