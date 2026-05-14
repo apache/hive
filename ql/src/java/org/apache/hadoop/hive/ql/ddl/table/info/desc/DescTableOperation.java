@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 import java.io.DataOutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,11 +89,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       if (desc.getColumnPath() == null) {
         getColumnsNoColumnPath(table, part, cols);
       } else {
-        if (desc.isFormatted()) {
-          getColumnDataColPathSpecified(table, part, cols, colStats, deserializer);
-        } else {
-          cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
-        }
+        getColumnDataColPathSpecified(table, part, cols, colStats, deserializer);
       }
       fixDecimalColumnTypeName(cols);
 
@@ -191,28 +188,31 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       throws HiveException, MetaException {
     // when column name is specified in describe table DDL, colPath will be db_name.table_name.column_name
     String colName = desc.getColumnPath().split("\\.")[2];
+    FieldSchema partitionCol = resolveColumnSchema(table, deserializer, colName, cols);
+
+    if (!desc.isFormatted()) {
+      return;
+    }
+
     List<String> colNames = Lists.newArrayList(colName.toLowerCase());
 
     if (part == null) {
       if (table.isPartitioned() && StatsUtils.checkCanProvideColumnStats(table)) {
         Map<String, String> tableProps = table.getParameters() == null ?
             new HashMap<>() : table.getParameters();
-        if (table.isPartitionKey(colNames.getFirst())) {
-          getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
+        if (partitionCol != null) {
+          addStatsForPartitionKeyColumn(table, colStats, colNames, tableProps, partitionCol);
         } else {
-          getColumnsForNotPartitionKeyColumn(table, cols, colStats, deserializer, colName,
-              tableProps);
+          addStatsForRegularColumn(table, colStats, colName, tableProps);
         }
         table.setParameters(tableProps);
       } else {
-        cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colName));
         colStats.addAll(context.getDb().getTableColumnStatistics(table, colNames, false));
       }
     } else {
       List<String> partitions = new ArrayList<>();
       String partName = part.getName();
       partitions.add(partName);
-      cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colName));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           table.getDbName(), table.getTableName(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
@@ -220,6 +220,31 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         colStats.addAll(partitionColStat);
       }
     }
+  }
+
+  /**
+   * Adds the resolved FieldSchema(s) for {@code desc.getColumnPath()} to {@code cols}:
+   * partition column, nested xpath traversal (e.g. {@code struct.field}, {@code array.$elem$},
+   * {@code map.$key$}/{@code $value$}), or top-level deserializer field.
+   *
+   * @return the partition FieldSchema if the path is a partition key, otherwise null
+   */
+  private FieldSchema resolveColumnSchema(Table table, Deserializer deserializer, String colName,
+      List<FieldSchema> cols) throws HiveException {
+    FieldSchema partitionCol = table.getPartColByName(colName.toLowerCase());
+    if (partitionCol != null) {
+      cols.add(partitionCol);
+      return partitionCol;
+    }
+    List<FieldSchema> resolved = (desc.getColumnPath().split("\\.").length == 3)
+        ? getFilteredFieldsFromDeserializer(table, deserializer, colName)
+        : Collections.emptyList();
+    if (resolved.isEmpty()) {
+      // xpath path OR invalid top-level name — path-traversal handles both
+      resolved = Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf());
+    }
+    cols.addAll(resolved);
+    return null;
   }
 
   private List<FieldSchema> getFilteredFieldsFromDeserializer(Table table, Deserializer deserializer,
@@ -239,11 +264,9 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     return filteredFields;
   }
 
-  private void getColumnDataForPartitionKeyColumn(Table table, List<FieldSchema> cols,
-      List<ColumnStatisticsObj> colStats, List<String> colNames, Map<String, String> tableProps)
+  private void addStatsForPartitionKeyColumn(Table table, List<ColumnStatisticsObj> colStats,
+      List<String> colNames, Map<String, String> tableProps, FieldSchema partCol)
       throws HiveException, MetaException {
-    FieldSchema partCol = table.getPartColByName(colNames.getFirst());
-    cols.add(partCol);
     PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
         MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
     ColumnInfo ci = new ColumnInfo(partCol.getName(),
@@ -256,10 +279,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     StatsSetupConst.setColumnStatsState(tableProps, colNames);
   }
 
-  private void getColumnsForNotPartitionKeyColumn(Table table, List<FieldSchema> cols, List<ColumnStatisticsObj> colStats,
-      Deserializer deserializer, String colName, Map<String, String> tableProps)
-      throws HiveException {
-    cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colName));
+  private void addStatsForRegularColumn(Table table, List<ColumnStatisticsObj> colStats,
+      String colName, Map<String, String> tableProps) throws HiveException {
     List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, Lists.newArrayList(colName.toLowerCase()),
         parts, false);

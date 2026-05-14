@@ -93,8 +93,7 @@ PREHOOK: Input: default@tbl_t
 POSTHOOK: query: DESCRIBE tbl_t Point
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_t
-x                   	int                 	from deserializer   
-y                   	int                 	from deserializer   
+Point               	struct<x:int,y:int> 	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"point\":\"true\"}}	 
 PREHOOK: query: CREATE TABLE tbl_part(id int, Point STRUCT<x:INT, y:INT>) PARTITIONED BY (name string)
 PREHOOK: type: CREATETABLE
@@ -195,5 +194,4 @@ PREHOOK: Input: default@tbl_part
 POSTHOOK: query: DESCRIBE tbl_part Point
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_part
-x                   	int                 	from deserializer   
-y                   	int                 	from deserializer   
+Point               	struct<x:int,y:int> 	from deserializer   
