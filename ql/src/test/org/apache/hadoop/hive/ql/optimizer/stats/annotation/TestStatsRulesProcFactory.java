@@ -838,7 +838,7 @@ public class TestStatsRulesProcFactory {
     }
 
     assertEquals(Statistics.State.COMPLETE, capturedStats[0].getBasicStatsState());
-    assertEquals(Statistics.State.PARTIAL, capturedStats[0].getColumnStatsState());
+    assertEquals(Statistics.State.COMPLETE, capturedStats[0].getColumnStatsState());
   }
 
   @Test

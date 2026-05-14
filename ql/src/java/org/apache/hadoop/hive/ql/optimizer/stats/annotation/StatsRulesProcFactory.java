@@ -3008,7 +3008,7 @@ public class StatsRulesProcFactory {
         }
 
         Statistics st = new Statistics(numRows, dataSize, 0, 0);
-        st.setColumnStatsState(Statistics.State.PARTIAL);
+        st.setColumnStatsState(Statistics.State.COMPLETE);
         st.setColumnStats(outputColStats);
 
         if (LOG.isDebugEnabled()) {

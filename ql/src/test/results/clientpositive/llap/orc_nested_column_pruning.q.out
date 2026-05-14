@@ -667,7 +667,7 @@ STAGE PLANS:
                             outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 3636 Basic stats: COMPLETE Column stats: NONE
                             UDTF Operator
-                              Statistics: Num rows: 1 Data size: 236 Basic stats: COMPLETE Column stats: PARTIAL
+                              Statistics: Num rows: 1 Data size: 236 Basic stats: COMPLETE Column stats: COMPLETE
                               function name: explode
                               Lateral View Join Operator
                                 outputColumnNames: _col11, _col12
@@ -688,7 +688,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 3632 Basic stats: COMPLETE Column stats: NONE
                       UDTF Operator
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col3, _col11
@@ -718,7 +718,7 @@ STAGE PLANS:
                               outputColumnNames: _col0
                               Statistics: Num rows: 1 Data size: 3636 Basic stats: COMPLETE Column stats: NONE
                               UDTF Operator
-                                Statistics: Num rows: 1 Data size: 236 Basic stats: COMPLETE Column stats: PARTIAL
+                                Statistics: Num rows: 1 Data size: 236 Basic stats: COMPLETE Column stats: COMPLETE
                                 function name: explode
                                 Lateral View Join Operator
                                   outputColumnNames: _col11, _col12
