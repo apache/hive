@@ -38,22 +38,38 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.UDTFOperator;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import static org.apache.hadoop.hive.ql.optimizer.stats.annotation.StatsRulesProcFactory.FilterStatsRule.extractFloatFromLiteralValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class TestStatsRulesProcFactory {
 
@@ -751,5 +767,111 @@ public class TestStatsRulesProcFactory {
     // Assert that numNulls is still -1 (unchanged)
     assertEquals("Unknown numNulls (-1) should be preserved after updateNumNulls",
         -1L, colStats.getNumNulls());
+  }
+
+  @Test
+  public void testUdtfDoesNotInheritParentColumnStats() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR, 2.0f);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, false);
+
+    ParseContext pctx = mock(ParseContext.class);
+    when(pctx.getConf()).thenReturn(conf);
+    Context context = mock(Context.class);
+    when(context.getConf()).thenReturn(conf);
+    when(pctx.getContext()).thenReturn(context);
+    AnnotateStatsProcCtx aspCtx = new AnnotateStatsProcCtx(pctx);
+
+    Statistics parentStats = new Statistics(100L, 1000L, 0L, 0L);
+    parentStats.setColumnStatsState(Statistics.State.COMPLETE);
+    ColStatistics parentCol = new ColStatistics("_col0", "array<string>");
+    parentCol.setCountDistint(50L);
+    parentCol.setNumNulls(5L);
+    parentCol.setAvgColLen(200.0);
+    parentStats.addToColumnStats(Collections.singletonList(parentCol));
+
+    SelectOperator selectOp = mock(SelectOperator.class);
+    when(selectOp.getStatistics()).thenReturn(parentStats);
+
+    ColumnInfo ci0 = new ColumnInfo("val", TypeInfoFactory.stringTypeInfo, "", false);
+    ColumnInfo ci1 = new ColumnInfo("pos", TypeInfoFactory.intTypeInfo, "", false);
+    RowSchema outputSchema = new RowSchema(Arrays.asList(ci0, ci1));
+
+    UDTFOperator udtfOp = mock(UDTFOperator.class);
+    when(udtfOp.getConf()).thenReturn(mock(UDTFDesc.class));
+    when(udtfOp.getSchema()).thenReturn(outputSchema);
+    List<Operator<? extends OperatorDesc>> parents = new ArrayList<>();
+    parents.add(selectOp);
+    when(udtfOp.getParentOperators()).thenReturn(parents);
+
+    final Statistics[] capturedStats = new Statistics[1];
+    doAnswer(invocation -> {
+      capturedStats[0] = invocation.getArgument(0);
+      return null;
+    }).when(udtfOp).setStatistics(any(Statistics.class));
+
+    StatsRulesProcFactory.UDTFStatsRule rule = new StatsRulesProcFactory.UDTFStatsRule();
+    rule.process(udtfOp, new Stack<>(), aspCtx);
+
+    assertNotNull("Statistics should have been set on UDTF operator", capturedStats[0]);
+    assertEquals("Row count should be parentRows * udtfFactor",
+        200L, capturedStats[0].getNumRows());
+
+    List<ColStatistics> colStats = capturedStats[0].getColumnStats();
+    assertNotNull(colStats);
+    assertEquals("Should have 2 output columns matching UDTF schema", 2, colStats.size());
+
+    ColStatistics valStats = colStats.get(0);
+    assertEquals("val", valStats.getColumnName());
+    assertEquals(0L, valStats.getCountDistint());
+    assertEquals(-1L, valStats.getNumNulls());
+    assertTrue("Should be marked estimated", valStats.isEstimated());
+
+    ColStatistics posStats = colStats.get(1);
+    assertEquals("pos", posStats.getColumnName());
+    assertEquals(0L, posStats.getCountDistint());
+    assertEquals(-1L, posStats.getNumNulls());
+
+    for (ColStatistics cs : colStats) {
+      assertNotEquals("Parent NDV must not carry over into UDTF output",
+          50L, cs.getCountDistint());
+    }
+
+    assertEquals(Statistics.State.COMPLETE, capturedStats[0].getBasicStatsState());
+    assertEquals(Statistics.State.PARTIAL, capturedStats[0].getColumnStatsState());
+  }
+
+  @Test
+  public void testUdtfWithNullParentStats() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, false);
+
+    ParseContext pctx = mock(ParseContext.class);
+    when(pctx.getConf()).thenReturn(conf);
+    Context context = mock(Context.class);
+    when(context.getConf()).thenReturn(conf);
+    when(pctx.getContext()).thenReturn(context);
+    AnnotateStatsProcCtx aspCtx = new AnnotateStatsProcCtx(pctx);
+
+    SelectOperator selectOp = mock(SelectOperator.class);
+    when(selectOp.getStatistics()).thenReturn(null);
+
+    UDTFOperator udtfOp = mock(UDTFOperator.class);
+    when(udtfOp.getConf()).thenReturn(mock(UDTFDesc.class));
+    List<Operator<? extends OperatorDesc>> parents = new ArrayList<>();
+    parents.add(selectOp);
+    when(udtfOp.getParentOperators()).thenReturn(parents);
+
+    final Statistics[] capturedStats = new Statistics[1];
+    doAnswer(invocation -> {
+      capturedStats[0] = invocation.getArgument(0);
+      return null;
+    }).when(udtfOp).setStatistics(any(Statistics.class));
+
+    StatsRulesProcFactory.UDTFStatsRule rule = new StatsRulesProcFactory.UDTFStatsRule();
+    rule.process(udtfOp, new Stack<>(), aspCtx);
+
+    assertEquals("When parent stats are null, UDTF should not produce stats",
+        null, capturedStats[0]);
   }
 }
