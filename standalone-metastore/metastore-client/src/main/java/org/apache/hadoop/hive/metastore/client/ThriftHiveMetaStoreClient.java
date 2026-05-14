@@ -535,6 +535,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     Map<String, String> headers = new HashMap<>();
     String keyValuePairs = MetastoreConf.getVar(conf,
         MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
+    if (keyValuePairs.isEmpty()) {
+      return headers;
+    }
     try {
       String[] headerKeyValues = keyValuePairs.split(",");
       for (String header : headerKeyValues) {
@@ -575,9 +578,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         String trustStorePassword = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
         String trustStoreType = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
         String trustStoreAlgorithm = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
+        String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
         tHttpClient =
             SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword, trustStoreAlgorithm,
-                trustStoreType, httpClientBuilder);
+                trustStoreType, includeProtocols, includeCipherSuites, httpClientBuilder);
       } else {
         tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
       }
@@ -659,8 +664,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
         String trustStoreAlgorithm =
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
+        String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm,
+            includeProtocols, includeCipherSuites);
       } else {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout, connectionTimeout);

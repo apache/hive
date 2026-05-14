@@ -556,9 +556,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       for (String sslVersion : MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",")) {
         sslVersionBlacklist.add(sslVersion);
       }
+      String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
+      String includeCipherSuites = MetastoreConf.getVar(conf, ConfVars.SSL_INCLUDE_CIPHERSUITES);
 
       serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStorePath,
-          keyStorePassword, keyStoreType, keyStoreAlgorithm, sslVersionBlacklist);
+          keyStorePassword, keyStoreType, keyStoreAlgorithm, sslVersionBlacklist,
+          includeProtocols, includeCipherSuites);
     }
 
     ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,

@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +49,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableAnalyzer;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -65,6 +70,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -492,5 +498,51 @@ public class TestSemanticAnalyzer {
     Set<String> result = analyzer.getQueryProperties().getUsedTables();
 
     Assert.assertEquals(new TreeSet<>(tables), new TreeSet<>(result));
+  }
+
+  @Test
+  public void testMaterializeCTEWithCBODisabled() throws Exception {
+    testMaterializeCTEUsesDDLFactory(false);
+  }
+
+  @Test
+  public void testMaterializeCTEWithCBOEnabled() throws Exception {
+    testMaterializeCTEUsesDDLFactory(true);
+  }
+
+  private void testMaterializeCTEUsesDDLFactory(boolean cboEnabled) throws Exception {
+    HiveConf testConf = new HiveConf(conf);
+    testConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, cboEnabled);
+    testConf.setIntVar(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, 1);
+
+    SessionState.start(testConf);
+    Context ctx = new Context(testConf);
+
+    String query = "WITH cte AS (SELECT COUNT(*) AS cnt FROM table1) SELECT * FROM cte";
+
+    ASTNode astNode = ParseUtils.parse(query, ctx);
+    QueryState queryState = new QueryState.Builder().withHiveConf(testConf).build();
+    BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.get(queryState, astNode);
+    analyzer.initCtx(ctx);
+
+    try (MockedStatic<DDLSemanticAnalyzerFactory> mocked =
+            mockStatic(DDLSemanticAnalyzerFactory.class, CALLS_REAL_METHODS)) {
+      BaseSemanticAnalyzer[] cteAnalyzer = new BaseSemanticAnalyzer[1];
+
+      mocked.when(() -> DDLSemanticAnalyzerFactory.getAnalyzer(any(ASTNode.class), any(QueryState.class)))
+          .thenAnswer(invocation -> {
+            BaseSemanticAnalyzer result = (BaseSemanticAnalyzer) invocation.callRealMethod();
+            if (invocation.getArgument(0, ASTNode.class).getType() == HiveParser.TOK_CREATETABLE) {
+              cteAnalyzer[0] = result;
+            }
+            return result;
+          });
+
+      analyzer.analyze(astNode, ctx);
+
+      assertNotNull("DDLSemanticAnalyzerFactory should be called for CTE materialization", cteAnalyzer[0]);
+      assertTrue("CTE materialization should use CreateTableAnalyzer",
+          cteAnalyzer[0] instanceof CreateTableAnalyzer);
+    }
   }
 }
