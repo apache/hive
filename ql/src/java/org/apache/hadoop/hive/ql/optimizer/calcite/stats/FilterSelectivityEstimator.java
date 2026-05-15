@@ -49,7 +49,6 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.RangeSets;
 import org.apache.calcite.util.Sarg;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
@@ -119,6 +118,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity = computeConjunctionSelectivity(call);
       break;
     }
+    case SEARCH: {
+      selectivity = computeSearchSelectivity(call);
+      break;
+    }
     case OR: {
       selectivity = computeDisjunctionSelectivity(call);
       break;
@@ -169,10 +172,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
     case BETWEEN:
       selectivity = computeBetweenPredicateSelectivity(call);
-      break;
-
-    case SEARCH:
-      selectivity = computeSearchSelectivity(call);
       break;
 
     default:
@@ -234,7 +233,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return true if the expression is a removable cast, false otherwise
    */
   private boolean isRemovableCast(RexNode exp, HiveTableScan tableScan) {
-    if (SqlKind.CAST != exp.getKind()) {
+    if(SqlKind.CAST != exp.getKind()) {
       return false;
     }
     RexCall cast = (RexCall) exp;
@@ -610,7 +609,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   /**
-   * Similar to {@link SearchTransformer}, but computing the selectivity of the expression.
+   * Auxiliary class to compute the selectivity of a SEARCH expression.
    */
   private final class SearchSelectivityHelper<C extends Comparable<C>> {
     private final RexNode ref;
@@ -632,118 +631,68 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       final List<Double> selectivityList = new ArrayList<>();
       final List<RexNode> inLiterals = new ArrayList<>();
 
+      double rangesSelectivity = 0d;
+      // accumulate the selectivity of all ranges
+      for (Range<C> range : sarg.rangeSet.asRanges()) {
+        if (!range.hasLowerBound() && !range.hasUpperBound()) {
+          return 1.0; // "all" range
+        }
+
+        final BoundType lowerBoundType, upperBoundType;
+        final Optional<Float> lowerLiteral, upperLiteral;
+        final Supplier<Double> defaultSelectivity;
+        if (range.hasLowerBound() && range.hasUpperBound()) {
+          C lower = range.lowerEndpoint();
+          C upper = range.upperEndpoint();
+          lowerBoundType = range.lowerBoundType();
+          upperBoundType = range.upperBoundType();
+          if (lower.equals(upper) && lowerBoundType == BoundType.CLOSED && upperBoundType == BoundType.CLOSED) {
+            // range represents a single value: save it for later
+            inLiterals.add(makeLiteral(lower));
+            continue;
+          }
+          RexNode lowerRexLiteral = makeLiteral(lower);
+          RexNode upperRexLiteral = makeLiteral(upper);
+          lowerLiteral = extractLiteral(lowerRexLiteral);
+          upperLiteral = extractLiteral(upperRexLiteral);
+          defaultSelectivity = () -> computeFunctionSelectivity(List.of(ref, lowerRexLiteral, upperRexLiteral));
+        } else if (range.hasLowerBound()) {
+          lowerLiteral = extractLiteral(makeLiteral(range.lowerEndpoint()));
+          lowerBoundType = range.lowerBoundType();
+          upperLiteral = Optional.of(Float.POSITIVE_INFINITY);
+          upperBoundType = BoundType.CLOSED;
+          defaultSelectivity = () -> DEFAULT_COMPARISON_SELECTIVITY;
+        } else { // i.e. range.hasUpperBound()
+          upperLiteral = extractLiteral(makeLiteral(range.upperEndpoint()));
+          upperBoundType = range.upperBoundType();
+          lowerLiteral = Optional.of(Float.NEGATIVE_INFINITY);
+          lowerBoundType = BoundType.CLOSED;
+          defaultSelectivity = () -> DEFAULT_COMPARISON_SELECTIVITY;
+        }
+
+        double currentRangeSelectivity = lowerLiteral.isEmpty() || upperLiteral.isEmpty()
+            ? defaultSelectivity.get()
+            : computeRangePredicateSelectivity(defaultSelectivity, ref,
+                Range.range(lowerLiteral.get(), lowerBoundType, upperLiteral.get(), upperBoundType));
+        rangesSelectivity = Math.min(1.0, rangesSelectivity + currentRangeSelectivity);
+      }
+      selectivityList.add(rangesSelectivity);
+
+      if (!inLiterals.isEmpty()) {
+        if (inLiterals.size() == 1) {
+          selectivityList.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, inLiterals.get(0))
+              .accept(FilterSelectivityEstimator.this));
+        } else {
+          List<RexNode> operands = new ArrayList<>(inLiterals.size() + 1);
+          operands.add(ref);
+          operands.addAll(inLiterals);
+          selectivityList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
+        }
+      }
+
       if (sarg.nullAs == RexUnknownAs.TRUE) {
         selectivityList.add(
             rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref).accept(FilterSelectivityEstimator.this));
-      }
-
-      RangeSets.forEach(sarg.rangeSet, new RangeSets.Consumer<C>() {
-        @Override
-        public void all() {
-          selectivityList.add(1.0);
-        }
-
-        @Override
-        public void singleton(C value) {
-          inLiterals.add(rexBuilder.makeLiteral(value, operandType, true, true));
-        }
-
-        @Override
-        public void atLeast(C lower) {
-          Optional<Float> lowerLiteral = extractLiteral(makeLiteral(lower));
-          if (lowerLiteral.isEmpty()) {
-            selectivityList.add(DEFAULT_COMPARISON_SELECTIVITY);
-          } else {
-            processRange(() -> DEFAULT_COMPARISON_SELECTIVITY,
-                Range.range(lowerLiteral.get(), BoundType.CLOSED, Float.POSITIVE_INFINITY, BoundType.CLOSED));
-          }
-        }
-
-        @Override
-        public void atMost(C upper) {
-          Optional<Float> upperLiteral = extractLiteral(makeLiteral(upper));
-          if (upperLiteral.isEmpty()) {
-            selectivityList.add(DEFAULT_COMPARISON_SELECTIVITY);
-          } else {
-            processRange(() -> DEFAULT_COMPARISON_SELECTIVITY,
-                Range.range(Float.NEGATIVE_INFINITY, BoundType.CLOSED, upperLiteral.get(), BoundType.CLOSED));
-          }
-        }
-
-        @Override
-        public void greaterThan(C lower) {
-          Optional<Float> lowerLiteral = extractLiteral(makeLiteral(lower));
-          if (lowerLiteral.isEmpty()) {
-            selectivityList.add(DEFAULT_COMPARISON_SELECTIVITY);
-          } else {
-            processRange(() -> DEFAULT_COMPARISON_SELECTIVITY,
-                Range.range(lowerLiteral.get(), BoundType.OPEN, Float.POSITIVE_INFINITY, BoundType.CLOSED));
-          }
-        }
-
-        @Override
-        public void lessThan(C upper) {
-          Optional<Float> upperLiteral = extractLiteral(makeLiteral(upper));
-          if (upperLiteral.isEmpty()) {
-            selectivityList.add(DEFAULT_COMPARISON_SELECTIVITY);
-          } else {
-            processRange(() -> DEFAULT_COMPARISON_SELECTIVITY,
-                Range.range(Float.NEGATIVE_INFINITY, BoundType.CLOSED, upperLiteral.get(), BoundType.OPEN));
-          }
-        }
-
-        @Override
-        public void closed(C lower, C upper) {
-          processRange(lower, BoundType.CLOSED, upper, BoundType.CLOSED);
-        }
-
-        @Override
-        public void closedOpen(C lower, C upper) {
-          processRange(lower, BoundType.CLOSED, upper, BoundType.OPEN);
-        }
-
-        @Override
-        public void openClosed(C lower, C upper) {
-          processRange(lower, BoundType.OPEN, upper, BoundType.CLOSED);
-        }
-
-        @Override
-        public void open(C lower, C upper) {
-          processRange(lower, BoundType.OPEN, upper, BoundType.OPEN);
-        }
-
-        private void processRange(C lower, BoundType lowerBoundType, C upper, BoundType upperBoundType) {
-          RexNode lowerRexLiteral = makeLiteral(lower);
-          RexNode upperRexLiteral = makeLiteral(upper);
-          Supplier<Double> defaultSelectivity =
-              () -> computeFunctionSelectivity(List.of(ref, lowerRexLiteral, upperRexLiteral));
-          Optional<Float> lowerLiteral = extractLiteral(lowerRexLiteral);
-          Optional<Float> upperLiteral = extractLiteral(upperRexLiteral);
-          if (lowerLiteral.isEmpty() || upperLiteral.isEmpty()) {
-            selectivityList.add(defaultSelectivity.get());
-          } else {
-            processRange(defaultSelectivity,
-                Range.range(lowerLiteral.get(), lowerBoundType, upperLiteral.get(), upperBoundType));
-          }
-        }
-
-        private void processRange(Supplier<Double> defaultSelectivity, Range<Float> boundaries) {
-          selectivityList.add(computeRangePredicateSelectivity(defaultSelectivity, ref, boundaries));
-        }
-      });
-
-      switch (inLiterals.size()) {
-      case 0:
-        break;
-      case 1:
-        selectivityList.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, inLiterals.get(0))
-            .accept(FilterSelectivityEstimator.this));
-        break;
-      default:
-        List<RexNode> operands = new ArrayList<>(inLiterals.size() + 1);
-        operands.add(ref);
-        operands.addAll(inLiterals);
-        selectivityList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
       }
 
       return selectivityList.size() == 1 ? selectivityList.get(0) : computeDisjunctionSelectivity(selectivityList);

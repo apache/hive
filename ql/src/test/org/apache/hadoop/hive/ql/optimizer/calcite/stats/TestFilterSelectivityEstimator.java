@@ -540,7 +540,7 @@ public class TestFilterSelectivityEstimator {
     filter = simplify(filter);
     Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.6923076923076923, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
@@ -552,7 +552,7 @@ public class TestFilterSelectivityEstimator {
     filter = simplify(filter);
     Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.23076923076923073, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.30769230769230765, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
