@@ -1,3 +1,9 @@
+PREHOOK: query: drop table if exists srcpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists srcpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table ptestfilter (a string) partitioned by (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

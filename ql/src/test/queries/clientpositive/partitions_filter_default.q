@@ -1,5 +1,5 @@
--- Derby might hit the HIVE-25965, change it to postgres, which the forwarded query is the same as Derby.
---!qt:database:postgres:pfd
+-- Derby might hit the HIVE-25965, clean up the database first
+drop table if exists srcpart;
 
 create table ptestfilter (a string) partitioned by (c int);
 INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1', null;
