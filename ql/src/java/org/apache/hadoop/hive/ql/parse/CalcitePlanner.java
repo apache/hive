@@ -1041,9 +1041,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  boolean isCBOSupportedLateralView(ASTNode lateralView) {
+  boolean isCBOSupportedLateralView() {
     // Both LATERAL VIEW and LATERAL VIEW OUTER are supported in CBO.
-    return true;
+    return !this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP);
   }
 
   @Override
@@ -2980,8 +2980,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         leftRel = aliasToRel.get(leftTableAlias);
       } else if (SemanticAnalyzer.isJoinToken(left)) {
         leftRel = genJoinLogicalPlan(qb, left, aliasToRel, outerNameToPosMap, outerRR);
-      } else if (left.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
-          || left.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
+      } else if (isASTNodeLateralViewOrOuter(left)) {
         leftRel = genLateralViewPlans(qb, left, aliasToRel);
       } else {
         assert (false);
@@ -2995,8 +2994,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
         rightTableAlias = getTableAlias(right);
         rightRel = aliasToRel.get(rightTableAlias);
-      } else if (right.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
-          || right.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
+      } else if (isASTNodeLateralViewOrOuter(right)) {
         rightRel = genLateralViewPlans(qb, right, aliasToRel);
       }  else {
         assert (false);
@@ -3376,8 +3374,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // next token is either the table alias name or another lateral view (which we will call
       // recursively)
-      int nextType = next.getToken().getType();
-      RelNode inputRel = (nextType == HiveParser.TOK_LATERAL_VIEW || nextType == HiveParser.TOK_LATERAL_VIEW_OUTER)
+      RelNode inputRel = isASTNodeLateralViewOrOuter(next)
           ? genLateralViewPlans(qb, next, aliasToRel)
           : aliasToRel.get(getTableAlias(next));
 
@@ -5648,5 +5645,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       return sortRel;
     }
+  }
+
+  /**
+   * Utility method to determine if an AST node represents a lateral view or lateral view outer.
+   * @param node AST node
+   * @return true if node is of lateral view or lateral view outer; false otherwise.
+   */
+  private boolean isASTNodeLateralViewOrOuter(ASTNode node) {
+    return node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
+            || node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER;
   }
 }

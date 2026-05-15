@@ -1713,9 +1713,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numChildren = lateralView.getChildCount();
     assert (numChildren == 2);
 
-    if (!isCBOSupportedLateralView(lateralView)) {
-      queryProperties.setCBOSupportedLateralViews(false);
-    }
+    queryProperties.setCBOSupportedLateralViews(isCBOSupportedLateralView());
 
     ASTNode next = (ASTNode) lateralView.getChild(1);
     String alias = null;
@@ -11123,7 +11121,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  boolean isCBOSupportedLateralView(ASTNode lateralView) {
+  boolean isCBOSupportedLateralView() {
     return false;
   }
 
