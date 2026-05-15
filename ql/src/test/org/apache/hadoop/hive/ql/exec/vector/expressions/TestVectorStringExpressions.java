@@ -4407,6 +4407,33 @@ public class TestVectorStringExpressions {
         expr.checker.getClass());
   }
 
+  // Regression: vec ComplexChecker must apply Pattern.DOTALL (mirroring HIVE-22008).
+  @Test
+  public void testStringLikeComplexCheckerMultiLine() throws HiveException {
+    VectorizedRowBatch batch = new VectorizedRowBatch(1);
+    BytesColumnVector col = new BytesColumnVector();
+    batch.cols[0] = col;
+    byte[] rowA = "first\nsecond".getBytes(StandardCharsets.UTF_8);
+    byte[] rowB = "first_second\nthird".getBytes(StandardCharsets.UTF_8);
+    col.setRef(0, rowA, 0, rowA.length);
+    col.setRef(1, rowB, 0, rowB.length);
+    col.isNull[0] = false;
+    col.isNull[1] = false;
+    col.noNulls = true;
+    batch.size = 2;
+
+    FilterStringColLikeStringScalar expr =
+        new FilterStringColLikeStringScalar(0, "%first_second%".getBytes(StandardCharsets.UTF_8));
+    expr.transientInit(hiveConf);
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
+
+    expr.evaluate(batch);
+
+    // Both rows must survive the LIKE filter.
+    Assert.assertEquals(2, batch.size);
+  }
+
   @Test
   public void testStringLikeMultiByte() throws HiveException {
     FilterStringColLikeStringScalar expr;
