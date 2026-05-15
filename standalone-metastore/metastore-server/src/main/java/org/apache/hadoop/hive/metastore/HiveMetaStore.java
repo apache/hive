@@ -504,7 +504,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     TProcessor processor;
-    TTransportFactory transFactory = authFactory.getAuthTransFactory(useSSL, conf);
+    TTransportFactory transFactory = authFactory.getAuthTransFactory(bridge, conf);
     final TProtocolFactory protocolFactory;
     final TProtocolFactory inputProtoFactory;
     if (useCompactProtocol) {

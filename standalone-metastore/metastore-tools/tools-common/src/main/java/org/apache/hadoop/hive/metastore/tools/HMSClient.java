@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TConfiguration;
@@ -467,9 +466,9 @@ final class HMSClient implements AutoCloseable {
 
     if (useSasl) {
       // Wrap thrift connection with SASL for secure connection.
-      HadoopThriftAuthBridge.Client authBridge =
-          HadoopThriftAuthBridge.getBridge().createClient();
-
+      HadoopThriftAuthBridge bridge = HadoopThriftAuthBridge.getBridge();
+      Map<String, String> saslProperties = bridge.getHadoopSaslProperties(conf);
+      HadoopThriftAuthBridge.Client authBridge = bridge.createClient();
       // check if we should use delegation tokens to authenticate
       // the call below gets hold of the tokens if they are set up by hadoop
       // this should happen on the map/reduce tasks if the client added the
@@ -483,15 +482,14 @@ final class HMSClient implements AutoCloseable {
         LOG.info("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
         // authenticate using delegation tokens via the "DIGEST" mechanism
         transport = authBridge.createClientTransport(null, host,
-            "DIGEST", tokenStrForm, transport,
-            MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+            "DIGEST", tokenStrForm, transport, saslProperties);
       } else {
         LOG.info("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
         String principalConfig =
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL);
         transport = authBridge.createClientTransport(
             principalConfig, host, "KERBEROS", null,
-            transport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+            transport, saslProperties);
       }
     } else {
       if (useFramedTransport) {

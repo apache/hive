@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.thrift.transport.layered.TFramedTransport;
@@ -118,7 +117,7 @@ public class AuthFactory {
     }
   }
 
-  TTransportFactory getAuthTransFactory(boolean useSSL, Configuration conf) throws LoginException {
+  TTransportFactory getAuthTransFactory(HadoopThriftAuthBridge bridge, Configuration conf) throws LoginException {
     TTransportFactory transportFactory;
     TSaslServerTransport.Factory serverTransportFactory;
 
@@ -128,7 +127,7 @@ public class AuthFactory {
           throw new LoginException("Framed transport is not supported with SASL enabled.");
         }
         serverTransportFactory = saslServer.createSaslServerTransportFactory(
-                MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+            bridge.getHadoopSaslProperties(conf));
         transportFactory = new ChainedTTransportFactory(
             saslServer.wrapTransportFactoryInClientUGI(serverTransportFactory), new TUGIContainingTransport.Factory());
       } catch (TTransportException e) {

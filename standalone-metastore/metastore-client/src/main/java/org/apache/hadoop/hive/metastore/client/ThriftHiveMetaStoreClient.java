@@ -835,7 +835,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     TTransport transport = underlyingTransport;
     boolean useFramedTransport =
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
-    boolean useSSL = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL);
     String clientAuthMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_AUTH_MODE);
     boolean usePasswordAuth = false;
@@ -873,9 +872,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     } else if (useSasl) {
       // Wrap thrift connection with SASL for secure connection.
       try {
-        HadoopThriftAuthBridge.Client authBridge =
-            HadoopThriftAuthBridge.getBridge().createClient();
-
+        HadoopThriftAuthBridge bridge = HadoopThriftAuthBridge.getBridge();
+        Map<String, String> saslProperties = bridge.getHadoopSaslProperties(conf);
+        HadoopThriftAuthBridge.Client authBridge = bridge.createClient();
         // check if we should use delegation tokens to authenticate
         // the call below gets hold of the tokens if they are set up by hadoop
         // this should happen on the map/reduce tasks if the client added the
@@ -889,15 +888,14 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
           LOG.debug("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
           // authenticate using delegation tokens via the "DIGEST" mechanism
           transport = authBridge.createClientTransport(null, store.getHost(),
-              "DIGEST", tokenStrForm, underlyingTransport,
-              MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+              "DIGEST", tokenStrForm, underlyingTransport, saslProperties);
         } else {
           LOG.debug("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
           String principalConfig =
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL);
           transport = authBridge.createClientTransport(
               principalConfig, store.getHost(), "KERBEROS", null,
-              underlyingTransport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+              underlyingTransport, saslProperties);
         }
       } catch (IOException ioe) {
         LOG.error("Failed to create client transport", ioe);
