@@ -69,6 +69,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
   protected static final Logger LOG = LoggerFactory.getLogger(FilterSelectivityEstimator.class);
 
+  private static final double DEFAULT_COMPARISON_SELECTIVITY = 1.0 / 3.0;
+
   private final RelNode childRel;
   private final double childCardinality;
   private final RelMetadataQuery mq;
@@ -411,8 +413,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return lower > upper ? Range.closedOpen(0f, 0f) : Range.range(lower, BoundType.CLOSED, upper, upperType);
   }
 
-  private static final Double DEFAULT_COMPARISON_SELECTIVITY = ((double) 1 / (double) 3);
-
   private double computeComparisonPredicateSelectivity(RexCall call, SqlKind op) {
     double defaultSelectivity = DEFAULT_COMPARISON_SELECTIVITY;
     if (!(childRel instanceof HiveTableScan)) {
@@ -463,7 +463,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * Returns the default selectivity if the histogram is not available.
    */
   private double computeRangePredicateSelectivity(Supplier<Double> defaultSelectivity, RexNode operand,
-      Range<Float> boundaries, boolean inverseBool /* true only for NOT_BETWEEN */ ) {
+      Range<Float> boundaries, boolean inverseBool /* true only for NOT_BETWEEN */) {
     if (!(childRel instanceof HiveTableScan)) {
       return defaultSelectivity.get();
     }
@@ -612,7 +612,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   /**
    * Similar to {@link SearchTransformer}, but computing the selectivity of the expression.
    */
-  private class SearchSelectivityHelper<C extends Comparable<C>> {
+  private final class SearchSelectivityHelper<C extends Comparable<C>> {
     private final RexNode ref;
     private final Sarg<C> sarg;
     private final RelDataType operandType;

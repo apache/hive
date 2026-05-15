@@ -65,7 +65,9 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.calcite.sql.type.SqlTypeName.BIGINT;
 import static org.apache.calcite.sql.type.SqlTypeName.INTEGER;
@@ -145,6 +147,7 @@ public class TestFilterSelectivityEstimator {
   private static RexNode int11;
   private static RelDataType tableType;
   private static RexNode inputRef0;
+  private static RexNode inputRef10;
   private static RexNode boolFalse;
   private static RexNode boolTrue;
 
@@ -188,6 +191,7 @@ public class TestFilterSelectivityEstimator {
     b.add("f_bigint", TYPE_FACTORY.createSqlType(BIGINT));
     b.add("f_timestamp", SqlTypeName.TIMESTAMP);
     b.add("f_date", SqlTypeName.DATE).build();
+    b.add("f_numeric_nullable", TYPE_FACTORY.createTypeWithNullability(decimalType(38, 25), true));
     tableType = b.build();
 
     RelOptPlanner planner = CalcitePlanner.createPlanner(new HiveConf());
@@ -208,6 +212,11 @@ public class TestFilterSelectivityEstimator {
     currentValuesSize = VALUES.length;
     doReturn(tableType).when(tableMock).getRowType();
     when(tableMock.getRowCount()).thenAnswer(a -> (double) currentValuesSize);
+    Set<Float> set = new HashSet<>();
+    for (float f : VALUES) {
+      set.add(f);
+    }
+    double distinctRowCount = set.size();
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
     HiveTableScan tableScan =
@@ -215,7 +224,10 @@ public class TestFilterSelectivityEstimator {
             false, false);
     scan = relBuilder.push(tableScan).build();
     when(mq.getRowCount(scan)).thenAnswer(a -> (double) currentValuesSize);
+    when(mq.getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true))).thenAnswer(
+        a -> distinctRowCount);
     inputRef0 = REX_BUILDER.makeInputRef(scan, 0);
+    inputRef10 = REX_BUILDER.makeInputRef(scan, 10);
     currentInputRef = inputRef0;
 
     stats = new ColStatistics();
@@ -544,6 +556,49 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
+  public void testComputeRangeOrPointPredicateSelectivityWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.OR,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int6),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+            REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, int1),
+            REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, inputRef0, int3)));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6703296703296704, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangeOrPointsPredicateSelectivityWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.OR,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int6),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int7),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+            REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, int1),
+            REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, inputRef0, int3)));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.7252747252747254, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComputeRangeOrIsNullPredicateSelectivityWithSearch() {
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(10));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.OR,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NULL, inputRef10),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+          REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef10, int1),
+          REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, inputRef10, int3)));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
   public void testComputeRangePredicateSelectivityBetween() {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int1, int3);
@@ -703,7 +758,7 @@ public class TestFilterSelectivityEstimator {
     verify(tableMock, never()).getColStat(any());
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int3, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.8571428571428571, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
