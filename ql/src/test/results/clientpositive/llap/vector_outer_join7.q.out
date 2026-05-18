@@ -1,0 +1,88 @@
+PREHOOK: query: CREATE TABLE src_hive29598 (k STRING, v STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_hive29598
+POSTHOOK: query: CREATE TABLE src_hive29598 (k STRING, v STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_hive29598
+PREHOOK: query: INSERT INTO src_hive29598 VALUES
+  ('p','1'),('p','2'),('p','3'),
+  ('q','2'),('q','3'),
+  ('r','3'),
+  ('s','3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_hive29598
+POSTHOOK: query: INSERT INTO src_hive29598 VALUES
+  ('p','1'),('p','2'),('p','3'),
+  ('q','2'),('q','3'),
+  ('r','3'),
+  ('s','3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_hive29598
+POSTHOOK: Lineage: src_hive29598.k SCRIPT []
+POSTHOOK: Lineage: src_hive29598.v SCRIPT []
+PREHOOK: query: WITH base AS (
+  SELECT k, v FROM src_hive29598 GROUP BY k, v
+),
+classified AS (
+  SELECT t1.k, t1.v,
+         CASE WHEN t2.k IS NULL THEN 'new'
+              WHEN t3.k IS NULL THEN 'two_step'
+              ELSE 'three_step' END AS status
+  FROM base t1
+  LEFT JOIN base t2
+    ON  t1.k = t2.k
+    AND CAST(t1.v AS INT) - 1 = CAST(t2.v AS INT)
+  LEFT JOIN base t3
+    ON  t1.k = t3.k
+    AND CAST(t1.v AS INT) - 2 = CAST(t3.v AS INT)
+  WHERE CAST(t1.v AS INT) >= 3
+  GROUP BY t1.k, t1.v,
+           CASE WHEN t2.k IS NULL THEN 'new'
+                WHEN t3.k IS NULL THEN 'two_step'
+                ELSE 'three_step' END
+)
+SELECT * FROM classified WHERE status = 'new'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_hive29598
+#### A masked pattern was here ####
+POSTHOOK: query: WITH base AS (
+  SELECT k, v FROM src_hive29598 GROUP BY k, v
+),
+classified AS (
+  SELECT t1.k, t1.v,
+         CASE WHEN t2.k IS NULL THEN 'new'
+              WHEN t3.k IS NULL THEN 'two_step'
+              ELSE 'three_step' END AS status
+  FROM base t1
+  LEFT JOIN base t2
+    ON  t1.k = t2.k
+    AND CAST(t1.v AS INT) - 1 = CAST(t2.v AS INT)
+  LEFT JOIN base t3
+    ON  t1.k = t3.k
+    AND CAST(t1.v AS INT) - 2 = CAST(t3.v AS INT)
+  WHERE CAST(t1.v AS INT) >= 3
+  GROUP BY t1.k, t1.v,
+           CASE WHEN t2.k IS NULL THEN 'new'
+                WHEN t3.k IS NULL THEN 'two_step'
+                ELSE 'three_step' END
+)
+SELECT * FROM classified WHERE status = 'new'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_hive29598
+#### A masked pattern was here ####
+r	3	new
+s	3	new
+PREHOOK: query: DROP TABLE src_hive29598
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_hive29598
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_hive29598
+POSTHOOK: query: DROP TABLE src_hive29598
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_hive29598
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_hive29598
