@@ -259,16 +259,8 @@ public class RexNodeConverter {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst, rexBuilder);
       } else if (HiveIn.INSTANCE.equals(calciteOp) && isAllPrimitive) {
-        if (childRexNodeLst.size() == 2) {
-          // if it is a single item in an IN clause, transform A IN (B) to A = B
-          // from IN [A,B] => EQUALS [A,B]
-          // except complex types
-          calciteOp = SqlStdOperatorTable.EQUALS;
-        } else if (RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)){
-          // if it is more than a single item in an IN clause,
-          // transform from IN [A,B,C] => SEARCH(A, SARG([B..B], [C..C]))
-          // except complex types
-          RexNode rewritten = rewriteInClause(calciteOp, childRexNodeLst, rexBuilder);
+        if (childRexNodeLst.size() == 2 || RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)) {
+          RexNode rewritten = rewriteInClause(childRexNodeLst, rexBuilder);
           assert rewritten instanceof RexCall;
           RexCall call = (RexCall) rewritten;
           calciteOp = call.op;
@@ -578,14 +570,37 @@ public class RexNodeConverter {
     return disjuncts;
   }
 
-  public static RexNode rewriteInClause(SqlOperator op, List<RexNode> childRexNodeLst,
-      RexBuilder rexBuilder) {
-    assert op == HiveIn.INSTANCE;
+  /**
+   * This method tries to rewrite IN expression arguments into an equivalent call.
+   * If there are only two elements, generates an EQUALS:
+   * IN [A,B] => EQUALS [A,B]
+   * Otherwise, tries to generate a SEARCH:
+   * IN [A,B,C] => SEARCH(A, SARG([B..B], [C..C]))
+   * If this is not possible (e.g., argument types not sufficiently compatible to generate a Calcite SEARCH expression),
+   * tries to generate an OR expression:
+   * IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
+   * If this is not possible (e.g., non-deterministic calls are found in the expressions), returns null
+   */
+  public static RexNode rewriteInClause(List<RexNode> childRexNodeLst, RexBuilder rexBuilder) {
+    if (childRexNodeLst.size() == 2) {
+      return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, childRexNodeLst);
+    }
+
     RexNode firstPred = childRexNodeLst.get(0);
     List<RexNode> ranges = childRexNodeLst.subList(1, childRexNodeLst.size());
-    return rexBuilder.makeIn(firstPred, ranges);
+    RexNode res = rexBuilder.makeIn(firstPred, ranges);
+    if (res.getKind() == SqlKind.SEARCH) {
+      return res;
+    }
+    // Calcite SEARCH conversion was not possible: generate our own OR expression
+    List<RexNode> newInputs = RexNodeConverter.transformInToOrOperands(childRexNodeLst, rexBuilder);
+    if (newInputs == null) {
+      return null;
+    }
+    return newInputs.size() == 1 ? newInputs.get(0) : rexBuilder.makeCall(SqlStdOperatorTable.OR, newInputs);
   }
 
+  // TODO remove?
   public static List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst,
       RexBuilder rexBuilder) throws SemanticException {
     assert op == HiveIn.INSTANCE;

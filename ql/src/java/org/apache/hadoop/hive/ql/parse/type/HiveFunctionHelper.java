@@ -267,27 +267,19 @@ public class HiveFunctionHelper implements FunctionHelper {
         // If it is a floor <date> operator, we need to rewrite it
         inputs = RexNodeConverter.rewriteFloorDateChildren(calciteOp, inputs, rexBuilder);
       } else if (HiveIn.INSTANCE.equals(calciteOp)) {
-        // if it is a single item in an IN clause, transform A IN (B) to A = B
-        // from IN [A,B] => EQUALS [A,B]
-        // if it is more than an single item in an IN clause,
-        // transform from IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
-        // Rewrite to OR is done only if number of operands are less than
-        // the threshold configured
-        boolean rewriteToOr = true;
-        if(maxNodesForInToOrTransformation != 0) {
-          if(inputs.size() > maxNodesForInToOrTransformation) {
-            rewriteToOr = false;
-          }
-        }
-        if(rewriteToOr) {
-          // If there are non-deterministic functions, we cannot perform this rewriting
-          List<RexNode> newInputs = RexNodeConverter.transformInToOrOperands(inputs, rexBuilder);
-          if (newInputs != null) {
-            inputs = newInputs;
-            if (inputs.size() == 1) {
-              inputs.add(rexBuilder.makeLiteral(false));
+        RexNode rewritten = RexNodeConverter.rewriteInClause(inputs, rexBuilder);
+        if (rewritten != null) {
+          assert rewritten instanceof RexCall;
+          RexCall call = (RexCall) rewritten;
+          if (call.getKind() == SqlKind.OR && maxNodesForInToOrTransformation != 0) {
+            // Rewrite to OR is done only if number of operands are less than the threshold configured
+            if (call.getOperands().size() <= maxNodesForInToOrTransformation) {
+              calciteOp = call.op;
+              inputs = call.operands;
             }
-            calciteOp = SqlStdOperatorTable.OR;
+          } else {
+            calciteOp = call.op;
+            inputs = call.operands;
           }
         }
       } else if (calciteOp.getKind() == SqlKind.COALESCE &&
