@@ -239,22 +239,33 @@ public class StatsUtils {
     return aggregateStat.getNumRows();
   }
 
-  private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
-      HiveConf conf, long nr, List<ColumnInfo> schema) {
+  /**
+   * Estimates column statistics for columns specified in {@code neededColumnNames}
+   * that do not already have statistics in the {@code existingColStats} list.
+   *
+   * @return A {@link List} of {@link ColStatistics} objects containing
+   * both the provided existing statistics and the newly estimated ones.
+   */
+  static List<ColStatistics> estimateStatsForMissingCols(
+      List<String> neededColumnNames, List<ColStatistics> existingColStats, HiveConf conf, long nr,
+      List<ColumnInfo> schema) {
 
-    Set<String> neededCols = new HashSet<>(neededColumns);
-    Set<String> colsWithStats = new HashSet<>();
+    Set<String> neededCols = new HashSet<>(neededColumnNames);
+    Set<String> columnNamesWithStats = new HashSet<>(existingColStats.size());
 
-    for (ColStatistics cstats : columnStats) {
-      colsWithStats.add(cstats.getColumnName());
+    for (ColStatistics cstats : existingColStats) {
+      columnNamesWithStats.add(cstats.getColumnName());
     }
 
-    List<String> missingColStats = new ArrayList<>(Sets.difference(neededCols, colsWithStats));
+    List<String> missingColumnNames = new ArrayList<>(Sets.difference(neededCols, columnNamesWithStats));
+    ArrayList<ColStatistics> combined = new ArrayList<>(existingColStats.size() + missingColumnNames.size());
+    combined.addAll(existingColStats);
 
-    if (!missingColStats.isEmpty()) {
-      columnStats.addAll(
-          estimateStats(schema, missingColStats, conf, nr));
+    if (!missingColumnNames.isEmpty()) {
+      combined.addAll(estimateStats(schema, missingColumnNames, conf, nr));
     }
+
+    return combined;
   }
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
@@ -300,7 +311,7 @@ public class StatsUtils {
       if (needColStats && !metaTable) {
         colStats = getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
         if (estimateStats) {
-          estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
+          colStats = estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
         }
         // we should have stats for all columns (estimated or actual)
         if (neededColumns.size() == colStats.size()) {
@@ -386,7 +397,7 @@ public class StatsUtils {
         boolean statsRetrieved = aggrStats != null &&
             aggrStats.getColStats() != null && aggrStats.getColStatsSize() != 0;
         if (neededColumns.isEmpty() || (!neededColsToRetrieve.isEmpty() && !statsRetrieved)) {
-          estimateStatsForMissingCols(neededColsToRetrieve, columnStats, conf, nr, schema);
+          columnStats = estimateStatsForMissingCols(neededColsToRetrieve, columnStats, conf, nr, schema);
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
           // state/initialize structures.
