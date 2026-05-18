@@ -265,13 +265,14 @@ public class RexNodeConverter {
           // except complex types
           calciteOp = SqlStdOperatorTable.EQUALS;
         } else if (RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)){
-          // if it is more than an single item in an IN clause,
-          // transform from IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
+          // if it is more than a single item in an IN clause,
+          // transform from IN [A,B,C] => SEARCH(A, SARG([B..B], [C..C]))
           // except complex types
-          // Rewrite to OR is done only if number of operands are less than
-          // the threshold configured
-          childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst, rexBuilder);
-          calciteOp = SqlStdOperatorTable.OR;
+          RexNode rewritten = rewriteInClause(calciteOp, childRexNodeLst, rexBuilder);
+          assert rewritten instanceof RexCall;
+          RexCall call = (RexCall) rewritten;
+          calciteOp = call.op;
+          childRexNodeLst = call.operands;
         }
       } else if (calciteOp.getKind() == SqlKind.COALESCE &&
           childRexNodeLst.size() > 1) {
@@ -575,6 +576,14 @@ public class RexNodeConverter {
       }
     }
     return disjuncts;
+  }
+
+  public static RexNode rewriteInClause(SqlOperator op, List<RexNode> childRexNodeLst,
+      RexBuilder rexBuilder) {
+    assert op == HiveIn.INSTANCE;
+    RexNode firstPred = childRexNodeLst.get(0);
+    List<RexNode> ranges = childRexNodeLst.subList(1, childRexNodeLst.size());
+    return rexBuilder.makeIn(firstPred, ranges);
   }
 
   public static List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst,
