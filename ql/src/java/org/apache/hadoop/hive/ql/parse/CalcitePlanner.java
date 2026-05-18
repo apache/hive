@@ -5646,14 +5646,4 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return sortRel;
     }
   }
-
-  /**
-   * Utility method to determine if an AST node represents a lateral view or lateral view outer.
-   * @param node AST node
-   * @return true if node is of lateral view or lateral view outer; false otherwise.
-   */
-  private boolean isASTNodeLateralViewOrOuter(ASTNode node) {
-    return node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
-            || node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER;
-  }
 }
