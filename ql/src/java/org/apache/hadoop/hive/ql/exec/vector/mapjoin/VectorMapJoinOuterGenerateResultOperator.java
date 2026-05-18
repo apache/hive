@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -776,6 +777,8 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       bcv.vector[index] = null;
       bcv.start[index] = 0;
       bcv.length[index] = 0;
+    } else if (colVector instanceof DecimalColumnVector) {
+      ((DecimalColumnVector) colVector).vector[index].setFromLong(0L);
     } else if (colVector instanceof TimestampColumnVector) {
       ((TimestampColumnVector) colVector).setNullValue(index);
     } else if (colVector instanceof IntervalDayTimeColumnVector) {
