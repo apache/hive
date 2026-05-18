@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -32,9 +32,10 @@ import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
-import static org.apache.hadoop.hive.metastore.txn.TxnStore.FAILED_RESPONSE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.CLEANING_RESPONSE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_RESPONSE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.WORKING_RESPONSE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.INITIATED_STATE;
@@ -59,7 +60,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
 
   @Test
   public void cleanupAfterAbortedAndRetriedMajorCompaction() throws Exception {
-    Table t = prepareTestTable();
+    Table t = prepareTestTable("camtc");
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
     long compactTxn = compactInTxn(rqst, CommitAction.ABORT);
     addBaseFile(t, null, 25L, 25, compactTxn);
@@ -83,10 +84,10 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
 
   @Test
   public void cleanupAfterKilledAndRetriedMajorCompaction() throws Exception {
-    Table t = prepareTestTable();
+    Table t = prepareTestTable("camtc");
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
-    long compactTxn = compactInTxn(rqst, CommitAction.NONE);
-    addBaseFile(t, null, 25L, 25, compactTxn);
+    long compactTxn1 = compactInTxn(rqst, CommitAction.NONE);
+    addBaseFile(t, null, 25L, 25, compactTxn1);
 
     txnHandler.revokeTimedoutWorkers(1L);
     // an open txn should prevent the retry
@@ -96,20 +97,32 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
 
     // force retry
     revokeTimedoutWorkers(conf);
-    compactTxn = compactInTxn(rqst);
-    addBaseFile(t, null, 25L, 25, compactTxn);
+    long compactTxn2 = compactInTxn(rqst);
+    addBaseFile(t, null, 25L, 25, compactTxn2);
 
     startCleaner();
 
-    // Validate that the cleanup attempt has failed.
+    // Validate that the cleanup attempt was skipped.
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
-    assertEquals(FAILED_RESPONSE, rsp.getCompacts().getFirst().getState());
-    assertEquals("txnid:26 is open and <= hwm: 27", rsp.getCompacts().getFirst().getErrorMessage());
+    assertEquals(CLEANING_RESPONSE, rsp.getCompacts().getFirst().getState());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, null);
     assertEquals(6, paths.size());
+
+    // Abort the open compaction txn, so that the Cleaner can proceed.
+    txnHandler.abortTxns(
+        new AbortTxnsRequest(Collections.singletonList(compactTxn1)));
+    startCleaner();
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(1, rsp.getCompactsSize());
+    assertEquals(SUCCEEDED_RESPONSE, rsp.getCompacts().getFirst().getState());
+
+    // Check that the files are removed
+    paths = getDirectories(conf, t, null);
+    assertEquals(1, paths.size());
   }
 
   private static void revokeTimedoutWorkers(Configuration conf) throws Exception {
@@ -121,39 +134,51 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
   }
 
   @Test
-  public void cleanupAfterMajorCompactionWithQueryWaitingToLockTheSnapshot() throws Exception {
-    Table t = prepareTestTable();
-    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
-    long compactTxn = compactInTxn(rqst, CommitAction.MARK_COMPACTED);
-    addBaseFile(t, null, 25L, 25, compactTxn);
+  public void cleanupNotBlockedByOpenTxnOnAnotherTable() throws Exception {
+    // Two tables, two compactions: camtc1's compactTxn is registered in MIN_HISTORY_WRITE_ID
+    // (via compactInTxn → addWriteIdsToMinHistory). camtc2's cleanup must proceed despite
+    // camtc1's open compactTxn id being ≤ camtc2's hwm — per-table independence.
+    Table t1 = prepareTestTable("camtc1");
+    Table t2 = prepareTestTable("camtc2");
 
-    // Open a query during compaction,
-    // Do not register minOpenWriteId (i.e. simulate delay locking the snapshot)
-    openTxn();
+    CompactionRequest rqstTbl1 = new CompactionRequest("default", "camtc1", CompactionType.MAJOR);
+    long compactTxn = compactInTxn(rqstTbl1, CommitAction.NONE);
+    addBaseFile(t1, null, 25L, 25, compactTxn);
 
-    txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
+    CompactionRequest rqstTbl2 = new CompactionRequest("default", "camtc2", CompactionType.MAJOR);
+    compactTxn = compactInTxn(rqstTbl2);
+    addBaseFile(t2, null, 25L, 25, compactTxn);
+
+    // force retry: reset camtc1's queue entry from WORKING to INITIATED so a fresh compactor takes it
+    revokeTimedoutWorkers(conf);
+    compactTxn = compactInTxn(rqstTbl1);
+    addBaseFile(t1, null, 25L, 25, compactTxn);
+
     startCleaner();
 
-    // Validate that the cleanup attempt has failed.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    assertEquals(1, rsp.getCompactsSize());
-    assertEquals(FAILED_RESPONSE, rsp.getCompacts().getFirst().getState());
-    assertEquals("txnid:27 is open and <= hwm: 27", rsp.getCompacts().getFirst().getErrorMessage());
+    assertEquals(2, rsp.getCompactsSize());
 
-    // Check that the files are not removed
-    List<Path> paths = getDirectories(conf, t, null);
-    assertEquals(5, paths.size());
+    assertEquals(SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    assertEquals("camtc2", rsp.getCompacts().get(0).getTablename());
+    // camtc2 was cleaned: only the new base remains.
+    assertEquals(1, getDirectories(conf, t2, null).size());
+
+    assertEquals(CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());
+    assertEquals("camtc1", rsp.getCompacts().get(1).getTablename());
+    // camtc1 wasn't actually cleaned (admission filter held it back).
+    assertEquals(6, getDirectories(conf, t1, null).size());
   }
 
-  private Table prepareTestTable() throws Exception {
-    Table t = newTable("default", "camtc", false);
+  private Table prepareTestTable(String tblName) throws Exception {
+    Table t = newTable("default", tblName, false);
 
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 25L, 25, 2);
 
-    burnThroughTransactions("default", "camtc", 25);
+    burnThroughTransactions("default", tblName, 25);
     return t;
   }
 

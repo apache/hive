@@ -198,6 +198,10 @@ public class AcidCompactionService extends CompactionService {
       txnWriteIds.addTableValidWriteIdList(tblValidWriteIds);
       conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
 
+      // Register in MIN_HISTORY_WRITE_ID so the per-table cleaner admission blocks while open.
+      msc.addWriteIdsToMinHistory(compactionTxn.getTxnId(),
+          Map.of(fullTableName, txnWriteIds.getMinOpenWriteId(fullTableName)));
+
       ci.highestWriteId = tblValidWriteIds.getHighWatermark();
       //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about
       //it until after any data written by it are physically removed

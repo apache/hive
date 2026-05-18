@@ -79,33 +79,28 @@ public class TxnUtils {
     long highWatermark = minOpenTxn - 1;
     long[] exceptions = new long[txns.getOpen_txnsSize()];
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
-    int i = 0;
+    int i = 0, j = 0;
     for (long txnId : txns.getOpen_txns()) {
       if (txnId > highWatermark) {
         break;
       }
-      if (abortedBits.get(i)) {
-        exceptions[i] = txnId;
+      if (abortedBits.get(i) || isAbortCleanup) {
+        exceptions[j++] = txnId;
+      } else if (!TxnHandler.ConfVars.useMinHistoryWriteId()) {
+        throw new IllegalStateException(
+            JavaUtils.txnIdToString(txnId) + " is open and <= hwm: " + highWatermark);
       } else {
-        if (isAbortCleanup) {
-          exceptions[i] = txnId;
-        } else {
-          throw new IllegalStateException(
-              JavaUtils.txnIdToString(txnId) + " is open and <= hwm: " + highWatermark);
-        }
+        LOG.debug("Ignoring open txn {} <= hwm: {}", txnId, highWatermark);
       }
       ++i;
     }
-    exceptions = Arrays.copyOf(exceptions, i);
+    exceptions = Arrays.copyOf(exceptions, j);
+
+    BitSet bitSet = isAbortCleanup ? abortedBits : new BitSet(j);
     if (!isAbortCleanup) {
-      BitSet bitSet = new BitSet(exceptions.length);
-      bitSet.set(0, exceptions.length);
-      //add ValidCleanerTxnList? - could be problematic for all the places that read it from
-      // string as they'd have to know which object to instantiate
-      return new ValidReadTxnList(exceptions, bitSet, highWatermark, Long.MAX_VALUE);
-    } else {
-      return new ValidReadTxnList(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
+      bitSet.set(0, j);
     }
+    return new ValidReadTxnList(exceptions, bitSet, highWatermark, Long.MAX_VALUE);
   }
 
   /**
