@@ -2286,6 +2286,10 @@ public final class Utilities {
     return names;
   }
 
+  public static List<String> getColumnTypesFromFieldSchema(List<FieldSchema> fieldSchemas) {
+    return fieldSchemas.stream().map(FieldSchema::getType).toList();
+  }
+
   public static List<String> getInternalColumnNamesFromSignature(List<ColumnInfo> colInfos) {
     List<String> names = new ArrayList<String>();
     for (ColumnInfo ci : colInfos) {

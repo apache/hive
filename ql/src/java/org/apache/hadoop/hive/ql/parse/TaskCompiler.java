@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContex
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.FieldSchemas;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -672,8 +673,7 @@ public abstract class TaskCompiler {
       int outerQueryLimit, int numBitVector) throws SemanticException {
     FetchWork fetch;
     String tableName = analyzeRewrite.getTableName();
-    List<String> colName = analyzeRewrite.getColName();
-    List<String> colType = analyzeRewrite.getColType();
+    FieldSchemas fieldSchemas = analyzeRewrite.getFieldSchemas();
     boolean isTblLevel = analyzeRewrite.isTblLvl();
 
     String cols = loadFileWork.get(0).getColumns();
@@ -691,7 +691,7 @@ public abstract class TaskCompiler {
     fetch = new FetchWork(loadFileWork.get(0).getSourcePath(), resultTab, outerQueryLimit);
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
-        colName, colType, isTblLevel, numBitVector, fetch);
+        fieldSchemas, isTblLevel, numBitVector, fetch);
     StatsTask columnStatsTask = map.get(tableName);
     if (columnStatsTask == null) {
       throw new SemanticException("Can not find " + tableName + " in genColumnStatsTask");
