@@ -221,6 +221,11 @@ public class DoubleColumnVector extends ColumnVector {
   }
 
   @Override
+  protected void clearSlotValue(int elementNum) {
+    vector[elementNum] = 0.0;
+  }
+
+  @Override
   public void stringifyValue(StringBuilder buffer, int row) {
     if (isRepeating) {
       row = 0;

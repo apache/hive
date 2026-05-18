@@ -378,6 +378,11 @@ public class TimestampColumnVector extends ColumnVector {
     nanos[elementNum] = 1;
   }
 
+  @Override
+  protected void clearSlotValue(int elementNum) {
+    setNullValue(elementNum);
+  }
+
   // Copy the current object contents into the output. Only copy selected entries,
   // as indicated by selectedInUse and the sel array.
   @Override

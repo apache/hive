@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
@@ -246,4 +248,18 @@ public class TestTimestampColumnVector {
     return thread;
   }
 
+  @Test
+  public void testClearValue() {
+    TimestampColumnVector cv = new TimestampColumnVector(4);
+    cv.time[2] = 1234567890000L;
+    cv.nanos[2] = 999;
+
+    cv.clearValue(2);
+
+    assertTrue(cv.isNull[2]);
+    assertFalse(cv.noNulls);
+    // setNullValue convention: time = 0, nanos = 1
+    assertEquals(0L, cv.time[2]);
+    assertEquals(1, cv.nanos[2]);
+  }
 }

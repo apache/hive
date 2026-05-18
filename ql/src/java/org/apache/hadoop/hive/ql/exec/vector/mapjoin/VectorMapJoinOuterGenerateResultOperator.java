@@ -27,11 +27,7 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -591,18 +587,12 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       // key as null, too.
       //
       for (int column : outerSmallTableKeyColumnMap) {
-        ColumnVector colVector = batch.cols[column];
-        colVector.noNulls = false;
-        colVector.isNull[batchIndex] = true;
-        clearVectorValue(colVector, batchIndex);
+        batch.cols[column].clearValue(batchIndex);
       }
 
       // Small table values are set to null.
       for (int column : smallTableValueColumnMap) {
-        ColumnVector colVector = batch.cols[column];
-        colVector.noNulls = false;
-        colVector.isNull[batchIndex] = true;
-        clearVectorValue(colVector, batchIndex);
+        batch.cols[column].clearValue(batchIndex);
       }
     }
   }
@@ -752,37 +742,14 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     //
     for (int column : outerSmallTableKeyColumnMap) {
       ColumnVector colVector = batch.cols[column];
-      colVector.noNulls = false;
-      colVector.isNull[0] = true;
+      colVector.clearValue(0);
       colVector.isRepeating = true;
-      clearVectorValue(colVector, 0);
     }
 
     for (int column : smallTableValueColumnMap) {
       ColumnVector colVector = batch.cols[column];
-      colVector.noNulls = false;
-      colVector.isNull[0] = true;
+      colVector.clearValue(0);
       colVector.isRepeating = true;
-      clearVectorValue(colVector, 0);
-    }
-  }
-
-  private static void clearVectorValue(ColumnVector colVector, int index) {
-    if (colVector instanceof LongColumnVector) {
-      ((LongColumnVector) colVector).vector[index] = 0L;
-    } else if (colVector instanceof DoubleColumnVector) {
-      ((DoubleColumnVector) colVector).vector[index] = 0.0;
-    } else if (colVector instanceof BytesColumnVector) {
-      BytesColumnVector bcv = (BytesColumnVector) colVector;
-      bcv.vector[index] = null;
-      bcv.start[index] = 0;
-      bcv.length[index] = 0;
-    } else if (colVector instanceof DecimalColumnVector) {
-      ((DecimalColumnVector) colVector).vector[index].setFromLong(0L);
-    } else if (colVector instanceof TimestampColumnVector) {
-      ((TimestampColumnVector) colVector).setNullValue(index);
-    } else if (colVector instanceof IntervalDayTimeColumnVector) {
-      ((IntervalDayTimeColumnVector) colVector).setNullValue(index);
     }
   }
 
