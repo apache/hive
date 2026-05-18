@@ -56,7 +56,6 @@ import org.apache.datasketches.quantilescommon.QuantileSearchCriteria;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -71,7 +70,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private static final double DEFAULT_COMPARISON_SELECTIVITY = 1.0 / 3.0;
 
   private final RelNode childRel;
-  private final double childCardinality;
+  private final double  childCardinality;
   private final RelMetadataQuery mq;
   private final RexBuilder rexBuilder;
 
@@ -118,10 +117,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity = computeConjunctionSelectivity(call);
       break;
     }
-    case SEARCH: {
+    case SEARCH:
       selectivity = computeSearchSelectivity(call);
       break;
-    }
     case OR: {
       selectivity = computeDisjunctionSelectivity(call);
       break;
@@ -638,8 +636,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           return 1.0; // "all" range
         }
 
-        final BoundType lowerBoundType, upperBoundType;
-        final Optional<Float> lowerLiteral, upperLiteral;
+        final BoundType lowerBoundType;
+        final BoundType upperBoundType;
+        final Optional<Float> lowerLiteral;
+        final Optional<Float> upperLiteral;
         final Supplier<Double> defaultSelectivity;
         if (range.hasLowerBound() && range.hasUpperBound()) {
           C lower = range.lowerEndpoint();
