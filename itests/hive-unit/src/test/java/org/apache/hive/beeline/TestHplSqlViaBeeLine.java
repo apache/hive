@@ -22,6 +22,7 @@ package org.apache.hive.beeline;
 
 import static org.apache.hive.beeline.TestBeeLineWithArgs.OutStream;
 import static org.apache.hive.beeline.TestBeeLineWithArgs.testCommandLineScript;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -37,8 +38,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -1478,6 +1483,30 @@ public class TestHplSqlViaBeeLine {
             "EXECUTE 'select 1';\n" +
             "PRINT 'Second ERRORCODE: ' || errorcode";
     testScriptFile(scriptText, args(), "First ERRORCODE: -1.*Second ERRORCODE: 0", OutStream.ERR);
+  }
+
+  @Test
+  public void testHplSqlInsertRemovesStagingDirsUnderTable() throws Throwable {
+    String scriptText =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (s string);\n" +
+            "INSERT INTO result VALUES('Hello');\n" +
+            "execute 'INSERT INTO result VALUES(''World'')';\n" +
+            "SELECT * FROM result;";
+    testScriptFile(scriptText, args(), "Hello.*World");
+
+    HiveConf conf = miniHS2.getHiveConf();
+    String stagingDirPrefix = HiveConf.getVar(conf, HiveConf.ConfVars.STAGING_DIR);
+    Path wh = new Path(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE));
+    FileSystem fs = wh.getFileSystem(conf);
+    Path tableDir = fs.makeQualified(new Path(wh, "result"));
+    FileStatus[] children = fs.listStatus(tableDir);
+    if (children != null) {
+      for (FileStatus child : children) {
+        assertFalse("Staging directory was not cleaned up: " + child.getPath(),
+            child.getPath().getName().startsWith(stagingDirPrefix));
+      }
+    }
   }
 
   private static List<String> args() {
