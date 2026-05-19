@@ -1,88 +1,84 @@
-PREHOOK: query: CREATE TABLE src_hive29598 (k STRING, v STRING) STORED AS ORC
+PREHOOK: query: CREATE TABLE t (k STRING, v STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_hive29598
-POSTHOOK: query: CREATE TABLE src_hive29598 (k STRING, v STRING) STORED AS ORC
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (k STRING, v STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_hive29598
-PREHOOK: query: INSERT INTO src_hive29598 VALUES
-  ('p','1'),('p','2'),('p','3'),
-  ('q','2'),('q','3'),
-  ('r','3'),
-  ('s','3')
+POSTHOOK: Output: default@t
+PREHOOK: query: INSERT INTO t VALUES
+  ('A','1'),('A','2'),('A','3'),
+  ('B','2'),('B','3'),
+  ('C','3'),
+  ('D','1'),('D','3')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@src_hive29598
-POSTHOOK: query: INSERT INTO src_hive29598 VALUES
-  ('p','1'),('p','2'),('p','3'),
-  ('q','2'),('q','3'),
-  ('r','3'),
-  ('s','3')
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES
+  ('A','1'),('A','2'),('A','3'),
+  ('B','2'),('B','3'),
+  ('C','3'),
+  ('D','1'),('D','3')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@src_hive29598
-POSTHOOK: Lineage: src_hive29598.k SCRIPT []
-POSTHOOK: Lineage: src_hive29598.v SCRIPT []
-PREHOOK: query: WITH base AS (
-  SELECT k, v FROM src_hive29598 GROUP BY k, v
-),
-classified AS (
-  SELECT t1.k, t1.v,
-         CASE WHEN t2.k IS NULL THEN 'new'
-              WHEN t3.k IS NULL THEN 'two_step'
-              ELSE 'three_step' END AS status
-  FROM base t1
-  LEFT JOIN base t2
-    ON  t1.k = t2.k
-    AND CAST(t1.v AS INT) - 1 = CAST(t2.v AS INT)
-  LEFT JOIN base t3
-    ON  t1.k = t3.k
-    AND CAST(t1.v AS INT) - 2 = CAST(t3.v AS INT)
-  WHERE CAST(t1.v AS INT) >= 3
-  GROUP BY t1.k, t1.v,
-           CASE WHEN t2.k IS NULL THEN 'new'
-                WHEN t3.k IS NULL THEN 'two_step'
-                ELSE 'three_step' END
-)
-SELECT * FROM classified WHERE status = 'new'
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.k SCRIPT []
+POSTHOOK: Lineage: t.v SCRIPT []
+PREHOOK: query: WITH
+  probe AS (
+    SELECT k, v, (CAST(v AS INT) > 0) AS p_bool
+    FROM t WHERE CAST(v AS INT) >= 3
+  ),
+  small_side AS (
+    SELECT k, v, (CAST(v AS INT) > 9999) AS s_bool
+    FROM t
+  ),
+  classified AS (
+    SELECT p.k, p.v, CAST((s.s_bool OR p.p_bool) AS INT) AS observed_value
+    FROM probe p
+    LEFT JOIN small_side s
+      ON  p.k = s.k
+      AND CAST(p.v AS INT) - 1 = CAST(s.v AS INT)
+  ),
+  diagnosed AS (
+    SELECT k, v, MAX(observed_value) AS observed_value
+    FROM classified
+    GROUP BY k, v
+  )
+SELECT k, v,
+       observed_value AS observed_value_returned_by_select,
+       1              AS required_value_per_sql_semantics
+FROM diagnosed
+WHERE observed_value = 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_hive29598
+PREHOOK: Input: default@t
 #### A masked pattern was here ####
-POSTHOOK: query: WITH base AS (
-  SELECT k, v FROM src_hive29598 GROUP BY k, v
-),
-classified AS (
-  SELECT t1.k, t1.v,
-         CASE WHEN t2.k IS NULL THEN 'new'
-              WHEN t3.k IS NULL THEN 'two_step'
-              ELSE 'three_step' END AS status
-  FROM base t1
-  LEFT JOIN base t2
-    ON  t1.k = t2.k
-    AND CAST(t1.v AS INT) - 1 = CAST(t2.v AS INT)
-  LEFT JOIN base t3
-    ON  t1.k = t3.k
-    AND CAST(t1.v AS INT) - 2 = CAST(t3.v AS INT)
-  WHERE CAST(t1.v AS INT) >= 3
-  GROUP BY t1.k, t1.v,
-           CASE WHEN t2.k IS NULL THEN 'new'
-                WHEN t3.k IS NULL THEN 'two_step'
-                ELSE 'three_step' END
-)
-SELECT * FROM classified WHERE status = 'new'
+POSTHOOK: query: WITH
+  probe AS (
+    SELECT k, v, (CAST(v AS INT) > 0) AS p_bool
+    FROM t WHERE CAST(v AS INT) >= 3
+  ),
+  small_side AS (
+    SELECT k, v, (CAST(v AS INT) > 9999) AS s_bool
+    FROM t
+  ),
+  classified AS (
+    SELECT p.k, p.v, CAST((s.s_bool OR p.p_bool) AS INT) AS observed_value
+    FROM probe p
+    LEFT JOIN small_side s
+      ON  p.k = s.k
+      AND CAST(p.v AS INT) - 1 = CAST(s.v AS INT)
+  ),
+  diagnosed AS (
+    SELECT k, v, MAX(observed_value) AS observed_value
+    FROM classified
+    GROUP BY k, v
+  )
+SELECT k, v,
+       observed_value AS observed_value_returned_by_select,
+       1              AS required_value_per_sql_semantics
+FROM diagnosed
+WHERE observed_value = 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_hive29598
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-r	3	new
-s	3	new
-PREHOOK: query: DROP TABLE src_hive29598
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_hive29598
-PREHOOK: Output: database:default
-PREHOOK: Output: default@src_hive29598
-POSTHOOK: query: DROP TABLE src_hive29598
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_hive29598
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_hive29598

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -25,100 +26,258 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
-import org.junit.Test;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VoidColumnVector;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.lang.reflect.Method;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Unit tests for VectorMapJoinOuterGenerateResultOperator.clearVectorValue().
- *
- * clearVectorValue() zeroes the raw vector slot whenever isNull[i] is set to
- * true in the outer-join null-marking paths, preventing stale non-zero values
- * from being misread by downstream operators (e.g. ColOrCol) that use
- * vector[i] == 0 to distinguish "false" from "null".
+ * Tests that {@link VectorMapJoinOuterGenerateResultOperator} invokes
+ * {@code clearValue} on every small-table key and value column for each
+ * unmatched big-table row. The HIVE-29598 bug is that without that call,
+ * a stale {@code vector[i]} survives the null marking and leaks into
+ * downstream operators that read the slot without checking {@code isNull[i]}.
  */
-public class TestVectorMapJoinOuterGenerateResultOperator {
+class TestVectorMapJoinOuterGenerateResultOperator {
 
-  private static void callClearVectorValue(ColumnVector colVector, int index) throws Exception {
-    Method m = VectorMapJoinOuterGenerateResultOperator.class
-        .getDeclaredMethod("clearVectorValue", ColumnVector.class, int.class);
-    m.setAccessible(true);
-    m.invoke(null, colVector, index);
+  /**
+   * A concrete subclass of the abstract operator with no-op stubs for the
+   * abstract methods, just enough to invoke {@code generateOuterNulls} and
+   * {@code generateOuterNullsRepeatedAll} directly from tests.
+   */
+  private static class TestableOuterOp extends VectorMapJoinOuterGenerateResultOperator {
+    @Override
+    protected String getLoggingPrefix() {
+      return "test";
+    }
+
+    @Override
+    public void processBatch(VectorizedRowBatch batch) {
+      // No-op: tests invoke the generateOuterNulls* methods directly.
+    }
+  }
+
+  /**
+   * LongColumnVector that records every {@code clearSlotValue} invocation.
+   * Used to assert that the operator dispatched through the new
+   * {@link org.apache.hadoop.hive.ql.exec.vector.ColumnVector#clearValue(int)}
+   * contract, rather than just observing the slot-clearing side effect
+   * (which could also be produced by another mechanism).
+   */
+  private static class TrackingLongColumnVector extends LongColumnVector {
+    final List<Integer> clearedIndices = new ArrayList<>();
+
+    TrackingLongColumnVector(int size) {
+      super(size);
+    }
+
+    @Override
+    protected void clearSlotValue(int elementNum) {
+      super.clearSlotValue(elementNum);
+      clearedIndices.add(elementNum);
+    }
   }
 
   @Test
-  public void testClearLongColumnVector() throws Exception {
-    LongColumnVector cv = new LongColumnVector(4);
-    cv.vector[2] = 2025L;
+  void generateOuterNullsCallsClearValueOnEachMappedColumnForEachUnmatchedRow() throws HiveException, IOException {
+    TestableOuterOp op = new TestableOuterOp();
+    op.outerSmallTableKeyColumnMap = new int[] {0};
+    op.smallTableValueColumnMap = new int[] {1, 2};
 
-    callClearVectorValue(cv, 2);
+    VectorizedRowBatch batch = new VectorizedRowBatch(3, 4);
+    TrackingLongColumnVector keyCol = new TrackingLongColumnVector(4);
+    TrackingLongColumnVector valCol1 = new TrackingLongColumnVector(4);
+    TrackingLongColumnVector valCol2 = new TrackingLongColumnVector(4);
+    keyCol.vector[1] = 99L;   // stale values that should be cleared
+    valCol1.vector[1] = 88L;
+    valCol2.vector[3] = 77L;
+    batch.cols[0] = keyCol;
+    batch.cols[1] = valCol1;
+    batch.cols[2] = valCol2;
 
-    assertEquals(0L, cv.vector[2]);
-    // neighbours must be untouched
-    assertEquals(0L, cv.vector[1]);
-    assertEquals(0L, cv.vector[3]);
+    int[] noMatchs = new int[] {1, 3};
+    op.generateOuterNulls(batch, noMatchs, noMatchs.length);
+
+    // Each tracked column had clearSlotValue invoked at indices 1 and 3.
+    assertEquals(Arrays.asList(1, 3), keyCol.clearedIndices);
+    assertEquals(Arrays.asList(1, 3), valCol1.clearedIndices);
+    assertEquals(Arrays.asList(1, 3), valCol2.clearedIndices);
+
+    // Bookkeeping side effect of clearValue (final base-class method).
+    assertFalse(keyCol.noNulls);
+    assertTrue(keyCol.isNull[1]);
+    assertTrue(keyCol.isNull[3]);
+    assertFalse(keyCol.isNull[0]);
+    assertFalse(keyCol.isNull[2]);
+
+    // Stale slot values cleared to 0L.
+    assertEquals(0L, keyCol.vector[1]);
+    assertEquals(0L, valCol1.vector[1]);
+    assertEquals(0L, valCol2.vector[3]);
   }
 
   @Test
-  public void testClearDoubleColumnVector() throws Exception {
-    DoubleColumnVector cv = new DoubleColumnVector(4);
-    cv.vector[1] = 3.14;
+  void generateOuterNullsRepeatedAllCallsClearValueAtIndexZeroForEachMappedColumn() throws HiveException, IOException {
+    TestableOuterOp op = new TestableOuterOp();
+    op.outerSmallTableKeyColumnMap = new int[] {0};
+    op.smallTableValueColumnMap = new int[] {1};
 
-    callClearVectorValue(cv, 1);
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, 4);
+    TrackingLongColumnVector keyCol = new TrackingLongColumnVector(4);
+    TrackingLongColumnVector valCol = new TrackingLongColumnVector(4);
+    keyCol.vector[0] = 42L;
+    valCol.vector[0] = 84L;
+    batch.cols[0] = keyCol;
+    batch.cols[1] = valCol;
 
-    assertEquals(0.0, cv.vector[1], 0.0);
+    op.generateOuterNullsRepeatedAll(batch);
+
+    // Each tracked column had clearSlotValue invoked exactly once at index 0.
+    assertEquals(Arrays.asList(0), keyCol.clearedIndices);
+    assertEquals(Arrays.asList(0), valCol.clearedIndices);
+
+    // Bookkeeping plus isRepeating set by the operator after clearValue.
+    assertFalse(keyCol.noNulls);
+    assertTrue(keyCol.isNull[0]);
+    assertTrue(keyCol.isRepeating);
+    assertFalse(valCol.noNulls);
+    assertTrue(valCol.isNull[0]);
+    assertTrue(valCol.isRepeating);
+
+    // Stale slot values cleared to 0L.
+    assertEquals(0L, keyCol.vector[0]);
+    assertEquals(0L, valCol.vector[0]);
   }
 
   @Test
-  public void testClearBytesColumnVector() throws Exception {
-    BytesColumnVector cv = new BytesColumnVector(4);
-    byte[] data = "hello".getBytes();
-    cv.vector[0] = data;
-    cv.start[0] = 1;
-    cv.length[0] = 3;
+  void generateOuterNullsSetsBookkeepingOnTypeWithNoClearSlotValueOverride() throws HiveException, IOException {
+    // VoidColumnVector inherits the base ColumnVector.clearSlotValue() no-op
+    // — no per-slot value to zero. This verifies the operator still drives
+    // the bookkeeping (isNull[i], noNulls) through the final clearValue()
+    // contract on a type that doesn't override the hook.
+    TestableOuterOp op = new TestableOuterOp();
+    op.outerSmallTableKeyColumnMap = new int[] {};
+    op.smallTableValueColumnMap = new int[] {0};
 
-    callClearVectorValue(cv, 0);
+    VectorizedRowBatch batch = new VectorizedRowBatch(1, 4);
+    VoidColumnVector voidCol = new VoidColumnVector(4);
+    batch.cols[0] = voidCol;
 
-    assertNull(cv.vector[0]);
-    assertEquals(0, cv.start[0]);
-    assertEquals(0, cv.length[0]);
+    int[] noMatchs = new int[] {1, 3};
+    op.generateOuterNulls(batch, noMatchs, noMatchs.length);
+
+    assertFalse(voidCol.noNulls);
+    assertTrue(voidCol.isNull[1]);
+    assertTrue(voidCol.isNull[3]);
+    assertFalse(voidCol.isNull[0]);
+    assertFalse(voidCol.isNull[2]);
   }
 
-  @Test
-  public void testClearTimestampColumnVector() throws Exception {
-    TimestampColumnVector cv = new TimestampColumnVector(4);
-    cv.time[2] = 1234567890000L;
-    cv.nanos[2] = 999;
+  /**
+   * Verifies that for every {@link ColumnVector} subclass whose
+   * {@code clearSlotValue} the PR overrides, the operator's call through
+   * {@code clearValue} ultimately reaches that override and zeroes the slot
+   * to the type's cleared state. Complements
+   * {@link #generateOuterNullsCallsClearValueOnEachMappedColumnForEachUnmatchedRow}
+   * which proves the dispatch chain on Long alone.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("modifiedColumnVectorTypes")
+  void generateOuterNullsClearsSlotForEachModifiedType(
+      String typeName,
+      ColumnVector cv,
+      Runnable preLoad,
+      Runnable assertSlotCleared) throws HiveException, IOException {
 
-    callClearVectorValue(cv, 2);
+    TestableOuterOp op = new TestableOuterOp();
+    op.outerSmallTableKeyColumnMap = new int[] {};
+    op.smallTableValueColumnMap = new int[] {0};
 
-    // TimestampColumnVector.setNullValue sets time=0, nanos=1
-    assertEquals(0L, cv.time[2]);
-    assertEquals(1, cv.nanos[2]);
+    VectorizedRowBatch batch = new VectorizedRowBatch(1, 4);
+    preLoad.run();
+    batch.cols[0] = cv;
+
+    int[] noMatchs = new int[] {2};
+    op.generateOuterNulls(batch, noMatchs, noMatchs.length);
+
+    assertTrue(cv.isNull[2]);
+    assertFalse(cv.noNulls);
+    assertSlotCleared.run();
   }
 
-  @Test
-  public void testClearDecimalColumnVector() throws Exception {
-    DecimalColumnVector cv = new DecimalColumnVector(4, 18, 4);
-    cv.vector[1].setFromLong(12345L);
+  static Stream<Arguments> modifiedColumnVectorTypes() {
+    final LongColumnVector longCv = new LongColumnVector(4);
+    final DoubleColumnVector doubleCv = new DoubleColumnVector(4);
+    final BytesColumnVector bytesCv = new BytesColumnVector(4);
+    final DecimalColumnVector decCv = new DecimalColumnVector(4, 18, 4);
+    final TimestampColumnVector tsCv = new TimestampColumnVector(4);
+    final IntervalDayTimeColumnVector ivCv = new IntervalDayTimeColumnVector(4);
 
-    callClearVectorValue(cv, 1);
-
-    assertEquals(0L, cv.vector[1].serialize64(4));
-  }
-
-  @Test
-  public void testClearIntervalDayTimeColumnVector() throws Exception {
-    IntervalDayTimeColumnVector cv = new IntervalDayTimeColumnVector(4);
-    cv.set(3, new org.apache.hadoop.hive.common.type.HiveIntervalDayTime(5, 0));
-
-    callClearVectorValue(cv, 3);
-
-    // IntervalDayTimeColumnVector.setNullValue sets totalSeconds=0, nanos=1
-    assertEquals(0L, cv.getTotalSeconds(3));
-    assertEquals(1, cv.getNanos(3));
+    return Stream.of(
+        Arguments.of(
+            "LongColumnVector",
+            longCv,
+            (Runnable) () -> longCv.vector[2] = 999L,
+            (Runnable) () -> assertEquals(0L, longCv.vector[2])),
+        Arguments.of(
+            "DoubleColumnVector",
+            doubleCv,
+            (Runnable) () -> doubleCv.vector[2] = 3.14,
+            (Runnable) () -> assertEquals(0.0, doubleCv.vector[2])),
+        Arguments.of(
+            "BytesColumnVector",
+            bytesCv,
+            (Runnable) () -> {
+              bytesCv.vector[2] = "stale".getBytes(StandardCharsets.UTF_8);
+              bytesCv.start[2] = 1;
+              bytesCv.length[2] = 3;
+            },
+            (Runnable) () -> {
+              assertNull(bytesCv.vector[2]);
+              assertEquals(0, bytesCv.start[2]);
+              assertEquals(0, bytesCv.length[2]);
+            }),
+        Arguments.of(
+            "DecimalColumnVector",
+            decCv,
+            (Runnable) () -> decCv.vector[2].setFromLong(999L),
+            (Runnable) () -> assertEquals(0L, decCv.vector[2].serialize64(decCv.scale))),
+        Arguments.of(
+            "TimestampColumnVector",
+            tsCv,
+            (Runnable) () -> {
+              tsCv.time[2] = 1234567890000L;
+              tsCv.nanos[2] = 999;
+            },
+            (Runnable) () -> {
+              // setNullValue convention: time = 0, nanos = 1
+              assertEquals(0L, tsCv.time[2]);
+              assertEquals(1, tsCv.nanos[2]);
+            }),
+        Arguments.of(
+            "IntervalDayTimeColumnVector",
+            ivCv,
+            (Runnable) () -> ivCv.set(2, new HiveIntervalDayTime(5, 0)),
+            (Runnable) () -> {
+              // setNullValue convention: totalSeconds = 0, nanos = 1
+              assertEquals(0L, ivCv.getTotalSeconds(2));
+              assertEquals(1, ivCv.getNanos(2));
+            })
+    );
   }
 }
