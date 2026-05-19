@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -28,32 +30,30 @@ import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 public class HiveMetaStoreClientBuilder {
   private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClientBuilder.class);
+  private static final Map<Class<? extends IMetaStoreClient>, MetaStoreClientFactory>
+      CLIENT_FACTORIES = new ConcurrentHashMap<>();
 
   private final Configuration conf;
   private IMetaStoreClient client;
 
-  public HiveMetaStoreClientBuilder(Configuration conf) {
-    this.conf = Objects.requireNonNull(conf);
+  public HiveMetaStoreClientBuilder(Configuration conf, boolean allowEmbedded) throws MetaException {
+    this(conf, createClient(conf, allowEmbedded));
   }
 
-  public HiveMetaStoreClientBuilder newClient(boolean allowEmbedded) throws MetaException {
-    this.client = createClient(conf, allowEmbedded);
-    return this;
-  }
-
-  public HiveMetaStoreClientBuilder client(IMetaStoreClient client) {
-    this.client = client;
-    return this;
+  public HiveMetaStoreClientBuilder(Configuration conf, IMetaStoreClient client) {
+    this.conf =  Objects.requireNonNull(conf);
+    this.client = Objects.requireNonNull(client);
   }
 
   public HiveMetaStoreClientBuilder enhanceWith(Function<IMetaStoreClient, IMetaStoreClient> wrapperFunction) {
@@ -81,16 +81,15 @@ public class HiveMetaStoreClientBuilder {
   }
 
   private static IMetaStoreClient createClient(Configuration conf, boolean allowEmbedded) throws MetaException {
-    Class<? extends IMetaStoreClient> mscClass = MetastoreConf.getClass(
-        conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
-        ThriftHiveMetaStoreClient.class, IMetaStoreClient.class);
-    LOG.info("Using {} as a base MetaStoreClient", mscClass.getName());
-
-    IMetaStoreClient baseMetaStoreClient = null;
     try {
-      baseMetaStoreClient = JavaUtils.newInstance(mscClass,
-          new Class[]{Configuration.class, boolean.class},
-          new Object[]{conf, allowEmbedded});
+      Class<? extends IMetaStoreClient> mscClass = MetastoreConf.getClass(
+          conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
+          ThriftHiveMetaStoreClient.class, IMetaStoreClient.class);
+      LOG.info("Using {} as a base MetaStoreClient", mscClass.getName());
+      if (CLIENT_FACTORIES.containsKey(mscClass)) {
+        CLIENT_FACTORIES.put(mscClass, new MetaStoreClientFactory(mscClass));
+      }
+      return CLIENT_FACTORIES.get(mscClass).createClient(conf, allowEmbedded);
     } catch (Throwable t) {
       // Reflection by JavaUtils will throw RuntimeException, try to get real MetaException here.
       Throwable rootCause = ExceptionUtils.getRootCause(t);
@@ -100,7 +99,34 @@ public class HiveMetaStoreClientBuilder {
         throw new MetaException(rootCause.getMessage());
       }
     }
+  }
 
-    return baseMetaStoreClient;
+   private static class MetaStoreClientFactory {
+    private Constructor<? extends IMetaStoreClient> bestMatchingCtr;
+    private Function<Pair<Configuration, Boolean>, Object[]> argsTransformer;
+
+    MetaStoreClientFactory(Class<? extends IMetaStoreClient> mscClass) {
+      Constructor<? extends IMetaStoreClient> candidate =
+          ConstructorUtils.getMatchingAccessibleConstructor(mscClass, Configuration.class, boolean.class);
+      if (candidate != null) {
+        this.bestMatchingCtr = candidate;
+        this.argsTransformer = args -> new Object[] {args.getLeft(), (boolean) args.getRight()};
+      } else if ((candidate = ConstructorUtils.getMatchingAccessibleConstructor(mscClass, Configuration.class,
+          HiveMetaHookLoader.class, Boolean.class)) != null) {
+        this.bestMatchingCtr = candidate;
+        this.argsTransformer = args ->
+            new Object[] {args.getLeft(), null, Boolean.valueOf(args.getRight())};
+      } else if ((candidate = ConstructorUtils.getMatchingAccessibleConstructor(mscClass, Configuration.class)) != null) {
+        this.bestMatchingCtr = candidate;
+        this.argsTransformer = args -> new Object[] {args.getLeft()};
+      }
+      if (bestMatchingCtr == null) {
+        throw new RuntimeException("No matching constructor found for this IMetaStoreClient " + mscClass);
+      }
+    }
+
+    IMetaStoreClient createClient(Configuration conf, boolean allowEmbedded) throws Exception {
+      return bestMatchingCtr.newInstance(argsTransformer.apply(Pair.of(conf, allowEmbedded)));
+    }
   }
 }

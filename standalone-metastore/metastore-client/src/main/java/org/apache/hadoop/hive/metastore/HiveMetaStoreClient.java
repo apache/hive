@@ -61,7 +61,7 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
 
   public HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
-    this(conf, hookLoader, new HiveMetaStoreClientBuilder(conf).newClient(allowEmbedded).build());
+    this(conf, hookLoader, new HiveMetaStoreClientBuilder(conf, allowEmbedded).build());
   }
 
   private HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader,
@@ -75,8 +75,7 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
 
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
       IMetaStoreClient baseMetaStoreClient) {
-    return new HiveMetaStoreClientBuilder(conf)
-       .client(baseMetaStoreClient)
+    return new HiveMetaStoreClientBuilder(conf, baseMetaStoreClient)
        .withHooks(hookLoader)
        .threadSafe()
        .build();
