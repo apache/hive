@@ -38,12 +38,9 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.Util;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.HiveFunctionInfo;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
@@ -102,16 +99,9 @@ public class HiveFunctionHelper implements FunctionHelper {
   private static final Logger LOG = LoggerFactory.getLogger(HiveFunctionHelper.class);
 
   private final RexBuilder rexBuilder;
-  private final int maxNodesForInToOrTransformation;
 
   public HiveFunctionHelper(RexBuilder rexBuilder) {
     this.rexBuilder = rexBuilder;
-    try {
-      this.maxNodesForInToOrTransformation = HiveConf.getIntVar(
-          Hive.get().getConf(), HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES);
-    } catch (HiveException e) {
-      throw new IllegalStateException(e);
-    }
   }
 
   /**
@@ -271,16 +261,8 @@ public class HiveFunctionHelper implements FunctionHelper {
         if (rewritten != null) {
           assert rewritten instanceof RexCall;
           RexCall call = (RexCall) rewritten;
-          if (call.getKind() == SqlKind.OR && maxNodesForInToOrTransformation != 0) {
-            // Rewrite to OR is done only if number of operands are less than the threshold configured
-            if (call.getOperands().size() <= maxNodesForInToOrTransformation) {
-              calciteOp = call.op;
-              inputs = call.operands;
-            }
-          } else {
-            calciteOp = call.op;
-            inputs = call.operands;
-          }
+          calciteOp = call.op;
+          inputs = call.operands;
         }
       } else if (calciteOp.getKind() == SqlKind.COALESCE &&
           inputs.size() > 1) {

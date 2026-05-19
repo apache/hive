@@ -54,7 +54,10 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -117,6 +120,16 @@ public class RexNodeConverter {
   private final RexBuilder rexBuilder;
   private final RelDataTypeFactory typeFactory;
 
+  private static final int MAX_NODES_FOR_IN_TO_OR_TRANSFORMATION;
+
+  static {
+    try {
+      MAX_NODES_FOR_IN_TO_OR_TRANSFORMATION = HiveConf.getIntVar(
+          Hive.get().getConf(), HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES);
+    } catch (HiveException e) {
+      throw new IllegalStateException(e);
+    }
+  }
 
   /**
    * Constructor used by HiveRexExecutorImpl.
@@ -579,39 +592,31 @@ public class RexNodeConverter {
    * If this is not possible (e.g., argument types not sufficiently compatible to generate a Calcite SEARCH expression),
    * tries to generate an OR expression:
    * IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
-   * If this is not possible (e.g., non-deterministic calls are found in the expressions), returns null
+   * If this is not possible (e.g., non-deterministic calls are found in the expressions), returns null.
    */
   public static RexNode rewriteInClause(List<RexNode> childRexNodeLst, RexBuilder rexBuilder) {
     if (childRexNodeLst.size() == 2) {
       return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, childRexNodeLst);
     }
 
-    RexNode firstPred = childRexNodeLst.get(0);
+    RexNode arg = childRexNodeLst.get(0);
     List<RexNode> ranges = childRexNodeLst.subList(1, childRexNodeLst.size());
-    RexNode res = rexBuilder.makeIn(firstPred, ranges);
-    if (res.getKind() == SqlKind.SEARCH) {
-      return res;
+    // Avoid SEARCH on rows for the moment (it can lead to issues in Calcite), and check all types are SEARCH-compatible
+    if (arg.getKind() != SqlKind.ROW
+        && ranges.stream().allMatch(range -> SqlTypeUtil.inSameFamily(arg.getType(), range.getType()))) {
+      RexNode search = rexBuilder.makeIn(arg, ranges);
+      assert search.getKind() == SqlKind.SEARCH;
+      return search;
     }
-    // Calcite SEARCH conversion was not possible: generate our own OR expression
-    List<RexNode> newInputs = RexNodeConverter.transformInToOrOperands(childRexNodeLst, rexBuilder);
-    if (newInputs == null) {
-      return null;
-    }
-    return newInputs.size() == 1 ? newInputs.get(0) : rexBuilder.makeCall(SqlStdOperatorTable.OR, newInputs);
-  }
 
-  // TODO remove?
-  public static List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst,
-      RexBuilder rexBuilder) throws SemanticException {
-    assert op == HiveIn.INSTANCE;
-    RexNode firstPred = childRexNodeLst.get(0);
-    List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
-    for (int i = 1; i < childRexNodeLst.size(); i++) {
-      newChildRexNodeLst.add(
-          rexBuilder.makeCall(
-              SqlStdOperatorTable.EQUALS, firstPred, childRexNodeLst.get(i)));
+    // Calcite SEARCH conversion was not possible: generate our own OR expression
+    if (MAX_NODES_FOR_IN_TO_OR_TRANSFORMATION == 0 || childRexNodeLst.size() <= MAX_NODES_FOR_IN_TO_OR_TRANSFORMATION) {
+      List<RexNode> newInputs = RexNodeConverter.transformInToOrOperands(childRexNodeLst, rexBuilder);
+      if (newInputs != null) {
+        return newInputs.size() == 1 ? newInputs.get(0) : rexBuilder.makeCall(SqlStdOperatorTable.OR, newInputs);
+      }
     }
-    return newChildRexNodeLst;
+    return null;
   }
 
   public static List<RexNode> rewriteCoalesceChildren(
