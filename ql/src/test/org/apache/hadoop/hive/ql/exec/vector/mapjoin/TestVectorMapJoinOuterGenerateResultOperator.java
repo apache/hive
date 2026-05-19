@@ -47,20 +47,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests that {@link VectorMapJoinOuterGenerateResultOperator} invokes
- * {@code clearValue} on every small-table key and value column for each
- * unmatched big-table row. The HIVE-29598 bug is that without that call,
- * a stale {@code vector[i]} survives the null marking and leaks into
- * downstream operators that read the slot without checking {@code isNull[i]}.
+ * HIVE-29598: verifies {@link VectorMapJoinOuterGenerateResultOperator} clears
+ * every small-table slot for unmatched rows, so stale values cannot carry over
+ * past the null marking.
  */
 class TestVectorMapJoinOuterGenerateResultOperator {
 
-  /**
-   * A concrete subclass of the abstract operator with no-op stubs for the
-   * abstract methods, just enough to invoke {@code generateOuterNulls} and
-   * {@code generateOuterNullsRepeatedAll} directly from tests.
-   */
-  private static class TestableOuterOp extends VectorMapJoinOuterGenerateResultOperator {
+  /** Concrete subclass that exposes the generateOuterNulls* methods to tests. */
+  private static final class TestableOuterOp extends VectorMapJoinOuterGenerateResultOperator {
     @Override
     protected String getLoggingPrefix() {
       return "test";
@@ -68,16 +62,12 @@ class TestVectorMapJoinOuterGenerateResultOperator {
 
     @Override
     public void processBatch(VectorizedRowBatch batch) {
-      // No-op: tests invoke the generateOuterNulls* methods directly.
     }
   }
 
   /**
-   * LongColumnVector that records every {@code clearSlotValue} invocation.
-   * Used to assert that the operator dispatched through the new
-   * {@link org.apache.hadoop.hive.ql.exec.vector.ColumnVector#clearValue(int)}
-   * contract, rather than just observing the slot-clearing side effect
-   * (which could also be produced by another mechanism).
+   * Records {@code clearSlotValue} invocations to verify the operator dispatches
+   * through {@code clearValue}, not just produces the slot-clearing side effect.
    */
   private static class TrackingLongColumnVector extends LongColumnVector {
     final List<Integer> clearedIndices = new ArrayList<>();
@@ -103,7 +93,7 @@ class TestVectorMapJoinOuterGenerateResultOperator {
     TrackingLongColumnVector keyCol = new TrackingLongColumnVector(4);
     TrackingLongColumnVector valCol1 = new TrackingLongColumnVector(4);
     TrackingLongColumnVector valCol2 = new TrackingLongColumnVector(4);
-    keyCol.vector[1] = 99L;   // stale values that should be cleared
+    keyCol.vector[1] = 99L;
     valCol1.vector[1] = 88L;
     valCol2.vector[3] = 77L;
     batch.cols[0] = keyCol;
@@ -113,26 +103,23 @@ class TestVectorMapJoinOuterGenerateResultOperator {
     int[] noMatchs = new int[] {1, 3};
     op.generateOuterNulls(batch, noMatchs, noMatchs.length);
 
-    // Each tracked column had clearSlotValue invoked at indices 1 and 3.
     assertEquals(Arrays.asList(1, 3), keyCol.clearedIndices);
     assertEquals(Arrays.asList(1, 3), valCol1.clearedIndices);
     assertEquals(Arrays.asList(1, 3), valCol2.clearedIndices);
 
-    // Bookkeeping side effect of clearValue (final base-class method).
     assertFalse(keyCol.noNulls);
     assertTrue(keyCol.isNull[1]);
     assertTrue(keyCol.isNull[3]);
     assertFalse(keyCol.isNull[0]);
     assertFalse(keyCol.isNull[2]);
 
-    // Stale slot values cleared to 0L.
     assertEquals(0L, keyCol.vector[1]);
     assertEquals(0L, valCol1.vector[1]);
     assertEquals(0L, valCol2.vector[3]);
   }
 
   @Test
-  void generateOuterNullsRepeatedAllCallsClearValueAtIndexZeroForEachMappedColumn() throws HiveException, IOException {
+  void generateOuterNullsRepeatedAllCallsClearValueAtIndexZeroForEachMappedColumn() throws HiveException {
     TestableOuterOp op = new TestableOuterOp();
     op.outerSmallTableKeyColumnMap = new int[] {0};
     op.smallTableValueColumnMap = new int[] {1};
@@ -147,11 +134,10 @@ class TestVectorMapJoinOuterGenerateResultOperator {
 
     op.generateOuterNullsRepeatedAll(batch);
 
-    // Each tracked column had clearSlotValue invoked exactly once at index 0.
     assertEquals(Arrays.asList(0), keyCol.clearedIndices);
     assertEquals(Arrays.asList(0), valCol.clearedIndices);
 
-    // Bookkeeping plus isRepeating set by the operator after clearValue.
+    // isRepeating is set by the operator, not by clearValue.
     assertFalse(keyCol.noNulls);
     assertTrue(keyCol.isNull[0]);
     assertTrue(keyCol.isRepeating);
@@ -159,17 +145,15 @@ class TestVectorMapJoinOuterGenerateResultOperator {
     assertTrue(valCol.isNull[0]);
     assertTrue(valCol.isRepeating);
 
-    // Stale slot values cleared to 0L.
     assertEquals(0L, keyCol.vector[0]);
     assertEquals(0L, valCol.vector[0]);
   }
 
   @Test
   void generateOuterNullsSetsBookkeepingOnTypeWithNoClearSlotValueOverride() throws HiveException, IOException {
-    // VoidColumnVector inherits the base ColumnVector.clearSlotValue() no-op
-    // — no per-slot value to zero. This verifies the operator still drives
-    // the bookkeeping (isNull[i], noNulls) through the final clearValue()
-    // contract on a type that doesn't override the hook.
+    // VoidColumnVector inherits the base no-op clearSlotValue — verifies the
+    // operator still drives the null-marking through clearValue() on a type
+    // without a per-slot value to zero.
     TestableOuterOp op = new TestableOuterOp();
     op.outerSmallTableKeyColumnMap = new int[] {};
     op.smallTableValueColumnMap = new int[] {0};
@@ -189,12 +173,9 @@ class TestVectorMapJoinOuterGenerateResultOperator {
   }
 
   /**
-   * Verifies that for every {@link ColumnVector} subclass whose
-   * {@code clearSlotValue} the PR overrides, the operator's call through
-   * {@code clearValue} ultimately reaches that override and zeroes the slot
-   * to the type's cleared state. Complements
-   * {@link #generateOuterNullsCallsClearValueOnEachMappedColumnForEachUnmatchedRow}
-   * which proves the dispatch chain on Long alone.
+   * For each {@link ColumnVector} subclass whose {@code clearSlotValue} is
+   * overridden, verifies the operator's call through {@code clearValue} reaches
+   * the override and clears the slot to the type's cleared state.
    */
   @ParameterizedTest(name = "{0}")
   @MethodSource("modifiedColumnVectorTypes")
