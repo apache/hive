@@ -26,14 +26,1041 @@ using a single `HiveCluster` custom resource. Built with
 
 - **Single CRD** (`HiveCluster`) manages all Hive components
 - **Four Hive services**: Metastore, HiveServer2, LLAP, and Tez AM
+- **Helm chart** with sensible defaults — provide DB + ZK + storage, get a full-HA cluster
 - **Storage-agnostic**: works with any Hadoop-compatible filesystem (S3A,
-  ABFS, GCS, HDFS, Ozone) via `hadoop.coreSiteOverrides` and `envVars`
-- **Automatic dependency ordering**: schema init before Metastore, Metastore
-  before HiveServer2, etc.
-- **Optional components**: LLAP and Tez AM are enabled/disabled via spec flags
-- **External Metastore**: skip deploying the Metastore and point HiveServer2 at
-  an existing external Hive Metastore
+  ABFS, GCS, HDFS, Ozone)
+- **Automatic dependency ordering**: schema init -> Metastore -> HiveServer2 -> LLAP/TezAM
+- **Optional components**: LLAP and Tez AM enabled/disabled via flags
+- **External Metastore**: point HiveServer2 at an existing Metastore
 - **Status reporting**: per-component readiness tracked on the CRD status
+
+---
+
+## Build from Source
+
+```bash
+# Build the operator JAR + CRD + Helm chart (no Docker image)
+mvn clean package -pl packaging/src/kubernetes -DskipTests
+
+# Build everything including the Docker image (includes the above)
+mvn clean package -pl packaging/src/kubernetes -Pkubernetes -DskipTests
+```
+
+| Artifact | Path |
+|----------|------|
+| Shaded JAR | `target/hive-kubernetes-operator-*-shaded.jar` |
+| CRD YAML | `helm/hive-operator/crds/hiveclusters.hive.apache.org-v1.yml` |
+| Helm chart | `helm/hive-operator/` |
+| Docker image | `apache/hive:operator-<version>` |
+
+---
+
+## Quick Start (Helm)
+
+The Helm chart defaults to a **Full-HA** cluster (Metastore x2, HiveServer2 x2,
+LLAP x2, TezAM x2). You only need to provide three things: database, ZooKeeper,
+and storage.
+
+### Prerequisites
+
+- Kubernetes 1.25+
+- Helm 3.x
+- A ZooKeeper instance (or install one below)
+- A storage backend (Ozone, S3, ABFS, GCS, HDFS)
+- A supported RDBMS for the Metastore (or install one below)
+
+### Step 1: Install Dependencies
+
+```bash
+# ZooKeeper
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install zookeeper bitnami/zookeeper \
+  --set replicaCount=1 --set auth.enabled=false \
+  --set image.repository=bitnamilegacy/zookeeper \
+  --set image.tag=3.9.3-debian-12-r21 \
+  --set global.security.allowInsecureImages=true --wait
+
+# PostgreSQL
+helm install postgres bitnami/postgresql \
+  --set auth.username=hive --set auth.password=hive123 \
+  --set auth.database=metastore --wait
+
+# Create the DB password secret
+kubectl create secret generic hive-db-secret --from-literal=password=hive123
+```
+
+If using **Ozone** as the storage backend:
+
+```bash
+helm repo add ozone https://apache.github.io/ozone-helm-charts/
+helm install ozone ozone/ozone --version 0.2.0 --wait
+sleep 50
+kubectl exec statefulset/ozone-om -- ozone sh volume create /s3v
+kubectl exec statefulset/ozone-om -- ozone sh bucket create /s3v/hive
+```
+
+### Step 2: Install the Hive Operator + Cluster
+
+Choose your storage backend from the examples below. Each shows the CLI command
+and an equivalent values file.
+
+---
+
+## Storage Backend Examples
+
+Each example below shows both the `helm install` CLI command and the equivalent
+`values.yaml` file. Use whichever approach you prefer.
+
+### Ozone (Full-HA, default behavior)
+
+**CLI:**
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.database.type=postgres \
+  --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
+  --set cluster.database.driver="org.postgresql.Driver" \
+  --set cluster.database.username=hive \
+  --set cluster.database.passwordSecretRef.name=hive-db-secret \
+  --set cluster.database.passwordSecretRef.key=password \
+  --set cluster.database.driverJarUrl="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar" \
+  --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
+  --set cluster.storage.coreSiteOverrides."fs\.s3a\.endpoint"="http://ozone-s3g-rest:9878" \
+  --set-string cluster.storage.coreSiteOverrides."fs\.s3a\.path\.style\.access"=true \
+  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
+  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
+  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[1].value=ozone' \
+  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[2].value=ozone'
+```
+
+**Values file:**
+
+```yaml
+# values.yaml
+cluster:
+  database:
+    type: postgres
+    url: "jdbc:postgresql://postgres-postgresql:5432/metastore"
+    driver: "org.postgresql.Driver"
+    username: hive
+    passwordSecretRef:
+      name: hive-db-secret
+      key: password
+    driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "s3a://hive"
+      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
+      fs.s3a.path.style.access: "true"
+    envVars:
+      - name: HADOOP_OPTIONAL_TOOLS
+        value: "hadoop-aws"
+      - name: AWS_ACCESS_KEY_ID
+        value: "ozone"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "ozone"
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values.yaml
+```
+
+---
+
+### AWS S3
+
+**CLI:**
+
+Create the secret with your AWS credentials:
+```bash
+kubectl create secret generic aws-s3-creds \
+  --from-literal=accessKey="<KEY>" \
+  --from-literal=secretKey="<KEY>"
+```
+
+Then install the operator and HiveCluster with the appropriate storage config:
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.database.type=postgres \
+  --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
+  --set cluster.database.driver="org.postgresql.Driver" \
+  --set cluster.database.username=hive \
+  --set cluster.database.passwordSecretRef.name=hive-db-secret \
+  --set cluster.database.passwordSecretRef.key=password \
+  --set cluster.database.driverJarUrl="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar" \
+    --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive-k8s-bucket" \
+  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
+  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
+  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[1].valueFrom.secretKeyRef.name=aws-s3-creds' \
+  --set 'cluster.storage.envVars[1].valueFrom.secretKeyRef.key=accessKey' \
+  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[2].valueFrom.secretKeyRef.name=aws-s3-creds' \
+  --set 'cluster.storage.envVars[2].valueFrom.secretKeyRef.key=secretKey'
+```
+
+**Values file:**
+
+```yaml
+# values.yaml
+cluster:
+  database:
+    type: postgres
+    url: "jdbc:postgresql://postgres-postgresql:5432/metastore"
+    driver: "org.postgresql.Driver"
+    username: hive
+    passwordSecretRef:
+      name: hive-db-secret
+      key: password
+    driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "s3a://hive-k8s-bucket"
+    envVars:
+      - name: HADOOP_OPTIONAL_TOOLS
+        value: "hadoop-aws"
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: accessKey
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: secretKey
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values.yaml
+```
+
+---
+
+### Google Cloud Storage (GCS)
+
+Create the secret with your GCS service account key:
+
+```bash
+kubectl create secret generic gcs-creds  --from-file=key.json=<PATH>.json
+```
+
+**CLI:**
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.database.type=postgres \
+  --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
+  --set cluster.database.driver="org.postgresql.Driver" \
+  --set cluster.database.username=hive \
+  --set cluster.database.passwordSecretRef.name=hive-db-secret \
+  --set cluster.database.passwordSecretRef.key=password \
+  --set cluster.database.driverJarUrl="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar" \
+  --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set 'cluster.storage.coreSiteOverrides.fs\.defaultFS=gs://hive-bucket' \
+  --set 'cluster.storage.coreSiteOverrides.fs\.gs\.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem' \
+  --set 'cluster.storage.coreSiteOverrides.fs\.gs\.auth\.type=SERVICE_ACCOUNT_JSON_KEYFILE' \
+  --set 'cluster.storage.coreSiteOverrides.fs\.gs\.auth\.service\.account\.json\.keyfile=/etc/gcs/key.json' \
+  --set-string 'cluster.storage.coreSiteOverrides.fs\.gs\.reported\.permissions=777' \
+  --set 'cluster.storage.externalJars[0]=https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.25/gcs-connector-hadoop3-2.2.25-shaded.jar' \
+  --set 'cluster.storage.volumes[0].name=gcs-key' \
+  --set 'cluster.storage.volumes[0].secret.secretName=gcs-creds' \
+  --set 'cluster.storage.volumeMounts[0].name=gcs-key' \
+  --set 'cluster.storage.volumeMounts[0].mountPath=/etc/gcs' \
+  --set 'cluster.storage.volumeMounts[0].readOnly=true'
+```
+
+**Values file:**
+
+```yaml
+# values.yaml
+cluster:
+  database:
+    type: postgres
+    url: "jdbc:postgresql://postgres-postgresql:5432/metastore"
+    driver: "org.postgresql.Driver"
+    username: hive
+    passwordSecretRef:
+      name: hive-db-secret
+      key: password
+    driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "gs://hive-bucket"
+      fs.gs.impl: "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem"
+      fs.gs.auth.type: "SERVICE_ACCOUNT_JSON_KEYFILE"
+      fs.gs.auth.service.account.json.keyfile: "/etc/gcs/key.json"
+      fs.gs.reported.permissions: "777"
+    externalJars:
+      - "https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.25/gcs-connector-hadoop3-2.2.25-shaded.jar"
+    volumes:
+      - name: gcs-key
+        secret:
+          secretName: gcs-creds
+    volumeMounts:
+      - name: gcs-key
+        mountPath: /etc/gcs
+        readOnly: true
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values.yaml
+```
+
+---
+
+## Deployment Modes
+
+### Minimal Cluster (no LLAP/TezAM)
+
+**CLI:**
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.database.type=postgres \
+  --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
+  --set cluster.database.driver="org.postgresql.Driver" \
+  --set cluster.database.username=hive \
+  --set cluster.database.passwordSecretRef.name=hive-db-secret \
+  --set cluster.database.passwordSecretRef.key=password \
+  --set cluster.database.driverJarUrl="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar" \
+  --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
+  --set cluster.storage.coreSiteOverrides."fs\.s3a\.endpoint"="http://ozone-s3g-rest:9878" \
+  --set-string cluster.storage.coreSiteOverrides."fs\.s3a\.path\.style\.access"=true \
+  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
+  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
+  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[1].value=ozone' \
+  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[2].value=ozone' \
+  --set cluster.metastore.replicas=1 \
+  --set cluster.hiveServer2.replicas=1 \
+  --set cluster.llap.enabled=false \
+  --set cluster.tezAm.enabled=false
+```
+
+**Values file:**
+
+```yaml
+# values.yaml
+cluster:
+  database:
+    type: postgres
+    url: "jdbc:postgresql://postgres-postgresql:5432/metastore"
+    driver: "org.postgresql.Driver"
+    username: hive
+    passwordSecretRef:
+      name: hive-db-secret
+      key: password
+    driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "s3a://hive"
+      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
+      fs.s3a.path.style.access: "true"
+    envVars:
+      - name: HADOOP_OPTIONAL_TOOLS
+        value: "hadoop-aws"
+      - name: AWS_ACCESS_KEY_ID
+        value: "ozone"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "ozone"
+
+  metastore:
+    replicas: 1
+  hiveServer2:
+    replicas: 1
+  llap:
+    enabled: false
+  tezAm:
+    enabled: false
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values.yaml
+```
+
+---
+
+### External Metastore (skip Metastore deployment)
+
+**CLI:**
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set cluster.metastore.enabled=false \
+  --set cluster.metastore.externalUri="thrift://my-external-metastore:9083" \
+  --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
+  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
+  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
+  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[1].value=ozone' \
+  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[2].value=ozone'
+```
+
+**Values file:**
+
+```yaml
+# values.yaml
+cluster:
+  database: {}   # Not needed when metastore is external
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  metastore:
+    enabled: false
+    externalUri: "thrift://my-external-metastore:9083"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "s3a://hive"
+    envVars:
+      - name: HADOOP_OPTIONAL_TOOLS
+        value: "hadoop-aws"
+      - name: AWS_ACCESS_KEY_ID
+        value: "ozone"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "ozone"
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values.yaml
+```
+
+---
+
+### External Iceberg REST Catalog with Apache Polaris (AWS S3)
+
+[Apache Polaris](https://polaris.apache.org/) is an Iceberg REST catalog with
+built-in OAuth2. Requires **real AWS S3** (Polaris uses STS credential vending).
+See `packaging/src/docker/thirdparties/polaris/` for the Docker Compose equivalent.
+
+**Step 1: Create AWS secret and deploy Polaris**
+
+```bash
+kubectl create secret generic aws-s3-creds \
+  --from-literal=accessKey="<YOUR_AWS_KEY>" \
+  --from-literal=secretKey="<YOUR_AWS_SECRET>"
+
+kubectl run polaris --image=apache/polaris:latest --port=8181 \
+  --overrides='{
+    "spec": {
+      "containers": [{
+        "name": "polaris",
+        "image": "apache/polaris:latest",
+        "ports": [{"containerPort": 8181}],
+        "env": [
+          {"name": "POLARIS_BOOTSTRAP_CREDENTIALS", "value": "POLARIS,iceberg-client,iceberg-client-secret"},
+          {"name": "POLARIS_REALM_CONTEXT_REALMS", "value": "POLARIS"},
+          {"name": "QUARKUS_OTEL_SDK_DISABLED", "value": "true"},
+          {"name": "POLARIS_READINESS_IGNORE_SEVERE_ISSUES", "value": "true"},
+          {"name": "AWS_REGION", "value": "ap-south-1"},
+          {"name": "AWS_ACCESS_KEY_ID", "valueFrom": {"secretKeyRef": {"name": "aws-s3-creds", "key": "accessKey"}}},
+          {"name": "AWS_SECRET_ACCESS_KEY", "valueFrom": {"secretKeyRef": {"name": "aws-s3-creds", "key": "secretKey"}}}
+        ]
+      }]
+    }
+  }'
+kubectl expose pod polaris --port=8181 --name=polaris
+kubectl wait --for=condition=Ready pod/polaris --timeout=120s
+```
+
+**Step 2: Bootstrap Polaris catalog**
+
+```bash
+kubectl run polaris-init --rm -it --restart=Never --image=alpine/curl -- sh -c '
+  apk add --no-cache jq > /dev/null 2>&1
+
+  # Wait for Polaris
+  until curl -sf http://polaris:8181/api/catalog/v1/oauth/tokens \
+    --user "iceberg-client:iceberg-client-secret" \
+    -H "Polaris-Realm: POLARIS" \
+    -d grant_type=client_credentials -d scope=PRINCIPAL_ROLE:ALL > /dev/null 2>&1; do
+    sleep 2
+  done
+
+  TOKEN=$(curl -s http://polaris:8181/api/catalog/v1/oauth/tokens \
+    --user "iceberg-client:iceberg-client-secret" \
+    -H "Polaris-Realm: POLARIS" \
+    -d grant_type=client_credentials -d scope=PRINCIPAL_ROLE:ALL | jq -r .access_token)
+  echo "Token: ${TOKEN:0:20}..."
+
+  # Create catalog with S3 storage
+  curl -s -H "Authorization: Bearer $TOKEN" -H "Polaris-Realm: POLARIS" \
+    -H "Content-Type: application/json" \
+    http://polaris:8181/api/management/v1/catalogs \
+    -d "{\"catalog\":{\"name\":\"ice01\",\"type\":\"INTERNAL\",\"readOnly\":false,
+         \"properties\":{\"default-base-location\":\"s3://ayush-k8s-bucket  /warehouse\"},
+         \"storageConfigInfo\":{\"storageType\":\"S3\",
+           \"roleArn\":\"arn:aws:iam::<YOUR_ACCOUNT>:role/<YOUR_ROLE>\",
+           \"allowedLocations\":[\"s3://ayush-k8s-bucket  /\"]}}}"
+  echo ""
+  echo "Polaris bootstrap complete."
+'
+```
+
+**Step 3: Install Hive**
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.metastore.enabled=false \
+  --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
+  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
+  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[1].valueFrom.secretKeyRef.name=aws-s3-creds' \
+  --set 'cluster.storage.envVars[1].valueFrom.secretKeyRef.key=accessKey' \
+  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[2].valueFrom.secretKeyRef.name=aws-s3-creds' \
+  --set 'cluster.storage.envVars[2].valueFrom.secretKeyRef.key=secretKey' \
+  --set 'cluster.hiveServer2.configOverrides.hive\.metastore\.warehouse\.dir=s3a://<YOUR_BUCKET>/warehouse' \
+  --set 'cluster.hiveServer2.configOverrides.metastore\.catalog\.default=ice01' \
+  --set 'cluster.hiveServer2.configOverrides.metastore\.client\.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.uri=http://polaris:8181/api/catalog' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.type=rest' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.warehouse=ice01' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.rest\.auth\.type=oauth2' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.oauth2-server-uri=http://polaris:8181/api/catalog/v1/oauth/tokens' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.credential=iceberg-client:iceberg-client-secret' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.scope=PRINCIPAL_ROLE:ALL' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.scheduled\.queries\.executor\.enabled=false' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.materializedview\.rebuild\.incremental=false' \
+  --set 'cluster.hiveServer2.configOverrides.hive\.metastore\.transactional\.event\.listeners=' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.notification\.event\.poll\.interval=0' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.stats\.autogather=false' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.stats\.fetch\.column\.stats=false' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.stats\.estimate=false'
+```
+
+**Cleanup:**
+
+```bash
+helm uninstall hive
+kubectl delete pod polaris
+kubectl delete svc polaris
+kubectl delete secret aws-s3-creds
+```
+
+---
+
+### External Iceberg REST Catalog with Apache Gravitino (Ozone Storage)
+
+[Apache Gravitino](https://gravitino.apache.org/) is an Iceberg REST catalog
+that uses an external OAuth2 provider (Keycloak) for authentication. This
+setup mirrors the working Docker Compose configuration in
+`packaging/src/docker/thirdparties/gravitino/` but adapted for Kubernetes with
+Ozone S3 storage.
+
+**Step 1: Deploy Keycloak with the Hive realm**
+
+```bash
+# Create Keycloak realm config (defines iceberg-client with service account)
+kubectl create configmap keycloak-realm --from-file=realm-export.json=<(cat <<'EOF'
+{
+  "realm": "hive",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "iceberg-client",
+      "secret": "iceberg-client-secret",
+      "enabled": true,
+      "redirectUris": ["*"],
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "defaultClientScopes": ["catalog"],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "hive-iceberg",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "attributes": {
+        "access.token.lifespan": "3600"
+      }
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "catalog",
+      "protocol": "openid-connect",
+      "attributes": {},
+      "protocolMappers": []
+    }
+  ]
+}
+EOF
+)
+
+# Deploy Keycloak with the realm import
+kubectl run keycloak --image=quay.io/keycloak/keycloak:25.0.1 --port=8080 \
+  --overrides='{
+    "spec": {
+      "containers": [{
+        "name": "keycloak",
+        "image": "quay.io/keycloak/keycloak:25.0.1",
+        "args": ["start-dev", "--import-realm", "--health-enabled=true"],
+        "ports": [{"containerPort": 8080}],
+        "env": [
+          {"name": "KEYCLOAK_ADMIN", "value": "admin"},
+          {"name": "KEYCLOAK_ADMIN_PASSWORD", "value": "admin"}
+        ],
+        "volumeMounts": [{"name": "realm", "mountPath": "/opt/keycloak/data/import"}]
+      }],
+      "volumes": [{"name": "realm", "configMap": {"name": "keycloak-realm"}}]
+    }
+  }'
+kubectl expose pod keycloak --port=8080 --name=keycloak
+kubectl wait --for=condition=Ready pod/keycloak --timeout=180s
+```
+
+**Step 2: Deploy Gravitino**
+
+```bash
+# Create Gravitino config (matches Docker thirdparties/gravitino setup, with s3a warehouse)
+kubectl create configmap gravitino-conf --from-file=gravitino-iceberg-rest-server.conf=<(cat <<'EOF'
+gravitino.iceberg-rest.httpPort = 9001
+gravitino.iceberg-rest.catalog-backend = jdbc
+gravitino.iceberg-rest.uri = jdbc:h2:file:/tmp/gravitino_h2_db;AUTO_SERVER=TRUE
+gravitino.iceberg-rest.jdbc-driver = org.h2.Driver
+gravitino.iceberg-rest.jdbc-user = sa
+gravitino.iceberg-rest.jdbc-password =
+gravitino.iceberg-rest.jdbc-initialize = true
+gravitino.iceberg-rest.warehouse = s3a://hive/warehouse
+gravitino.authenticators = oauth
+gravitino.authenticator.oauth.serverUri = http://keycloak:8080/realms/hive
+gravitino.authenticator.oauth.tokenPath = /protocol/openid-connect/token
+gravitino.authenticator.oauth.scope = openid catalog
+gravitino.authenticator.oauth.clientId = iceberg-client
+gravitino.authenticator.oauth.clientSecret = iceberg-client-secret
+gravitino.authenticator.oauth.tokenValidatorClass = org.apache.gravitino.server.authentication.JwksTokenValidator
+gravitino.authenticator.oauth.jwksUri = http://keycloak:8080/realms/hive/protocol/openid-connect/certs
+gravitino.authenticator.oauth.provider = default
+gravitino.authenticator.oauth.principalFields = sub
+gravitino.authenticator.oauth.allowSkewSecs = 60
+gravitino.authenticator.oauth.serviceAudience = hive-iceberg
+EOF
+)
+
+# Deploy Gravitino Iceberg REST server
+kubectl run gravitino --image=apache/gravitino-iceberg-rest:1.0.0 --port=9001 \
+  --overrides='{
+    "spec": {
+      "containers": [{
+        "name": "gravitino",
+        "image": "apache/gravitino-iceberg-rest:1.0.0",
+        "command": ["/bin/bash", "-c"],
+        "args": ["cp /tmp/gravitino-conf/gravitino-iceberg-rest-server.conf /root/gravitino-iceberg-rest-server/conf/gravitino-iceberg-rest-server.conf && mkdir -p /root/gravitino-iceberg-rest-server/libs && curl -sL -o /root/gravitino-iceberg-rest-server/libs/h2-2.2.220.jar https://repo1.maven.org/maven2/com/h2database/h2/2.2.220/h2-2.2.220.jar && /bin/bash /root/gravitino-iceberg-rest-server/bin/iceberg-rest-server.sh start && tail -f /dev/null"],
+        "ports": [{"containerPort": 9001}],
+        "volumeMounts": [{"name": "conf", "mountPath": "/tmp/gravitino-conf"}]
+      }],
+      "volumes": [{"name": "conf", "configMap": {"name": "gravitino-conf"}}]
+    }
+  }'
+kubectl expose pod gravitino --port=9001 --name=gravitino
+kubectl wait --for=condition=Ready pod/gravitino --timeout=120s
+```
+
+**Step 3: Install Hive with Gravitino as external catalog**
+
+**CLI:**
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.metastore.enabled=false \
+  --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
+  --set cluster.storage.coreSiteOverrides."fs\.s3a\.endpoint"="http://ozone-s3g-rest:9878" \
+  --set-string cluster.storage.coreSiteOverrides."fs\.s3a\.path\.style\.access"=true \
+  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
+  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
+  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[1].value=ozone' \
+  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[2].value=ozone' \
+  --set 'cluster.hiveServer2.configOverrides.metastore\.catalog\.default=ice01' \
+  --set 'cluster.hiveServer2.configOverrides.metastore\.client\.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.uri=http://gravitino:9001/iceberg' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.type=rest' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.rest\.auth\.type=oauth2' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.oauth2-server-uri=http://keycloak:8080/realms/hive/protocol/openid-connect/token' \
+  --set 'cluster.hiveServer2.configOverrides.iceberg\.catalog\.ice01\.credential=iceberg-client:iceberg-client-secret' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.scheduled\.queries\.executor\.enabled=false' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.materializedview\.rebuild\.incremental=false' \
+  --set 'cluster.hiveServer2.configOverrides.hive\.metastore\.transactional\.event\.listeners=' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.notification\.event\.poll\.interval=0' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.stats\.autogather=false' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.stats\.fetch\.column\.stats=false' \
+  --set-string 'cluster.hiveServer2.configOverrides.hive\.stats\.estimate=false'
+```
+
+**Values file:**
+
+```yaml
+# values-gravitino.yaml
+cluster:
+  metastore:
+    enabled: false
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "s3a://hive"
+      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
+      fs.s3a.path.style.access: "true"
+    envVars:
+      - name: HADOOP_OPTIONAL_TOOLS
+        value: "hadoop-aws"
+      - name: AWS_ACCESS_KEY_ID
+        value: "ozone"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "ozone"
+
+  hiveServer2:
+    configOverrides:
+      # Iceberg REST catalog connection
+      metastore.catalog.default: "ice01"
+      metastore.client.impl: "org.apache.iceberg.hive.client.HiveRESTCatalogClient"
+      iceberg.catalog.ice01.uri: "http://gravitino:9001/iceberg"
+      iceberg.catalog.ice01.type: "rest"
+      iceberg.catalog.ice01.rest.auth.type: "oauth2"
+      iceberg.catalog.ice01.oauth2-server-uri: "http://keycloak:8080/realms/hive/protocol/openid-connect/token"
+      iceberg.catalog.ice01.credential: "iceberg-client:iceberg-client-secret"
+      # Disable HMS-dependent features (not available with REST catalog)
+      hive.scheduled.queries.executor.enabled: "false"
+      hive.materializedview.rebuild.incremental: "false"
+      hive.metastore.transactional.event.listeners: ""
+      hive.notification.event.poll.interval: "0"
+      hive.stats.autogather: "false"
+      hive.stats.fetch.column.stats: "false"
+      hive.stats.estimate: "false"
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values-gravitino.yaml
+```
+
+**Test the connection:**
+
+```bash
+kubectl exec -it deployment/hive-hiveserver2 -- beeline -u "jdbc:hive2://localhost:10000/" \
+  -e "CREATE TABLE test (id INT, name STRING); INSERT INTO test VALUES (1, 'hello'); SELECT * FROM test;"
+```
+
+**Cleanup:**
+
+```bash
+helm uninstall hive
+kubectl delete pod gravitino keycloak
+kubectl delete svc gravitino keycloak
+kubectl delete configmap keycloak-realm gravitino-conf
+```
+
+---
+
+### Custom Replicas and Resources
+
+**Values file:**
+
+```yaml
+# values.yaml
+cluster:
+  # ... database, zookeeper, storage as above ...
+
+  metastore:
+    replicas: 3
+    resources:
+      requestsMemory: "1Gi"
+      limitsMemory: "2Gi"
+
+  hiveServer2:
+    replicas: 4
+    serviceType: LoadBalancer
+    resources:
+      requestsCpu: "1"
+      requestsMemory: "2Gi"
+      limitsMemory: "4Gi"
+
+  llap:
+    enabled: true
+    replicas: 3
+    executors: 2
+    memoryMb: 4096
+    resources:
+      requestsMemory: "4Gi"
+      limitsMemory: "6Gi"
+
+  tezAm:
+    replicas: 3
+    scratchStorageSize: "5Gi"
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values.yaml
+```
+
+---
+
+## Verify
+
+```bash
+kubectl get pods -w
+kubectl get hiveclusters
+kubectl describe hivecluster hive
+```
+
+## Connect to HiveServer2
+
+```bash
+kubectl exec -it deployment/hive-hiveserver2 -- beeline -u "jdbc:hive2://hive-hiveserver2:10000/"
+```
+
+Or via port-forward:
+
+```bash
+kubectl port-forward svc/hive-hiveserver2 10000:10000
+beeline -u "jdbc:hive2://localhost:10000/"
+```
+
+---
+
+## Helm Values Reference
+
+### Operator
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `operator.image.repository` | `apache/hive` | Operator image repository |
+| `operator.image.tag` | `operator-4.3.0-SNAPSHOT` | Operator image tag |
+| `operator.image.pullPolicy` | `IfNotPresent` | Image pull policy |
+| `operator.resources` | `{requests: {cpu: 200m, memory: 256Mi}, limits: {memory: 512Mi}}` | Operator pod resources |
+
+### Cluster (HiveCluster CR)
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.enabled` | `true` | Create a HiveCluster CR (set `false` to install only the operator) |
+| `cluster.name` | `hive` | HiveCluster resource name |
+| `cluster.image` | `apache/hive:4.3.0-SNAPSHOT` | Hive component image |
+
+### Database (Required)
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.database.type` | `postgres` | DB type: `postgres`, `mysql`, `derby` |
+| `cluster.database.url` | | JDBC URL |
+| `cluster.database.driver` | | JDBC driver class |
+| `cluster.database.username` | | DB username |
+| `cluster.database.passwordSecretRef.name` | | K8s Secret name |
+| `cluster.database.passwordSecretRef.key` | | Key in the Secret (e.g. `password`) |
+| `cluster.database.driverJarUrl` | | URL to download JDBC driver |
+
+### ZooKeeper (Required)
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.zookeeper.quorum` | | ZooKeeper connection string (e.g. `zookeeper:2181`) |
+
+### Storage (Required)
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.storage.coreSiteOverrides` | `{}` | `core-site.xml` properties (`fs.defaultFS`, `fs.s3a.*`, etc.) |
+| `cluster.storage.envVars` | `[]` | Env vars for all pods (credentials, `HADOOP_OPTIONAL_TOOLS`) |
+| `cluster.storage.externalJars` | `[]` | Connector JAR URLs downloaded at startup |
+| `cluster.storage.volumes` | `[]` | Volumes for all pods (credential files) |
+| `cluster.storage.volumeMounts` | `[]` | Volume mounts for all containers |
+
+### Metastore
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.metastore.enabled` | `true` | Deploy a managed Metastore |
+| `cluster.metastore.externalUri` | | Thrift URI when `enabled: false` |
+| `cluster.metastore.replicas` | `2` | Replica count |
+| `cluster.metastore.warehouseDir` | `/hive/warehouse` | Warehouse directory |
+| `cluster.metastore.resources` | `{}` | CPU/memory |
+| `cluster.metastore.configOverrides` | `{}` | Extra `metastore-site.xml` properties |
+
+### HiveServer2
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.hiveServer2.replicas` | `2` | Replica count |
+| `cluster.hiveServer2.serviceType` | `ClusterIP` | K8s Service type |
+| `cluster.hiveServer2.thriftPort` | `10000` | Thrift port |
+| `cluster.hiveServer2.webUiPort` | `10002` | Web UI port |
+| `cluster.hiveServer2.resources` | `{}` | CPU/memory |
+| `cluster.hiveServer2.configOverrides` | `{}` | Extra `hive-site.xml` properties |
+| `cluster.hiveServer2.externalJars` | `[]` | HS2-specific JARs |
+
+### LLAP
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.llap.enabled` | `true` | Enable LLAP daemons |
+| `cluster.llap.replicas` | `2` | Replica count |
+| `cluster.llap.executors` | `1` | Executors per daemon |
+| `cluster.llap.memoryMb` | `1024` | Memory per daemon (MB) |
+| `cluster.llap.serviceHosts` | `@llap0` | LLAP ZK identity |
+| `cluster.llap.resources` | `{}` | CPU/memory |
+
+### Tez AM
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.tezAm.enabled` | `true` | Enable Tez Application Master |
+| `cluster.tezAm.replicas` | `2` | Replica count |
+| `cluster.tezAm.scratchStorageSize` | `1Gi` | Shared scratch PVC size |
+| `cluster.tezAm.scratchStorageClassName` | | StorageClass (must support RWX) |
+| `cluster.tezAm.resources` | `{}` | CPU/memory |
+
+---
+
+## Upgrade and Uninstall
+
+### Upgrade (values only, no CRD changes)
+
+```bash
+helm upgrade hive ./helm/hive-operator -f my-values.yaml
+```
+
+### Upgrade (with CRD schema changes)
+
+Helm does **not** update CRDs on `helm upgrade`. If the operator version
+includes CRD changes (new status fields, new spec fields), you must
+re-apply the CRD manually:
+
+```bash
+kubectl apply -f helm/hive-operator/crds/hiveclusters.hive.apache.org-v1.yml
+helm upgrade hive ./helm/hive-operator -f my-values.yaml
+```
+
+### Full Uninstall and Reinstall (clean slate)
+
+```bash
+# Uninstall (removes operator + HiveCluster CR + all managed pods)
+helm uninstall hive
+
+# IMPORTANT: Always delete the CRD before reinstalling to ensure
+# the updated schema is applied. Helm only creates CRDs on install,
+# it never updates existing ones.
+kubectl delete crd hiveclusters.hive.apache.org
+
+# Reinstall
+helm install hive ./helm/hive-operator -f my-values.yaml
+```
+
+### Remove Everything (including dependencies)
+
+```bash
+helm uninstall hive
+kubectl delete crd hiveclusters.hive.apache.org
+helm uninstall ozone postgres zookeeper --ignore-not-found
+kubectl delete pvc data-zookeeper-0 --ignore-not-found
+kubectl delete pvc data-postgres-postgresql-0 --ignore-not-found
+kubectl delete secret hive-db-secret --ignore-not-found
+```
+
+---
+
+## Advanced: Deploy via Operator Only (without Helm)
+
+If you prefer raw manifests over Helm, you can deploy the operator and create
+HiveCluster CRs manually. This example uses Ozone as the storage backend.
+
+### 1. Install the CRD
+
+```bash
+kubectl apply -f helm/hive-operator/crds/hiveclusters.hive.apache.org-v1.yml
+```
+
+### 2. Deploy RBAC and the Operator
+
+```bash
+kubectl create namespace hive-operator
+kubectl apply -f config/rbac/
+export HIVE_VERSION=4.3.0-SNAPSHOT
+envsubst < config/operator/deployment.yaml | kubectl apply -f -
+```
+
+### 3. Deploy Ozone
+
+```bash
+helm repo add ozone https://apache.github.io/ozone-helm-charts/
+helm install ozone ozone/ozone --version 0.2.0 --wait
+sleep 50
+kubectl exec statefulset/ozone-om -- ozone sh volume create /s3v
+kubectl exec statefulset/ozone-om -- ozone sh bucket create /s3v/hive
+```
+
+### 4. Create a HiveCluster CR
+
+Full-HA (Metastore x2, HS2 x2, LLAP x2, TezAM x2):
+
+```bash
+envsubst < config/samples/hivecluster-full-ha.yaml | kubectl apply -f -
+```
+
+Or minimal (Metastore x1, HS2 x1, no LLAP/TezAM):
+
+```bash
+envsubst < config/samples/hivecluster-minimal.yaml | kubectl apply -f -
+```
+
+### 5. Cleanup
+
+```bash
+kubectl delete hivecluster hive
+envsubst < config/operator/deployment.yaml | kubectl delete -f -
+kubectl delete -f config/rbac/
+kubectl delete namespace hive-operator
+# Always delete CRD to ensure a clean reinstall picks up schema changes
+kubectl delete crd hiveclusters.hive.apache.org
+kubectl delete pvc data-zookeeper-0 --ignore-not-found
+kubectl delete pvc data-postgres-postgresql-0 --ignore-not-found
+kubectl delete secret hive-db-secret --ignore-not-found
+helm uninstall ozone postgres zookeeper --ignore-not-found
+```
+
+---
 
 ## Architecture
 
@@ -43,818 +1070,20 @@ HiveCluster CR
   v
 HiveClusterReconciler
   |
-  +-- HadoopConfigMapDependent          (core-site.xml with user-provided filesystem config)
+  +-- HadoopConfigMapDependent          (core-site.xml)
   +-- MetastoreConfigMapDependent       (metastore-site.xml)
   +-- HiveServer2ConfigMapDependent     (hive-site.xml + tez-site.xml)
   +-- SchemaInitJobDependent            (schematool -initOrUpgradeSchema)
   +-- MetastoreDeploymentDependent      --> MetastoreServiceDependent
   +-- HiveServer2DeploymentDependent    --> HiveServer2ServiceDependent
   +-- LlapStatefulSetDependent          --> LlapServiceDependent          (optional)
-  +-- ScratchPvcDependent               (shared scratch PVC for HS2+TezAM, optional)
+  +-- ScratchPvcDependent               (shared scratch PVC, optional)
   +-- TezAmStatefulSetDependent         --> TezAmServiceDependent         (optional)
 ```
 
 **Startup order:**
-
-1. ConfigMaps (Hadoop, Metastore [if enabled], HiveServer2)
-2. Schema Init Job (`schematool -initOrUpgradeSchema`) [if Metastore enabled]
+1. ConfigMaps (Hadoop, Metastore, HiveServer2)
+2. Schema Init Job [if Metastore enabled]
 3. Metastore Deployment + Service [if enabled]
 4. HiveServer2 Deployment + Service
-5. LLAP StatefulSet + Scratch PVC + Tez AM StatefulSet (if enabled)
-
-## Prerequisites
-
-- Kubernetes cluster (minikube, kind, EKS, GKE, etc.)
-- `kubectl` configured to talk to the cluster
-- Java 21+ and Maven 3.8+ (for building)
-- A ZooKeeper instance accessible from the cluster
-- A storage backend accessible from the cluster (S3A, ABFS, GCS, HDFS, or Ozone)
-
-## Build
-
-```bash
-mvn clean package -pl packaging/src/kubernetes -DskipTests
-```
-
-This produces:
-
-| Artifact | Path |
-|----------|------|
-| Shaded JAR | `target/hive-kubernetes-operator-*-shaded.jar` |
-| CRD YAML (v1) | `src/gen/hiveclusters.hive.apache.org-v1.yml` |
-
-The CRD YAML is auto-generated by fabric8 during compilation and copied to
-`src/gen/` so it can be version-controlled.
-
-## Build the Operator Docker Image
-
-Use the `-Pkubernetes` Maven profile to build the Docker image (the image is
-tagged with the project version from the POM):
-
-```bash
-mvn clean package -pl packaging/src/kubernetes -Pkubernetes -DskipTests
-```
-
-This builds the jar **and** runs:
-```
-docker build -t apache/hive:operator-<version> .
-```
-
-Alternatively, build the image manually:
-
-```bash
-cd packaging/src/kubernetes
-export HIVE_VERSION=4.3.0-SNAPSHOT
-docker build -t apache/hive:operator-${HIVE_VERSION} .
-```
-
-For **minikube**, build inside the minikube Docker daemon:
-
-```bash
-eval $(minikube docker-env)
-export HIVE_VERSION=4.3.0-SNAPSHOT
-docker build -t apache/hive:operator-${HIVE_VERSION} .
-```
-
-For **kind**, load the image into the cluster:
-
-```bash
-export HIVE_VERSION=4.3.0-SNAPSHOT
-docker build -t apache/hive:operator-${HIVE_VERSION} .
-kind load docker-image apache/hive:operator-${HIVE_VERSION}
-```
-
-## Install the CRD and Operator
-
-These steps are the same regardless of which deployment scenario you choose.
-
-### 1. Install the CRD
-
-```bash
-cd packaging/src/kubernetes
-kubectl apply -f src/gen/hiveclusters.hive.apache.org-v1.yml
-```
-
-Verify:
-
-```bash
-kubectl get crd hiveclusters.hive.apache.org
-```
-
-### 2. Deploy RBAC and the Operator
-
-```bash
-kubectl create namespace hive-operator
-
-kubectl apply -f config/rbac/service-account.yaml
-kubectl apply -f config/rbac/cluster-role.yaml
-kubectl apply -f config/rbac/cluster-role-binding.yaml
-
-export HIVE_VERSION=4.3.0-SNAPSHOT
-envsubst < config/operator/deployment.yaml | kubectl apply -f -
-```
-
-Verify the operator is running:
-
-```bash
-kubectl -n hive-operator get pods
-```
-
-### 3. Deploy ZooKeeper (if you don't have one)
-
-ZooKeeper is required for Tez session management. Skip this if you already
-have a ZooKeeper instance.
-
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install zookeeper bitnami/zookeeper \
-  --set replicaCount=1 \
-  --set auth.enabled=false \
-  --set image.repository=bitnamilegacy/zookeeper \
-  --set image.tag=3.9.3-debian-12-r21 \
-  --set global.security.allowInsecureImages=true \
-  --wait
-```
-
-This creates a Service named `zookeeper` on port `2181`.
-
----
-
-## Storage Setup
-
-The operator is **storage-agnostic** — it works with any Hadoop-compatible
-filesystem. You provide the filesystem configuration via `spec.hadoop.coreSiteOverrides`
-(for `core-site.xml` properties) and `spec.envVars` (for credentials injected
-into all component pods). The operator does **not** deploy a storage cluster
-itself.
-
-### Using Apache Ozone (S3A via Helm Chart)
-
-Apache Ozone provides an S3-compatible object store. Use the official Helm
-chart to deploy it alongside the operator.
-
-#### Step 1: Install Ozone via Helm
-
-```bash
-helm repo add ozone https://apache.github.io/ozone-helm-charts/
-helm install ozone ozone/ozone --version 0.2.0 --wait
-```
-
-For resource-constrained environments (e.g., CI, minikube), create a
-`ozone-values.yaml`:
-
-```yaml
-datanode:
-  replicas: 1
-env:
-- name: OZONE-SITE.XML_hdds.datanode.volume.min.free.space
-  value: "256MB"
-- name: OZONE-SITE.XML_hdds.scm.safemode.enabled
-  value: "false"
-- name: OZONE-SITE.XML_ozone.scm.container.size
-  value: 128MB
-- name: OZONE-SITE.XML_ozone.scm.block.size
-  value: 32MB
-- name: OZONE-SITE.XML_ozone.server.default.replication
-  value: "1"
-```
-
-Then install with:
-
-```bash
-helm install ozone ozone/ozone --version 0.2.0 --values ozone-values.yaml --wait
-```
-
-#### Step 2: Create the Ozone bucket
-
-```bash
-kubectl exec statefulset/ozone-om -- ozone sh volume create /s3v
-kubectl exec statefulset/ozone-om -- ozone sh bucket create /s3v/hive
-```
-
-#### Step 3: Configure the HiveCluster CR
-
-```yaml
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "s3a://hive"
-      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
-      fs.s3a.path.style.access: "true"
-  envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-aws"
-    - name: AWS_ACCESS_KEY_ID
-      value: "ozone"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "ozone"
-```
-
-The Ozone Helm chart exposes the S3 Gateway as a Kubernetes Service named
-`ozone-s3g-rest` on port `9878`. Default Ozone credentials are `ozone`/`ozone`.
-
-#### Teardown
-
-```bash
-helm uninstall ozone
-```
-
-### Using MinIO (S3A)
-
-```yaml
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "s3a://my-bucket"
-      fs.s3a.endpoint: "http://minio.minio-ns.svc:9000"
-      fs.s3a.path.style.access: "true"
-  envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-aws"
-    - name: AWS_ACCESS_KEY_ID
-      valueFrom:
-        secretKeyRef:
-          name: minio-creds
-          key: accessKey
-    - name: AWS_SECRET_ACCESS_KEY
-      valueFrom:
-        secretKeyRef:
-          name: minio-creds
-          key: secretKey
-```
-
-### Using AWS S3
-
-```yaml
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "s3a://my-bucket"
-  envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-aws"
-    - name: AWS_ACCESS_KEY_ID
-      valueFrom:
-        secretKeyRef:
-          name: aws-s3-creds
-          key: accessKey
-    - name: AWS_SECRET_ACCESS_KEY
-      valueFrom:
-        secretKeyRef:
-          name: aws-s3-creds
-          key: secretKey
-```
-
-### Using Azure ABFS
-
-```yaml
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "abfss://container@account.dfs.core.windows.net"
-      fs.azure.account.auth.type.account.dfs.core.windows.net: "SharedKey"
-      fs.azure.account.key.account.dfs.core.windows.net: "$(AZURE_STORAGE_KEY)"
-  envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-azure"
-    - name: AZURE_STORAGE_KEY
-      valueFrom:
-        secretKeyRef:
-          name: azure-creds
-          key: storageKey
-```
-
-### Using Google Cloud Storage (GCS)
-
-First create a Secret from your service account key:
-
-```bash
-kubectl create secret generic gcs-creds --from-file=key.json=/path/to/sa-key.json
-```
-
-Then configure the filesystem, download the GCS connector JAR, and mount the
-key file into all pods:
-
-```yaml
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "gs://my-bucket"
-      fs.gs.impl: "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem"
-      fs.gs.auth.type: "SERVICE_ACCOUNT_JSON_KEYFILE"
-      fs.gs.auth.service.account.json.keyfile: "/etc/gcs/key.json"
-  externalJars:
-    - "https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.25/gcs-connector-hadoop3-2.2.25-shaded.jar"
-  volumes:
-    - name: gcs-key
-      secret:
-        secretName: gcs-creds
-  volumeMounts:
-    - name: gcs-key
-      mountPath: /etc/gcs
-      readOnly: true
-```
-
-### Using HDFS
-
-```yaml
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "hdfs://namenode:8020"
-```
-
----
-
-## Deployment Scenarios
-
-### Scenario 1: Minimal Cluster (Metastore + HiveServer2)
-
-**Use this when:** you want a basic Hive cluster backed by external
-storage and PostgreSQL.
-
-#### Step 1: Deploy PostgreSQL (Bitnami Helm)
-
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install postgres bitnami/postgresql \
-  --set auth.username=hive \
-  --set auth.password=hive123 \
-  --set auth.database=metastore \
-  --wait
-```
-
-This creates a Service named `postgres-postgresql` on port `5432`. The password
-is also stored in a Secret named `postgres-postgresql` under key `password`.
-
-Create the Secret the operator will reference:
-
-```bash
-kubectl create secret generic hive-db-secret \
-  --from-literal=password=hive123
-```
-
-#### Step 2: Set up storage
-
-Follow the [Storage Setup](#storage-setup) section above to deploy your
-storage backend (e.g., Ozone via Helm).
-
-#### Step 3: Create the HiveCluster
-
-```bash
-envsubst < config/samples/hivecluster-minimal.yaml | kubectl apply -f -
-```
-
-Or inline:
-
-```bash
-kubectl apply -f - <<'EOF'
-apiVersion: hive.apache.org/v1alpha1
-kind: HiveCluster
-metadata:
-  name: my-hive
-spec:
-  image: apache/hive:${HIVE_VERSION}
-  imagePullPolicy: IfNotPresent
-
-  metastore:
-    replicas: 1
-    database:
-      type: postgres
-      url: "jdbc:postgresql://postgres-postgresql:5432/metastore"
-      driver: "org.postgresql.Driver"
-      username: hive
-      passwordSecretRef:
-        name: hive-db-secret
-        key: password
-      driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
-    warehouseDir: "/hive/warehouse"
-
-  hiveServer2:
-    replicas: 1
-    serviceType: ClusterIP
-
-  zookeeper:
-    quorum: "zookeeper:2181"
-
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "s3a://hive"
-      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
-      fs.s3a.path.style.access: "true"
-  envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-aws"
-    - name: AWS_ACCESS_KEY_ID
-      value: "ozone"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "ozone"
-EOF
-```
-
-#### What happens
-
-The operator creates:
-
-| Resource | Purpose |
-|----------|---------|
-| `my-hive-hadoop-config` ConfigMap | `core-site.xml` with filesystem configuration from `coreSiteOverrides` |
-| `my-hive-metastore-config` ConfigMap | `metastore-site.xml` with warehouse dir and DB settings |
-| `my-hive-hiveserver2-config` ConfigMap | `hive-site.xml` + `tez-site.xml` |
-| `my-hive-schema-init` | Job that runs `schematool -initOrUpgradeSchema` |
-| `my-hive-metastore` | Metastore Deployment + Service (port 9083) |
-| `my-hive-hiveserver2` | HiveServer2 Deployment + Service (port 10000) |
-
----
-
-### Scenario 2: External RDBMS
-
-**Use this when:** you have an existing database instance (e.g. Amazon RDS,
-Cloud SQL, a corporate database, or a different database engine like MySQL/Oracle).
-
-**What you provide:** the JDBC URL, credentials, and driver jar URL for your
-existing database.
-
-#### Step 1: Create the database password Secret
-
-```bash
-kubectl create secret generic hive-db-secret \
-  --from-literal=password=<your-actual-db-password>
-```
-
-#### Step 2: Create the HiveCluster
-
-Point the `database` section at your external RDBMS:
-
-```yaml
-apiVersion: hive.apache.org/v1alpha1
-kind: HiveCluster
-metadata:
-  name: my-hive
-spec:
-  image: apache/hive:${HIVE_VERSION}
-
-  metastore:
-    replicas: 1
-    database:
-      type: postgres
-      url: "jdbc:postgresql://my-rds-host.us-east-1.rds.amazonaws.com:5432/metastore"
-      driver: "org.postgresql.Driver"
-      username: hive_admin
-      passwordSecretRef:
-        name: hive-db-secret
-        key: password
-      driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
-    warehouseDir: "/hive/warehouse"
-
-  hiveServer2:
-    replicas: 1
-    serviceType: ClusterIP
-
-  zookeeper:
-    quorum: "zookeeper:2181"
-
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "s3a://my-bucket"
-  envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-aws"
-    - name: AWS_ACCESS_KEY_ID
-      valueFrom:
-        secretKeyRef:
-          name: s3-creds
-          key: accessKey
-    - name: AWS_SECRET_ACCESS_KEY
-      valueFrom:
-        secretKeyRef:
-          name: s3-creds
-          key: secretKey
-```
-
-The `driverJarUrl` field tells the operator to add an init container that
-downloads the JDBC driver JAR at pod startup. This works for any URL
-(Maven Central, internal artifact repo, etc.).
-
-#### Supported databases
-
-| Database | `type` | Example `url` | Example `driver` |
-|----------|--------|---------------|------------------|
-| PostgreSQL | `postgres` | `jdbc:postgresql://host:5432/metastore` | `org.postgresql.Driver` |
-| MySQL | `mysql` | `jdbc:mysql://host:3306/metastore` | `com.mysql.cj.jdbc.Driver` |
-| Oracle | `oracle` | `jdbc:oracle:thin:@host:1521/FREEPDB1` | `oracle.jdbc.OracleDriver` |
-| Derby | `derby` | *(embedded, no URL needed)* | *(auto-detected)* |
-
-
-### Scenario 3: External Hive Metastore
-
-**Use this when:** you already have an existing Hive Metastore running outside
-the cluster (or managed separately) and only want the operator to deploy
-HiveServer2 (and optionally LLAP / Tez AM).
-
-Set `spec.metastore.enabled: false` and provide the thrift URI of your external
-Metastore via `spec.metastore.externalUri`. The operator will skip deploying the
-Metastore Deployment, Service, schema-init Job, and metastore ConfigMap entirely.
-HiveServer2 will connect directly to the external Metastore.
-
-
-Like:
-
-```yaml
-apiVersion: hive.apache.org/v1alpha1
-kind: HiveCluster
-metadata:
-  name: my-hive
-spec:
-  image: apache/hive:${HIVE_VERSION}
-  imagePullPolicy: IfNotPresent
-
-  metastore:
-    enabled: false
-    externalUri: "thrift://host.docker.internal:9083"
-
-  hiveServer2:
-    replicas: 2
-    serviceType: ClusterIP
-    resources:
-      requestsMemory: "1Gi"
-      limitsMemory: "2Gi"
-    configOverrides:
-      hive.server2.enable.doAs: "false"
-
-  llap:
-    enabled: true
-    replicas: 2
-    executors: 1
-    memoryMb: 1024
-    serviceHosts: "@llap0"
-    resources:
-      requestsMemory: "2Gi"
-      limitsMemory: "3Gi"
-
-  tezAm:
-    enabled: true
-    replicas: 2
-
-  zookeeper:
-    quorum: "zookeeper:2181"
-
-  hadoop:
-    coreSiteOverrides:
-      fs.defaultFS: "s3a://hive"
-      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
-      fs.s3a.path.style.access: "true"
-  envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-aws"
-    - name: AWS_ACCESS_KEY_ID
-      value: "ozone"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "ozone"
-```
-
-#### What happens
-
-When `metastore.enabled` is `false`:
-
-| Skipped | Reason |
-|---------|--------|
-| `my-hive-schema-init` Job | No managed DB to initialize |
-| `my-hive-metastore` Deployment + Service | External Metastore handles this |
-| `my-hive-metastore-config` ConfigMap | Not needed |
-
-The operator still creates HiveServer2 (and optionally LLAP / Tez AM) with
-`hive.metastore.uris` pointing at the external URI. The status reports
-`MetastoreReady: True` with reason `ExternalMetastore`.
-
----
-
-### Scenario 4: Full Cluster (LLAP + Tez AM)
-
-**Use this when:** you want all four Hive services running - Metastore,
-HiveServer2, LLAP daemons, and a standalone Tez Application Master.
-
-When `tezAm.enabled` is `true`, HiveServer2 is configured to use external Tez
-sessions via ZooKeeper (`hive.server2.tez.use.external.sessions=true`). The
-standalone Tez AM registers itself in ZooKeeper and HiveServer2 discovers it
-through the registry.
-
-When `tezAm.enabled` is `false` (the default), HiveServer2 runs Tez in local
-mode (`tez.local.mode=true`), where the Tez DAG executes inside the HiveServer2
-JVM itself.
-
-#### Step 1: Deploy PostgreSQL and Storage
-
-See [Scenario 1 Step 1](#step-1-deploy-postgresql-bitnami-helm) for PostgreSQL and
-[Storage Setup](#storage-setup) for your storage backend.
-
-#### Step 2: Create the HiveCluster
-
-```bash
-envsubst < config/samples/hivecluster-full-ha.yaml | kubectl apply -f -
-```
-
-#### What this creates
-
-With all components enabled, the operator creates approximately 12 resources on Non HA mode:
-
-| Category | Resources |
-|----------|-----------|
-| Hive | Schema-init Job (1), Metastore (1), HiveServer2 (2), LLAP (2), Tez AM (1), scratch PVC (1) |
-| You deployed | PostgreSQL (1), ZooKeeper (1), storage backend |
-
----
-
-## Monitor
-
-```bash
-# Watch pods come up in order
-kubectl get pods -w
-
-# Check HiveCluster status and conditions
-kubectl get hiveclusters
-kubectl describe hivecluster my-hive
-
-# Operator logs
-kubectl -n hive-operator logs -f deployment/hive-operator
-```
-
-## Connect to HiveServer2
-
-```bash
-# Port-forward the thrift port
-kubectl port-forward svc/my-hive-hiveserver2 10000:10000
-
-# Connect with Beeline
-beeline -u "jdbc:hive2://my-hive-hiveserver2:10000/"
-
-# Connect to HiveServe2 UI
-kubectl port-forward svc/my-hive-hiveserver2 10002:10002
-
-Then use the URL `http://localhost:10002/` to access the UI.
-```
-
-Or exec into the HiveServer2 pod directly:
-
-```bash
-kubectl exec -it deployment/my-hive-hiveserver2 -- beeline -u "jdbc:hive2://my-hive-hiveserver2:10000/"
-```
-
-If the HiveServer2 Service type is `LoadBalancer` or `NodePort`, use the
-external address directly instead of port-forwarding.
-
-
-
-## CRD Reference
-
-### Top-level spec
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `spec.image` | string | | Hive Docker image |
-| `spec.imagePullPolicy` | string | `IfNotPresent` | Image pull policy |
-| `spec.envVars` | list | | Environment variables injected into all component pods (e.g., storage credentials). Supports both literal values and `valueFrom.secretKeyRef`. |
-| `spec.externalJars` | list | | URLs of JARs downloaded into all pods at startup (e.g., GCS connector, ABFS connector). The Docker entrypoint automatically adds them to the classpath. |
-| `spec.volumes` | list | | Volumes added to all component pods (e.g., Secrets containing keytabs or service account keys) |
-| `spec.volumeMounts` | list | | Volume mounts added to all component containers (e.g., mounting a GCS key at `/etc/gcs/key.json`) |
-
-### Metastore (`spec.metastore`)
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `enabled` | boolean | `true` | Whether the operator deploys and manages a Metastore. Set `false` to use an external Metastore. |
-| `externalUri` | string | | Thrift URI of the external Metastore (required when `enabled` is `false`, e.g. `thrift://host:9083`) |
-| `replicas` | int | `1` | Number of Metastore replicas (ignored when `enabled` is `false`) |
-| `warehouseDir` | string | | Warehouse directory (e.g. `s3a://hive/warehouse`) |
-| `configOverrides` | map | | Extra `metastore-site.xml` properties |
-| `resources.*` | object | | CPU/memory requests and limits |
-
-### Metastore Database (`spec.metastore.database`)
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `type` | string | `derby` | DB type: `postgres`, `mysql`, `derby` |
-| `url` | string | | JDBC connection URL |
-| `driver` | string | | JDBC driver class name |
-| `username` | string | | Database username |
-| `passwordSecretRef.name` | string | | Kubernetes Secret name containing the password |
-| `passwordSecretRef.key` | string | | Key within the Secret |
-| `driverJarUrl` | string | | URL to download the JDBC driver JAR at pod startup |
-
-### HiveServer2 (`spec.hiveServer2`)
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `replicas` | int | `1` | Number of HiveServer2 replicas |
-| `serviceType` | string | `ClusterIP` | Kubernetes Service type (`ClusterIP`, `NodePort`, `LoadBalancer`) |
-| `thriftPort` | int | `10000` | Thrift port |
-| `webUiPort` | int | `10002` | Web UI port |
-| `configOverrides` | map | | Extra `hive-site.xml` properties |
-| `resources.*` | object | | CPU/memory requests and limits |
-
-### LLAP (`spec.llap`)
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `enabled` | boolean | `false` | Enable LLAP daemons |
-| `replicas` | int | `1` | Number of LLAP daemon replicas |
-| `executors` | int | `1` | Executors per daemon |
-| `memoryMb` | int | `2048` | Memory per daemon (MB) |
-| `serviceHosts` | string | | LLAP service hosts identifier (e.g. `@llap0`) |
-| `resources.*` | object | | CPU/memory requests and limits |
-
-### Tez AM (`spec.tezAm`)
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `enabled` | boolean | `false` | Enable standalone Tez Application Master |
-| `replicas` | int | `1` | Number of Tez AM replicas |
-| `scratchStorageSize` | string | `1Gi` | Storage size for the shared scratch PVC (ReadWriteMany) mounted on HS2 and TezAM at `/opt/hive/scratch` |
-| `scratchStorageClassName` | string | | StorageClass for the shared scratch PVC. Must support ReadWriteMany. If empty, uses cluster default. |
-| `resources.*` | object | | CPU/memory requests and limits |
-
-### ZooKeeper (`spec.zookeeper`)
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `quorum` | string | `zookeeper:2181` | ZooKeeper connection string |
-
-
-### Hadoop (`spec.hadoop`)
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `coreSiteOverrides` | map | | `core-site.xml` properties for filesystem configuration (e.g., `fs.defaultFS`, `fs.s3a.*`, `fs.azure.*`, `fs.gs.*`) |
-
-### Resource requirements
-
-All components support a `resources` object with these fields:
-
-| Field | Example |
-|-------|---------|
-| `resources.requestsCpu` | `"500m"` |
-| `resources.requestsMemory` | `"1Gi"` |
-| `resources.limitsCpu` | `"2"` |
-| `resources.limitsMemory` | `"4Gi"` |
-
-## How Storage Configuration Works
-
-The operator is storage-agnostic — it does not hardcode any filesystem-specific
-logic. You configure storage using three mechanisms:
-
-1. **`spec.hadoop.coreSiteOverrides`** — Filesystem properties written to
-   `core-site.xml` (e.g., `fs.defaultFS`, `fs.s3a.endpoint`, `fs.azure.*`,
-   `fs.gs.*`). This ConfigMap is projected into all component pods.
-
-2. **`spec.envVars`** — Environment variables injected into all component
-   containers (Metastore, HiveServer2, LLAP, Tez AM). Use this for credentials
-   that should not appear in ConfigMaps, and for `HADOOP_OPTIONAL_TOOLS` which
-   tells the Hadoop classpath to include optional connector JARs (e.g.,
-   `hadoop-aws` for S3A, `hadoop-azure` for ABFS). Supports both literal values
-   and `valueFrom.secretKeyRef` for Kubernetes Secrets.
-
-3. **`spec.externalJars`** — URLs of connector JARs (GCS, ABFS, etc.)
-   downloaded via an init container into `/tmp/ext-jars`. The Hive Docker
-   entrypoint automatically copies them to `$HIVE_HOME/lib/` at startup.
-   Required for filesystems whose implementation class is not bundled in the
-   Hive/Hadoop image.
-
-4. **`spec.volumes` / `spec.volumeMounts`** — Volumes and mounts added to all
-   component pods. Use this to mount credential files (GCS service account JSON,
-   Kerberos keytabs, etc.) from Kubernetes Secrets into a known path.
-
-This design supports any Hadoop-compatible filesystem: S3A (AWS, MinIO, Ozone),
-ABFS (Azure), GCS (Google Cloud), HDFS, or Ozone native.
-
-### Overrides
-
-Properties in `spec.hadoop.coreSiteOverrides` populate `core-site.xml`.
-Properties in `spec.metastore.configOverrides` and
-`spec.hiveServer2.configOverrides` override values in `metastore-site.xml` and
-`hive-site.xml` respectively.
-
-## Cleanup
-
-```bash
-# Delete the HiveCluster (removes all managed pods, services, etc.)
-kubectl delete hivecluster my-hive
-
-# Remove the operator
-envsubst < config/operator/deployment.yaml | kubectl delete -f -
-kubectl delete -f config/rbac/cluster-role-binding.yaml
-kubectl delete -f config/rbac/cluster-role.yaml
-kubectl delete -f config/rbac/service-account.yaml
-kubectl delete namespace hive-operator
-
-# Remove the CRD
-kubectl delete crd hiveclusters.hive.apache.org
-```
-Remove Everything
-
-```bash
-kubectl delete hivecluster my-hive --ignore-not-found
-envsubst < config/operator/deployment.yaml | kubectl delete --ignore-not-found -f -
-kubectl delete -f config/rbac/ --ignore-not-found
-kubectl delete namespace hive-operator --ignore-not-found
-kubectl delete secret hive-db-secret --ignore-not-found
-kubectl delete crd hiveclusters.hive.apache.org --ignore-not-found
-helm uninstall postgres --ignore-not-found 2>/dev/null || true
-kubectl delete pvc data-postgres-postgresql-0 --ignore-not-found
-helm uninstall zookeeper --ignore-not-found 2>/dev/null || true
-kubectl delete pvc data-zookeeper-0 --ignore-not-found
-helm uninstall ozone --ignore-not-found 2>/dev/null || true
-```
+5. LLAP + TezAM [if enabled]

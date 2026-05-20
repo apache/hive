@@ -17,7 +17,7 @@
 apiVersion: hive.apache.org/v1alpha1
 kind: HiveCluster
 metadata:
-  name: my-hive
+  name: hive
 spec:
   image: apache/hive:${HIVE_VERSION}
   imagePullPolicy: IfNotPresent

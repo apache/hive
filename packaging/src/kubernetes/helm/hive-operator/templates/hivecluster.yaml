@@ -1,0 +1,181 @@
+{{/*
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/}}
+{{- if .Values.cluster.enabled }}
+apiVersion: hive.apache.org/v1alpha1
+kind: HiveCluster
+metadata:
+  name: {{ include "hive-operator.clusterName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "hive-operator.labels" . | nindent 4 }}
+spec:
+  image: {{ .Values.cluster.image }}
+  imagePullPolicy: {{ .Values.cluster.imagePullPolicy }}
+
+  metastore:
+    enabled: {{ .Values.cluster.metastore.enabled }}
+    {{- if .Values.cluster.metastore.enabled }}
+    replicas: {{ .Values.cluster.metastore.replicas }}
+    warehouseDir: {{ .Values.cluster.metastore.warehouseDir | quote }}
+    database:
+      type: {{ .Values.cluster.database.type | quote }}
+      {{- if .Values.cluster.database.url }}
+      url: {{ .Values.cluster.database.url | quote }}
+      {{- end }}
+      {{- if .Values.cluster.database.driver }}
+      driver: {{ .Values.cluster.database.driver | quote }}
+      {{- end }}
+      {{- if .Values.cluster.database.username }}
+      username: {{ .Values.cluster.database.username | quote }}
+      {{- end }}
+      {{- if and .Values.cluster.database.passwordSecretRef .Values.cluster.database.passwordSecretRef.name }}
+      passwordSecretRef:
+        name: {{ .Values.cluster.database.passwordSecretRef.name | quote }}
+        key: {{ .Values.cluster.database.passwordSecretRef.key | default "password" | quote }}
+      {{- end }}
+      {{- if .Values.cluster.database.driverJarUrl }}
+      driverJarUrl: {{ .Values.cluster.database.driverJarUrl | quote }}
+      {{- end }}
+    {{- if .Values.cluster.metastore.resources }}
+    resources:
+      {{- toYaml .Values.cluster.metastore.resources | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.metastore.configOverrides }}
+    configOverrides:
+      {{- toYaml .Values.cluster.metastore.configOverrides | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.metastore.extraVolumes }}
+    extraVolumes:
+      {{- toYaml .Values.cluster.metastore.extraVolumes | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.metastore.extraVolumeMounts }}
+    extraVolumeMounts:
+      {{- toYaml .Values.cluster.metastore.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+    {{- else }}
+    {{- if .Values.cluster.metastore.externalUri }}
+    externalUri: {{ .Values.cluster.metastore.externalUri | quote }}
+    {{- end }}
+    {{- end }}
+
+  hiveServer2:
+    replicas: {{ .Values.cluster.hiveServer2.replicas }}
+    serviceType: {{ .Values.cluster.hiveServer2.serviceType | quote }}
+    thriftPort: {{ .Values.cluster.hiveServer2.thriftPort }}
+    webUiPort: {{ .Values.cluster.hiveServer2.webUiPort }}
+    {{- if .Values.cluster.hiveServer2.resources }}
+    resources:
+      {{- toYaml .Values.cluster.hiveServer2.resources | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.hiveServer2.configOverrides }}
+    configOverrides:
+      {{- toYaml .Values.cluster.hiveServer2.configOverrides | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.hiveServer2.externalJars }}
+    externalJars:
+      {{- toYaml .Values.cluster.hiveServer2.externalJars | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.hiveServer2.extraVolumes }}
+    extraVolumes:
+      {{- toYaml .Values.cluster.hiveServer2.extraVolumes | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.hiveServer2.extraVolumeMounts }}
+    extraVolumeMounts:
+      {{- toYaml .Values.cluster.hiveServer2.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+
+  llap:
+    enabled: {{ .Values.cluster.llap.enabled }}
+    {{- if .Values.cluster.llap.enabled }}
+    replicas: {{ .Values.cluster.llap.replicas }}
+    executors: {{ .Values.cluster.llap.executors }}
+    memoryMb: {{ .Values.cluster.llap.memoryMb }}
+    serviceHosts: {{ .Values.cluster.llap.serviceHosts | quote }}
+    {{- if .Values.cluster.llap.resources }}
+    resources:
+      {{- toYaml .Values.cluster.llap.resources | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.llap.configOverrides }}
+    configOverrides:
+      {{- toYaml .Values.cluster.llap.configOverrides | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.llap.extraVolumes }}
+    extraVolumes:
+      {{- toYaml .Values.cluster.llap.extraVolumes | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.llap.extraVolumeMounts }}
+    extraVolumeMounts:
+      {{- toYaml .Values.cluster.llap.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+    {{- end }}
+
+  tezAm:
+    enabled: {{ .Values.cluster.tezAm.enabled }}
+    {{- if .Values.cluster.tezAm.enabled }}
+    replicas: {{ .Values.cluster.tezAm.replicas }}
+    scratchStorageSize: {{ .Values.cluster.tezAm.scratchStorageSize | quote }}
+    {{- if .Values.cluster.tezAm.scratchStorageClassName }}
+    scratchStorageClassName: {{ .Values.cluster.tezAm.scratchStorageClassName | quote }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.resources }}
+    resources:
+      {{- toYaml .Values.cluster.tezAm.resources | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.configOverrides }}
+    configOverrides:
+      {{- toYaml .Values.cluster.tezAm.configOverrides | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.extraVolumes }}
+    extraVolumes:
+      {{- toYaml .Values.cluster.tezAm.extraVolumes | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.extraVolumeMounts }}
+    extraVolumeMounts:
+      {{- toYaml .Values.cluster.tezAm.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+    {{- end }}
+
+  zookeeper:
+    quorum: {{ .Values.cluster.zookeeper.quorum | quote }}
+
+  {{- if .Values.cluster.storage.coreSiteOverrides }}
+  hadoop:
+    coreSiteOverrides:
+      {{- toYaml .Values.cluster.storage.coreSiteOverrides | nindent 6 }}
+  {{- end }}
+
+  {{- if .Values.cluster.storage.envVars }}
+  envVars:
+    {{- toYaml .Values.cluster.storage.envVars | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.cluster.storage.externalJars }}
+  externalJars:
+    {{- toYaml .Values.cluster.storage.externalJars | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.cluster.storage.volumes }}
+  volumes:
+    {{- toYaml .Values.cluster.storage.volumes | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.cluster.storage.volumeMounts }}
+  volumeMounts:
+    {{- toYaml .Values.cluster.storage.volumeMounts | nindent 4 }}
+  {{- end }}
+{{- end }}

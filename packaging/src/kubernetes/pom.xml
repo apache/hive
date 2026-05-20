@@ -110,24 +110,37 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Copy generated CRD YAML from target to src/gen for version control -->
+      <!-- Exclude generated CRD from RAT license check -->
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>helm/hive-operator/crds/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <!-- Copy generated CRD YAML to helm/hive-operator/crds for Helm -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>copy-crd-to-src-gen</id>
+            <id>copy-crd-to-helm-crds</id>
             <phase>compile</phase>
             <goals>
               <goal>run</goal>
             </goals>
             <configuration>
               <target>
-                <copy todir="${basedir}/src/gen" overwrite="true">
+                <mkdir dir="${basedir}/helm/hive-operator/crds"/>
+                <copy todir="${basedir}/helm/hive-operator/crds" overwrite="true">
                   <fileset dir="${project.build.outputDirectory}/META-INF/fabric8">
                     <include name="*-v1.yml"/>
                   </fileset>
                 </copy>
+                <replaceregexp file="${basedir}/helm/hive-operator/Chart.yaml" match="^version:.*$" replace="version: &quot;${project.version}&quot;" byline="true"/>
+                <replaceregexp file="${basedir}/helm/hive-operator/Chart.yaml" match="^appVersion:.*$" replace="appVersion: &quot;${project.version}&quot;" byline="true"/>
               </target>
             </configuration>
           </execution>

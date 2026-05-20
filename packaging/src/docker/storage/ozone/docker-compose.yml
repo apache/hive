@@ -34,9 +34,6 @@ x-common-config:
   OZONE-SITE.XML_hdds.scm.safemode.min.datanode: "1"
   OZONE-SITE.XML_hdds.scm.safemode.healthy.pipeline.pct: "0"
   OZONE-SITE.XML_ozone.s3g.domain.name: "s3.ozone"
-  OZONE-SITE.XML_hdds.datanode.volume.min.free.space: "128MB"
-  OZONE-SITE.XML_hdds.scm.safemode.pipeline.creation: "false"
-  OZONE-SITE.XML_ozone.scm.container.size: "256MB"
 
 services:
   datanode:

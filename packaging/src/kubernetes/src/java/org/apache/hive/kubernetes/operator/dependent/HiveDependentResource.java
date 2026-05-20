@@ -52,6 +52,7 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
@@ -98,6 +99,27 @@ public abstract class HiveDependentResource<R extends HasMetadata,
 
   protected HiveDependentResource(Class<R> resourceType) {
     super(resourceType);
+  }
+
+  /**
+   * Catches 409 AlreadyExists during resource creation caused by
+   * informer lag — the resource exists on the API server but
+   * the informer cache hasn't indexed it yet, so JOSDK bypasses
+   * {@link #match} and calls create directly.
+   */
+  @Override
+  protected R handleCreate(R desired, P primary, Context<P> context) {
+    try {
+      return super.handleCreate(desired, primary, context);
+    } catch (KubernetesClientException e) {
+      if (e.getCode() == 409) {
+        LOG.info("Resource {} already exists (informer lag), "
+            + "will reconcile on next event",
+            desired.getMetadata().getName());
+        return desired;
+      }
+      throw e;
+    }
   }
 
   /**

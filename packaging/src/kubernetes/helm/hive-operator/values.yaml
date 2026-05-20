@@ -1,0 +1,158 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to you under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# =============================================================================
+# Hive Kubernetes Operator Helm Values
+#
+# QUICK START: Only set values under "cluster.database", "cluster.zookeeper",
+# and "cluster.storage" — the chart defaults to a Full-HA cluster with
+# Metastore, HiveServer2, LLAP, and Tez AM all enabled.
+# =============================================================================
+
+# -- Operator Deployment Configuration ----------------------------------------
+
+operator:
+  image:
+    repository: apache/hive
+    tag: "operator-4.3.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+
+# -- HiveCluster Instance Configuration ---------------------------------------
+
+# Set to false to install only the operator (no HiveCluster CR created).
+# Useful if you want to manage HiveCluster CRs yourself.
+cluster:
+  enabled: true
+  name: hive
+
+  # Hive component image (not the operator image)
+  image: "apache/hive:4.3.0-SNAPSHOT"
+  imagePullPolicy: IfNotPresent
+
+  # ---------------------------------------------------------------------------
+  # DATABASE (Required) — RDBMS for the Hive Metastore backend
+  # ---------------------------------------------------------------------------
+  database:
+    type: postgres
+    url: ""                  # e.g. "jdbc:postgresql://postgres:5432/metastore"
+    driver: ""              # e.g. "org.postgresql.Driver"
+    username: ""            # e.g. "hive"
+    passwordSecretRef:
+      name: ""              # e.g. "hive-db-secret"
+      key: ""               # e.g. "password"
+    driverJarUrl: ""        # e.g. "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+
+  # ---------------------------------------------------------------------------
+  # ZOOKEEPER (Required) — for Tez session registry and LLAP
+  # ---------------------------------------------------------------------------
+  zookeeper:
+    quorum: ""              # e.g. "zookeeper:2181"
+
+  # ---------------------------------------------------------------------------
+  # STORAGE (Required) — Hadoop filesystem configuration
+  # ---------------------------------------------------------------------------
+  storage:
+    # core-site.xml properties (filesystem endpoint, auth settings, etc.)
+    coreSiteOverrides: {}
+      # fs.defaultFS: "s3a://hive"
+      # fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
+      # fs.s3a.path.style.access: "true"
+
+    # Environment variables injected into all pods (credentials, HADOOP_OPTIONAL_TOOLS)
+    envVars: []
+      # - name: HADOOP_OPTIONAL_TOOLS
+      #   value: "hadoop-aws"
+      # - name: AWS_ACCESS_KEY_ID
+      #   value: "ozone"
+      # - name: AWS_SECRET_ACCESS_KEY
+      #   value: "ozone"
+
+    # URLs of connector JARs downloaded at pod startup (GCS, ABFS connectors)
+    externalJars: []
+      # - "https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.25/gcs-connector-hadoop3-2.2.25-shaded.jar"
+
+    # Volumes added to all pods (for mounting credential files)
+    volumes: []
+      # - name: gcs-key
+      #   secret:
+      #     secretName: gcs-creds
+
+    # Volume mounts added to all containers
+    volumeMounts: []
+      # - name: gcs-key
+      #   mountPath: /etc/gcs
+      #   readOnly: true
+
+  # ---------------------------------------------------------------------------
+  # METASTORE — defaults to enabled, 2 replicas (HA)
+  # ---------------------------------------------------------------------------
+  metastore:
+    enabled: true
+    replicas: 2
+    warehouseDir: "/hive/warehouse"
+    resources: {}
+    configOverrides: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+    # Set to use an external Metastore instead of deploying one:
+    # enabled: false
+    # externalUri: "thrift://external-metastore:9083"
+
+  # ---------------------------------------------------------------------------
+  # HIVESERVER2 — defaults to 2 replicas (HA)
+  # ---------------------------------------------------------------------------
+  hiveServer2:
+    replicas: 2
+    serviceType: ClusterIP
+    thriftPort: 10000
+    webUiPort: 10002
+    resources: {}
+    configOverrides: {}
+    externalJars: []
+    extraVolumes: []
+    extraVolumeMounts: []
+
+  # ---------------------------------------------------------------------------
+  # LLAP — enabled by default for full-HA
+  # ---------------------------------------------------------------------------
+  llap:
+    enabled: true
+    replicas: 2
+    executors: 1
+    memoryMb: 1024
+    serviceHosts: "@llap0"
+    resources: {}
+    configOverrides: {}
+    extraVolumes: []
+    extraVolumeMounts: []
+
+  # ---------------------------------------------------------------------------
+  # TEZ AM — enabled by default for full-HA
+  # ---------------------------------------------------------------------------
+  tezAm:
+    enabled: true
+    replicas: 2
+    scratchStorageSize: "1Gi"
+    scratchStorageClassName: ""
+    resources: {}
+    configOverrides: {}
+    extraVolumes: []
+    extraVolumeMounts: []
