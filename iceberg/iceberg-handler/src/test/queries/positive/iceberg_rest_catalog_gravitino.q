@@ -30,7 +30,7 @@ set hive.stats.autogather=false;
 set metastore.client.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 set metastore.catalog.default=ice01;
 set iceberg.catalog.ice01.type=rest;
-set iceberg.catalog.ice01.rest.access-delegation=vended-credentials;
+set iceberg.catalog.ice01.header.X-Iceberg-Access-Delegation=vended-credentials;
 
 --! REST URI, OAuth, MinIO + Gravitino S3 warehouse / credential vending, and host S3A are set in
 --! TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.

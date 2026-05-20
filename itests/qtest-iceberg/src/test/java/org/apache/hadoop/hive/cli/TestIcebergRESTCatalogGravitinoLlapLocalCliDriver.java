@@ -164,7 +164,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     conf.set(restCatalogPrefix + "rest.auth.type", "oauth2");
     conf.set(restCatalogPrefix + "oauth2-server-uri", oAuth2AuthorizationServer.getTokenEndpoint());
     conf.set(restCatalogPrefix + "credential", oAuth2AuthorizationServer.getClientCredential());
-    conf.set(restCatalogPrefix + "rest.access-delegation", "vended-credentials");
+    conf.set(restCatalogPrefix + "header.X-Iceberg-Access-Delegation", "vended-credentials");
 
     // Hadoop S3A + Iceberg S3FileIO on the host JVM (Hive CLI / Tez / LLAP), see class Javadoc
     applyHostS3aForMinio(conf);
@@ -215,28 +215,6 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     conf.set(restCatalogPrefix + "client.region", "us-east-1");
     conf.set(restCatalogPrefix + "s3.access-key-id", MINIO_ACCESS_KEY);
     conf.set(restCatalogPrefix + "s3.secret-access-key", MINIO_SECRET_KEY);
-  }
-
-  /**
-   * Same mapping as {@link HiveRESTCatalogClient#reconnect()} for Iceberg REST vended credentials; inlined here so
-   * this test compiles against the Iceberg classes bundled with {@code hive-iceberg-handler} (which may lag
-   * {@code hive-iceberg-catalog} sources).
-   */
-  private static Map<String, String> applyVendedDelegationForRest(Map<String, String> catalogProps) {
-    final String headerProp = "header.X-Iceberg-Access-Delegation";
-    if (catalogProps.containsKey(headerProp)) {
-      return catalogProps;
-    }
-
-    String delegation = catalogProps.get("rest.access-delegation");
-    if (delegation == null || delegation.trim().isEmpty()) {
-      return catalogProps;
-    }
-
-    java.util.HashMap<String, String> copy = new java.util.HashMap<>(catalogProps);
-    copy.remove("rest.access-delegation");
-    copy.put(headerProp, delegation.trim());
-    return copy;
   }
 
   /**
@@ -406,14 +384,13 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
   /**
    * Proves the Iceberg REST client receives vended S3 credentials from Gravitino: create/load an S3-located table and
-   * run a scan (same property mapping as {@link HiveRESTCatalogClient#reconnect()}). Invoked from {@link #setup()}
+   * run a scan (same catalog properties as {@link HiveRESTCatalogClient#reconnect()}). Invoked from {@link #setup()}
    * after Hive session configuration is complete.
    */
   private void verifyIcebergRestUsesVendedS3FromGravitino() throws Exception {
     Configuration conf = SessionState.get().getConf();
     String catalogName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
-    Map<String, String> props =
-        applyVendedDelegationForRest(IcebergCatalogProperties.getCatalogProperties(conf));
+    Map<String, String> props = IcebergCatalogProperties.getCatalogProperties(conf);
 
     try (RESTCatalog rest = new RESTCatalog()) {
       rest.setConf(conf);
