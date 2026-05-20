@@ -450,7 +450,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return computeRangePredicateSelectivity(() -> defaultSelectivity, node, boundaries);
   }
 
-  private double computeRangePredicateSelectivity(Supplier<Double> defaultSelectivity, RexNode operand,
+  private Double computeRangePredicateSelectivity(Supplier<Double> defaultSelectivity, RexNode operand,
       Range<Float> boundaries) {
     return computeRangePredicateSelectivity(defaultSelectivity, operand, boundaries, false);
   }
@@ -459,7 +459,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * Computes the selectivity of an operand in a certain range trying to leverage the histogram information.
    * Returns the default selectivity if the histogram is not available.
    */
-  private double computeRangePredicateSelectivity(Supplier<Double> defaultSelectivity, RexNode operand,
+  private Double computeRangePredicateSelectivity(Supplier<Double> defaultSelectivity, RexNode operand,
       Range<Float> boundaries, boolean inverseBool /* true only for NOT_BETWEEN */) {
     if (!(childRel instanceof HiveTableScan)) {
       return defaultSelectivity.get();
@@ -626,10 +626,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     private double compute() {
-      final List<Double> selectivityList = new ArrayList<>();
       final List<RexNode> inLiterals = new ArrayList<>();
-
-      double rangesSelectivity = 0d;
+      final List<Double> rangesSelectivityList = new ArrayList<>();
       // accumulate the selectivity of all ranges
       for (Range<C> range : sarg.rangeSet.asRanges()) {
         if (!range.hasLowerBound() && !range.hasUpperBound()) {
@@ -674,28 +672,39 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
             ? defaultSelectivity.get()
             : computeRangePredicateSelectivity(defaultSelectivity, ref,
                 Range.range(lowerLiteral.get(), lowerBoundType, upperLiteral.get(), upperBoundType));
-        rangesSelectivity = Math.min(1.0, rangesSelectivity + currentRangeSelectivity);
+        rangesSelectivityList.add(currentRangeSelectivity);
       }
-      selectivityList.add(rangesSelectivity);
+
+      final List<Double> searchSelectivityList = new ArrayList<>();
+      if (!rangesSelectivityList.isEmpty() && rangesSelectivityList.stream().noneMatch(Objects::isNull)) {
+        // Aggregate all ranges selectivity, respecting the max value of 1
+        double rangesSelectivity = Math.min(1.0, rangesSelectivityList.stream().mapToDouble(Double::doubleValue).sum());
+        if (rangesSelectivity == 1.0) {
+          return 1.0;
+        }
+        searchSelectivityList.add(rangesSelectivity);
+      } else {
+        searchSelectivityList.addAll(rangesSelectivityList);
+      }
 
       if (!inLiterals.isEmpty()) {
         if (inLiterals.size() == 1) {
-          selectivityList.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, inLiterals.get(0))
+          searchSelectivityList.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, inLiterals.get(0))
               .accept(FilterSelectivityEstimator.this));
         } else {
           List<RexNode> operands = new ArrayList<>(inLiterals.size() + 1);
           operands.add(ref);
           operands.addAll(inLiterals);
-          selectivityList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
+          searchSelectivityList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
         }
       }
 
       if (sarg.nullAs == RexUnknownAs.TRUE) {
-        selectivityList.add(
+        searchSelectivityList.add(
             rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref).accept(FilterSelectivityEstimator.this));
       }
 
-      return selectivityList.size() == 1 ? selectivityList.get(0) : computeDisjunctionSelectivity(selectivityList);
+      return searchSelectivityList.size() == 1 ? searchSelectivityList.get(0) : computeDisjunctionSelectivity(searchSelectivityList);
     }
   }
 
