@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
+import org.apache.hadoop.hive.metastore.client.FilterMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils;
@@ -76,7 +76,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
  * It helps to reduce the time spent in compilation by using HS2 memory more effectively, and it allows to
  * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
  */
-public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
+public class HiveMetaStoreClientWithLocalCache extends FilterMetaStoreClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClientWithLocalCache.class);
 

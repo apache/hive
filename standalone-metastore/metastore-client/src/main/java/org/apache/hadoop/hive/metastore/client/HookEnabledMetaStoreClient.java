@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
@@ -55,7 +54,7 @@ import java.util.List;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
-public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
+public class HookEnabledMetaStoreClient extends FilterMetaStoreClient {
   private final HiveMetaHookLoader hookLoader;
 
   private static final Logger LOG = LoggerFactory.getLogger(HookEnabledMetaStoreClient.class);

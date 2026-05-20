@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
+import org.apache.hadoop.hive.metastore.client.FilterMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.HiveMetaStoreClientBuilder;
 import org.apache.thrift.TException;
@@ -45,7 +45,7 @@ import java.util.Map;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMetaStoreClient, AutoCloseable {
+public class HiveMetaStoreClient extends FilterMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
 

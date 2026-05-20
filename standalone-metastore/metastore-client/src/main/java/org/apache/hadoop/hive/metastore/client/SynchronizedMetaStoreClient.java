@@ -32,7 +32,7 @@ import java.lang.reflect.Proxy;
  * The reflection logic originally comes from {@link HiveMetaStoreClient}.
  * This should be used by multi-thread applications unless all the underlying layers are thread-safe.
  */
-public class SynchronizedMetaStoreClient extends MetaStoreClientWrapper implements IMetaStoreClient {
+public class SynchronizedMetaStoreClient extends FilterMetaStoreClient implements IMetaStoreClient {
   public static SynchronizedMetaStoreClient newClient(Configuration conf, IMetaStoreClient delegate) {
     return new SynchronizedMetaStoreClient(conf, delegate);
   }
