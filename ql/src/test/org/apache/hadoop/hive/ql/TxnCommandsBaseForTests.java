@@ -66,6 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 
@@ -152,6 +153,7 @@ public abstract class TxnCommandsBaseForTests {
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
+    HiveConf.setTimeVar(hiveConf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 0, TimeUnit.SECONDS);
       
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);

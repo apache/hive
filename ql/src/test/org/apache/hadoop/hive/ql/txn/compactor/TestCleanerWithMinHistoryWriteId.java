@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -34,6 +35,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.CLEANING_RESPONSE;
 import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_RESPONSE;
@@ -134,25 +137,62 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
   }
 
   @Test
+  public void cleanupAndDanglingOpenTxnOnSameTable() throws Exception {
+    Table t = prepareTestTable("camtc");
+    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    long compactTxn = compactInTxn(rqst, CommitAction.MARK_COMPACTED);
+    addBaseFile(t, null, 25L, 25, compactTxn);
+
+    // Open a readerTxn during compaction,
+    // Do not register minOpenWriteId (i.e. simulate delay locking the snapshot)
+    long readerTxn = openTxn();
+
+    txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
+    Thread.sleep(MetastoreConf.getTimeVar(
+        conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+
+    startCleaner(10, TimeUnit.SECONDS);
+
+    // Validate that the cleanup attempt was delayed by retention time.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(1, rsp.getCompactsSize());
+    assertEquals(CLEANING_RESPONSE, rsp.getCompacts().getFirst().getState());
+
+    // Check that the files are not removed
+    List<Path> paths = getDirectories(conf, t, null);
+    assertEquals(5, paths.size());
+
+    // Register minOpenWriteId for the readerTxn.
+    txnHandler.addWriteIdsToMinHistory(readerTxn, Map.of("default.camtc", 1L));
+
+    startCleaner(0, TimeUnit.SECONDS);
+
+    // Validate that the cleanup attempt was blocked by readerTxn.
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(1, rsp.getCompactsSize());
+    assertEquals(CLEANING_RESPONSE, rsp.getCompacts().getFirst().getState());
+
+    // Check that the files are not removed
+    paths = getDirectories(conf, t, null);
+    assertEquals(5, paths.size());
+  }
+
+  @Test
   public void cleanupNotBlockedByOpenTxnOnAnotherTable() throws Exception {
-    // Two tables, two compactions: camtc1's compactTxn is registered in MIN_HISTORY_WRITE_ID
-    // (via compactInTxn → addWriteIdsToMinHistory). camtc2's cleanup must proceed despite
-    // camtc1's open compactTxn id being ≤ camtc2's hwm — per-table independence.
     Table t1 = prepareTestTable("camtc1");
     Table t2 = prepareTestTable("camtc2");
 
+    // Open a readerTxn on t1 and register minOpenWriteId.
+    long readerTxn = openTxn();
+    txnHandler.addWriteIdsToMinHistory(readerTxn, Map.of("default.camtc1", 1L));
+
     CompactionRequest rqstTbl1 = new CompactionRequest("default", "camtc1", CompactionType.MAJOR);
-    long compactTxn = compactInTxn(rqstTbl1, CommitAction.NONE);
+    long compactTxn = compactInTxn(rqstTbl1);
     addBaseFile(t1, null, 25L, 25, compactTxn);
 
     CompactionRequest rqstTbl2 = new CompactionRequest("default", "camtc2", CompactionType.MAJOR);
     compactTxn = compactInTxn(rqstTbl2);
     addBaseFile(t2, null, 25L, 25, compactTxn);
-
-    // force retry: reset camtc1's queue entry from WORKING to INITIATED so a fresh compactor takes it
-    revokeTimedoutWorkers(conf);
-    compactTxn = compactInTxn(rqstTbl1);
-    addBaseFile(t1, null, 25L, 25, compactTxn);
 
     startCleaner();
 
@@ -167,7 +207,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
     assertEquals(CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());
     assertEquals("camtc1", rsp.getCompacts().get(1).getTablename());
     // camtc1 wasn't actually cleaned (admission filter held it back).
-    assertEquals(6, getDirectories(conf, t1, null).size());
+    assertEquals(5, getDirectories(conf, t1, null).size());
   }
 
   private Table prepareTestTable(String tblName) throws Exception {

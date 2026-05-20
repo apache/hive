@@ -38,6 +38,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 
 /**
  * Base class for "end-to-end" tests for DbTxnManager and simulate concurrent queries.
@@ -59,6 +62,8 @@ public abstract class DbTxnManagerEndToEndTestBase {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, getWarehouseDir());
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
+    HiveConf.setTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 0, TimeUnit.SECONDS);
+
     TestTxnDbUtil.setConfValues(conf);
   }
   

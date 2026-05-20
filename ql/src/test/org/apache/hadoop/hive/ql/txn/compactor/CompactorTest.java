@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -146,6 +147,7 @@ public abstract class CompactorTest {
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreConf.setBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
+    TxnHandler.ConfVars.setUseMinHistoryWriteId(useMinHistoryWriteId());
     MetastoreConf.setVar(conf, ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
         "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer");
     if (useMinHistoryWriteId()) {
@@ -177,6 +179,12 @@ public abstract class CompactorTest {
 
   protected void startCleaner() throws Exception {
     runOneLoopOfCompactorThread(CompactorThreadType.CLEANER);
+  }
+
+  void startCleaner(long retentionTime, TimeUnit timeUnit) throws Exception {
+    HiveConf.setTimeVar(conf,
+        HIVE_COMPACTOR_CLEANER_RETENTION_TIME, retentionTime, timeUnit);
+    startCleaner();
   }
 
   protected void runAcidMetricService() {
