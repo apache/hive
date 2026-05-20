@@ -23,6 +23,7 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -47,8 +48,15 @@ public class HiveMetaStoreClientBuilder {
   private final Configuration conf;
   private IMetaStoreClient client;
 
-  public HiveMetaStoreClientBuilder(Configuration conf, boolean allowEmbedded) throws MetaException {
-    this(conf, createClient(conf, allowEmbedded));
+  public HiveMetaStoreClientBuilder(Configuration configuration, boolean allowEmbedded) throws MetaException {
+    this.conf = new Configuration(Objects.requireNonNull(configuration));
+    boolean isHiveClient = HiveMetaStoreClient.class.getName().equals(
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL));
+    if (isHiveClient) {
+      // Prevent stack overflow as HiveMetaStoreClient calls HiveMetaStoreClientBuilder to build the underlying client
+      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, ThriftHiveMetaStoreClient.class.getName());
+    }
+    this.client = createClient(conf, allowEmbedded);
   }
 
   public HiveMetaStoreClientBuilder(Configuration conf, IMetaStoreClient client) {
@@ -86,10 +94,11 @@ public class HiveMetaStoreClientBuilder {
           conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
           ThriftHiveMetaStoreClient.class, IMetaStoreClient.class);
       LOG.info("Using {} as a base MetaStoreClient", mscClass.getName());
-      if (CLIENT_FACTORIES.containsKey(mscClass)) {
-        CLIENT_FACTORIES.put(mscClass, new MetaStoreClientFactory(mscClass));
+      MetaStoreClientFactory factory = CLIENT_FACTORIES.get(mscClass);
+      if (factory == null) {
+        CLIENT_FACTORIES.put(mscClass, factory = new MetaStoreClientFactory(mscClass));
       }
-      return CLIENT_FACTORIES.get(mscClass).createClient(conf, allowEmbedded);
+      return factory.createClient(conf, allowEmbedded);
     } catch (Throwable t) {
       // Reflection by JavaUtils will throw RuntimeException, try to get real MetaException here.
       Throwable rootCause = ExceptionUtils.getRootCause(t);
