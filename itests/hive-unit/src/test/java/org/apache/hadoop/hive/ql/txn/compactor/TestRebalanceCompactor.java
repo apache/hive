@@ -578,11 +578,15 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('16',16)", driver);
     executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('17',17)", driver);
 
+    // Make sure we have all the records persisted
+    List<String> allRecords = execSelectAndDumpData("SELECT * FROM " + tableName, driver, "Dumping data from test table, " + tableName);
+    Assert.assertEquals(18, allRecords.size());
+
     /*
      check if the test data is unbalanced
-     balanced if all the buckets contains between n / bucket count and n / bucket count + bucket count rows
+     Balanced if all the buckets contain between n / bucket count and n / bucket count + bucket count rows,
      where n is the number of rows in the table.
-     In our test case, we inserted 6 extra rows into the first bucket so we can say it is properly unbalanced
+     In our test case, we inserted 6 extra rows into the first bucket so, we can say it is properly unbalanced
      if the first bucket has 6 more elements than the second one.
     */
     Assert.assertFalse(isBalanced(tableName, testDataProvider));
