@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
@@ -628,14 +629,23 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     private double compute() {
       final List<RexNode> inLiterals = new ArrayList<>();
       final List<Double> rangeSelectivities = new ArrayList<>();
-      for (Range<C> range : sarg.rangeSet.asRanges()) {
-        if (!range.hasLowerBound() && !range.hasUpperBound()) {
-          return 1.0; // "all" range
+      final List<Double> searchSelectivities = new ArrayList<>();
+
+      if (sarg.isComplementedPoints()) {
+        // Generate 'ref <> value1 AND ... AND ref <> valueN'
+        List<RexNode> notEq = sarg.rangeSet.complement().asRanges().stream()
+            .map(range -> rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref, makeLiteral(range.lowerEndpoint())))
+            .collect(Collectors.toList());
+        searchSelectivities.add(RexUtil.composeConjunction(rexBuilder, notEq).accept(FilterSelectivityEstimator.this));
+      } else {
+        for (Range<C> range : sarg.rangeSet.asRanges()) {
+          if (!range.hasLowerBound() && !range.hasUpperBound()) {
+            return 1.0; // "all" range
+          }
+          processRangeSelectivity(range, rangeSelectivities, inLiterals);
         }
-        processRangeSelectivity(range, rangeSelectivities, inLiterals);
       }
 
-      final List<Double> searchSelectivities = new ArrayList<>();
       if (!rangeSelectivities.isEmpty() && rangeSelectivities.stream().noneMatch(Objects::isNull)) {
         // Aggregate all ranges selectivity, respecting the max value of 1
         double total = Math.min(1.0, rangeSelectivities.stream().mapToDouble(Double::doubleValue).sum());
@@ -655,7 +665,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           List<RexNode> operands = new ArrayList<>(inLiterals.size() + 1);
           operands.add(ref);
           operands.addAll(inLiterals);
-          searchSelectivities.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
+          searchSelectivities.add(
+              rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
         }
       }
 
@@ -664,7 +675,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
             rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref).accept(FilterSelectivityEstimator.this));
       }
 
-      return searchSelectivities.size() == 1 ? searchSelectivities.get(0) : computeDisjunctionSelectivity(searchSelectivities);
+      return searchSelectivities.size() == 1
+          ? searchSelectivities.get(0)
+          : computeDisjunctionSelectivity(searchSelectivities);
     }
 
     private void processRangeSelectivity(Range<C> range, List<Double> rangeSelectivities, List<RexNode> inLiterals) {

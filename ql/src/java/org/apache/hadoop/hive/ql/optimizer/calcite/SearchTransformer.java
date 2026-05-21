@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A class that transforms a call to the internal {@link SqlStdOperatorTable#SEARCH} operator into an equivalent
@@ -76,26 +77,35 @@ public class SearchTransformer<C extends Comparable<C>> {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
 
-    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);
-    RangeSets.forEach(sarg.rangeSet, consumer);
-
     List<RexNode> orList = new ArrayList<>();
     if (sarg.nullAs == RexUnknownAs.TRUE && unknownContext != RexUnknownAs.TRUE) {
       orList.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref));
     }
-    switch (consumer.inLiterals.size()) {
-    case 0:
-      break;
-    case 1:
-      orList.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, consumer.inLiterals.get(0)));
-      break;
-    default:
-      List<RexNode> operands = new ArrayList<>(consumer.inLiterals.size() + 1);
-      operands.add(ref);
-      operands.addAll(consumer.inLiterals);
-      orList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands));
+
+    if (sarg.isComplementedPoints()) {
+      // Generate 'ref <> value1 AND ... AND ref <> valueN'
+      final List<RexNode> list = sarg.rangeSet.complement().asRanges().stream().map(
+          range -> rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref,
+              rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))).collect(Collectors.toList());
+      orList.add(RexUtil.composeConjunction(rexBuilder, list));
+    } else {
+      RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);
+      RangeSets.forEach(sarg.rangeSet, consumer);
+
+      switch (consumer.inLiterals.size()) {
+      case 0:
+        break;
+      case 1:
+        orList.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, consumer.inLiterals.get(0)));
+        break;
+      default:
+        List<RexNode> operands = new ArrayList<>(consumer.inLiterals.size() + 1);
+        operands.add(ref);
+        operands.addAll(consumer.inLiterals);
+        orList.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands));
+      }
+      orList.addAll(consumer.nodes);
     }
-    orList.addAll(consumer.nodes);
     RexNode x = RexUtil.composeDisjunction(rexBuilder, orList);
 
     if (sarg.nullAs == RexUnknownAs.FALSE && unknownContext != RexUnknownAs.FALSE) {
