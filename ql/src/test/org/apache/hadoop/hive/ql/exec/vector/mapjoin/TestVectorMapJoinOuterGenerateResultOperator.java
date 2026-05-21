@@ -62,6 +62,7 @@ class TestVectorMapJoinOuterGenerateResultOperator {
 
     @Override
     public void processBatch(VectorizedRowBatch batch) {
+      throw new UnsupportedOperationException("stubbed only to instantiate abstract class under test");
     }
   }
 
