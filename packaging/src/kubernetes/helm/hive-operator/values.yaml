@@ -122,8 +122,6 @@ cluster:
   hiveServer2:
     replicas: 2
     serviceType: ClusterIP
-    thriftPort: 10000
-    webUiPort: 10002
     resources: {}
     configOverrides: {}
     externalJars: []

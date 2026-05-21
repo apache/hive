@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Full HiveCluster (HA): All four services with LLAP, TezAM, and multiple replicas
-apiVersion: hive.apache.org/v1alpha1
+apiVersion: hive.apache.org/v1
 kind: HiveCluster
 metadata:
   name: hive
@@ -34,9 +34,6 @@ spec:
         key: password
       driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
     warehouseDir: "/hive/warehouse"
-    configOverrides:
-      metastore.catalog.servlet.port: "9001"
-      metastore.catalog.servlet.auth: "none"
 
   hiveServer2:
     replicas: 2

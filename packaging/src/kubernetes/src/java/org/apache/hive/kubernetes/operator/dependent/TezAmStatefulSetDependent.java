@@ -27,6 +27,7 @@ import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
@@ -43,8 +44,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
  * so the hostname must be resolvable within the cluster.
  */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=tezam,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=tezam,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class TezAmStatefulSetDependent
     extends HiveDependentResource<StatefulSet, HiveCluster> {
@@ -152,6 +153,9 @@ public class TezAmStatefulSetDependent
           .endTemplate()
         .endSpec()
         .build();
+
+    applySpreadAffinityIfAbsent(
+        statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
 
     if (spec.volumes() != null) {
       statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());

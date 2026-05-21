@@ -23,6 +23,7 @@ import java.util.Map;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
@@ -31,8 +32,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 
 /** Manages the metastore-site.xml ConfigMap for the Hive Metastore. */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=metastore,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=metastore,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class MetastoreConfigMapDependent
     extends HiveDependentResource<ConfigMap, HiveCluster> {

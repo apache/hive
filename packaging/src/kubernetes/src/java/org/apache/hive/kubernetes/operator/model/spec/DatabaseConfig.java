@@ -19,10 +19,12 @@
 package org.apache.hive.kubernetes.operator.model.spec;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import io.fabric8.generator.annotation.Default;
 
 /** JDBC database connection configuration for the Hive Metastore backend. */
 public record DatabaseConfig(
     @JsonPropertyDescription("Database type: derby, mysql, postgres, mssql, or oracle")
+    @Default("derby")
     String type,
     @JsonPropertyDescription("JDBC connection URL")
     String url,
@@ -39,8 +41,6 @@ public record DatabaseConfig(
     String driverJarUrl) {
 
   public DatabaseConfig {
-    if (type == null) {
-      type = "derby";
-    }
+    type = type != null ? type : "derby";
   }
 }

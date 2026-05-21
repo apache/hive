@@ -30,18 +30,20 @@ import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.HiveServer2Spec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /** Manages the Kubernetes Deployment for HiveServer2. */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=hiveserver2,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=hiveserver2,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class HiveServer2DeploymentDependent
     extends HiveDependentResource<Deployment, HiveCluster> {
@@ -88,36 +90,56 @@ public class HiveServer2DeploymentDependent
           spec.llap().serviceHosts(), null));
     }
 
+    int metastorePort = ConfigUtils.getInt(
+        spec.metastore().configOverrides(),
+        ConfigUtils.METASTORE_THRIFT_PORT_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_HIVE_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
     String metastoreUri = spec.metastore().isEnabled() ?
-        "thrift://" + hiveCluster.getMetadata().getName() + "-metastore:9083" :
+        "thrift://" + hiveCluster.getMetadata().getName()
+            + "-metastore:" + metastorePort :
         spec.metastore().externalUri();
     StringBuilder serviceOpts = new StringBuilder();
     if (metastoreUri != null && !metastoreUri.isEmpty()) {
-      serviceOpts.append("-Dhive.metastore.uris=").append(metastoreUri);
+      serviceOpts.append("-D")
+          .append(ConfigUtils.HIVE_METASTORE_URIS_KEY)
+          .append("=").append(metastoreUri);
     }
     if (spec.llap().isEnabled()) {
-      serviceOpts.append(" -Dhive.execution.mode=llap");
-      serviceOpts.append(" -Dhive.llap.daemon.service.hosts=")
-          .append(spec.llap().serviceHosts());
+      serviceOpts.append(" -D")
+          .append(ConfigUtils.HIVE_EXECUTION_MODE_KEY)
+          .append("=llap");
+      serviceOpts.append(" -D")
+          .append(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY)
+          .append("=").append(spec.llap().serviceHosts());
     }
     if (spec.tezAm().isEnabled()) {
-      serviceOpts.append(" -Dhive.zookeeper.quorum=")
-          .append(spec.zookeeper().quorum());
+      serviceOpts.append(" -D")
+          .append(ConfigUtils.HIVE_ZOOKEEPER_QUORUM_KEY)
+          .append("=").append(spec.zookeeper().quorum());
     }
     envVars.add(new EnvVar("SERVICE_OPTS",
         serviceOpts.toString(), null));
 
+    int hs2ThriftPort = ConfigUtils.getInt(
+        hs2.configOverrides(),
+        ConfigUtils.HIVE_SERVER2_THRIFT_PORT_KEY,
+        null, ConfigUtils.HIVE_SERVER2_THRIFT_PORT_DEFAULT);
+    int hs2WebUiPort = ConfigUtils.getInt(
+        hs2.configOverrides(),
+        ConfigUtils.HIVE_SERVER2_WEBUI_PORT_KEY,
+        null, ConfigUtils.HIVE_SERVER2_WEBUI_PORT_DEFAULT);
     List<ContainerPort> ports = List.of(
         new ContainerPortBuilder()
             .withName("thrift")
-            .withContainerPort(hs2.thriftPort()).build(),
+            .withContainerPort(hs2ThriftPort).build(),
         new ContainerPortBuilder()
             .withName("webui")
-            .withContainerPort(hs2.webUiPort()).build()
+            .withContainerPort(hs2WebUiPort).build()
     );
 
-    Probe readinessProbe = buildTcpProbe(hs2.thriftPort(), hs2.readinessProbe(), 15, 10, 3);
-    Probe livenessProbe = buildTcpProbe(hs2.thriftPort(), hs2.livenessProbe(), 120, 30, 10);
+    Probe readinessProbe = buildTcpProbe(hs2ThriftPort, hs2.readinessProbe(), 15, 10, 3);
+    Probe livenessProbe = buildTcpProbe(hs2ThriftPort, hs2.livenessProbe(), 120, 30, 10);
 
     boolean tezAmEnabled = spec.tezAm().isEnabled();
 
@@ -207,6 +229,9 @@ public class HiveServer2DeploymentDependent
           .endTemplate()
         .endSpec()
         .build();
+
+    applySpreadAffinityIfAbsent(
+        deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
     if (spec.volumes() != null) {
       deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());

@@ -18,16 +18,19 @@
 
 package org.apache.hive.kubernetes.operator.model.spec;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import io.fabric8.generator.annotation.Required;
 
 /** External ZooKeeper connection configuration. ZooKeeper is not managed by this operator. */
 public record ZookeeperSpec(
-    @JsonPropertyDescription("ZooKeeper quorum connection string")
+    @Required
+    @JsonPropertyDescription("ZooKeeper quorum connection string. This field is strictly required.")
     String quorum) {
 
   public ZookeeperSpec {
-    if (quorum == null) {
-      quorum = "zookeeper:2181";
-    }
+    Objects.requireNonNull(quorum,
+        "ZooKeeper quorum must be explicitly defined in the HiveCluster spec.");
   }
 }

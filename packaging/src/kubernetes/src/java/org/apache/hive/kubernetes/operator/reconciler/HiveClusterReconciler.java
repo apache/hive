@@ -32,10 +32,10 @@ import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
-import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import io.javaoperatorsdk.operator.api.reconciler.Workflow;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
 import org.apache.hive.kubernetes.operator.dependent.HadoopConfigMapDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServer2ConfigMapDependent;
@@ -67,105 +67,49 @@ import org.slf4j.LoggerFactory;
  * Main reconciler for the HiveCluster custom resource.
  * Orchestrates all dependent resources with proper dependency ordering.
  */
-@ControllerConfiguration(
-    dependents = {
-        // --- ConfigMap dependents ---
-        @Dependent(
-            name = "hadoop-configmap",
-            type = HadoopConfigMapDependent.class
-        ),
-        @Dependent(
-            name = "metastore-configmap",
-            type = MetastoreConfigMapDependent.class,
-            activationCondition = MetastoreEnabledCondition.class
-        ),
-        @Dependent(
-            name = "hiveserver2-configmap",
-            type = HiveServer2ConfigMapDependent.class
-        ),
-        // --- Job dependents ---
-        @Dependent(
-            name = "schema-init-job",
-            type = SchemaInitJobDependent.class,
-            dependsOn = {"metastore-configmap", "hadoop-configmap"},
-            readyPostcondition = SchemaJobCompletedCondition.class,
-            activationCondition = MetastoreEnabledCondition.class
-        ),
-        // --- Deployment dependents ---
-        @Dependent(
-            name = "metastore-deployment",
-            type = MetastoreDeploymentDependent.class,
-            dependsOn = {"schema-init-job"},
-            readyPostcondition = MetastoreReadyCondition.class,
-            activationCondition = MetastoreEnabledCondition.class
-        ),
-        // --- Service dependents ---
-        @Dependent(
-            name = "metastore-service",
-            type = MetastoreServiceDependent.class,
-            dependsOn = {"metastore-configmap"},
-            activationCondition = MetastoreEnabledCondition.class
-        ),
-        @Dependent(
-            name = "hiveserver2-deployment",
-            type = HiveServer2DeploymentDependent.class,
-            dependsOn = {"hiveserver2-configmap",
-                "hadoop-configmap"},
-            reconcilePrecondition = HiveServer2Precondition.class
-        ),
-        @Dependent(
-            name = "hiveserver2-service",
-            type = HiveServer2ServiceDependent.class,
-            dependsOn = {"hiveserver2-configmap"}
-        ),
-        // --- LLAP (conditional) ---
-        @Dependent(
-            name = "llap-configmap",
-            type = LlapConfigMapDependent.class,
-            activationCondition = LlapEnabledCondition.class
-        ),
-        @Dependent(
-            name = "llap-statefulset",
-            type = LlapStatefulSetDependent.class,
-            dependsOn = {"llap-configmap", "hadoop-configmap"},
-            activationCondition = LlapEnabledCondition.class
-        ),
-        @Dependent(
-            name = "llap-service",
-            type = LlapServiceDependent.class,
-            activationCondition = LlapEnabledCondition.class
-        ),
-        // --- TezAM (conditional) ---
-        @Dependent(
-            name = "scratch-pvc",
-            type = ScratchPvcDependent.class,
-            activationCondition = TezAmEnabledCondition.class
-        ),
-        @Dependent(
-            name = "tezam-service",
-            type = TezAmServiceDependent.class,
-            activationCondition = TezAmEnabledCondition.class
-        ),
-        @Dependent(
-            name = "tezam-statefulset",
-            type = TezAmStatefulSetDependent.class,
-            dependsOn = {"hiveserver2-configmap", "hadoop-configmap",
-                "tezam-service", "scratch-pvc"},
-            activationCondition = TezAmEnabledCondition.class
-        )
-    }
-)
-public class HiveClusterReconciler
-    implements Reconciler<HiveCluster>, ErrorStatusHandler<HiveCluster> {
+@ControllerConfiguration
+@Workflow(dependents = {
+    // --- ConfigMap dependents ---
+    @Dependent(name = "hadoop-configmap", type = HadoopConfigMapDependent.class),
+    @Dependent(name = "metastore-configmap", type = MetastoreConfigMapDependent.class,
+        activationCondition = MetastoreEnabledCondition.class),
+    @Dependent(name = "hiveserver2-configmap", type = HiveServer2ConfigMapDependent.class),
+    // --- Job dependents ---
+    @Dependent(name = "schema-init-job", type = SchemaInitJobDependent.class, dependsOn = {"metastore-configmap",
+        "hadoop-configmap"}, readyPostcondition = SchemaJobCompletedCondition.class,
+        activationCondition = MetastoreEnabledCondition.class),
+    // --- Deployment dependents ---
+    @Dependent(name = "metastore-deployment", type = MetastoreDeploymentDependent.class, dependsOn = {
+        "schema-init-job"}, readyPostcondition = MetastoreReadyCondition.class,
+        activationCondition = MetastoreEnabledCondition.class),
+    // --- Service dependents ---
+    @Dependent(name = "metastore-service", type = MetastoreServiceDependent.class, dependsOn = {
+        "metastore-configmap"}, activationCondition = MetastoreEnabledCondition.class),
+    @Dependent(name = "hiveserver2-deployment", type = HiveServer2DeploymentDependent.class, dependsOn = {
+        "hiveserver2-configmap", "hadoop-configmap"}, reconcilePrecondition = HiveServer2Precondition.class),
+    @Dependent(name = "hiveserver2-service", type = HiveServer2ServiceDependent.class, dependsOn = {
+        "hiveserver2-configmap"}),
+    // --- LLAP (conditional) ---
+    @Dependent(name = "llap-configmap", type = LlapConfigMapDependent.class,
+        activationCondition = LlapEnabledCondition.class),
+    @Dependent(name = "llap-statefulset", type = LlapStatefulSetDependent.class, dependsOn = {"llap-configmap",
+        "hadoop-configmap"}, activationCondition = LlapEnabledCondition.class),
+    @Dependent(name = "llap-service", type = LlapServiceDependent.class,
+        activationCondition = LlapEnabledCondition.class),
+    // --- TezAM (conditional) ---
+    @Dependent(name = "scratch-pvc", type = ScratchPvcDependent.class,
+        activationCondition = TezAmEnabledCondition.class),
+    @Dependent(name = "tezam-service", type = TezAmServiceDependent.class,
+        activationCondition = TezAmEnabledCondition.class),
+    @Dependent(name = "tezam-statefulset", type = TezAmStatefulSetDependent.class, dependsOn = {"hiveserver2-configmap",
+        "hadoop-configmap", "tezam-service", "scratch-pvc"}, activationCondition = TezAmEnabledCondition.class)})
+public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(HiveClusterReconciler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
 
   @Override
-  public UpdateControl<HiveCluster> reconcile(HiveCluster resource,
-      Context<HiveCluster> context) {
-    LOG.info("Reconciling HiveCluster: {}/{}",
-        resource.getMetadata().getNamespace(),
+  public UpdateControl<HiveCluster> reconcile(HiveCluster resource, Context<HiveCluster> context) {
+    LOG.debug("Reconciling HiveCluster: {}/{}", resource.getMetadata().getNamespace(),
         resource.getMetadata().getName());
 
     HiveClusterStatus existingStatus = resource.getStatus();
@@ -180,17 +124,15 @@ public class HiveClusterReconciler
   }
 
   @Override
-  public ErrorStatusUpdateControl<HiveCluster> updateErrorStatus(
-      HiveCluster resource, Context<HiveCluster> context, Exception e) {
-    LOG.error("Error reconciling HiveCluster: {}/{}",
-        resource.getMetadata().getNamespace(),
+  public ErrorStatusUpdateControl<HiveCluster> updateErrorStatus(HiveCluster resource, Context<HiveCluster> context,
+      Exception e) {
+    LOG.error("Error reconciling HiveCluster: {}/{}", resource.getMetadata().getNamespace(),
         resource.getMetadata().getName(), e);
 
-    HiveClusterStatus status = resource.getStatus() != null
-        ? resource.getStatus() : new HiveClusterStatus();
+    HiveClusterStatus status = resource.getStatus() != null ? resource.getStatus() : new HiveClusterStatus();
 
-    List<Condition> existingConditions = status.getConditions() != null
-        ? status.getConditions() : Collections.emptyList();
+    List<Condition> existingConditions =
+        status.getConditions() != null ? status.getConditions() : Collections.emptyList();
 
     status.setConditions(List.of(
         buildCondition("Ready", "False", "ReconciliationError",

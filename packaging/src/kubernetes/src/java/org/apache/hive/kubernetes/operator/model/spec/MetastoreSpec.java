@@ -24,12 +24,14 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
+import io.fabric8.generator.annotation.Default;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
 /** Configuration for the Hive Metastore component. */
 public record MetastoreSpec(
     @JsonPropertyDescription("Number of replicas")
+    @Default("1")
     Integer replicas,
     @JsonPropertyDescription("Resource requirements for pods")
     ResourceRequirementsSpec resources,
@@ -44,8 +46,10 @@ public record MetastoreSpec(
     @JsonPropertyDescription("Database connection configuration for the metastore backend")
     DatabaseConfig database,
     @JsonPropertyDescription("Warehouse directory path")
+    @Default("/hive/warehouse")
     String warehouseDir,
     @JsonPropertyDescription("Whether the operator should deploy and manage a Metastore")
+    @Default("true")
     Boolean enabled,
     @JsonPropertyDescription("Thrift URI of the external Metastore (if enabled is false)")
     String externalUri,
@@ -56,8 +60,9 @@ public record MetastoreSpec(
 
   public MetastoreSpec {
     replicas = replicas != null ? replicas : 1;
-    database = database != null ? database : new DatabaseConfig(null, null, null, null, null, null);
-    warehouseDir = warehouseDir != null ? warehouseDir : "/opt/hive/data/warehouse";
+    database = database != null ? database : new DatabaseConfig(
+        "derby", null, null, null, null, null);
+    warehouseDir = warehouseDir != null ? warehouseDir : "/hive/warehouse";
     enabled = enabled != null ? enabled : true;
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();

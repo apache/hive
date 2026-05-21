@@ -21,22 +21,10 @@ package org.apache.hive.kubernetes.operator.dependent;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.fabric8.kubernetes.api.model.AffinityBuilder;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -70,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Overrides {@link #getSecondaryResource} to use this dependent's own
  * event source instead of the generic type-based lookup. This is
- * required because JOSDK 4.9.x's default implementation calls
+ * required because JOSDK's default implementation calls
  * {@code context.getSecondaryResource(type)} which throws when
  * multiple dependents manage the same Kubernetes resource type
  * (e.g. multiple ConfigMap or Service dependents).
@@ -81,21 +69,10 @@ public abstract class HiveDependentResource<R extends HasMetadata,
 
   private static final Logger LOG =
       LoggerFactory.getLogger(HiveDependentResource.class);
-  private static final ObjectMapper MAPPER = new ObjectMapper()
-      .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
 
   protected static final String CONF_MOUNT_PATH = "/etc/hive/conf";
   protected static final String HIVE_CONF_DIR = "/opt/hive/conf";
   protected static final String EXT_JARS_PATH = "/tmp/ext-jars";
-  /**
-   * Stores SHA-256 hashes of the last desired spec that was applied
-   * for each resource, keyed by namespace/name.  This lets us skip
-   * updates when the desired state has not changed, avoiding the
-   * annotation writes and generation bumps that cause infinite
-   * reconciliation loops on Docker Desktop Kubernetes.
-   */
-  private static final ConcurrentHashMap<String, String>
-      LAST_DESIRED_HASHES = new ConcurrentHashMap<>();
 
   protected HiveDependentResource(Class<R> resourceType) {
     super(resourceType);
@@ -104,8 +81,8 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   /**
    * Catches 409 AlreadyExists during resource creation caused by
    * informer lag — the resource exists on the API server but
-   * the informer cache hasn't indexed it yet, so JOSDK bypasses
-   * {@link #match} and calls create directly.
+   * the informer cache hasn't indexed it yet, so JOSDK calls
+   * create directly.
    */
   @Override
   protected R handleCreate(R desired, P primary, Context<P> context) {
@@ -122,17 +99,6 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     }
   }
 
-  /**
-   * Disable Server-Side Apply. SSA on Docker Desktop Kubernetes causes
-   * dual ReplicaSet creation (two SSA applies within the same second
-   * produce different pod template hashes). Standard create/update
-   * combined with our custom hash-based {@link #match} is sufficient.
-   */
-  @Override
-  protected boolean useSSA(Context<P> context) {
-    return false;
-  }
-
   @Override
   public Optional<R> getSecondaryResource(P primary,
       Context<P> context) {
@@ -141,145 +107,22 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   }
 
   /**
-   * Custom match that compares an SHA-256 hash of the desired resource
-   * spec against the last applied hash.  Overrides the 3-arg entry
-   * point because that is what JOSDK's reconcile loop actually calls.
-   * <p>
-   * The parent's 3-arg match delegates to a 5-arg method that calls
-   * {@code addMetadata()} <em>unconditionally</em> — writing the
-   * {@code javaoperatorsdk.io/previous} annotation on every
-   * reconciliation.  On Docker Desktop, that annotation write bumps
-   * {@code metadata.generation}, which triggers a new informer event,
-   * causing an infinite reconciliation loop.
-   * <p>
-   * By intercepting here we avoid both the annotation write and the
-   * false-positive diffs from K8s-injected defaults (protocol: TCP,
-   * terminationGracePeriodSeconds, etc.) when the desired spec has
-   * not actually changed.
+   * Jobs and PVCs are immutable after creation — Kubernetes rejects
+   * any PUT that modifies spec.selector, spec.template (Job) or
+   * spec.resources/accessModes (PVC). Short-circuit the match to
+   * prevent the framework from attempting updates on these resources.
    */
   @Override
-  public Matcher.Result<R> match(R actual, P primary,
-      Context<P> context) {
-    R desired = desired(primary, context);
-    String resourceKey = desired.getKind()
-        + "/" + desired.getMetadata().getNamespace()
-        + "/" + desired.getMetadata().getName();
-    String desiredHash = computeHash(desired);
-    if (actual == null) {
-      if (desiredHash != null) {
-        String previousHash = LAST_DESIRED_HASHES.get(resourceKey);
-        if (Objects.equals(previousHash, desiredHash)) {
-          // Resource was created in a previous reconciliation but
-          // the informer hasn't indexed it yet.  Returning false
-          // would trigger another SSA apply, which fires another
-          // informer event, creating an infinite reconciliation
-          // loop on Docker Desktop.  Skip the re-creation.
-          LOG.debug("Resource {} already created (informer lag), "
-              + "skipping re-create", resourceKey);
-          return Matcher.Result.computed(true, desired);
-        }
-        // First creation — cache the hash so the next
-        // reconciliation can detect informer lag.
-        LOG.info("Creating resource {}", resourceKey);
-        LAST_DESIRED_HASHES.put(resourceKey, desiredHash);
+  public Matcher.Result<R> match(R actualResource, R desired,
+      P primary, Context<P> context) {
+    if (actualResource != null) {
+      String kind = actualResource.getKind();
+      if ("Job".equals(kind)
+          || "PersistentVolumeClaim".equals(kind)) {
+        return Matcher.Result.nonComputed(true);
       }
-      return Matcher.Result.computed(false, desired);
     }
-    if (desiredHash == null) {
-      // Serialization failed — delegate to parent which will
-      // call addMetadata + the real matcher
-      return super.match(actual, primary, context);
-    }
-    // Jobs and PVCs are immutable after creation — never update.
-    String kind = actual.getKind();
-    if ("Job".equals(kind) || "PersistentVolumeClaim".equals(kind)) {
-      LAST_DESIRED_HASHES.put(resourceKey, desiredHash);
-      return Matcher.Result.computed(true, desired);
-    }
-    String previousHash = LAST_DESIRED_HASHES.get(resourceKey);
-    if (previousHash == null) {
-      // First reconciliation after operator start — the resource
-      // already exists so seed the cache without triggering an
-      // update. This prevents a gratuitous rolling update caused
-      // by K8s default-value injection (protocol: TCP, etc.).
-      LOG.info("Seeding hash for existing resource {}, skipping update",
-          resourceKey);
-      LAST_DESIRED_HASHES.put(resourceKey, desiredHash);
-      return Matcher.Result.computed(true, desired);
-    }
-    if (desiredHash.equals(previousHash)) {
-      LOG.debug("Desired spec unchanged for {}, skipping update",
-          resourceKey);
-      return Matcher.Result.computed(true, desired);
-    }
-    LOG.info("Desired spec changed for {}, will update", resourceKey);
-    LAST_DESIRED_HASHES.put(resourceKey, desiredHash);
-    return Matcher.Result.computed(false, desired);
-  }
-
-  private String computeHash(R resource) {
-    try {
-      JsonNode tree = MAPPER.valueToTree(resource);
-      sortJsonNode(tree);
-      String json = MAPPER.writeValueAsString(tree);
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      byte[] hash = digest.digest(
-          json.getBytes(StandardCharsets.UTF_8));
-      StringBuilder sb = new StringBuilder(64);
-      for (byte b : hash) {
-        sb.append(String.format("%02x", b));
-      }
-      return sb.toString();
-    } catch (Exception e) {
-      LOG.warn("Failed to compute hash for resource {}: {}",
-          resource.getMetadata().getName(), e.getMessage());
-      return null;
-    }
-  }
-
-  /** Recursively sort all object node keys for deterministic JSON. */
-  private static void sortJsonNode(JsonNode node) {
-    if (node.isObject()) {
-      ObjectNode obj = (ObjectNode) node;
-      TreeMap<String, JsonNode> sorted = new TreeMap<>();
-      Iterator<String> fieldNames = obj.fieldNames();
-      while (fieldNames.hasNext()) {
-        String name = fieldNames.next();
-        JsonNode child = obj.get(name);
-        sortJsonNode(child);
-        sorted.put(name, child);
-      }
-      obj.removeAll();
-      sorted.forEach(obj::set);
-    } else if (node.isArray()) {
-      ArrayNode arr = (ArrayNode) node;
-      for (int i = 0; i < arr.size(); i++) {
-        sortJsonNode(arr.get(i));
-      }
-      sortArrayNode(arr);
-    }
-  }
-
-  /**
-   * Sort array elements by a stable key to make hashing order-independent.
-   * Uses "name" field if present (env vars, volumes, containers, ports),
-   * falls back to "mountPath" (volume mounts), then serialized form.
-   */
-  private static void sortArrayNode(ArrayNode arr) {
-    if (arr.size() <= 1 || !arr.get(0).isObject()) {
-      return;
-    }
-
-    List<JsonNode> sortedElements = StreamSupport.stream(arr.spliterator(), false)
-        .sorted(Comparator.comparing(node ->
-            node.has("name") ? node.get("name").asText() :
-            node.has("mountPath") ? node.get("mountPath").asText() :
-            node.toString()
-        ))
-        .collect(Collectors.toList());
-
-    arr.removeAll();
-    sortedElements.forEach(arr::add);
+    return super.match(actualResource, desired, primary, context);
   }
 
   /**
@@ -418,6 +261,32 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   }
 
   /**
+   * Sets a preferred pod anti-affinity on the pod spec if no affinity is
+   * already defined. This spreads replicas across nodes while allowing
+   * future user-defined affinity to take precedence.
+   */
+  protected static void applySpreadAffinityIfAbsent(
+      io.fabric8.kubernetes.api.model.PodSpec podSpec,
+      Map<String, String> selectorLabels) {
+    if (podSpec.getAffinity() != null) {
+      return;
+    }
+    podSpec.setAffinity(new AffinityBuilder()
+        .withNewPodAntiAffinity()
+          .addNewPreferredDuringSchedulingIgnoredDuringExecution()
+            .withWeight(100)
+            .withNewPodAffinityTerm()
+              .withNewLabelSelector()
+                .withMatchLabels(selectorLabels)
+              .endLabelSelector()
+              .withTopologyKey("kubernetes.io/hostname")
+            .endPodAffinityTerm()
+          .endPreferredDuringSchedulingIgnoredDuringExecution()
+        .endPodAntiAffinity()
+        .build());
+  }
+
+  /**
    * Builds an init container that downloads external JARs via wget
    * (for http/https URLs) or hadoop fs (for HDFS/cloud paths).
    */
@@ -434,9 +303,12 @@ public abstract class HiveDependentResource<R extends HasMetadata,
 
     for (String jarUrl : externalJars) {
       if (jarUrl.startsWith("http://") || jarUrl.startsWith("https://")) {
-        cmd.append("wget -q -P ").append(targetDir).append(" '").append(jarUrl).append("' && ");
+        cmd.append("wget -q --tries=3 --waitretry=5 -P ").append(targetDir)
+            .append(" '").append(jarUrl).append("' && ");
       } else {
-        cmd.append("hadoop fs -copyToLocal '").append(jarUrl).append("' ").append(targetDir).append("/ && ");
+        cmd.append("{ ok=0; for i in 1 2 3; do hadoop fs -copyToLocal '").append(jarUrl)
+            .append("' ").append(targetDir).append("/ && ok=1 && break || sleep 5; done; ")
+            .append("[ $ok -eq 1 ]; } && ");
       }
     }
     cmd.append("echo 'All external JARs downloaded successfully.'");

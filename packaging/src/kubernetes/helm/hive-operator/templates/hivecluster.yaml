@@ -16,7 +16,7 @@
   limitations under the License.
 */}}
 {{- if .Values.cluster.enabled }}
-apiVersion: hive.apache.org/v1alpha1
+apiVersion: hive.apache.org/v1
 kind: HiveCluster
 metadata:
   name: {{ include "hive-operator.clusterName" . }}
@@ -76,8 +76,6 @@ spec:
   hiveServer2:
     replicas: {{ .Values.cluster.hiveServer2.replicas }}
     serviceType: {{ .Values.cluster.hiveServer2.serviceType | quote }}
-    thriftPort: {{ .Values.cluster.hiveServer2.thriftPort }}
-    webUiPort: {{ .Values.cluster.hiveServer2.webUiPort }}
     {{- if .Values.cluster.hiveServer2.resources }}
     resources:
       {{- toYaml .Values.cluster.hiveServer2.resources | nindent 6 }}

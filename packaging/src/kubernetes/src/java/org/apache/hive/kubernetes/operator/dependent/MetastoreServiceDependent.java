@@ -22,14 +22,16 @@ import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /** Manages the Kubernetes Service for the Hive Metastore (Thrift + REST ports). */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=metastore,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=metastore,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class MetastoreServiceDependent
     extends HiveDependentResource<Service, HiveCluster> {
@@ -41,6 +43,11 @@ public class MetastoreServiceDependent
   @Override
   protected Service desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
+    int thriftPort = ConfigUtils.getInt(
+        hiveCluster.getSpec().metastore().configOverrides(),
+        ConfigUtils.METASTORE_THRIFT_PORT_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_HIVE_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
     return new ServiceBuilder()
         .withNewMetadata()
           .withName(hiveCluster.getMetadata().getName() + "-metastore")
@@ -54,8 +61,8 @@ public class MetastoreServiceDependent
               MetastoreDeploymentDependent.COMPONENT))
           .addNewPort()
             .withName("thrift")
-            .withPort(9083)
-            .withTargetPort(new IntOrString(9083))
+            .withPort(thriftPort)
+            .withTargetPort(new IntOrString(thriftPort))
           .endPort()
           .addNewPort()
             .withName("rest")

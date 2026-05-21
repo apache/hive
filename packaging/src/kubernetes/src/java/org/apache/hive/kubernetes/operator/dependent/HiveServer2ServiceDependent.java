@@ -22,15 +22,17 @@ import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.HiveServer2Spec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /** Manages the Kubernetes Service for HiveServer2 (Thrift and WebUI ports). */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=hiveserver2,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=hiveserver2,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class HiveServer2ServiceDependent
     extends HiveDependentResource<Service, HiveCluster> {
@@ -43,6 +45,12 @@ public class HiveServer2ServiceDependent
   protected Service desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveServer2Spec hs2 = hiveCluster.getSpec().hiveServer2();
+    int thriftPort = ConfigUtils.getInt(hs2.configOverrides(),
+        ConfigUtils.HIVE_SERVER2_THRIFT_PORT_KEY,
+        null, ConfigUtils.HIVE_SERVER2_THRIFT_PORT_DEFAULT);
+    int webUiPort = ConfigUtils.getInt(hs2.configOverrides(),
+        ConfigUtils.HIVE_SERVER2_WEBUI_PORT_KEY,
+        null, ConfigUtils.HIVE_SERVER2_WEBUI_PORT_DEFAULT);
 
     return new ServiceBuilder()
         .withNewMetadata()
@@ -57,13 +65,13 @@ public class HiveServer2ServiceDependent
               HiveServer2DeploymentDependent.COMPONENT))
           .addNewPort()
             .withName("thrift")
-            .withPort(hs2.thriftPort())
-            .withTargetPort(new IntOrString(hs2.thriftPort()))
+            .withPort(thriftPort)
+            .withTargetPort(new IntOrString(thriftPort))
           .endPort()
           .addNewPort()
             .withName("webui")
-            .withPort(hs2.webUiPort())
-            .withTargetPort(new IntOrString(hs2.webUiPort()))
+            .withPort(webUiPort)
+            .withTargetPort(new IntOrString(webUiPort))
           .endPort()
         .endSpec()
         .build();

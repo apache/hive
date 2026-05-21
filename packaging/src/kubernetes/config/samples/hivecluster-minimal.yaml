@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # Minimal HiveCluster: Metastore + HiveServer2 with external S3-compatible storage
-apiVersion: hive.apache.org/v1alpha1
+apiVersion: hive.apache.org/v1
 kind: HiveCluster
 metadata:
   name: hive

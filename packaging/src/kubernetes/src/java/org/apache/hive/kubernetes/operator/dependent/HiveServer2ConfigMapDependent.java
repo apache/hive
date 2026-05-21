@@ -23,6 +23,7 @@ import java.util.Map;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
@@ -32,8 +33,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 
 /** Manages the hive-site.xml ConfigMap for HiveServer2. */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=hiveserver2,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=hiveserver2,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class HiveServer2ConfigMapDependent
     extends HiveDependentResource<ConfigMap, HiveCluster> {

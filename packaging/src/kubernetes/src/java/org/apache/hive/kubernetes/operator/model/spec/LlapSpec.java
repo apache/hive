@@ -24,12 +24,14 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
+import io.fabric8.generator.annotation.Default;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
 /** Configuration for LLAP (Live Long and Process) daemons. */
 public record LlapSpec(
     @JsonPropertyDescription("Number of replicas")
+    @Default("1")
     Integer replicas,
     @JsonPropertyDescription("Resource requirements for pods")
     ResourceRequirementsSpec resources,
@@ -42,10 +44,13 @@ public record LlapSpec(
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> extraVolumeMounts,
     @JsonPropertyDescription("Whether LLAP is enabled")
+    @Default("true")
     Boolean enabled,
     @JsonPropertyDescription("Number of LLAP executors per daemon")
+    @Default("1")
     Integer executors,
     @JsonPropertyDescription("Memory in MB per LLAP daemon instance")
+    @Default("1024")
     Integer memoryMb,
     @JsonPropertyDescription("LLAP service hosts identifier for ZooKeeper registration")
     String serviceHosts,
@@ -54,9 +59,9 @@ public record LlapSpec(
 
   public LlapSpec {
     replicas = replicas != null ? replicas : 1;
-    enabled = enabled != null ? enabled : false;
+    enabled = enabled != null ? enabled : true;
     executors = executors != null ? executors : 1;
-    memoryMb = memoryMb != null ? memoryMb : 2048;
+    memoryMb = memoryMb != null ? memoryMb : 1024;
     serviceHosts = serviceHosts != null ? serviceHosts : "@llap0";
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();

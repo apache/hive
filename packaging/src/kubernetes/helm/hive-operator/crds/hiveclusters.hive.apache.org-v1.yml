@@ -13,7 +13,7 @@ spec:
     singular: hivecluster
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - name: v1
     schema:
       openAPIV3Schema:
         properties:
@@ -115,6 +115,7 @@ spec:
                         type: integer
                     type: object
                   replicas:
+                    default: 1
                     description: Number of replicas
                     type: integer
                   resources:
@@ -127,22 +128,19 @@ spec:
                         description: "Memory limit (e.g. 2Gi, 1024Mi)"
                         type: string
                       requestsCpu:
+                        default: 500m
                         description: "CPU request (e.g. 500m, 1)"
                         type: string
                       requestsMemory:
+                        default: 1Gi
                         description: "Memory request (e.g. 1Gi, 512Mi)"
                         type: string
                     type: object
                   serviceType:
+                    default: ClusterIP
                     description: "Kubernetes Service type: ClusterIP, LoadBalancer,\
                       \ or NodePort"
                     type: string
-                  thriftPort:
-                    description: HiveServer2 Thrift port
-                    type: integer
-                  webUiPort:
-                    description: HiveServer2 Web UI port
-                    type: integer
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               image:
@@ -152,7 +150,7 @@ spec:
                 description: "Image pull policy: Always, Never, or IfNotPresent"
                 type: string
               llap:
-                description: LLAP daemon configuration. Disabled by default.
+                description: LLAP daemon configuration. Enabled by default.
                 properties:
                   configOverrides:
                     additionalProperties:
@@ -160,9 +158,11 @@ spec:
                     description: Additional configuration overrides as key-value pairs
                     type: object
                   enabled:
+                    default: true
                     description: Whether LLAP is enabled
                     type: boolean
                   executors:
+                    default: 1
                     description: Number of LLAP executors per daemon
                     type: integer
                   extraVolumeMounts:
@@ -179,6 +179,7 @@ spec:
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
                   memoryMb:
+                    default: 1024
                     description: Memory in MB per LLAP daemon instance
                     type: integer
                   readinessProbe:
@@ -205,6 +206,7 @@ spec:
                         type: integer
                     type: object
                   replicas:
+                    default: 1
                     description: Number of replicas
                     type: integer
                   resources:
@@ -217,9 +219,11 @@ spec:
                         description: "Memory limit (e.g. 2Gi, 1024Mi)"
                         type: string
                       requestsCpu:
+                        default: 500m
                         description: "CPU request (e.g. 500m, 1)"
                         type: string
                       requestsMemory:
+                        default: 1Gi
                         description: "Memory request (e.g. 1Gi, 512Mi)"
                         type: string
                     type: object
@@ -258,6 +262,7 @@ spec:
                             type: string
                         type: object
                       type:
+                        default: derby
                         description: "Database type: derby, mysql, postgres, mssql,\
                           \ or oracle"
                         type: string
@@ -269,6 +274,7 @@ spec:
                         type: string
                     type: object
                   enabled:
+                    default: true
                     description: Whether the operator should deploy and manage a Metastore
                     type: boolean
                   externalUri:
@@ -335,6 +341,7 @@ spec:
                         type: integer
                     type: object
                   replicas:
+                    default: 1
                     description: Number of replicas
                     type: integer
                   resources:
@@ -347,19 +354,22 @@ spec:
                         description: "Memory limit (e.g. 2Gi, 1024Mi)"
                         type: string
                       requestsCpu:
+                        default: 500m
                         description: "CPU request (e.g. 500m, 1)"
                         type: string
                       requestsMemory:
+                        default: 1Gi
                         description: "Memory request (e.g. 1Gi, 512Mi)"
                         type: string
                     type: object
                   warehouseDir:
+                    default: /hive/warehouse
                     description: Warehouse directory path
                     type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               tezAm:
-                description: Tez Application Master configuration. Disabled by default.
+                description: Tez Application Master configuration. Enabled by default.
                 properties:
                   configOverrides:
                     additionalProperties:
@@ -367,6 +377,7 @@ spec:
                     description: Additional configuration overrides as key-value pairs
                     type: object
                   enabled:
+                    default: true
                     description: Whether Tez AM is enabled
                     type: boolean
                   extraVolumeMounts:
@@ -383,6 +394,7 @@ spec:
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
                   replicas:
+                    default: 1
                     description: Number of replicas
                     type: integer
                   resources:
@@ -395,9 +407,11 @@ spec:
                         description: "Memory limit (e.g. 2Gi, 1024Mi)"
                         type: string
                       requestsCpu:
+                        default: 500m
                         description: "CPU request (e.g. 500m, 1)"
                         type: string
                       requestsMemory:
+                        default: 1Gi
                         description: "Memory request (e.g. 1Gi, 512Mi)"
                         type: string
                     type: object
@@ -406,6 +420,7 @@ spec:
                       \ ReadWriteMany access. If null, uses cluster default."
                     type: string
                   scratchStorageSize:
+                    default: 1Gi
                     description: Storage size for the shared scratch PVC (ReadWriteMany)
                       mounted on HS2 and TezAM at /opt/hive/scratch
                     type: string
@@ -430,9 +445,14 @@ spec:
                   this operator)
                 properties:
                   quorum:
-                    description: ZooKeeper quorum connection string
+                    description: ZooKeeper quorum connection string. This field is
+                      strictly required.
                     type: string
+                required:
+                - quorum
                 type: object
+            required:
+            - zookeeper
             type: object
             x-kubernetes-preserve-unknown-fields: true
           status:

@@ -22,6 +22,7 @@ import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.util.Labels;
@@ -31,8 +32,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
  * Required by the StatefulSet for stable DNS entries and ZooKeeper registration.
  */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=llap,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=llap,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class LlapServiceDependent
     extends HiveDependentResource<Service, HiveCluster> {

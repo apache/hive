@@ -28,11 +28,35 @@
     <hive.path.to.root>../../..</hive.path.to.root>
   </properties>
   <dependencies>
-    <!-- JOSDK operator framework (bundles fabric8 kubernetes-client) -->
     <dependency>
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework</artifactId>
       <version>${josdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.javaoperatorsdk</groupId>
+      <artifactId>operator-framework-core</artifactId>
+      <version>${josdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>kubernetes-client</artifactId>
+      <version>${fabric8.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.fabric8</groupId>
+      <artifactId>kubernetes-httpclient-vertx</artifactId>
+      <version>${fabric8.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.java-diff-utils</groupId>
+      <artifactId>java-diff-utils</artifactId>
+      <version>4.17</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-common</artifactId>
+      <version>4.5.27</version>
     </dependency>
     <!-- fabric8 CRD generator annotation processor -->
     <dependency>
@@ -41,7 +65,6 @@
       <version>${fabric8.version}</version>
       <scope>provided</scope>
     </dependency>
-    <!-- Logging: SLF4J 1.7 bridge to log4j2 (Hive manages slf4j-api at 1.7.x) -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
@@ -75,7 +98,6 @@
           </annotationProcessorPaths>
         </configuration>
       </plugin>
-      <!-- Produce a fat jar for deployment -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>

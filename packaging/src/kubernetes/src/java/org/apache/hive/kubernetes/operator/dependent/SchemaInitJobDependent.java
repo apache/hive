@@ -28,6 +28,7 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
@@ -40,8 +41,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
  * database schema using schematool.
  */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=schema-init,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=schema-init,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class SchemaInitJobDependent
     extends HiveDependentResource<Job, HiveCluster> {

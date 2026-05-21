@@ -19,12 +19,15 @@
 package org.apache.hive.kubernetes.operator.model.spec;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import io.fabric8.generator.annotation.Default;
 
 /** Kubernetes resource requirements specification for CPU and memory. */
 public record ResourceRequirementsSpec(
     @JsonPropertyDescription("CPU request (e.g. 500m, 1)")
+    @Default("500m")
     String requestsCpu,
     @JsonPropertyDescription("Memory request (e.g. 1Gi, 512Mi)")
+    @Default("1Gi")
     String requestsMemory,
     @JsonPropertyDescription("CPU limit (e.g. 2, 1000m)")
     String limitsCpu,
@@ -32,11 +35,7 @@ public record ResourceRequirementsSpec(
     String limitsMemory) {
 
   public ResourceRequirementsSpec {
-    if (requestsCpu == null) {
-      requestsCpu = "500m";
-    }
-    if (requestsMemory == null) {
-      requestsMemory = "1Gi";
-    }
+    requestsCpu = requestsCpu != null ? requestsCpu : "500m";
+    requestsMemory = requestsMemory != null ? requestsMemory : "1Gi";
   }
 }

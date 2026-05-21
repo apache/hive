@@ -32,18 +32,20 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /** Manages the Kubernetes Deployment for the Hive Metastore. */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=metastore,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=metastore,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class MetastoreDeploymentDependent
     extends HiveDependentResource<Deployment, HiveCluster> {
@@ -70,15 +72,20 @@ public class MetastoreDeploymentDependent
       envVars.addAll(spec.envVars());
     }
 
+    int thriftPort = ConfigUtils.getInt(
+        spec.metastore().configOverrides(),
+        ConfigUtils.METASTORE_THRIFT_PORT_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_HIVE_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
     List<ContainerPort> ports = List.of(
         new ContainerPortBuilder()
-            .withName("thrift").withContainerPort(9083).build(),
+            .withName("thrift").withContainerPort(thriftPort).build(),
         new ContainerPortBuilder()
             .withName("rest").withContainerPort(9001).build()
     );
 
-    Probe readinessProbe = buildTcpProbe(9083, spec.metastore().readinessProbe(), 15, 10, 3);
-    Probe livenessProbe = buildTcpProbe(9083, spec.metastore().livenessProbe(), 60, 30, 5);
+    Probe readinessProbe = buildTcpProbe(thriftPort, spec.metastore().readinessProbe(), 15, 10, 3);
+    Probe livenessProbe = buildTcpProbe(thriftPort, spec.metastore().livenessProbe(), 60, 30, 5);
 
     List<Container> initContainers = new ArrayList<>();
     List<VolumeMount> volumeMounts = new ArrayList<>();
@@ -144,6 +151,9 @@ public class MetastoreDeploymentDependent
           .endTemplate()
         .endSpec()
         .build();
+
+    applySpreadAffinityIfAbsent(
+        deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
     if (spec.volumes() != null) {
       deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());

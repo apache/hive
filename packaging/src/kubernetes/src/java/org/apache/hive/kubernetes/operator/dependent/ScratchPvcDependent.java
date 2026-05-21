@@ -24,6 +24,7 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.TezAmSpec;
@@ -42,8 +43,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
  * simultaneously.
  */
 @KubernetesDependent(
-    labelSelector = "app.kubernetes.io/component=scratch,"
-        + "app.kubernetes.io/managed-by=hive-kubernetes-operator"
+    informer = @Informer(labelSelector = "app.kubernetes.io/component=scratch,"
+        + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
 )
 public class ScratchPvcDependent
     extends HiveDependentResource<PersistentVolumeClaim, HiveCluster> {

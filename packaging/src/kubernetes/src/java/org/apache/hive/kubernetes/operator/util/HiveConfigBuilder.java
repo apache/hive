@@ -45,43 +45,53 @@ public final class HiveConfigBuilder {
     boolean tezAmEnabled = spec.tezAm().isEnabled();
     String zkQuorum = spec.zookeeper().quorum();
 
+    int metastorePort = ConfigUtils.getInt(
+        spec.metastore().configOverrides(),
+        ConfigUtils.METASTORE_THRIFT_PORT_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_HIVE_KEY,
+        ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
     String metastoreUri = spec.metastore().isEnabled()
-        ? "thrift://" + hiveCluster.getMetadata().getName() + "-metastore:9083"
+        ? "thrift://" + hiveCluster.getMetadata().getName()
+            + "-metastore:" + metastorePort
         : spec.metastore().externalUri();
     if (metastoreUri != null && !metastoreUri.isEmpty()) {
-      props.put("hive.metastore.uris", metastoreUri);
+      props.put(ConfigUtils.METASTORE_URIS_KEY, metastoreUri);
     }
-    props.put("hive.metastore.warehouse.dir", spec.metastore().warehouseDir());
-    props.put("hive.server2.enable.doAs", "false");
-    props.put("hive.tez.exec.inplace.progress", "false");
-    props.put("hive.tez.exec.print.summary", "true");
-    props.put("hive.jar.directory", "/tmp");
-    props.put("hive.user.install.directory", "/tmp");
+    props.put(ConfigUtils.HIVE_METASTORE_WAREHOUSE_KEY,
+        spec.metastore().warehouseDir());
+    props.put(ConfigUtils.HIVE_SERVER2_ENABLE_DOAS_KEY, "false");
+    props.put(ConfigUtils.HIVE_TEZ_EXEC_INPLACE_PROGRESS_KEY, "false");
+    props.put(ConfigUtils.HIVE_TEZ_EXEC_SUMMARY_KEY, "true");
+    props.put(ConfigUtils.HIVE_JAR_DIRECTORY_KEY, "/tmp");
+    props.put(ConfigUtils.HIVE_USER_INSTALL_DIR_KEY, "/tmp");
     if (tezAmEnabled) {
-      props.put("hive.exec.local.scratchdir", "/opt/hive/scratch");
+      props.put(ConfigUtils.HIVE_LOCAL_SCRATCH_DIR_KEY,
+          "/opt/hive/scratch");
     }
 
     if (tezAmEnabled) {
-      props.put("hive.server2.tez.use.external.sessions", "true");
-      props.put("hive.server2.tez.external.sessions.namespace",
+      props.put(ConfigUtils.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY, "true");
+      props.put(ConfigUtils.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE_KEY,
           "/tez-external-sessions/tez_am/server");
-      props.put("hive.server2.tez.external.sessions.registry.class",
-          "org.apache.hadoop.hive.ql.exec.tez."
-              + "ZookeeperExternalSessionsRegistryClient");
-      props.put("hive.zookeeper.quorum", zkQuorum);
-      props.put("tez.am.framework.mode", "STANDALONE_ZOOKEEPER");
-      props.put("tez.am.registry.namespace", "/tez_am/server");
-      props.put("tez.am.zookeeper.quorum", zkQuorum);
+      props.put(ConfigUtils.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_REGISTRY_CLASS_KEY,
+          "org.apache.hadoop.hive.ql.exec.tez.ZookeeperExternalSessionsRegistryClient");
+      props.put(ConfigUtils.HIVE_ZOOKEEPER_QUORUM_KEY, zkQuorum);
+      // tez.am.framework.mode, tez.am.registry.namespace, tez.am.zookeeper.quorum
+      // are only in Tez 1.0.0+
+      props.put(ConfigUtils.TEZ_AM_FRAMEWORK_MODE_KEY, "STANDALONE_ZOOKEEPER");
+      props.put(ConfigUtils.TEZ_AM_REGISTRY_NAMESPACE_KEY, "/tez_am/server");
+      props.put(ConfigUtils.TEZ_AM_ZOOKEEPER_QUORUM_KEY, zkQuorum);
       LlapSpec llap = spec.llap();
       if (llap.isEnabled()) {
-        props.put("hive.execution.mode", "llap");
-        props.put("hive.llap.execution.mode", "all");
-        props.put("hive.llap.daemon.service.hosts", llap.serviceHosts());
+        props.put(ConfigUtils.HIVE_EXECUTION_MODE_KEY, "llap");
+        props.put(ConfigUtils.HIVE_LLAP_EXECUTION_MODE_KEY, "all");
+        props.put(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY,
+            llap.serviceHosts());
       }
     } else {
-      props.put("hive.server2.tez.use.external.sessions", "false");
-      props.put("tez.local.mode", "true");
-      props.put("tez.am.framework.mode", "LOCAL");
+      props.put(ConfigUtils.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY, "false");
+      props.put(ConfigUtils.TEZ_LOCAL_MODE_KEY, "true");
+      props.put(ConfigUtils.TEZ_AM_FRAMEWORK_MODE_KEY, "LOCAL");
       props.put("mapreduce.framework.name", "local");
     }
 
@@ -97,24 +107,25 @@ public final class HiveConfigBuilder {
     String zkQuorum = spec.zookeeper().quorum();
 
     Map<String, String> tezProps = new LinkedHashMap<>();
-    tezProps.put("tez.am.mode.session", "true");
-    tezProps.put("tez.ignore.lib.uris", "true");
-    tezProps.put("tez.am.tez-ui.webservice.enable", "false");
-    tezProps.put("tez.am.disable.client-version-check", "true");
-    tezProps.put("tez.session.am.dag.submit.timeout.secs", "-1");
-    tezProps.put("tez.am.zookeeper.quorum", zkQuorum);
-    tezProps.put("hive.zookeeper.quorum", zkQuorum);
+    tezProps.put(ConfigUtils.TEZ_AM_SESSION_MODE_KEY, "true");
+    tezProps.put(ConfigUtils.TEZ_IGNORE_LIB_URIS_KEY, "true");
+    tezProps.put(ConfigUtils.TEZ_AM_WEBSERVICE_ENABLE_KEY, "false");
+    tezProps.put(ConfigUtils.TEZ_AM_DISABLE_CLIENT_VERSION_CHECK_KEY, "true");
+    tezProps.put(ConfigUtils.TEZ_SESSION_AM_DAG_SUBMIT_TIMEOUT_SECS_KEY, "-1");
+    tezProps.put(ConfigUtils.TEZ_AM_ZOOKEEPER_QUORUM_KEY, zkQuorum);
+    tezProps.put(ConfigUtils.HIVE_ZOOKEEPER_QUORUM_KEY, zkQuorum);
     if (tezAmEnabled) {
-      tezProps.put("tez.local.mode", "false");
-      tezProps.put("tez.am.framework.mode", "STANDALONE_ZOOKEEPER");
-      tezProps.put("tez.am.registry.namespace", "/tez_am/server");
+      tezProps.put(ConfigUtils.TEZ_LOCAL_MODE_KEY, "false");
+      tezProps.put(ConfigUtils.TEZ_AM_FRAMEWORK_MODE_KEY, "STANDALONE_ZOOKEEPER");
+      tezProps.put(ConfigUtils.TEZ_AM_REGISTRY_NAMESPACE_KEY, "/tez_am/server");
     } else {
-      tezProps.put("tez.local.mode", "true");
+      tezProps.put(ConfigUtils.TEZ_LOCAL_MODE_KEY, "true");
     }
 
     LlapSpec llap = spec.llap();
     if (llap.isEnabled()) {
-      tezProps.put("hive.llap.daemon.service.hosts", llap.serviceHosts());
+      tezProps.put(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY,
+          llap.serviceHosts());
     }
 
     if (spec.tezAm().configOverrides() != null) {
@@ -138,18 +149,19 @@ public final class HiveConfigBuilder {
     MetastoreSpec metastore = spec.metastore();
     Map<String, String> props = new LinkedHashMap<>();
 
-    props.put("metastore.warehouse.dir", metastore.warehouseDir());
+    props.put(ConfigUtils.METASTORE_WAREHOUSE_KEY,
+        metastore.warehouseDir());
 
     DatabaseConfig db = metastore.database();
     if (db != null) {
       if (db.url() != null) {
-        props.put("javax.jdo.option.ConnectionURL", db.url());
+        props.put(ConfigUtils.METASTORE_CONNECTION_URL_KEY, db.url());
       }
       if (db.driver() != null) {
-        props.put("javax.jdo.option.ConnectionDriverName", db.driver());
+        props.put(ConfigUtils.METASTORE_CONNECTION_DRIVER_KEY, db.driver());
       }
       if (db.username() != null) {
-        props.put("javax.jdo.option.ConnectionUserName", db.username());
+        props.put(ConfigUtils.METASTORE_CONNECTION_USER_KEY, db.username());
       }
     }
 
@@ -164,12 +176,14 @@ public final class HiveConfigBuilder {
     LlapSpec llap = spec.llap();
     Map<String, String> props = new LinkedHashMap<>();
 
-    props.put("hive.llap.daemon.memory.per.instance.mb",
+    props.put(ConfigUtils.HIVE_LLAP_DAEMON_MEMORY_MB_KEY,
         String.valueOf(llap.memoryMb()));
-    props.put("hive.llap.daemon.num.executors",
+    props.put(ConfigUtils.HIVE_LLAP_DAEMON_NUM_EXECUTORS_KEY,
         String.valueOf(llap.executors()));
-    props.put("hive.llap.daemon.service.hosts", llap.serviceHosts());
-    props.put("hive.zookeeper.quorum", spec.zookeeper().quorum());
+    props.put(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY,
+        llap.serviceHosts());
+    props.put(ConfigUtils.HIVE_ZOOKEEPER_QUORUM_KEY,
+        spec.zookeeper().quorum());
 
     if (llap.configOverrides() != null) {
       props.putAll(llap.configOverrides());

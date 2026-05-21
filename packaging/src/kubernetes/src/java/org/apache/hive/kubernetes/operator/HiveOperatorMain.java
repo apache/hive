@@ -35,17 +35,7 @@ public final class HiveOperatorMain {
   /** Starts the operator, registers reconcilers, and blocks until shutdown. */
   public static void main(String[] args) {
     LOG.info("Starting Hive Kubernetes Operator");
-    // Disable SSA-based matching for dependent resources.
-    // JOSDK's SSA matcher relies on Kubernetes managedFields entries
-    // to detect diffs.  When managedFields is absent or incomplete
-    // (common with Docker Desktop and some K8s distributions), the
-    // matcher always returns "not matched", causing the operator to
-    // re-apply every dependent on every reconciliation and creating
-    // an infinite update loop.  The classic GenericKubernetesResource
-    // matcher compares the desired spec directly and is immune to this.
-    Operator operator = new Operator(overrider -> overrider
-        .withSSABasedCreateUpdateMatchForDependentResources(false)
-        .withPreviousAnnotationForDependentResources(false));
+    Operator operator = new Operator();
     operator.register(new HiveClusterReconciler());
     operator.start();
     LOG.info("Hive Kubernetes Operator started successfully");

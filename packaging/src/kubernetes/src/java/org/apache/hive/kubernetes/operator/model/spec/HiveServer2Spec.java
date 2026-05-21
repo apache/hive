@@ -24,12 +24,14 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
+import io.fabric8.generator.annotation.Default;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
 /** Configuration for the HiveServer2 component. */
 public record HiveServer2Spec(
     @JsonPropertyDescription("Number of replicas")
+    @Default("1")
     Integer replicas,
     @JsonPropertyDescription("Resource requirements for pods")
     ResourceRequirementsSpec resources,
@@ -42,11 +44,8 @@ public record HiveServer2Spec(
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> extraVolumeMounts,
     @JsonPropertyDescription("Kubernetes Service type: ClusterIP, LoadBalancer, or NodePort")
+    @Default("ClusterIP")
     String serviceType,
-    @JsonPropertyDescription("HiveServer2 Thrift port")
-    Integer thriftPort,
-    @JsonPropertyDescription("HiveServer2 Web UI port")
-    Integer webUiPort,
     @JsonPropertyDescription("List of URIs to external JARs to download and add to HS2 classpath ")
     List<String> externalJars,
     @JsonPropertyDescription("Readiness probe configuration")
@@ -57,8 +56,6 @@ public record HiveServer2Spec(
   public HiveServer2Spec {
     replicas = replicas != null ? replicas : 1;
     serviceType = serviceType != null ? serviceType : "ClusterIP";
-    thriftPort = thriftPort != null ? thriftPort : 10000;
-    webUiPort = webUiPort != null ? webUiPort : 10002;
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     externalJars = externalJars != null ? externalJars : List.of();

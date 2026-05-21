@@ -19,10 +19,12 @@
 package org.apache.hive.kubernetes.operator.model;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
+import io.fabric8.generator.annotation.Required;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -43,10 +45,11 @@ public record HiveClusterSpec(
     MetastoreSpec metastore,
     @JsonPropertyDescription("HiveServer2 component configuration")
     HiveServer2Spec hiveServer2,
-    @JsonPropertyDescription("LLAP daemon configuration. Disabled by default.")
+    @JsonPropertyDescription("LLAP daemon configuration. Enabled by default.")
     LlapSpec llap,
-    @JsonPropertyDescription("Tez Application Master configuration. Disabled by default.")
+    @JsonPropertyDescription("Tez Application Master configuration. Enabled by default.")
     TezAmSpec tezAm,
+    @Required
     @JsonPropertyDescription(
         "External ZooKeeper connection details (not managed by this operator)")
     ZookeeperSpec zookeeper,
@@ -73,18 +76,8 @@ public record HiveClusterSpec(
     List<VolumeMount> volumeMounts) {
 
   public HiveClusterSpec {
-    image = image != null ? image : "apache/hive:4.3.0-SNAPSHOT";
-    imagePullPolicy = imagePullPolicy != null ? imagePullPolicy : "IfNotPresent";
-    metastore = metastore != null ?
-        metastore :
-        new MetastoreSpec(null, null, null, null, null, null, null, null, null, null, null);
-    hiveServer2 = hiveServer2 != null ?
-        hiveServer2 :
-        new HiveServer2Spec(null, null, null, null, null, null, null, null, null, null, null);
-    llap = llap != null ? llap : new LlapSpec(null, null, null, null, null, null, null, null, null, null);
-    tezAm = tezAm != null ? tezAm : new TezAmSpec(null, null, null, null, null, null, null, null);
-    zookeeper = zookeeper != null ? zookeeper : new ZookeeperSpec(null);
-    hadoop = hadoop != null ? hadoop : new HadoopSpec(null);
+    Objects.requireNonNull(zookeeper,
+        "zookeeper must be provided in the HiveCluster spec");
     envVars = envVars != null ? envVars : List.of();
     externalJars = externalJars != null ? externalJars : List.of();
     volumes = volumes != null ? volumes : List.of();

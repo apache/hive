@@ -30,7 +30,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
  * on Kubernetes. It manages Metastore, HiveServer2, LLAP daemons, and Tez AM.
  */
 @Group("hive.apache.org")
-@Version("v1alpha1")
+@Version("v1")
 @Kind("HiveCluster")
 @ShortNames("hc")
 public class HiveCluster

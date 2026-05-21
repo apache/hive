@@ -24,12 +24,14 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
+import io.fabric8.generator.annotation.Default;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
 /** Configuration for the Tez Application Master component. */
 public record TezAmSpec(
     @JsonPropertyDescription("Number of replicas")
+    @Default("1")
     Integer replicas,
     @JsonPropertyDescription("Resource requirements for pods")
     ResourceRequirementsSpec resources,
@@ -42,9 +44,11 @@ public record TezAmSpec(
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> extraVolumeMounts,
     @JsonPropertyDescription("Whether Tez AM is enabled")
+    @Default("true")
     Boolean enabled,
     @JsonPropertyDescription("Storage size for the shared scratch PVC "
         + "(ReadWriteMany) mounted on HS2 and TezAM at /opt/hive/scratch")
+    @Default("1Gi")
     String scratchStorageSize,
     @JsonPropertyDescription("StorageClass for the shared scratch PVC. "
         + "Must support ReadWriteMany access. If null, uses cluster default.")
@@ -52,7 +56,7 @@ public record TezAmSpec(
 
   public TezAmSpec {
     replicas = replicas != null ? replicas : 1;
-    enabled = enabled != null ? enabled : false;
+    enabled = enabled != null ? enabled : true;
     scratchStorageSize = scratchStorageSize != null ? scratchStorageSize : "1Gi";
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
