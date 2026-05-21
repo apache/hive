@@ -403,11 +403,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
     }
 
-    if (driver != null) {
-      driver.close();
-      driver.destroy();
-    }
-    driver = null;
+    closeDriver();
 
     SessionState ss = SessionState.get();
     if (ss == null) {
@@ -421,6 +417,14 @@ public class SQLOperation extends ExecuteStatementOperation {
     if ((timeoutExecutor != null) && (state != OperationState.TIMEDOUT) && (state.isTerminal())) {
       timeoutExecutor.shutdownNow();
     }
+  }
+
+  private void closeDriver() {
+    if (driver != null) {
+      driver.close();
+      driver.destroy();
+    }
+    driver = null;
   }
 
   @Override
@@ -439,7 +443,9 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   public void close() throws HiveSQLException {
-    if (!embedded) {
+    if (embedded) {
+      closeDriver();
+    } else {
       cleanup(OperationState.CLOSED);
       cleanupOperationLog(0);
     }
