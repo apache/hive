@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * A class that transforms a call to the internal {@link SqlStdOperatorTable#SEARCH} operator into an equivalent
@@ -86,7 +85,7 @@ public class SearchTransformer<C extends Comparable<C>> {
       // Generate 'ref <> value1 AND ... AND ref <> valueN'
       final List<RexNode> list = sarg.rangeSet.complement().asRanges().stream().map(
           range -> rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref,
-              rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))).collect(Collectors.toList());
+              rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))).toList();
       orList.add(RexUtil.composeConjunction(rexBuilder, list));
     } else {
       RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);

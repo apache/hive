@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
@@ -635,7 +634,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         // Generate 'ref <> value1 AND ... AND ref <> valueN'
         List<RexNode> notEq = sarg.rangeSet.complement().asRanges().stream()
             .map(range -> rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref, makeLiteral(range.lowerEndpoint())))
-            .collect(Collectors.toList());
+            .toList();
         searchSelectivities.add(RexUtil.composeConjunction(rexBuilder, notEq).accept(FilterSelectivityEstimator.this));
       } else {
         for (Range<C> range : sarg.rangeSet.asRanges()) {
