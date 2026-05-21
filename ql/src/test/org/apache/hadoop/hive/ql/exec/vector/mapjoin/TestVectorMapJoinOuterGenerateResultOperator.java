@@ -57,7 +57,7 @@ class TestVectorMapJoinOuterGenerateResultOperator {
   private static final class TestableOuterOp extends VectorMapJoinOuterGenerateResultOperator {
     @Override
     protected String getLoggingPrefix() {
-      return "test";
+      throw new UnsupportedOperationException("stubbed only to instantiate abstract class under test");
     }
 
     @Override
