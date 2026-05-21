@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -39,6 +40,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -206,7 +208,9 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     dropTables(driver, tableName);
     executeStatementOnDriver("CREATE TABLE " + tableName + "(a string, b int) " +
         "PARTITIONED BY (ds string) STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
-    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tableName + " partition (ds='tomorrow') select a, b from " + stageTableName, driver);
+    executeStatementOnDriver(
+        "INSERT OVERWRITE TABLE " + tableName + " partition (ds='tomorrow') select a, b from " + stageTableName, driver
+    );
 
     //do some single inserts to have more data in the first bucket.
     executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('12',12,'tomorrow')", driver);
@@ -217,7 +221,8 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('17',17,'tomorrow')", driver);
 
     // Verify buckets and their content before rebalance in partition ds=tomorrow
-    Table table = msClient.getTable("default", tableName);
+    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
+    Table table = msClient.getTable(getTableRequest);
     FileSystem fs = FileSystem.get(conf);
     assertEquals("Test setup does not match the expected: different buckets",
         Arrays.asList("bucket_00000_0", "bucket_00001_0", "bucket_00002_0"),
@@ -300,7 +305,9 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     dropTables(driver, tableName);
     executeStatementOnDriver("CREATE TABLE " + tableName + "(a string, b int) " +
         "CLUSTERED BY(a) INTO 4 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('11',11),('22',22),('33',33),('44',44)", driver);
+    executeStatementOnDriver(
+        "INSERT INTO TABLE " + tableName + " values ('11',11),('22',22),('33',33),('44',44)", driver
+    );
 
     //Try to do a rebalancing compaction
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance'", driver);
@@ -308,7 +315,9 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
 
     //Check if the compaction is refused
     List<ShowCompactResponseElement> compacts = verifyCompaction(1, TxnStore.REFUSED_RESPONSE);
-    assertEquals("Expecting error message 'Cannot execute rebalancing compaction on bucketed tables.' and found:" + compacts.get(0).getState(),
+    assertEquals(
+        "Expecting error message 'Cannot execute rebalancing compaction on bucketed tables.' and found:" +
+              compacts.get(0).getState(),
         "Cannot execute rebalancing compaction on bucketed tables.", compacts.get(0).getErrorMessage());
   }
 
@@ -364,6 +373,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
         new String[] {"bucket_00000", "bucket_00001", "bucket_00002", "bucket_00003"});
   }
 
+  @SuppressWarnings("java:S2925")
   private void testRebalanceCompactionWithParallelDeleteAsSecond(boolean optimisticLock) throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
@@ -493,8 +503,10 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
   private void verifyDataAfterCompaction(String tableName, Set<RowData> expectedData, TestDataProvider testDataProvider)
       throws Exception {
     FileSystem fs = FileSystem.get(conf);
-    Table table = msClient.getTable("default", tableName);
-    List<String> bucketFilenames = CompactorTestUtil.getBucketFileNames(fs, table, null, "base_0000001");
+    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
+    Table table = msClient.getTable(getTableRequest);
+    List<String> bucketFilenames = CompactorTestUtil.getBucketFileNames(
+        fs, table, null, "base_0000001");
 
     int bucketCount = bucketFilenames.size();
     assertTrue(bucketCount > 0);
@@ -532,7 +544,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
           // we are at the first element
           writeId = rowInfo.writeId;
         } else {
-          assertTrue(rowInfo.writeId == writeId);
+          assertEquals(writeId, rowInfo.writeId);
         }
 
         // Check if bucketId doesn't change inside the bucket
@@ -579,7 +591,8 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('17',17)", driver);
 
     // Make sure we have all the records persisted
-    List<String> allRecords = execSelectAndDumpData("SELECT * FROM " + tableName, driver, "Dumping data from test table, " + tableName);
+    List<String> allRecords = execSelectAndDumpData(
+        "SELECT * FROM " + tableName, driver, "Dumping data from test table, " + tableName);
     Assert.assertEquals(18, allRecords.size());
 
     /*
@@ -596,9 +609,10 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     return testDataProvider;
   }
 
-  private boolean isBalanced(String tableName, TestDataProvider testDataProvider ) throws Exception {
+  private boolean isBalanced(String tableName, TestDataProvider testDataProvider) throws Exception {
     FileSystem fs = FileSystem.get(conf);
-    Table table = msClient.getTable("default", tableName);
+    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
+    Table table = msClient.getTable(getTableRequest);
 
     // Assert that we have multiple buckets
     List<String> bucketFilenames = CompactorTestUtil.getBucketFileNames(fs, table, null, "base_0000001");
@@ -614,11 +628,12 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
     List<String>[] bucketData = new ArrayList[bucketCount];
     for (int i = 0; i < bucketCount; i++) {
-      bucketData[i] = testDataProvider.getBucketData(table.getTableName(), BucketCodec.V1.encode(options.bucket(i)) + "");
+      bucketData[i] = testDataProvider.getBucketData(
+          table.getTableName(), BucketCodec.V1.encode(options.bucket(i)) + "");
     }
 
     int allRecordCount = Arrays.stream(bucketData)
-        .map(bucket -> bucket.size())
+        .map(Collection::size)
         .reduce(0, Integer::sum);
 
     int optimalRecordsInBucket = allRecordCount / bucketCount;
@@ -636,7 +651,8 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
   private void verifyRebalance(TestDataProvider testDataProvider, String tableName, String partitionName,
       String[][] expectedBucketContent, String[] bucketNames) throws Exception {
     // Verify buckets and their content after rebalance
-    Table table = msClient.getTable("default", tableName);
+    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
+    Table table = msClient.getTable(getTableRequest);
     FileSystem fs = FileSystem.get(conf);
     assertEquals("Buckets does not match after compaction", Arrays.asList(bucketNames),
         CompactorTestUtil.getBucketFileNames(fs, table, partitionName, findTheBaseFolder(table, partitionName, fs)));
@@ -651,7 +667,10 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     Path searchPath = partitionName == null ? new Path(table.getSd().getLocation(), "base_*_v*") : new Path(
         new Path(table.getSd().getLocation()), new Path(partitionName,  "base_*_v*"));
 
-    return Arrays.stream(fs.globStatus(searchPath, AcidUtils.baseFileFilter)).map(FileStatus::getPath).map(Path::getName)
+    return Arrays.stream(
+        fs.globStatus(searchPath, AcidUtils.baseFileFilter))
+        .map(FileStatus::getPath)
+        .map(Path::getName)
         .sorted()
         .findFirst().get();
   }
