@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
@@ -202,11 +203,101 @@ class TestVectorMapJoinOuterGenerateResultOperator {
     assertSlotCleared.run();
   }
 
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("modifiedColumnVectorTypesAtSlotZero")
+  void generateOuterNullsRepeatedAllClearsSlotForEachModifiedType(
+      String typeName,
+      ColumnVector cv,
+      Runnable preLoad,
+      Runnable assertSlotCleared) throws HiveException {
+
+    TestableOuterOp op = new TestableOuterOp();
+    op.outerSmallTableKeyColumnMap = new int[] {};
+    op.smallTableValueColumnMap = new int[] {0};
+
+    VectorizedRowBatch batch = new VectorizedRowBatch(1, 4);
+    preLoad.run();
+    batch.cols[0] = cv;
+
+    op.generateOuterNullsRepeatedAll(batch);
+
+    assertTrue(cv.isNull[0]);
+    assertFalse(cv.noNulls);
+    assertTrue(cv.isRepeating);
+    assertSlotCleared.run();
+  }
+
+  static Stream<Arguments> modifiedColumnVectorTypesAtSlotZero() {
+    final LongColumnVector longCv = new LongColumnVector(4);
+    final DoubleColumnVector doubleCv = new DoubleColumnVector(4);
+    final BytesColumnVector bytesCv = new BytesColumnVector(4);
+    final DecimalColumnVector decCv = new DecimalColumnVector(4, 18, 4);
+    final Decimal64ColumnVector dec64Cv = new Decimal64ColumnVector(4, 18, 4);
+    final TimestampColumnVector tsCv = new TimestampColumnVector(4);
+    final IntervalDayTimeColumnVector ivCv = new IntervalDayTimeColumnVector(4);
+
+    return Stream.of(
+        Arguments.of(
+            "LongColumnVector",
+            longCv,
+            (Runnable) () -> longCv.vector[0] = 999L,
+            (Runnable) () -> assertEquals(0L, longCv.vector[0])),
+        Arguments.of(
+            "DoubleColumnVector",
+            doubleCv,
+            (Runnable) () -> doubleCv.vector[0] = 3.14,
+            (Runnable) () -> assertEquals(0.0, doubleCv.vector[0])),
+        Arguments.of(
+            "BytesColumnVector",
+            bytesCv,
+            (Runnable) () -> {
+              bytesCv.vector[0] = "stale".getBytes(StandardCharsets.UTF_8);
+              bytesCv.start[0] = 1;
+              bytesCv.length[0] = 3;
+            },
+            (Runnable) () -> {
+              assertNull(bytesCv.vector[0]);
+              assertEquals(0, bytesCv.start[0]);
+              assertEquals(0, bytesCv.length[0]);
+            }),
+        Arguments.of(
+            "DecimalColumnVector",
+            decCv,
+            (Runnable) () -> decCv.vector[0].setFromLong(999L),
+            (Runnable) () -> assertEquals(0L, decCv.vector[0].serialize64(decCv.scale))),
+        Arguments.of(
+            "Decimal64ColumnVector",
+            dec64Cv,
+            (Runnable) () -> dec64Cv.vector[0] = 999L,
+            (Runnable) () -> assertEquals(0L, dec64Cv.vector[0])),
+        Arguments.of(
+            "TimestampColumnVector",
+            tsCv,
+            (Runnable) () -> {
+              tsCv.time[0] = 1234567890000L;
+              tsCv.nanos[0] = 999;
+            },
+            (Runnable) () -> {
+              assertEquals(0L, tsCv.time[0]);
+              assertEquals(1, tsCv.nanos[0]);
+            }),
+        Arguments.of(
+            "IntervalDayTimeColumnVector",
+            ivCv,
+            (Runnable) () -> ivCv.set(0, new HiveIntervalDayTime(5, 0)),
+            (Runnable) () -> {
+              assertEquals(0L, ivCv.getTotalSeconds(0));
+              assertEquals(1, ivCv.getNanos(0));
+            })
+    );
+  }
+
   static Stream<Arguments> modifiedColumnVectorTypes() {
     final LongColumnVector longCv = new LongColumnVector(4);
     final DoubleColumnVector doubleCv = new DoubleColumnVector(4);
     final BytesColumnVector bytesCv = new BytesColumnVector(4);
     final DecimalColumnVector decCv = new DecimalColumnVector(4, 18, 4);
+    final Decimal64ColumnVector dec64Cv = new Decimal64ColumnVector(4, 18, 4);
     final TimestampColumnVector tsCv = new TimestampColumnVector(4);
     final IntervalDayTimeColumnVector ivCv = new IntervalDayTimeColumnVector(4);
 
@@ -239,6 +330,11 @@ class TestVectorMapJoinOuterGenerateResultOperator {
             decCv,
             (Runnable) () -> decCv.vector[2].setFromLong(999L),
             (Runnable) () -> assertEquals(0L, decCv.vector[2].serialize64(decCv.scale))),
+        Arguments.of(
+            "Decimal64ColumnVector",
+            dec64Cv,
+            (Runnable) () -> dec64Cv.vector[2] = 999L,
+            (Runnable) () -> assertEquals(0L, dec64Cv.vector[2])),
         Arguments.of(
             "TimestampColumnVector",
             tsCv,

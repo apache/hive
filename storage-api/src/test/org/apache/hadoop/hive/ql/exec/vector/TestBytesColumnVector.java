@@ -231,6 +231,11 @@ public class TestBytesColumnVector {
     cv.start[0] = 1;
     cv.length[0] = 3;
 
+    byte[] neighborData = "world".getBytes(StandardCharsets.UTF_8);
+    cv.vector[1] = neighborData;
+    cv.start[1] = 2;
+    cv.length[1] = 4;
+
     cv.clearValue(0);
 
     assertTrue(cv.isNull[0]);
@@ -238,5 +243,10 @@ public class TestBytesColumnVector {
     assertNull(cv.vector[0]);
     assertEquals(0, cv.start[0]);
     assertEquals(0, cv.length[0]);
+
+    assertSame(neighborData, cv.vector[1]);
+    assertEquals(2, cv.start[1]);
+    assertEquals(4, cv.length[1]);
+    assertFalse(cv.isNull[1]);
   }
 }
