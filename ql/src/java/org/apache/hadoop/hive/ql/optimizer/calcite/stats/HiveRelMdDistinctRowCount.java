@@ -60,6 +60,10 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     List<ColStatistics> colStats = htRel.getColStat(projIndxLst);
     Double noDistinctRows = 1.0;
     for (ColStatistics cStat : colStats) {
+      // countDistinct < 0 means "unknown" - signal back to Calcite via null
+      if (cStat.getCountDistint() < 0) {
+        return null;
+      }
       noDistinctRows *= cStat.getCountDistint();
     }
 

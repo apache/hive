@@ -935,7 +935,8 @@ public class SortedDynPartitionOptimizer extends Transform {
         for (Integer idx : partitionPos) {
           ColumnInfo ci = fsParent.getSchema().getSignature().get(idx);
           ColStatistics partStats = tStats.getColumnStatisticsFromColName(ci.getInternalName());
-          if (partStats == null) {
+          // countDistinct < 0 means "unknown" - same path as missing stats
+          if (partStats == null || partStats.getCountDistint() < 0) {
             return -1;
           }
           partCardinality *= partStats.getCountDistint();
@@ -950,7 +951,8 @@ public class SortedDynPartitionOptimizer extends Transform {
           // implementations on UDFs (e.g. iceberg_bucket reports min(inputNDV, numBuckets))
           ColStatistics exprStats = StatsUtils.getColStatisticsFromExpression(
               this.parseCtx.getConf(), tStats, resolved);
-          if (exprStats == null) {
+          // countDistinct < 0 means "unknown" - same path as missing stats
+          if (exprStats == null || exprStats.getCountDistint() < 0) {
             return -1;
           }
           partCardinality *= exprStats.getCountDistint();

@@ -260,7 +260,11 @@ public class Statistics implements Serializable {
         } else {
           existing.setNumNulls(StatsUtils.safeAdd(existing.getNumNulls(), cs.getNumNulls()));
         }
-        existing.setCountDistint(Math.max(existing.getCountDistint(), cs.getCountDistint()));
+        if (cs.getCountDistint() < 0 || existing.getCountDistint() < 0) {
+          existing.setCountDistint(-1);
+        } else {
+          existing.setCountDistint(Math.max(existing.getCountDistint(), cs.getCountDistint()));
+        }
       }
     }
   }
