@@ -232,6 +232,32 @@ public abstract class ColumnVector {
       boolean selectedInUse, int[] sel, int size, ColumnVector outputColVector);
 
   /**
+   * Mark the slot null and put its underlying value into a defined cleared
+   * state. Sets {@code isNull[elementNum] = true} and {@code noNulls = false},
+   * then dispatches to {@link #clearSlotValue(int)} for per-type clearing.
+   *
+   * <p>Defends against consumers that read {@code vector[i]} without first
+   * checking {@code isNull[i]}. Distinct from per-type {@code NULL_VALUE}
+   * sentinels (e.g. {@link LongColumnVector#NULL_VALUE}), which assume the
+   * isNull[]-first contract. Final by design — subclasses customize behavior
+   * by overriding {@link #clearSlotValue(int)}, never this method.
+   */
+  public final void clearValue(int elementNum) {
+    noNulls = false;
+    isNull[elementNum] = true;
+    clearSlotValue(elementNum);
+  }
+
+  /**
+   * Per-type slot-clearing hook invoked by {@link #clearValue(int)}.
+   * Subclasses override to zero out their value array at {@code elementNum}.
+   * Container and void types inherit the no-op default.
+   */
+  protected void clearSlotValue(int elementNum) {
+    // Default no-op.
+  }
+
+  /**
    * Initialize the column vector. This method can be overridden by specific column vector types.
    * Use this method only if the individual type of the column vector is not known, otherwise its
    * preferable to call specific initialization methods.

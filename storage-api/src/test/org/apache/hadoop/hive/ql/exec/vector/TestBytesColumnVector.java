@@ -25,7 +25,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -219,5 +221,32 @@ public class TestBytesColumnVector {
     Arrays.fill(bytes, startIdx, startIdx + writeSize, (byte) val);
     col.setValPreallocated(rowIdx, writeSize);
     return bytes;
+  }
+
+  @Test
+  public void testClearValue() {
+    BytesColumnVector cv = new BytesColumnVector(4);
+    byte[] data = "hello".getBytes(StandardCharsets.UTF_8);
+    cv.vector[0] = data;
+    cv.start[0] = 1;
+    cv.length[0] = 3;
+
+    byte[] neighborData = "world".getBytes(StandardCharsets.UTF_8);
+    cv.vector[1] = neighborData;
+    cv.start[1] = 2;
+    cv.length[1] = 4;
+
+    cv.clearValue(0);
+
+    assertTrue(cv.isNull[0]);
+    assertFalse(cv.noNulls);
+    assertNull(cv.vector[0]);
+    assertEquals(0, cv.start[0]);
+    assertEquals(0, cv.length[0]);
+
+    assertSame(neighborData, cv.vector[1]);
+    assertEquals(2, cv.start[1]);
+    assertEquals(4, cv.length[1]);
+    assertFalse(cv.isNull[1]);
   }
 }

@@ -587,16 +587,12 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       // key as null, too.
       //
       for (int column : outerSmallTableKeyColumnMap) {
-        ColumnVector colVector = batch.cols[column];
-        colVector.noNulls = false;
-        colVector.isNull[batchIndex] = true;
+        batch.cols[column].clearValue(batchIndex);
       }
 
       // Small table values are set to null.
       for (int column : smallTableValueColumnMap) {
-        ColumnVector colVector = batch.cols[column];
-        colVector.noNulls = false;
-        colVector.isNull[batchIndex] = true;
+        batch.cols[column].clearValue(batchIndex);
       }
     }
   }
@@ -746,15 +742,13 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     //
     for (int column : outerSmallTableKeyColumnMap) {
       ColumnVector colVector = batch.cols[column];
-      colVector.noNulls = false;
-      colVector.isNull[0] = true;
+      colVector.clearValue(0);
       colVector.isRepeating = true;
     }
 
     for (int column : smallTableValueColumnMap) {
       ColumnVector colVector = batch.cols[column];
-      colVector.noNulls = false;
-      colVector.isNull[0] = true;
+      colVector.clearValue(0);
       colVector.isRepeating = true;
     }
   }

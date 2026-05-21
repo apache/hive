@@ -145,6 +145,11 @@ public class DecimalColumnVector extends ColumnVector implements IDecimalColumnV
   }
 
   @Override
+  protected void clearSlotValue(int elementNum) {
+    vector[elementNum].setFromLong(0L);
+  }
+
+  @Override
   public void stringifyValue(StringBuilder buffer, int row) {
     if (isRepeating) {
       row = 0;
