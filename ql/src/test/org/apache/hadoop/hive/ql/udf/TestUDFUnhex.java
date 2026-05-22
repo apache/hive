@@ -71,6 +71,12 @@ public class TestUDFUnhex {
     Text hexOddInvalidSingleChar = new Text("G");
     assertNull("Should return null for invalid hex character in odd-length input",
         udf.evaluate(hexOddInvalidSingleChar));
+
+    Text hexInvalidLow = new Text("0G");
+    assertNull("Should return null when low nibble is invalid", udf.evaluate(hexInvalidLow));
+
+    Text hexInvalidHigh = new Text("G0");
+    assertNull("Should return null when high nibble is invalid", udf.evaluate(hexInvalidHigh));
   }
 
   @Test
