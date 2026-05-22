@@ -1624,12 +1624,6 @@ public class TezCompiler extends TaskCompiler {
         tsKeyCardinality = tsStats.getCountDistint();
       }
     }
-    if (tsKeyCardinality <= 0) {
-      // verified-zero or negative-sentinel denominator: avoid Infinity/negative ratio.
-      // Use 1.0 (neutral - broadcast and probe equal) so this MJ doesn't artificially win
-      // the lowest-ratio selector
-      return 1.0;
-    }
     return mjKeyCardinality / (double) tsKeyCardinality;
   }
 
@@ -1756,10 +1750,6 @@ public class TezCompiler extends TaskCompiler {
           + ", tsKeyCardinality=" + tsKeyCardinality + ", keyDomainCardinality=" + keyDomainCardinality);
     }
     // Selectivity: key cardinality of semijoin / domain cardinality
-    // keyDomainCardinality <= 0 (verified zero or unknown) makes the formula degenerate
-    if (keyDomainCardinality <= 0) {
-      return 1.0;
-    }
     return selKeyCardinality / (double) keyDomainCardinality;
   }
 
