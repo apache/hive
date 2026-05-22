@@ -72,13 +72,11 @@ public class UDFUnhex extends UDF {
     }
 
     while (i < len) {
-      int high = decodeHexChar(textBytes[i++]);
-      int low  = decodeHexChar(textBytes[i++]);
-
-      if (high == -1 || low == -1) {
+      int high, low;
+      if ((high = decodeHexChar(textBytes[i++])) == -1 ||
+          (low = decodeHexChar(textBytes[i++])) == -1) {
         return null;
       }
-
       result[resIdx++] = (byte) ((high << 4) | low);
     }
 
