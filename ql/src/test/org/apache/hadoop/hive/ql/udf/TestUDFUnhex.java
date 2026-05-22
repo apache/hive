@@ -83,4 +83,54 @@ public class TestUDFUnhex {
     byte[] expectedEmpty = new byte[0];
     assertArrayEquals(expectedEmpty, udf.evaluate(hexEmpty));
   }
+
+  @Test
+  public void testUnhexMixedCase() {
+    UDFUnhex udf = new UDFUnhex();
+
+    Text hex = new Text("aABb9");
+    byte[] expected = new byte[] {(byte) 0x0A, (byte) 0xAB, (byte) 0xB9};
+    assertArrayEquals(expected, udf.evaluate(hex));
+  }
+
+  @Test
+  public void testUnhexLowerCase() {
+    UDFUnhex udf = new UDFUnhex();
+
+    Text hexLowerPair = new Text("ab");
+    assertArrayEquals(new byte[] {(byte) 0xAB}, udf.evaluate(hexLowerPair));
+
+    Text hexLowerOddLength = new Text("abc");
+    assertArrayEquals(new byte[] {(byte) 0x0A, (byte) 0xBC}, udf.evaluate(hexLowerOddLength));
+
+    Text hexLowerDigits = new Text("0123456789abcdef");
+    byte[] expectedLowerDigits = new byte[] {
+        (byte) 0x01, (byte) 0x23, (byte) 0x45, (byte) 0x67,
+        (byte) 0x89, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF
+    };
+    assertArrayEquals(expectedLowerDigits, udf.evaluate(hexLowerDigits));
+  }
+
+  @Test
+  public void testUnhexBoundaryValues() {
+    UDFUnhex udf = new UDFUnhex();
+
+    Text hexMinByte = new Text("00");
+    assertArrayEquals(new byte[] {(byte) 0x00}, udf.evaluate(hexMinByte));
+
+    Text hexMaxByteUpper = new Text("FF");
+    assertArrayEquals(new byte[] {(byte) 0xFF}, udf.evaluate(hexMaxByteUpper));
+
+    Text hexMaxByteLower = new Text("ff");
+    assertArrayEquals(new byte[] {(byte) 0xFF}, udf.evaluate(hexMaxByteLower));
+
+    Text hexOddMinDigit = new Text("0");
+    assertArrayEquals(new byte[] {(byte) 0x00}, udf.evaluate(hexOddMinDigit));
+
+    Text hexOddMaxUpper = new Text("F");
+    assertArrayEquals(new byte[] {(byte) 0x0F}, udf.evaluate(hexOddMaxUpper));
+
+    Text hexOddMaxLower = new Text("f");
+    assertArrayEquals(new byte[] {(byte) 0x0F}, udf.evaluate(hexOddMaxLower));
+  }
 }
