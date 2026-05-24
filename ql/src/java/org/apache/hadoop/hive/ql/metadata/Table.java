@@ -786,6 +786,10 @@ public class Table implements Serializable {
     return inputColumnIndexByName.get(colName).getRight();
   }
 
+  public List<FieldSchema> getStorageSchemaCols() {
+    return getColsInternal(false);
+  }
+
   public List<FieldSchema> getCols() {
     if (!isNonNative()) {
       return getColsInternal(false);

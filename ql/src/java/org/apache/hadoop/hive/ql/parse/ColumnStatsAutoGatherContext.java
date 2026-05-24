@@ -265,7 +265,7 @@ public class ColumnStatsAutoGatherContext {
       FieldSchema column = this.columns.get(i);
       int index= tbl.getColumnIndexByName(column.getName());
       ColumnInfo col = columns.get(index);
-      Integer selRSIdx = getSelRSColumnIndex(index, col, columnNameToIndex);
+      Integer selRSIdx = getSelRSColumnIndex(column.getName(), col, columnNameToIndex);
       if (selRSIdx == null) {
         continue;
       }
@@ -299,10 +299,9 @@ public class ColumnStatsAutoGatherContext {
       }
       // 3. dynamic partition columns
       else {
-        ColumnInfo col = columns.get(tbl.getColumnIndexByName(partColName) + dynamicPartBegin);
+        ColumnInfo col = columns.get(index + dynamicPartBegin);
         exprNodeDesc = new ExprNodeColumnDesc(col);
         srcType = col.getType();
-
       }
       TypeInfo destType = selRSSig.get(index).getType();
       if (!srcType.equals(destType)) {
@@ -322,7 +321,7 @@ public class ColumnStatsAutoGatherContext {
     operator.setSchema(selRS);
   }
 
-  private Integer getSelRSColumnIndex(int i, ColumnInfo col, Map<String, Integer> columnNameToIndex) {
+  private Integer getSelRSColumnIndex(String columnName, ColumnInfo col, Map<String, Integer> columnNameToIndex) {
     ObjectInspector objectInspector = col.getObjectInspector();
     if (objectInspector == null) {
       return null;
@@ -331,7 +330,7 @@ public class ColumnStatsAutoGatherContext {
     if (!columnSupported) {
       return null;
     }
-    return columnNameToIndex.get(this.columns.get(i).getName());
+    return columnNameToIndex.get(columnName);
   }
 
   public String getCompleteName() {
