@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -115,7 +117,8 @@ public class Table implements Serializable {
   /**
    * These fields are all cached fields.  The information comes from tTable.
    */
-  private List<FieldSchema> cachedPartCols;
+  private List<FieldSchema> tablePartCols;
+  private Map<String, Pair<Integer, FieldSchema>> inputColumnIndexByName;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
@@ -200,8 +203,8 @@ public class Table implements Serializable {
 
     newTab.setMetaTable(this.getMetaTable());
     newTab.setSnapshotRef(this.getSnapshotRef());
-    if (this.cachedPartCols != null) {
-      newTab.cachedPartCols = new ArrayList<>(this.cachedPartCols);
+    if (this.tablePartCols != null) {
+      newTab.tablePartCols = new ArrayList<>(this.tablePartCols);
     }
     return newTab;
   }
@@ -618,15 +621,15 @@ public class Table implements Serializable {
    * where partition columns are not stored in the metastore.
    */
   public List<FieldSchema> getPartCols() {
-    if (cachedPartCols != null) {
-      return cachedPartCols;
+    if (tablePartCols != null) {
+      return tablePartCols;
     }
     if (isTableTypeSet() && hasNonNativePartitionSupport()) {
-      cachedPartCols = getStorageHandler().getPartitionKeys(this);
+      tablePartCols = getStorageHandler().getPartitionKeys(this);
     } else {
-      cachedPartCols = getNativePartCols();
+      tablePartCols = getNativePartCols();
     }
-    return cachedPartCols;
+    return tablePartCols;
   }
 
   private boolean isTableTypeSet() {
@@ -758,18 +761,44 @@ public class Table implements Serializable {
     return false;
   }
 
+  private void fillColumnIndexByName() {
+    inputColumnIndexByName = new HashMap<>();
+    List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
+    if (!isNonNative()) {
+      fsList.addAll(getNativePartCols());
+    }
+    for (int i = 0; i < fsList.size(); i++) {
+      inputColumnIndexByName.put(fsList.get(i).getName(), Pair.of(i, fsList.get(i)));
+    }
+  }
+
+  public int getColumnIndexByName(String colName) {
+    if (inputColumnIndexByName == null) {
+      fillColumnIndexByName();
+    }
+    return inputColumnIndexByName.get(colName.toLowerCase()).getLeft();
+  }
+
+  public FieldSchema getFieldSchemaByName(String colName) {
+    if (inputColumnIndexByName == null) {
+      fillColumnIndexByName();
+    }
+    return inputColumnIndexByName.get(colName).getRight();
+  }
+
   public List<FieldSchema> getCols() {
     if (!isNonNative()) {
       return getColsInternal(false);
-    }
-    List<FieldSchema> nonPartFields = new ArrayList<>();
-    Set<String> partFieldsName = getPartCols().stream().map(FieldSchema::getName).collect(Collectors.toSet());
-    for (FieldSchema field : getColsInternal(false)) {
-      if (!partFieldsName.contains(field.getName())) {
-        nonPartFields.add(field);
+    } else {
+      List<FieldSchema> nonPartFields = new ArrayList<>();
+      Set<String> partFieldsName = getPartCols().stream().map(FieldSchema::getName).collect(Collectors.toSet());
+      for (FieldSchema field : getColsInternal(false)) {
+        if (!partFieldsName.contains(field.getName())) {
+          nonPartFields.add(field);
+        }
       }
+      return nonPartFields;
     }
-    return nonPartFields;
   }
 
   public List<FieldSchema> getColsForMetastore() {
@@ -802,9 +831,11 @@ public class Table implements Serializable {
    * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
-    ArrayList<FieldSchema> allCols = new ArrayList<>(getCols());
-    allCols.addAll(getPartCols());
-    return allCols;
+    List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
+    if (!isNonNative()) {
+      fsList.addAll(getNativePartCols());
+    }
+    return fsList;
   }
 
   public void setPartCols(List<FieldSchema> partCols) {
