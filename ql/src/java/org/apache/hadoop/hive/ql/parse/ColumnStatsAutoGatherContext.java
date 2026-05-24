@@ -262,8 +262,10 @@ public class ColumnStatsAutoGatherContext {
       columnNameToIndex.putIfAbsent(selRSSig.get(i).getAlias(), i);
     }
     for (int i = 0; i < this.columns.size(); i++) {
-      ColumnInfo col = columns.get(i);
-      Integer selRSIdx = getSelRSColumnIndex(i, col, columnNameToIndex);
+      FieldSchema column = this.columns.get(i);
+      int index= tbl.getColumnIndexByName(column.getName());
+      ColumnInfo col = columns.get(index);
+      Integer selRSIdx = getSelRSColumnIndex(index, col, columnNameToIndex);
       if (selRSIdx == null) {
         continue;
       }
@@ -276,40 +278,43 @@ public class ColumnStatsAutoGatherContext {
     }
     // if there is any partition column (in static partition or dynamic
     // partition or mixed case)
-    int dynamicPartBegin = -1;
+    int dynamicPartBegin = 0;
     for (int i = 0; i < partitionColumns.size(); i++) {
       ExprNodeDesc exprNodeDesc;
       TypeInfo srcType;
       String partColName = partitionColumns.get(i).getName();
+      int index = tbl.getColumnIndexByName(partColName);
       // 2. deal with static partition columns
       if (partSpec != null && partSpec.containsKey(partColName)
-          && partSpec.get(partColName) != null) {
+          && partSpec.get(partColName) != null ) {
         if (dynamicPartBegin > 0) {
           throw new SemanticException(
               "Dynamic partition columns should not come before static partition columns.");
         }
         exprNodeDesc = new ExprNodeConstantDesc(partSpec.get(partColName));
         srcType = exprNodeDesc.getTypeInfo();
+        if (!tbl.hasNonNativePartitionSupport()) {
+          dynamicPartBegin--;
+        }
       }
       // 3. dynamic partition columns
       else {
-        dynamicPartBegin++;
-        ColumnInfo col = columns.get(this.columns.size() + dynamicPartBegin);
+        ColumnInfo col = columns.get(tbl.getColumnIndexByName(partColName) + dynamicPartBegin);
         exprNodeDesc = new ExprNodeColumnDesc(col);
         srcType = col.getType();
 
       }
-      TypeInfo destType = selRSSig.get(this.columns.size() + i).getType();
+      TypeInfo destType = selRSSig.get(index).getType();
       if (!srcType.equals(destType)) {
         // This may be possible when srcType is string but destType is integer
         exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
             .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
       }
       colList.add(exprNodeDesc);
-      String internalName = selRS.getColumnNames().get(this.columns.size() + i);
+      String internalName = selRS.getColumnNames().get(index);
       columnNames.add(internalName);
       columnExprMap.put(internalName, exprNodeDesc);
-      signature.add(selRSSig.get(this.columns.size() + i));
+      signature.add(selRSSig.get(index));
     }
     operator.setConf(new SelectDesc(colList, columnNames));
     operator.setColumnExprMap(columnExprMap);
