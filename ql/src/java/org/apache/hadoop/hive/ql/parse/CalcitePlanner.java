@@ -353,6 +353,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -3013,7 +3014,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
 
         // 3.2 Add column info corresponding to partition columns
-        for (FieldSchema part_col : tabMetaData.getPartCols()) {
+        List<FieldSchema> partKeys = Objects.requireNonNullElse(tabMetaData.getPartitionKeys(), new ArrayList<>());
+        for (FieldSchema part_col : partKeys) {
           colName = part_col.getName();
           colInfo = new ColumnInfo(colName,
                   TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()),
