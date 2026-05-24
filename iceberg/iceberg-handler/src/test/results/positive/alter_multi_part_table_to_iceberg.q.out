@@ -177,8 +177,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -453,8 +451,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -729,8 +725,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1066,9 +1060,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc_mixed
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1513,9 +1504,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet_mixed
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1960,9 +1948,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro_mixed
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

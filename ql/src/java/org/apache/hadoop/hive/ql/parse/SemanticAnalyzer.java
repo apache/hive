@@ -12020,8 +12020,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         deserializer.handleJobLevelConfiguration(conf);
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
-        Set<String> partCols = tab.hasNonNativePartitionSupport() ?
-            Sets.newHashSet(tab.getPartColNames()) : Collections.emptySet();
         for (int i = 0; i < fields.size(); i++) {
           /**
            * if the column is a skewed column, use ColumnInfo accordingly
@@ -12029,9 +12027,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ColumnInfo colInfo = new ColumnInfo(fields.get(i).getFieldName(),
               TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
                   .getFieldObjectInspector()), alias, false);
-          if (partCols.contains(colInfo.getInternalName())) {
-            colInfo.setHiddenPartitionCol(true);
-          }
           colInfo.setSkewedCol(isSkewedCol(alias, qb, fields.get(i).getFieldName()));
           rwsch.put(alias, fields.get(i).getFieldName(), colInfo);
         }
