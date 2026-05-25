@@ -107,7 +107,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
    */
   private static FieldSchemas getStatsEligibleFieldSchemas(Table tbl) {
     List<FieldSchema> result = new ArrayList<>();
-    for (FieldSchema col : tbl.getCols()) {
+    for (FieldSchema col : tbl.getStorageSchemaCols()) {
       String type = col.getType();
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
       boolean isSupported = ColumnStatsAutoGatherContext.isColumnSupported(typeInfo.getCategory(), () -> typeInfo);
@@ -230,12 +230,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
 
-    for (FieldSchema col : tbl.getCols()) {
+    for (FieldSchema col : tbl.getStorageSchemaCols()) {
       specifiedColsMap.computeIfPresent(col.getName().toLowerCase(), (key, value) -> col);
     }
 
     List<FieldSchema> result = new ArrayList<>();
-    List<String> tableColNames = new FieldSchemas(tbl.getCols()).getColName();
+    List<String> tableColNames = new FieldSchemas(tbl.getStorageSchemaCols()).getColName();
     for (String colName : colNames) {
       FieldSchema fs = specifiedColsMap.get(colName.toLowerCase());
 
