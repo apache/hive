@@ -1,8 +1,10 @@
-PREHOOK: query: create external table tbl_ice_pp_key(a int, b string) stored by iceberg
+PREHOOK: query: create external table tbl_ice_pp_key(a int, b string)
+  partitioned by spec (a) stored by iceberg
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice_pp_key
-POSTHOOK: query: create external table tbl_ice_pp_key(a int, b string) stored by iceberg
+POSTHOOK: query: create external table tbl_ice_pp_key(a int, b string)
+  partitioned by spec (a) stored by iceberg
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice_pp_key
@@ -129,9 +131,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_ice_pp_key
-                  Statistics: Num rows: 10 Data size: 13420 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 63810 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 10 Data size: 13420 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 10 Data size: 63810 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       minReductionHashAggr: 0.9
@@ -149,9 +151,9 @@ STAGE PLANS:
                 TableScan
                   alias: tbl_ice_pp_key
                   As of version: s1
-                  Statistics: Num rows: 2 Data size: 6310 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 12636 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 2 Data size: 6310 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 12636 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       minReductionHashAggr: 0.5
@@ -237,18 +239,18 @@ POSTHOOK: Input: default@tbl_ice_pp_key
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 10	2
 PREHOOK: query: explain
-select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 0
+select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 2
 union all
 select 'asof_s1' as ver, count(*) as cnt from tbl_ice_pp_key for system_version as of 's1'
-where a > 0
+where a > 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice_pp_key
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain
-select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 0
+select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 2
 union all
 select 'asof_s1' as ver, count(*) as cnt from tbl_ice_pp_key for system_version as of 's1'
-where a > 0
+where a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_pp_key
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -269,47 +271,44 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_ice_pp_key
-                  filterExpr: (a > 0) (type: boolean)
-                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (a > 0) (type: boolean)
-                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.9
-                        mode: hash
-                        outputColumnNames: _col0
+                  filterExpr: (a > 2) (type: boolean)
+                  Statistics: Num rows: 8 Data size: 51174 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 8 Data size: 51174 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      minReductionHashAggr: 0.875
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint)
+                        value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: tbl_ice_pp_key
                   As of version: s1
-                  filterExpr: (a > 0) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: (a > 2) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Filter Operator
-                    predicate: (a > 0) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (a > 2) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.5
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized
         Reducer 2 
@@ -326,7 +325,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 107 Basic stats: PARTIAL Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -338,14 +337,14 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 Select Operator
                   expressions: 'asof_s1' (type: string), _col0 (type: bigint)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 107 Basic stats: PARTIAL Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -359,22 +358,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 0
+PREHOOK: query: select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 2
 union all
 select 'asof_s1' as ver, count(*) as cnt from tbl_ice_pp_key for system_version as of 's1'
-where a > 0
+where a > 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice_pp_key
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 0
+POSTHOOK: query: select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 2
 union all
 select 'asof_s1' as ver, count(*) as cnt from tbl_ice_pp_key for system_version as of 's1'
-where a > 0
+where a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_pp_key
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-current	10
-asof_s1	2
+current	8
+asof_s1	0
 PREHOOK: query: drop table tbl_ice_pp_key
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_pp_key

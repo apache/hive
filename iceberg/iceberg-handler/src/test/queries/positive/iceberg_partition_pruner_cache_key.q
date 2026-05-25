@@ -1,7 +1,8 @@
 set hive.fetch.task.conversion=none;
 set hive.explain.user=false;
 
-create external table tbl_ice_pp_key(a int, b string) stored by iceberg;
+create external table tbl_ice_pp_key(a int, b string)
+  partitioned by spec (a) stored by iceberg;
 
 insert into tbl_ice_pp_key values (1, 'one'), (2, 'two');
 alter table tbl_ice_pp_key create tag s1;
@@ -36,14 +37,14 @@ cross join (
 
 -- with a partition predicate
 explain
-select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 0
+select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 2
 union all
 select 'asof_s1' as ver, count(*) as cnt from tbl_ice_pp_key for system_version as of 's1'
-where a > 0;
+where a > 2;
 
-select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 0
+select 'current' as ver, count(*) as cnt from tbl_ice_pp_key where a > 2
 union all
 select 'asof_s1' as ver, count(*) as cnt from tbl_ice_pp_key for system_version as of 's1'
-where a > 0;
+where a > 2;
 
 drop table tbl_ice_pp_key;
