@@ -112,6 +112,15 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (requires KEDA + Prometheus in the cluster)
+    # When enabled, 'replicas' above acts as the max replica ceiling
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      scaleUpThreshold: 75
+      scaleDownThreshold: 30
+      cooldownSeconds: 300
+      gracePeriodSeconds: 60
     # Set to use an external Metastore instead of deploying one:
     # enabled: false
     # externalUri: "thrift://external-metastore:9083"
@@ -127,6 +136,16 @@ cluster:
     externalJars: []
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (requires KEDA + Prometheus + KEDA HTTP Add-on in the cluster)
+    # minReplicas: 0 enables scale-to-zero — beeline HTTP connects wake HS2 via KEDA HTTP interceptor
+    # When enabled, 'replicas' above acts as the max replica ceiling
+    autoscaling:
+      enabled: false
+      minReplicas: 0
+      scaleUpThreshold: 80
+      scaleDownThreshold: 20
+      cooldownSeconds: 600
+      gracePeriodSeconds: 300
 
   # ---------------------------------------------------------------------------
   # LLAP — enabled by default for full-HA
@@ -141,6 +160,16 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (requires KEDA + Prometheus in the cluster)
+    # minReplicas: 0 enables scale-to-zero — scales up immediately when queries need LLAP
+    # When enabled, 'replicas' above acts as the max replica ceiling
+    autoscaling:
+      enabled: false
+      minReplicas: 0
+      scaleUpThreshold: 1
+      scaleDownThreshold: 0
+      cooldownSeconds: 900
+      gracePeriodSeconds: 600
 
   # ---------------------------------------------------------------------------
   # TEZ AM — enabled by default for full-HA
@@ -154,3 +183,15 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (requires KEDA + Prometheus in the cluster)
+    # minReplicas: 0 enables scale-to-zero — wakes when HS2 receives queries
+    # When enabled, 'replicas' above acts as the max replica ceiling
+    # scaleUpThreshold: with CPU resources set → CPU% (e.g., 60 = 60% utilization);
+    #   without CPU resources → pending tasks per AM (e.g., 5 = scale when 5+ tasks waiting)
+    autoscaling:
+      enabled: false
+      minReplicas: 0
+      scaleUpThreshold: 5
+      scaleDownThreshold: 10
+      cooldownSeconds: 600
+      gracePeriodSeconds: 120

@@ -26,6 +26,8 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.Lifecycle;
+import io.fabric8.kubernetes.api.model.LifecycleBuilder;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
@@ -34,7 +36,9 @@ import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
+import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
@@ -81,16 +85,15 @@ public class LlapStatefulSetDependent
       envVars.addAll(spec.envVars());
     }
 
-    List<ContainerPort> ports = List.of(
-        new ContainerPortBuilder()
-            .withName("management").withContainerPort(15004).build(),
-        new ContainerPortBuilder()
-            .withName("shuffle").withContainerPort(15551).build(),
-        new ContainerPortBuilder()
-            .withName("web").withContainerPort(15002).build(),
-        new ContainerPortBuilder()
-            .withName("output").withContainerPort(15003).build()
-    );
+    List<ContainerPort> ports = new ArrayList<>();
+    ports.add(new ContainerPortBuilder()
+        .withName("management").withContainerPort(15004).build());
+    ports.add(new ContainerPortBuilder()
+        .withName("shuffle").withContainerPort(15551).build());
+    ports.add(new ContainerPortBuilder()
+        .withName("web").withContainerPort(15002).build());
+    ports.add(new ContainerPortBuilder()
+        .withName("output").withContainerPort(15003).build());
 
     Probe readinessProbe = buildTcpProbe(15004, llap.readinessProbe(), 15, 10, 3);
 
@@ -115,10 +118,30 @@ public class LlapStatefulSetDependent
     replaceConfMountWithSubPaths(volumeMounts, "llap-config",
         "llap-daemon-site.xml", "core-site.xml");
 
+    // Add Prometheus JMX Exporter when autoscaling is enabled
+    AutoscalingSpec autoscaling = llap.autoscaling();
+    if (autoscaling.isEnabled()) {
+      addJmxExporter(spec.image(), COMPONENT,
+          initContainers, volumeMounts, volumes, envVars, ports);
+    }
+
     // Pre-compute config hash for the pod template annotation.
     String configHash = sha256(
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
+
+    // When autoscaling is enabled and the StatefulSet already exists, preserve the current
+    // replica count (managed by KEDA/HPA). On initial creation:
+    // - minReplicas == 0: start at 0, KEDA scales up when hs2_active_sessions > 0
+    // - minReplicas > 0: start at configured replicas
+    boolean autoscalingEnabled = llap.autoscaling() != null && llap.autoscaling().isEnabled();
+    Integer replicas = llap.replicas();
+    if (autoscalingEnabled) {
+      int initialReplicas = llap.autoscaling().minReplicas() == 0 ? 0 : llap.replicas();
+      replicas = getSecondaryResource(hiveCluster, context)
+          .map(s -> s.getSpec().getReplicas())
+          .orElse(initialReplicas);
+    }
 
     StatefulSet statefulSet = new StatefulSetBuilder()
         .withNewMetadata()
@@ -127,7 +150,7 @@ public class LlapStatefulSetDependent
           .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
         .endMetadata()
         .withNewSpec()
-          .withReplicas(llap.replicas())
+          .withReplicas(replicas)
           .withServiceName(headlessServiceName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
@@ -158,6 +181,57 @@ public class LlapStatefulSetDependent
 
     applySpreadAffinityIfAbsent(
         statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
+
+    // Graceful scale-down: poll JMX Exporter (port 9404) until all executors idle.
+    // Uses flat Prometheus text format — same metrics KEDA reads — not brittle JSON parsing.
+    if (autoscaling.isEnabled()) {
+      String preStopScript = String.join("\n",
+          "#!/bin/bash",
+          "echo '[preStop] Waiting for LLAP executors to become idle (polling localhost:9404/metrics)...'",
+          "RETRIES=0",
+          "while true; do",
+          "  RESPONSE=$(curl -sf http://localhost:9404/metrics)",
+          "  if [ $? -ne 0 ]; then",
+          "    RETRIES=$((RETRIES+1))",
+          "    echo \"[preStop] ERROR: JMX Exporter unreachable on port 9404 (attempt $RETRIES)\"",
+          "    if [ $RETRIES -ge 6 ]; then",
+          "      echo '[preStop] JMX Exporter not responding after 60s. Proceeding with shutdown.'",
+          "      break",
+          "    fi",
+          "    sleep 10; continue",
+          "  fi",
+          "  AVAILABLE=$(echo \"$RESPONSE\" | grep '^hadoop_llapdaemon_executornumexecutorsavailable{' | awk '{print $2}')",
+          "  TOTAL=$(echo \"$RESPONSE\" | grep '^hadoop_llapdaemon_executornumexecutors{' | awk '{print $2}')",
+          "  if [ -z \"$AVAILABLE\" ] || [ -z \"$TOTAL\" ]; then",
+          "    echo '[preStop] WARNING: LLAP executor metrics not found. JMX Exporter may not be configured.'",
+          "    break",
+          "  fi",
+          "  if [ \"${AVAILABLE%.*}\" -ge \"${TOTAL%.*}\" ] 2>/dev/null; then",
+          "    echo '[preStop] All executors idle. Shutting down.'",
+          "    break",
+          "  fi",
+          "  echo \"[preStop] Executors available=$AVAILABLE / total=$TOTAL — waiting...\"",
+          "  RETRIES=0",
+          "  sleep 10",
+          "done");
+      Lifecycle lifecycle = new LifecycleBuilder()
+          .withNewPreStop()
+            .withNewExec()
+              .withCommand("/bin/bash", "-c", preStopScript)
+            .endExec()
+          .endPreStop()
+          .build();
+      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).setLifecycle(lifecycle);
+      statefulSet.getSpec().getTemplate().getSpec()
+          .setTerminationGracePeriodSeconds((long) autoscaling.gracePeriodSeconds());
+      // Prometheus scrape annotations for JMX Exporter metrics endpoint
+      statefulSet.getSpec().getTemplate().getMetadata().getAnnotations()
+          .put("prometheus.io/scrape", "true");
+      statefulSet.getSpec().getTemplate().getMetadata().getAnnotations()
+          .put("prometheus.io/port", String.valueOf(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT));
+      statefulSet.getSpec().getTemplate().getMetadata().getAnnotations()
+          .put("prometheus.io/path", "/metrics");
+    }
 
     if (spec.volumes() != null) {
       statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());

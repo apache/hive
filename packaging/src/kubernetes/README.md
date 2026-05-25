@@ -505,18 +505,448 @@ kubectl get hiveclusters
 kubectl describe hivecluster hive
 ```
 
-## Connect to HiveServer2
+---
+
+## Autoscaling
+
+The operator supports metric-based autoscaling for all four Hive components using
+[KEDA](https://keda.sh/) ScaledObjects and Kubernetes-native HPA. Autoscaling is
+opt-in per component and designed for **zero query failures** during scale-down.
+
+### Prerequisites
+
+- [KEDA](https://keda.sh/) installed in the cluster
+- [Prometheus](https://prometheus.io/) scraping Hive pod metrics (for HS2, HMS, LLAP custom metrics)
+- Kubernetes metrics-server (for CPU-based triggers on Tez AM)
+- [KEDA HTTP Add-on](https://github.com/kedacore/http-add-on) — **required for `minReplicas: 0`**, enables automatic wake-from-zero for HS2
+
+### Installing KEDA
+
+KEDA must be installed **before** enabling autoscaling on any Hive component.
+The operator creates KEDA `ScaledObject` custom resources which require the KEDA
+CRDs to be present on the cluster.
 
 ```bash
-kubectl exec -it deployment/hive-hiveserver2 -- beeline -u "jdbc:hive2://hive-hiveserver2:10000/"
+# Add the KEDA Helm repo
+helm repo add kedacore https://kedacore.github.io/charts
+helm install keda kedacore/keda --namespace keda --create-namespace --wait
+```
+
+Verify KEDA is running:
+
+```bash
+kubectl get pods -n keda
+# Expected: keda-operator, keda-metrics-apiserver, keda-admission-webhooks
+kubectl get crd | grep keda
+# Expected: scaledobjects.keda.sh, scaledjobs.keda.sh, triggerauthentications.keda.sh, etc.
+```
+
+**For HS2 scale-to-zero** (`minReplicas: 0`), install the KEDA HTTP Add-on:
+
+```bash
+helm install http-add-on kedacore/keda-add-ons-http \
+  --namespace keda --wait
+```
+
+Verify the interceptor is running:
+
+```bash
+kubectl get pods -n keda -l app=keda-add-ons-http-interceptor-proxy
+# Expected: keda-add-ons-http-interceptor-proxy-... Running
+```
+
+> **Note:** The HTTP Add-on is required when `minReplicas: 0`. It places an interceptor
+> proxy in the traffic path that detects incoming requests when HS2 has zero pods,
+> automatically scaling HS2 up and holding the request until a pod is ready.
+
+**For Prometheus-based triggers** (HS2, HMS, LLAP), install Prometheus:
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install prometheus prometheus-community/prometheus \
+  --namespace monitoring --create-namespace --wait
+```
+
+> **Note:** If autoscaling is enabled in the HiveCluster spec but KEDA is not
+> installed, the operator will fail to reconcile with errors like
+> `"Could not find the metadata for the given apiVersion and kind"`.
+> Always install KEDA before setting `autoscaling.enabled: true`.
+
+### Graceful Scale-Down Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Scale Down Flow                                │
+├─────────────────────────────────────────────────────────────────────┤
+│  1. KEDA reduces desired replicas (cooldown elapsed, metric below   │
+│     threshold)                                                       │
+│  2. PodDisruptionBudget ensures minAvailable=1 (at least one pod    │
+│     always running)                                                  │
+│  3. Kubernetes sends SIGTERM to selected pod                        │
+│  4. preStop hook runs:                                              │
+│     - HS2: deregisters from ZK, drains open sessions                │
+│     - HMS: sleeps 30s for in-flight Thrift RPCs                     │
+│     - LLAP: waits until all executors become idle                   │
+│     - TezAM: waits for current DAG completion                       │
+│  5. terminationGracePeriodSeconds = gracePeriodSeconds (safety net) │
+│  6. Pod terminates only after drain completes                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Per-Component Scaling Logic
+
+| Component | Scale-Up Trigger | Scale-Down Trigger | Cooldown | Native Metric |
+|-----------|-----------------|-------------------|----------|---------------|
+| **HiveServer2** | `hs2_active_sessions` > 80% of max **OR** CPU > 75% | `hs2_open_sessions` < 20% **AND** CPU < 30% | 10 min | `hs2_open_sessions`, `hs2_active_sessions` |
+| **Metastore** | `api_get_partitions` rate spike **OR** CPU > 75% (2 min) | CPU < 30% **AND** API rate flat | 5 min | `api_get_partitions`, `open_connections` |
+| **LLAP** | `NumQueuedRequests` > 0 for 1 min | `NumExecutorsAvailable == NumExecutors` (idle) | 15 min | `NumQueuedRequests`, `NumExecutorsAvailable` |
+| **Tez AM** (with CPU resources) | Pod CPU > 60% (pool is busy) | Pod CPU < 10% (pool is idle) | 10 min | Standard K8s CPU |
+| **Tez AM** (without CPU resources) | `tez_session_pending_tasks` > threshold | No pending tasks for cooldown | 10 min | `tez_session_pending_tasks` |
+
+### Scale-to-Zero Architecture
+
+When `minReplicas: 0` is configured (default for HS2, LLAP, TezAM), the cluster
+scales down to zero pods when completely idle:
+
+```
+                   Scale-to-Zero (Idle Detection)                    
+
+  1. No active sessions/queries for cooldownPeriod seconds            
+     → KEDA detects all triggers inactive                            
+     → scales HS2 to 0 (idleReplicaCount)                           
+                                                                     
+  2. LLAP/TezAM ScaledObjects see hs2_open_sessions = 0              
+     → activation triggers inactive for cooldownPeriod               
+     → scale LLAP and TezAM to 0                                    
+                                                                     
+  3. HMS stays at minReplicas=1 (always available)                   
+
+```
+
+```
+                   Wake-from-Zero (with KEDA HTTP Add-on)            
+
+  1. Beeline connects → KEDA HTTP interceptor proxy queues the       
+     request and triggers HS2 scale-up (0 → 1)                       
+                                                                     
+  2. HS2 pod starts, reports hs2_open_sessions > 0 to Prometheus     
+                                                                     
+  3. KEDA detects cross-component activation trigger:                
+     - LLAP ScaledObject sees hs2_open_sessions > 0 → scales up      
+     - TezAM ScaledObject sees hs2_open_sessions > 0 → scales up   
+                                                                     
+  4. Query executes once LLAP/TezAM pods are ready                   
+
+```
+
+> **Important:** Automatic wake-from-zero requires the KEDA HTTP Add-on. Traffic
+> must flow through the interceptor proxy (via Ingress or port-forward). Without the
+> HTTP Add-on, HS2 must be manually woken (`kubectl scale deployment/hive-hiveserver2 --replicas=1`).
+> LLAP and TezAM wake automatically once HS2 reports active sessions. See
+> [Connect to HiveServer2 > Connecting with Scale-to-Zero](#connecting-with-scale-to-zero-minreplicas--0)
+> for setup instructions.
+
+**Component-specific behavior:**
+
+| Component | minReplicas | Scale-to-Zero Trigger | Wake Trigger |
+|-----------|-------------|----------------------|--------------|
+| **HS2** | 0 | `hs2_active_sessions = 0` for cooldown | HTTP request via KEDA interceptor (or manual) |
+| **HMS** | 1 | Never (always running) | N/A |
+| **LLAP** | 0 | `hs2_open_sessions = 0` for cooldown | `hs2_open_sessions > 0` (cross-component) |
+| **TezAM** | 0 | `hs2_open_sessions = 0` + no pending tasks | `hs2_open_sessions > 0` (cross-component) |
+
+### Enabling Autoscaling
+
+**CLI (with Ozone storage backend):**
+
+```bash
+helm install hive ./helm/hive-operator \
+  --set cluster.database.type=postgres \
+  --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
+  --set cluster.database.driver="org.postgresql.Driver" \
+  --set cluster.database.username=hive \
+  --set cluster.database.passwordSecretRef.name=hive-db-secret \
+  --set cluster.database.passwordSecretRef.key=password \
+  --set cluster.database.driverJarUrl="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar" \
+  --set cluster.zookeeper.quorum="zookeeper:2181" \
+  --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
+  --set cluster.storage.coreSiteOverrides."fs\.s3a\.endpoint"="http://ozone-s3g-rest:9878" \
+  --set-string cluster.storage.coreSiteOverrides."fs\.s3a\.path\.style\.access"=true \
+  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
+  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
+  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[1].value=ozone' \
+  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[2].value=ozone' \
+  --set cluster.hiveServer2.autoscaling.enabled=true \
+  --set cluster.hiveServer2.autoscaling.minReplicas=0 \
+  --set cluster.hiveServer2.autoscaling.scaleUpThreshold=80 \
+  --set cluster.hiveServer2.autoscaling.cooldownSeconds=600 \
+  --set cluster.hiveServer2.autoscaling.gracePeriodSeconds=300 \
+  --set cluster.metastore.autoscaling.enabled=true \
+  --set cluster.metastore.autoscaling.minReplicas=1 \
+  --set cluster.metastore.autoscaling.cooldownSeconds=300 \
+  --set cluster.metastore.autoscaling.gracePeriodSeconds=60 \
+  --set cluster.llap.autoscaling.enabled=true \
+  --set cluster.llap.autoscaling.minReplicas=0 \
+  --set cluster.llap.autoscaling.cooldownSeconds=900 \
+  --set cluster.llap.autoscaling.gracePeriodSeconds=600 \
+  --set cluster.tezAm.autoscaling.enabled=true \
+  --set cluster.tezAm.autoscaling.minReplicas=0 \
+  --set cluster.tezAm.autoscaling.scaleUpThreshold=5 \
+  --set cluster.tezAm.autoscaling.cooldownSeconds=600 \
+  --set cluster.tezAm.autoscaling.gracePeriodSeconds=120
+```
+
+**Values file:**
+
+```yaml
+# values-autoscaling.yaml
+cluster:
+  database:
+    type: postgres
+    url: "jdbc:postgresql://postgres-postgresql:5432/metastore"
+    driver: "org.postgresql.Driver"
+    username: hive
+    passwordSecretRef:
+      name: hive-db-secret
+      key: password
+    driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "s3a://hive"
+      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
+      fs.s3a.path.style.access: "true"
+    envVars:
+      - name: HADOOP_OPTIONAL_TOOLS
+        value: "hadoop-aws"
+      - name: AWS_ACCESS_KEY_ID
+        value: "ozone"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "ozone"
+
+  hiveServer2:
+    replicas: 10              # Acts as max replicas when autoscaling is enabled
+    resources:
+      requestsCpu: "1"        # Required for CPU-based autoscaling trigger
+      requestsMemory: "2Gi"
+    autoscaling:
+      enabled: true
+      minReplicas: 0          # Scale to zero when idle
+      scaleUpThreshold: 80    # Requests/sec that triggers additional pods
+      cooldownSeconds: 600    # 10 min before scaling back to 0
+      gracePeriodSeconds: 300
+
+  metastore:
+    replicas: 6               # Acts as max replicas when autoscaling is enabled
+    resources:
+      requestsCpu: "500m"     # Required for CPU-based autoscaling trigger
+      requestsMemory: "1Gi"
+    autoscaling:
+      enabled: true
+      minReplicas: 1          # HMS must always be available
+      cooldownSeconds: 300
+      gracePeriodSeconds: 60
+
+  llap:
+    replicas: 8               # Acts as max replicas when autoscaling is enabled
+    autoscaling:
+      enabled: true
+      minReplicas: 0          # Scale to zero when no queries need LLAP
+      cooldownSeconds: 900    # 15 min — scaling down destroys in-memory cache
+      gracePeriodSeconds: 600
+
+  tezAm:
+    replicas: 10              # Acts as max replicas when autoscaling is enabled
+    resources:
+      requestsCpu: "500m"     # Required for CPU-based autoscaling trigger
+      requestsMemory: "1Gi"
+    autoscaling:
+      enabled: true
+      minReplicas: 0          # Scale to zero when no queries running
+      scaleUpThreshold: 60    # CPU% when resources set; pending tasks per AM otherwise
+      scaleDownThreshold: 10
+      cooldownSeconds: 600
+      gracePeriodSeconds: 120
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values-autoscaling.yaml
+```
+
+When autoscaling is enabled, the operator automatically:
+- Deploys the Prometheus JMX Exporter agent sidecar (port 9404, `/metrics`)
+- Enables `hive.server2.metrics.enabled` / `metastore.metrics.enabled` (JMX reporter)
+- Adds Prometheus scrape annotations to pods
+- Creates KEDA ScaledObjects with the configured thresholds
+- Creates PodDisruptionBudgets (minAvailable: 1)
+- Configures preStop lifecycle hooks for graceful drain
+- Sets `terminationGracePeriodSeconds` to the configured grace period
+- Adds cross-component activation triggers for LLAP/TezAM (wake when HS2 has open sessions)
+
+**Exported Prometheus Metrics (per component):**
+
+| Component | Metrics | Purpose |
+|-----------|---------|---------|
+| **HiveServer2** | `hs2_open_sessions`, `hs2_active_sessions`, `hs2_active_calls_*`, `tez_session_pending_tasks`, `tez_session_running_tasks`, `tez_session_task_backlog_ratio` | Session/query load, Tez AM demand |
+| **Metastore** | `api_*_total`, `hive_metastore_open_connections` | API call rates, connection count |
+| **LLAP** | `hadoop_llapdaemon_executornumqueuedrequests`, `hadoop_llapdaemon_*` | Executor queue depth, daemon health |
+| **Tez AM** | `tez_am_*` | DAG execution metrics |
+
+### CPU-Based Scaling and Resource Requests
+
+The operator includes a **CPU utilization trigger** in the ScaledObject for HS2, Metastore,
+and Tez AM. KEDA's CPU trigger uses the `Utilization` metric type, which is defined as a
+percentage of the container's CPU request. This means **the container must have a CPU request
+defined** for the trigger to work.
+
+If you enable autoscaling without setting `resources` for that component, the operator
+will omit the CPU trigger and rely solely on the Prometheus-based trigger. For Tez AM
+specifically, without CPU resources the operator uses `tez_session_pending_tasks` (queued
+tasks waiting for AM slots) as the proportional scaler — this reflects real query demand
+rather than connection count, avoiding spurious scale-ups from idle or zombie sessions.
+
+To get both Prometheus and CPU-based scaling, set `resources` on the component:
+
+```yaml
+cluster:
+  hiveServer2:
+    resources:
+      requestsCpu: "1"        # Required for CPU-based autoscaling
+      requestsMemory: "2Gi"
+    autoscaling:
+      enabled: true
+
+  metastore:
+    resources:
+      requestsCpu: "500m"     # Required for CPU-based autoscaling
+      requestsMemory: "1Gi"
+    autoscaling:
+      enabled: true
+
+  tezAm:
+    resources:
+      requestsCpu: "500m"     # Required for CPU-based autoscaling
+      requestsMemory: "1Gi"
+    autoscaling:
+      enabled: true
+```
+
+> **Note:** LLAP scaling uses only Prometheus triggers (`NumQueuedRequests`)
+> and does not include a CPU trigger, so LLAP does not require `resources` to
+> be set for autoscaling to work.
+
+### Helm Values Reference (Autoscaling)
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.<component>.replicas` | `1-2` | Static replica count, or max replicas ceiling when autoscaling is enabled |
+| `cluster.<component>.autoscaling.enabled` | `false` | Enable KEDA-based autoscaling |
+| `cluster.<component>.autoscaling.minReplicas` | `0` (HS2/LLAP/TezAM), `1` (HMS) | Minimum replica count. Set to 0 for scale-to-zero |
+| `cluster.<component>.autoscaling.scaleUpThreshold` | varies | Metric threshold triggering scale-up |
+| `cluster.<component>.autoscaling.scaleDownThreshold` | varies | Metric threshold triggering scale-down |
+| `cluster.<component>.autoscaling.cooldownSeconds` | varies | Cooldown after a scaling event |
+| `cluster.<component>.autoscaling.gracePeriodSeconds` | varies | Max drain time before forced termination |
+
+---
+
+## Connect to HiveServer2
+
+HiveServer2 runs in **HTTP transport mode** by default (recommended for Kubernetes
+environments as it works well with load balancers, ingress controllers, and proxies).
+
+### Standard Connection (minReplicas >= 1)
+
+When HS2 always has at least one pod running, connect directly to the service:
+
+```bash
+kubectl exec -it deployment/hive-hiveserver2 -- beeline -u "jdbc:hive2://hive-hiveserver2:10001/;transportMode=http;httpPath=cliservice"
 ```
 
 Or via port-forward:
 
 ```bash
-kubectl port-forward svc/hive-hiveserver2 10000:10000
-beeline -u "jdbc:hive2://localhost:10000/"
+kubectl port-forward svc/hive-hiveserver2 10001:10001
+beeline -u "jdbc:hive2://localhost:10001/;transportMode=http;httpPath=cliservice"
 ```
+
+### Connecting with Scale-to-Zero (minReplicas = 0)
+
+When HS2 is configured with `minReplicas: 0`, the deployment starts with zero pods.
+Connections go through the **KEDA HTTP interceptor proxy** which automatically wakes
+HS2 when a request arrives (first request takes ~30-60s while the pod starts).
+
+```
+Traffic flow:
+Client → KEDA HTTP Interceptor → (if 0 pods: scale up, wait) → HS2 Service → HS2 Pod
+```
+
+**Via port-forward (local development):**
+
+```bash
+# Port-forward the KEDA HTTP interceptor proxy
+kubectl port-forward -n keda svc/keda-add-ons-http-interceptor-proxy 8080:8080
+
+# Connect — interceptor auto-wakes HS2 (first request may take 30-60s)
+beeline -u "jdbc:hive2://localhost:8080/;transportMode=http;httpPath=cliservice"
+```
+
+**Via Ingress (production):**
+
+Create an Ingress that routes your domain to the KEDA interceptor. The key is the
+`upstream-vhost` annotation which rewrites the Host header to the internal service
+name so the interceptor can match it — no extra operator configuration needed:
+
+```bash
+cat <<'EOF' | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hive-interceptor
+  namespace: keda
+  annotations:
+    # Rewrite Host header to internal service name so KEDA interceptor can route it
+    nginx.ingress.kubernetes.io/upstream-vhost: "hive-hiveserver2.default.svc.cluster.local"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hive.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keda-add-ons-http-interceptor-proxy
+                port:
+                  number: 8080
+EOF
+```
+
+Connect via beeline using the Ingress:
+
+```bash
+beeline -u "jdbc:hive2://hive.example.com:80/;transportMode=http;httpPath=cliservice"
+```
+
+**Manual wake (fallback without HTTP Add-on):**
+
+```bash
+kubectl scale deployment/hive-hiveserver2 --replicas=1
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/component=hiveserver2 --timeout=120s
+kubectl exec -it deployment/hive-hiveserver2 -- beeline -u "jdbc:hive2://hive-hiveserver2:10001/;transportMode=http;httpPath=cliservice"
+```
+
+> **Note:** The operator sets `hive.server2.transport.mode=http`,
+> `hive.server2.thrift.http.port=10001`, and
+> `hive.server2.thrift.http.path=cliservice` by default. The binary Thrift
+> port (10000) is still exposed for backward compatibility but HTTP mode
+> is the primary transport. To override, use `configOverrides` in the
+> HiveServer2 spec.
 
 ---
 
@@ -620,6 +1050,18 @@ beeline -u "jdbc:hive2://localhost:10000/"
 | `cluster.tezAm.extraVolumes` | `[]` | Additional volumes for TezAM pods |
 | `cluster.tezAm.extraVolumeMounts` | `[]` | Additional volume mounts for TezAM containers |
 
+### Autoscaling (per component)
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.<component>.autoscaling.enabled` | `false` | Enable KEDA-based autoscaling for this component |
+| `cluster.<component>.autoscaling.minReplicas` | `2` | Floor replica count during scale-down |
+| `cluster.<component>.autoscaling.scaleUpThreshold` | `60-80` | Metric threshold triggering scale-up (CPU% for HS2/HMS/TezAM with resources; pending tasks per AM for TezAM without resources; queue depth for LLAP) |
+| `cluster.<component>.autoscaling.scaleDownThreshold` | `10-30` | Metric percentage threshold triggering scale-down |
+| `cluster.<component>.autoscaling.cooldownSeconds` | `300-900` | Minimum seconds between scaling events |
+| `cluster.<component>.autoscaling.gracePeriodSeconds` | `60-600` | Max time (seconds) to wait for graceful drain |
+| `cluster.hiveServer2.autoscaling.scaleToZeroHosts` | `[]` | Hostnames for KEDA HTTP interceptor routing (Ingress domain) |
+
 ---
 
 ## Upgrade and Uninstall
@@ -659,12 +1101,35 @@ helm install hive ./helm/hive-operator -f my-values.yaml
 ### Remove Everything (including dependencies)
 
 ```bash
+# 1. Uninstall Hive operator (removes ScaledObjects, pods, services via owner references)
 helm uninstall hive
-kubectl delete crd hiveclusters.hive.apache.org
+kubectl delete crd hiveclusters.hive.apache.org --ignore-not-found
+
+# 2. Remove HS2 Ingress (if configured for scale-to-zero wake)
+kubectl delete ingress hive-hs2-ingress --ignore-not-found
+
+# 3. Uninstall autoscaling infrastructure (KEDA, HTTP Add-on, Prometheus)
+helm uninstall http-add-on -n keda --ignore-not-found
+helm uninstall keda -n keda --ignore-not-found
+helm uninstall prometheus -n monitoring --ignore-not-found
+
+# 4. Remove KEDA CRDs (not removed by helm uninstall)
+kubectl delete crd --ignore-not-found \
+  scaledobjects.keda.sh \
+  scaledjobs.keda.sh \
+  triggerauthentications.keda.sh \
+  clustertriggerauthentications.keda.sh \
+  httpscaledobjects.http.keda.sh
+
+# 5. Uninstall storage and infrastructure dependencies
 helm uninstall ozone postgres zookeeper --ignore-not-found
+
+# 6. Clean up PVCs, secrets, and namespaces
 kubectl delete pvc data-zookeeper-0 --ignore-not-found
 kubectl delete pvc data-postgres-postgresql-0 --ignore-not-found
 kubectl delete secret hive-db-secret --ignore-not-found
+kubectl delete namespace keda --ignore-not-found
+kubectl delete namespace monitoring --ignore-not-found
 ```
 
 ---

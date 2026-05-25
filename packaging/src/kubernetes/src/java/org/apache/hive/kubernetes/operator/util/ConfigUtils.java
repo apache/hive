@@ -73,13 +73,33 @@ public final class ConfigUtils {
 
   public static final String HIVE_LLAP_DAEMON_NUM_EXECUTORS_KEY = "hive.llap.daemon.num.executors";
 
+  public static final String METASTORE_SERVER_MAX_THREADS_KEY = "metastore.server.max.threads";
+  public static final String METASTORE_SERVER_MAX_THREADS_HIVE_KEY = "hive.metastore.server.max.threads";
+  public static final int METASTORE_SERVER_MAX_THREADS_DEFAULT = 1000;
+
   public static final String HIVE_METASTORE_URIS_KEY = "hive.metastore.uris";
 
   public static final String HIVE_SERVER2_THRIFT_PORT_KEY = "hive.server2.thrift.port";
   public static final int HIVE_SERVER2_THRIFT_PORT_DEFAULT = 10000;
 
+  public static final String HIVE_SERVER2_THRIFT_HTTP_PORT_KEY = "hive.server2.thrift.http.port";
+  public static final int HIVE_SERVER2_THRIFT_HTTP_PORT_DEFAULT = 10001;
+
+  public static final String HIVE_SERVER2_THRIFT_HTTP_PATH_KEY = "hive.server2.thrift.http.path";
+  public static final String HIVE_SERVER2_THRIFT_HTTP_PATH_DEFAULT = "cliservice";
+
+  public static final String HIVE_SERVER2_TRANSPORT_MODE_KEY = "hive.server2.transport.mode";
+  public static final String HIVE_SERVER2_TRANSPORT_MODE_DEFAULT = "http";
+
   public static final String HIVE_SERVER2_WEBUI_PORT_KEY = "hive.server2.webui.port";
   public static final int HIVE_SERVER2_WEBUI_PORT_DEFAULT = 10002;
+
+  /** Port for the Prometheus JMX Exporter agent (serves /metrics in text format). */
+  public static final int PROMETHEUS_JMX_EXPORTER_PORT = 9404;
+
+  /** Default URL for the Prometheus JMX Exporter javaagent JAR. */
+  public static final String JMX_EXPORTER_JAR_URL =
+      "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar";
 
   public static final String TEZ_AM_SESSION_MODE_KEY = "tez.am.mode.session";
 

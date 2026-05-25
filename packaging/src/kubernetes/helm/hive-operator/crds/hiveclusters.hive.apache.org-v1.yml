@@ -44,6 +44,44 @@ spec:
               hiveServer2:
                 description: HiveServer2 component configuration
                 properties:
+                  autoscaling:
+                    description: Autoscaling configuration (requires KEDA installed
+                      in the cluster)
+                    properties:
+                      cooldownSeconds:
+                        default: 600
+                        description: Cooldown period in seconds after a scaling event
+                          before another can occur
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 300
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: Minimum number of replicas (floor for scale-down).
+                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
+                          for wake-from-zero)
+                        type: integer
+                      scaleDownThreshold:
+                        default: 20
+                        description: "Percentage threshold that triggers scale-down\
+                          \ (all conditions must be met: metric below threshold AND\
+                          \ CPU below threshold)"
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
+                          \ with resources, pending tasks per AM for TezAM without\
+                          \ resources)"
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string
@@ -152,6 +190,44 @@ spec:
               llap:
                 description: LLAP daemon configuration. Enabled by default.
                 properties:
+                  autoscaling:
+                    description: Autoscaling configuration (requires KEDA installed
+                      in the cluster)
+                    properties:
+                      cooldownSeconds:
+                        default: 600
+                        description: Cooldown period in seconds after a scaling event
+                          before another can occur
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 300
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: Minimum number of replicas (floor for scale-down).
+                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
+                          for wake-from-zero)
+                        type: integer
+                      scaleDownThreshold:
+                        default: 20
+                        description: "Percentage threshold that triggers scale-down\
+                          \ (all conditions must be met: metric below threshold AND\
+                          \ CPU below threshold)"
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
+                          \ with resources, pending tasks per AM for TezAM without\
+                          \ resources)"
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string
@@ -235,6 +311,44 @@ spec:
               metastore:
                 description: Metastore component configuration
                 properties:
+                  autoscaling:
+                    description: Autoscaling configuration (requires KEDA installed
+                      in the cluster)
+                    properties:
+                      cooldownSeconds:
+                        default: 600
+                        description: Cooldown period in seconds after a scaling event
+                          before another can occur
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 300
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: Minimum number of replicas (floor for scale-down).
+                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
+                          for wake-from-zero)
+                        type: integer
+                      scaleDownThreshold:
+                        default: 20
+                        description: "Percentage threshold that triggers scale-down\
+                          \ (all conditions must be met: metric below threshold AND\
+                          \ CPU below threshold)"
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
+                          \ with resources, pending tasks per AM for TezAM without\
+                          \ resources)"
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string
@@ -371,6 +485,44 @@ spec:
               tezAm:
                 description: Tez Application Master configuration. Enabled by default.
                 properties:
+                  autoscaling:
+                    description: Autoscaling configuration (requires KEDA installed
+                      in the cluster)
+                    properties:
+                      cooldownSeconds:
+                        default: 600
+                        description: Cooldown period in seconds after a scaling event
+                          before another can occur
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 300
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: Minimum number of replicas (floor for scale-down).
+                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
+                          for wake-from-zero)
+                        type: integer
+                      scaleDownThreshold:
+                        default: 20
+                        description: "Percentage threshold that triggers scale-down\
+                          \ (all conditions must be met: metric below threshold AND\
+                          \ CPU below threshold)"
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
+                          \ with resources, pending tasks per AM for TezAM without\
+                          \ resources)"
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string

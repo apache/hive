@@ -45,11 +45,13 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
+import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
 import org.apache.hive.kubernetes.operator.model.spec.ResourceRequirementsSpec;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -420,6 +422,143 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       builder.withSuccessThreshold(spec.successThreshold());
     }
     return builder.build();
+  }
+
+  /** Path where the JMX Exporter agent JAR is stored inside the pod. */
+  protected static final String JMX_EXPORTER_DIR = "/opt/jmx-exporter";
+  protected static final String JMX_EXPORTER_JAR = JMX_EXPORTER_DIR + "/jmx_prometheus_javaagent.jar";
+  protected static final String JMX_EXPORTER_CONFIG = JMX_EXPORTER_DIR + "/config.yaml";
+
+  /**
+   * Adds the Prometheus JMX Exporter agent infrastructure to a pod spec when
+   * autoscaling is enabled. This includes:
+   * <ul>
+   *   <li>An emptyDir volume for the JMX exporter JAR and config</li>
+   *   <li>An init container that downloads the agent JAR and writes a config file</li>
+   *   <li>A volume mount on the main container</li>
+   *   <li>A container port for the metrics endpoint (9404)</li>
+   *   <li>The javaagent JVM argument appended to SERVICE_OPTS</li>
+   * </ul>
+   *
+   * @param image the container image (used for the init container)
+   * @param component the Hive component name (for JMX bean pattern matching)
+   * @param initContainers list to add the download init container to
+   * @param volumeMounts list to add the jmx-exporter mount to (main container)
+   * @param volumes list to add the emptyDir volume to
+   * @param envVars list of env vars — SERVICE_OPTS will be updated with the javaagent flag
+   * @param ports list to add the metrics port to
+   */
+  protected static void addJmxExporter(
+      String image, String component,
+      List<Container> initContainers,
+      List<VolumeMount> volumeMounts,
+      List<Volume> volumes,
+      List<EnvVar> envVars,
+      List<io.fabric8.kubernetes.api.model.ContainerPort> ports) {
+
+    // Volume for the JMX exporter JAR + config
+    volumes.add(new VolumeBuilder()
+        .withName("jmx-exporter")
+        .withNewEmptyDir().endEmptyDir().build());
+    VolumeMount exporterMount = new VolumeMountBuilder()
+        .withName("jmx-exporter")
+        .withMountPath(JMX_EXPORTER_DIR).build();
+    volumeMounts.add(exporterMount);
+
+    // JMX exporter config: export all beans in a catch-all pattern
+    // The agent exposes metrics in Prometheus text format at /metrics
+    String jmxConfig = buildJmxExporterConfig(component);
+
+    // Init container: download JAR + write config
+    String downloadCmd = String.format(
+        "wget -q --tries=3 --waitretry=5 -O %s '%s' && "
+            + "cat > %s << 'JMXEOF'\n%s\nJMXEOF",
+        JMX_EXPORTER_JAR, ConfigUtils.JMX_EXPORTER_JAR_URL,
+        JMX_EXPORTER_CONFIG, jmxConfig);
+    initContainers.add(new ContainerBuilder()
+        .withName("jmx-exporter-init")
+        .withImage(image)
+        .withCommand("/bin/bash", "-c", downloadCmd)
+        .withVolumeMounts(exporterMount)
+        .build());
+
+    // Expose the metrics port
+    ports.add(new io.fabric8.kubernetes.api.model.ContainerPortBuilder()
+        .withName("metrics")
+        .withContainerPort(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT).build());
+
+    // Add javaagent flag to the appropriate JVM opts env var.
+    // LLAP uses LLAP_DAEMON_OPTS (its startup script ignores SERVICE_OPTS).
+    String agentArg = String.format("-javaagent:%s=%d:%s",
+        JMX_EXPORTER_JAR, ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT, JMX_EXPORTER_CONFIG);
+    String optsEnvVar = "llap".equals(component) ? "LLAP_DAEMON_OPTS" : "SERVICE_OPTS";
+    boolean found = false;
+    for (int i = 0; i < envVars.size(); i++) {
+      if (optsEnvVar.equals(envVars.get(i).getName())) {
+        String existing = envVars.get(i).getValue();
+        envVars.set(i, new EnvVar(optsEnvVar,
+            existing + " " + agentArg, null));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      envVars.add(new EnvVar(optsEnvVar, agentArg, null));
+    }
+  }
+
+  /**
+   * Builds the JMX Exporter YAML config for a Hive component.
+   * Uses broad patterns to export all Hive/Hadoop metrics relevant to autoscaling.
+   */
+  private static String buildJmxExporterConfig(String component) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("lowercaseOutputName: true\n");
+    sb.append("lowercaseOutputLabelNames: true\n");
+    sb.append("rules:\n");
+
+    switch (component) {
+      case "hiveserver2":
+        // HS2 session and operation metrics
+        sb.append("- pattern: 'metrics<name=hs2_(.+)><>Value'\n");
+        sb.append("  name: hs2_$1\n");
+        sb.append("  type: GAUGE\n");
+        sb.append("- pattern: 'metrics<name=active_calls_(.+)><>Count'\n");
+        sb.append("  name: hs2_active_calls_$1\n");
+        sb.append("  type: GAUGE\n");
+        // Tez session pool metrics (pending tasks, backlog ratio, running tasks)
+        sb.append("- pattern: 'metrics<name=tez_session_(.+)><>Value'\n");
+        sb.append("  name: tez_session_$1\n");
+        sb.append("  type: GAUGE\n");
+        break;
+      case "metastore":
+        // HMS API call metrics
+        sb.append("- pattern: 'metrics<name=api_(.+)><>Count'\n");
+        sb.append("  name: api_$1_total\n");
+        sb.append("  type: COUNTER\n");
+        sb.append("- pattern: 'metrics<name=open_connections><>Value'\n");
+        sb.append("  name: hive_metastore_open_connections\n");
+        sb.append("  type: GAUGE\n");
+        break;
+      case "llap":
+        // LLAP uses its own MetricsSystem (not DefaultMetricsSystem).
+        // Default JMX exporter pattern (.*) exports Hadoop Metrics2 MBeans as:
+        //   hadoop_llapdaemon_<attribute>{name="<source>"}
+        // e.g., hadoop_llapdaemon_executornumqueuedrequests{name="LlapDaemonExecutorMetrics-..."}
+        // No custom rules needed — the default naming is usable directly.
+        sb.append("- pattern: '.*'\n");
+        break;
+      case "tezam":
+        // TezAM DAG execution metrics
+        sb.append("- pattern: 'Hadoop<service=TezAppMaster, name=TezAppMaster><>(.+)'\n");
+        sb.append("  name: tez_am_$1\n");
+        sb.append("  type: GAUGE\n");
+        break;
+      default:
+        sb.append("- pattern: '.*'\n");
+        break;
+    }
+    return sb.toString();
   }
 
 }
