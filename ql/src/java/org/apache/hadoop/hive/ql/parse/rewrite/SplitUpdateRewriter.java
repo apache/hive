@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.parse.rewrite;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -65,10 +67,10 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     List<String> deleteValues = sqlGenerator.getDeleteValues(OPERATION);
     int columnOffset = deleteValues.size();
 
-    List<String> insertValues = new ArrayList<>(updateBlock.getTargetTable().getCols().size());
+    List<String> insertValues = new ArrayList<>(updateBlock.getTargetTable().getStorageSchemaCols().size());
     boolean first = true;
 
-    List<FieldSchema> nonPartCols = updateBlock.getTargetTable().getCols();
+    List<FieldSchema> nonPartCols = updateBlock.getTargetTable().getStorageSchemaCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
       if (first) {
         first = false;
@@ -98,8 +100,8 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
       insertValues.add(sqlGenerator.qualify(identifier));
     }
-    if (updateBlock.getTargetTable().getPartCols() != null) {
-      updateBlock.getTargetTable().getPartCols().forEach(
+    if (updateBlock.getTargetTable().getPartitionKeys() != null) {
+      updateBlock.getTargetTable().getPartitionKeys().forEach(
           fieldSchema -> insertValues.add(sqlGenerator.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
     }
     addRowLineageColumnsForUpdate(updateBlock.getTargetTable(), sqlGenerator, insertValues, conf);
