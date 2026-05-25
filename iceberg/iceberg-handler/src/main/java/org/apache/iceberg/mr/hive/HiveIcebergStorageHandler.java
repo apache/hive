@@ -2130,6 +2130,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (hmsTable.getMetaTable() != null) {
+      return false;
+    }
     if (!hmsTable.getTTable().isSetId()) {
       return false;
     }
@@ -2275,6 +2278,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (hmsTable.getMetaTable() != null) {
+      return Collections.emptyList();
+    }
     if (!hmsTable.getTTable().isSetId()) {
       return Collections.emptyList();
     }
