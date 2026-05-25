@@ -588,10 +588,7 @@ public class RelOptHiveTable implements RelOptTable {
             rowCount = 0;
             hiveColStats = new ArrayList<ColStatistics>();
             for (int i = 0; i < nonPartColNamesThatRqrStats.size(); i++) {
-              // empty stats object for each column: all fields take their Java defaults
-              // (countDistinct=0, numNulls=0, ...). Under the ColStatistics convention this
-              // reads as "verified zero" rather than "unknown", which is semantically correct
-              // here because rowCount is 0 - the table has zero rows after partition pruning.
+              // add empty stats object for each column
               hiveColStats.add(
                   new ColStatistics(
                       nonPartColNamesThatRqrStats.get(i),

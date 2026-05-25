@@ -22,6 +22,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.convert.Converter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Spool;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -50,7 +51,8 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
       ReflectiveRelMetadataProvider.reflectiveSource(
           BuiltInMethod.DISTINCT_ROW_COUNT.method, new HiveRelMdDistinctRowCount());
 
-  private HiveRelMdDistinctRowCount() {
+  @VisibleForTesting
+  HiveRelMdDistinctRowCount() {
   }
 
   public Double getDistinctRowCount(HiveTableScan htRel, RelMetadataQuery mq, ImmutableBitSet groupKey,
@@ -60,9 +62,8 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     List<ColStatistics> colStats = htRel.getColStat(projIndxLst);
     Double noDistinctRows = 1.0;
     for (ColStatistics cStat : colStats) {
-      // countDistinct < 0 means "unknown" - signal back to Calcite via null
-      if (cStat.getCountDistint() < 0) {
-        return null;
+      if (cStat.getCountDistint() <= 0) {
+        return 0.0;
       }
       noDistinctRows *= cStat.getCountDistint();
     }

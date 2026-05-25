@@ -20,8 +20,13 @@ package org.apache.hadoop.hive.ql.stats.estimator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.stream.Stream;
+
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class TestPessimisticStatCombiner {
 
@@ -134,6 +139,31 @@ class TestPessimisticStatCombiner {
 
     ColStatistics combined = combiner.getResult().get();
     assertEquals(-1, combined.getNumNulls(), "Both unknown should result in unknown (-1)");
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("combineCountDistinctCases")
+  void testCombineCountDistinctMerge(String scenarioName, long stat1Ndv, long stat2Ndv, long expectedNdv) {
+    ColStatistics stat1 = createStat("col1", "int", stat1Ndv, 5, 4.0);
+    ColStatistics stat2 = createStat("col2", "int", stat2Ndv, 10, 4.0);
+
+    PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    combiner.add(stat1);
+    combiner.add(stat2);
+
+    ColStatistics combined = combiner.getResult().get();
+    assertEquals(expectedNdv, combined.getCountDistint(),
+        "countDistinct after PROPAGATE combine");
+  }
+
+  private static Stream<Arguments> combineCountDistinctCases() {
+    return Stream.of(
+        Arguments.of("firstUnknownPropagates",      -1L, 50L, -1L),
+        Arguments.of("secondUnknownPropagates",     50L, -1L, -1L),
+        Arguments.of("bothUnknownStaysUnknown",     -1L, -1L, -1L),
+        Arguments.of("picksHigherWhenSecondHigher", 30L, 50L, 50L),
+        Arguments.of("keepsHigherWhenFirstHigher",  50L, 30L, 50L)
+    );
   }
 
   @Test

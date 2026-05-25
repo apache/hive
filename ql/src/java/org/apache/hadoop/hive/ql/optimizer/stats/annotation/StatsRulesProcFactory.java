@@ -1324,15 +1324,7 @@ public class StatsRulesProcFactory {
 
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
-                long dvs = cs.getCountDistint();
-                if (dvs < 0) {
-                  numRows = numRows / 2;          // unknown
-                } else if (dvs == 0) {
-                  numRows = 0;                    // verified zero distinct values - no rows match
-                } else {
-                  numRows = Math.round((double) numRows / dvs);
-                }
-                return numRows;
+                return rowsAfterEqualityFilter(numRows, cs.getCountDistint());
               }
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
@@ -1351,15 +1343,7 @@ public class StatsRulesProcFactory {
 
                 ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
-                  long dvs = cs.getCountDistint();
-                  if (dvs < 0) {
-                    numRows = numRows / 2;          // unknown
-                  } else if (dvs == 0) {
-                    numRows = 0;                    // verified zero distinct values - no rows match
-                  } else {
-                    numRows = Math.round((double) numRows / dvs);
-                  }
-                  return numRows;
+                  return rowsAfterEqualityFilter(numRows, cs.getCountDistint());
                 }
               }
             }
@@ -1397,6 +1381,16 @@ public class StatsRulesProcFactory {
 
       // worst case
       return numRows / 2;
+    }
+
+    private static long rowsAfterEqualityFilter(long numRows, long dvs) {
+      if (dvs < 0) {
+        return numRows / 2;
+      }
+      if (dvs == 0) {
+        return 0;
+      }
+      return Math.round((double) numRows / dvs);
     }
 
   }
@@ -2264,7 +2258,8 @@ public class StatsRulesProcFactory {
       return null;
     }
 
-    private long calculateUnmatchedRowsForOuter(HiveConf conf, long inputRowCount,
+    @VisibleForTesting
+    long calculateUnmatchedRowsForOuter(HiveConf conf, long inputRowCount,
         List<String> joinKeys, Statistics statistics, long distinctUnmatched) {
       // Extract the ndv from each of the columns involved in the join
       List<Long> distinctVals = new ArrayList<>();
@@ -2642,7 +2637,8 @@ public class StatsRulesProcFactory {
       colStats.setNumNulls(newNumNulls);
     }
 
-    private void updateColStats(HiveConf conf, Statistics stats, long leftUnmatchedRows, long rightUnmatchedRows,
+    @VisibleForTesting
+    void updateColStats(HiveConf conf, Statistics stats, long leftUnmatchedRows, long rightUnmatchedRows,
         long newNumRows, CommonJoinOperator<? extends JoinDesc> jop, Map<Integer, Long> rowCountParents) {
 
       if (newNumRows < 0) {
@@ -2687,7 +2683,7 @@ public class StatsRulesProcFactory {
             // when some operators like GROUPBY duplicates the input rows in which case
             // number of distincts should not change. Update the distinct count only when
             // the output number of rows is less than input number of rows.
-            if (ratio <= 1.0) {
+            if (ratio < 1.0) {
               newDV = (long) Math.ceil(ratio * oldDV);
             }
           }
@@ -2759,7 +2755,8 @@ public class StatsRulesProcFactory {
       return result;
     }
 
-    private long computeRowCountAssumingInnerJoin(List<Long> rowCountParents, long denom,
+    @VisibleForTesting
+    long computeRowCountAssumingInnerJoin(List<Long> rowCountParents, long denom,
         CommonJoinOperator<? extends JoinDesc> join) {
       double factor = 0.0d;
       long result = 1;
@@ -2832,11 +2829,8 @@ public class StatsRulesProcFactory {
       if (distinctVals.isEmpty()) {
         return 2;
       }
-      // any unknown (<0) contributor makes the result unknown
-      for (Long v : distinctVals) {
-        if (v < 0) {
-          return -1L;
-        }
+      if (StatsUtils.containsUnknownNDV(distinctVals)) {
+        return -1L;
       }
 
       // simple join from 2 relations: denom = min(v1, v2)
@@ -2878,11 +2872,8 @@ public class StatsRulesProcFactory {
         // denominator is 2.
         return 2;
       }
-      // any unknown (<0) contributor makes the result unknown
-      for (Long v : distinctVals) {
-        if (v < 0) {
-          return -1L;
-        }
+      if (StatsUtils.containsUnknownNDV(distinctVals)) {
+        return -1L;
       }
 
       // simple join from 2 relations: denom = max(v1, v2)

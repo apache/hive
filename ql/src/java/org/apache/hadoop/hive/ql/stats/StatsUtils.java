@@ -1693,11 +1693,8 @@ public class StatsUtils {
     // Exponential back-off for NDVs.
     // 1) Descending order sort of NDVs
     // 2) denominator = NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4))) * ....
-    // any unknown (<0) contributor makes the result unknown
-    for (Long v : distinctVals) {
-      if (v < 0) {
-        return -1L;
-      }
+    if (containsUnknownNDV(distinctVals)) {
+      return -1L;
     }
     distinctVals.sort(Collections.reverseOrder());
 
@@ -2156,5 +2153,14 @@ public class StatsUtils {
     }
 
     return ndvValues;
+  }
+
+  /**
+   * Returns true if any value in the given list is the negative NDV "unknown"
+   * sentinel established by HIVE-29438 / HIVE-29625. Used by aggregators that
+   * must propagate unknown when any contributor is unknown.
+   */
+  public static boolean containsUnknownNDV(List<Long> distinctVals) {
+    return distinctVals.stream().anyMatch(v -> v < 0);
   }
 }

@@ -319,11 +319,8 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     int pkSide = leftIsKey ? 0 : 1;
     boolean isPKSideSimpleTree = leftIsKey ? SimpleTreeOnJoinKey.check(false, left, lBitSet, mq).left :
         SimpleTreeOnJoinKey.check(false, right, rBitSet, mq).left;
-    // getDistinctRowCount returns null when NDV is unknown; box to avoid NPE on unboxing
-    Double leftNDVBoxed = isPKSideSimpleTree ? mq.getDistinctRowCount(left, lBitSet, leftPred) : null;
-    Double rightNDVBoxed = isPKSideSimpleTree ? mq.getDistinctRowCount(right, rBitSet, rightPred) : null;
-    double leftNDV = leftNDVBoxed == null ? -1 : leftNDVBoxed;
-    double rightNDV = rightNDVBoxed == null ? -1 : rightNDVBoxed;
+    double leftNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(left, lBitSet, leftPred) : -1;
+    double rightNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(right, rBitSet, rightPred) : -1;
 
     /*
      * If the ndv of the PK - FK side don't match, and the PK side is a filter
@@ -347,13 +344,8 @@ public class HiveRelMdRowCount extends RelMdRowCount {
      * d_date column we can apply the scaling factor.
      */
     double ndvScalingFactor = 1.0;
-    // denominator must be strictly positive to avoid div-by-zero; the numerator may be 0
-    if (isPKSideSimpleTree) {
-      if (pkSide == 0 && leftNDV >= 0 && rightNDV > 0) {
-        ndvScalingFactor = leftNDV / rightNDV;
-      } else if (pkSide != 0 && rightNDV >= 0 && leftNDV > 0) {
-        ndvScalingFactor = rightNDV / leftNDV;
-      }
+    if ( isPKSideSimpleTree ) {
+      ndvScalingFactor = pkSide == 0 ? leftNDV/rightNDV : rightNDV / leftNDV;
     }
 
     if (pkSide == 0) {
@@ -449,11 +441,8 @@ public class HiveRelMdRowCount extends RelMdRowCount {
         rexBuilder, leftFilters, true);
     RexNode rightPred = RexUtil.composeConjunction(
         rexBuilder, rightFilters, true);
-    // getDistinctRowCount returns null when NDV is unknown; box to avoid NPE on unboxing
-    Double leftNDVBoxed = isPKSideSimpleTree ? mq.getDistinctRowCount(left, lBitSet, leftPred) : null;
-    Double rightNDVBoxed = isPKSideSimpleTree ? mq.getDistinctRowCount(right, rBitSet, rightPred) : null;
-    double leftNDV = leftNDVBoxed == null ? -1 : leftNDVBoxed;
-    double rightNDV = rightNDVBoxed == null ? -1 : rightNDVBoxed;
+    double leftNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(left, lBitSet, leftPred) : -1;
+    double rightNDV = isPKSideSimpleTree ? mq.getDistinctRowCount(right, rBitSet, rightPred) : -1;
 
     // 5) Add the rest of operators back to the join filters
     // and create residual condition
@@ -470,9 +459,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
           leftNDV,
           join.getJoinType().generatesNullsOnRight() ? 1.0 :
               pkSelectivity);
-      // denominator must be strictly positive to avoid div-by-zero; the numerator may be 0
-      double ndvScalingFactor = (isPKSideSimpleTree && leftNDV >= 0 && rightNDV > 0)
-          ? leftNDV/rightNDV : 1.0;
+      double ndvScalingFactor = isPKSideSimpleTree ? leftNDV/rightNDV : 1.0;
       return Pair.of(new PKFKRelationInfo(1, fkInfo, pkInfo, ndvScalingFactor, isNoFilteringPKSideTree),
           residualCond);
     } else { // pkSide == 1
@@ -483,8 +470,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
           rightNDV,
           join.getJoinType().generatesNullsOnLeft() ? 1.0 :
               pkSelectivity);
-      double ndvScalingFactor = (isPKSideSimpleTree && rightNDV >= 0 && leftNDV > 0)
-          ? rightNDV/leftNDV : 1.0;
+      double ndvScalingFactor = isPKSideSimpleTree ? rightNDV/leftNDV : 1.0;
       return Pair.of(new PKFKRelationInfo(0, fkInfo, pkInfo, ndvScalingFactor, isNoFilteringPKSideTree),
           residualCond);
     }

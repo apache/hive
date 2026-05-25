@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,13 +33,16 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -285,6 +289,204 @@ class TestStatsUtils {
     assertEquals(-1, merged.getNumNulls(), "Unknown numNulls (-1) should be propagated when existing is unknown");
   }
 
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("addToColumnStatsCountDistinctCases")
+  void testStatisticsAddToColumnStatsCountDistinctMerge(
+      String scenarioName, long existingNdv, long incomingNdv, long expectedMergedNdv) {
+    Statistics stats = new Statistics(1000, 8000, 0, 0);
+    ColStatistics existing = createColStats("col1", existingNdv, 0);
+    stats.setColumnStats(Collections.singletonList(existing));
+
+    ColStatistics incoming = createColStats("col1", incomingNdv, 0);
+    stats.addToColumnStats(Collections.singletonList(incoming));
+
+    ColStatistics merged = stats.getColumnStatisticsFromColName("col1");
+    assertEquals(expectedMergedNdv, merged.getCountDistint(),
+        "countDistinct after merge");
+  }
+
+  private static Stream<Arguments> addToColumnStatsCountDistinctCases() {
+    return Stream.of(
+        Arguments.of("incomingUnknownPropagates",   5L, -1L, -1L),
+        Arguments.of("existingUnknownPropagates", -1L,  5L, -1L),
+        Arguments.of("bothUnknownStaysUnknown",   -1L, -1L, -1L),
+        Arguments.of("maxPicksIncomingWhenHigher", 3L,  7L,  7L),
+        Arguments.of("maxPicksExistingWhenHigher", 7L,  3L,  7L)
+    );
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("containsUnknownNDVCases")
+  void testContainsUnknownNDV(String scenarioName, List<Long> input, boolean expected) {
+    assertEquals(expected, StatsUtils.containsUnknownNDV(input),
+        "containsUnknownNDV(" + input + ")");
+  }
+
+  private static Stream<Arguments> containsUnknownNDVCases() {
+    return Stream.of(
+        Arguments.of("allPositive",                Arrays.asList(1L, 2L, 3L),   false),
+        Arguments.of("containsZero_NotUnknown",    Arrays.asList(1L, 0L, 3L),   false),
+        Arguments.of("singleUnknown",              Arrays.asList(1L, -1L, 3L),  true),
+        Arguments.of("allUnknown",                 Arrays.asList(-1L, -1L, -1L), true),
+        Arguments.of("firstIsUnknown_ShortCircuit", Arrays.asList(-1L, 2L, 3L),  true),
+        Arguments.of("emptyList",                  Collections.emptyList(),     false)
+    );
+  }
+
+  @Test
+  void testAddWithExpDecayReturnsUnknownWhenAnyInputIsUnknown() {
+    Long result = StatsUtils.addWithExpDecay(Arrays.asList(10L, -1L, 5L));
+    assertEquals(-1L, result, "addWithExpDecay should propagate unknown NDV (-1) when present");
+  }
+
+  @Test
+  void testAddWithExpDecayComputesWhenAllInputsKnown() {
+    Long result = StatsUtils.addWithExpDecay(Arrays.asList(100L, 25L));
+    // Exponential decay: 100 * 25^(1/2) = 100 * 5 = 500.
+    assertEquals(500L, result, "addWithExpDecay should return the exponential-decay denominator for known inputs");
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("computeNDVGroupingColumnsCases")
+  void testComputeNDVGroupingColumns(String scenarioName, List<ColStatistics> colStats,
+      Statistics.State parentColStatsState, boolean expDecay, long expected) {
+    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+    parentStats.setColumnStatsState(parentColStatsState);
+
+    long result = StatsUtils.computeNDVGroupingColumns(colStats, parentStats, expDecay);
+
+    assertEquals(expected, result, scenarioName);
+  }
+
+  private static Stream<Arguments> computeNDVGroupingColumnsCases() {
+    return Stream.of(
+        Arguments.of("allKnownReturnsProduct",
+            Arrays.asList(makeColStat("c1", 10), makeColStat("c2", 20)),
+            Statistics.State.COMPLETE, false, 200L),
+        Arguments.of("unknownColumnReturnsMinusOne",
+            Arrays.asList(makeColStat("c1", 10), makeColStat("c2", -1)),
+            Statistics.State.COMPLETE, false, -1L),
+        Arguments.of("emptyColumnsReturnsOne",
+            Collections.<ColStatistics>emptyList(),
+            Statistics.State.COMPLETE, false, 1L),
+        Arguments.of("nullColStatWithCompleteParentSkipped",
+            Arrays.asList(null, makeColStat("c2", 10)),
+            Statistics.State.COMPLETE, false, 10L),
+        Arguments.of("nullColStatWithPartialParentReturnsMinusOne",
+            Arrays.asList((ColStatistics) null),
+            Statistics.State.PARTIAL, false, -1L),
+        Arguments.of("expDecayWithKnownInputs",
+            Arrays.asList(makeColStat("c1", 100), makeColStat("c2", 25)),
+            Statistics.State.COMPLETE, true, 500L),
+        Arguments.of("expDecayWithUnknownPropagates",
+            Arrays.asList(makeColStat("c1", 100), makeColStat("c2", -1)),
+            Statistics.State.COMPLETE, true, -1L)
+    );
+  }
+
+  private static ColStatistics makeColStat(String name, long ndv) {
+    ColStatistics cs = new ColStatistics(name, "string");
+    cs.setCountDistint(ndv);
+    cs.setNumNulls(0);
+    return cs;
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("getColStatisticsUnsetNumDVsCases")
+  void testGetColStatisticsReturnsUnknownNDVWhenNumDVsNotSet(
+      String typeName, ColumnStatisticsData data) {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("test_col");
+    cso.setColType(typeName);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "test_col");
+
+    assertNotNull(cs, "ColStatistics should not be null for " + typeName);
+    assertEquals(-1, cs.getCountDistint(),
+        "When numDVs is unset for " + typeName + ", NDV should be -1");
+  }
+
+  private static Stream<Arguments> getColStatisticsUnsetNumDVsCases() {
+    LongColumnStatsData longStats = new LongColumnStatsData();
+    longStats.setNumNulls(10);
+    // numDVs NOT set
+
+    DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+    doubleStats.setNumNulls(10);
+
+    StringColumnStatsData stringStats = new StringColumnStatsData();
+    stringStats.setNumNulls(10);
+    stringStats.setAvgColLen(5.0);
+    stringStats.setMaxColLen(20);
+
+    BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
+    binaryStats.setNumNulls(10);
+    binaryStats.setAvgColLen(5.0);
+    binaryStats.setMaxColLen(20);
+
+    TimestampColumnStatsData timestampStats = new TimestampColumnStatsData();
+    timestampStats.setNumNulls(10);
+
+    DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+    decimalStats.setNumNulls(10);
+
+    DateColumnStatsData dateStats = new DateColumnStatsData();
+    dateStats.setNumNulls(10);
+
+    return Stream.of(
+        Arguments.of(serdeConstants.BIGINT_TYPE_NAME,    wrapLong(longStats)),
+        Arguments.of(serdeConstants.DOUBLE_TYPE_NAME,    wrapDouble(doubleStats)),
+        Arguments.of(serdeConstants.STRING_TYPE_NAME,    wrapString(stringStats)),
+        Arguments.of(serdeConstants.BINARY_TYPE_NAME,    wrapBinary(binaryStats)),
+        Arguments.of(serdeConstants.TIMESTAMP_TYPE_NAME, wrapTimestamp(timestampStats)),
+        Arguments.of(serdeConstants.DECIMAL_TYPE_NAME,   wrapDecimal(decimalStats)),
+        Arguments.of(serdeConstants.DATE_TYPE_NAME,      wrapDate(dateStats))
+    );
+  }
+
+  private static ColumnStatisticsData wrapLong(LongColumnStatsData s) {
+    ColumnStatisticsData d = new ColumnStatisticsData();
+    d.setLongStats(s);
+    return d;
+  }
+
+  private static ColumnStatisticsData wrapDouble(DoubleColumnStatsData s) {
+    ColumnStatisticsData d = new ColumnStatisticsData();
+    d.setDoubleStats(s);
+    return d;
+  }
+
+  private static ColumnStatisticsData wrapString(StringColumnStatsData s) {
+    ColumnStatisticsData d = new ColumnStatisticsData();
+    d.setStringStats(s);
+    return d;
+  }
+
+  private static ColumnStatisticsData wrapBinary(BinaryColumnStatsData s) {
+    ColumnStatisticsData d = new ColumnStatisticsData();
+    d.setBinaryStats(s);
+    return d;
+  }
+
+  private static ColumnStatisticsData wrapTimestamp(TimestampColumnStatsData s) {
+    ColumnStatisticsData d = new ColumnStatisticsData();
+    d.setTimestampStats(s);
+    return d;
+  }
+
+  private static ColumnStatisticsData wrapDecimal(DecimalColumnStatsData s) {
+    ColumnStatisticsData d = new ColumnStatisticsData();
+    d.setDecimalStats(s);
+    return d;
+  }
+
+  private static ColumnStatisticsData wrapDate(DateColumnStatsData s) {
+    ColumnStatisticsData d = new ColumnStatisticsData();
+    d.setDateStats(s);
+    return d;
+  }
+
   @Test
   void testGetColStatisticsBooleanWithUnknownNumTrues() {
     ColumnStatisticsObj cso = new ColumnStatisticsObj();
@@ -463,6 +665,53 @@ class TestStatsUtils {
 
     ColStatistics updated = stats.getColumnStats().get(0);
     assertEquals(-1, updated.getNumNulls(), "Unknown numNulls (-1) should be preserved after scaling");
+  }
+
+  @Test
+  void testUpdateStatsMarksFilteredColumnEvenWhenNDVUnknown() {
+    // HIVE-29625: setFilterColumn() is now called unconditionally for affected columns,
+    // even when NDV is unknown (-1). The NDV math is skipped but the filter mark applies.
+    Statistics stats = new Statistics(1000, 8000, 0, 0);
+    ColStatistics cs = createColStats("col1", -1, 0); // unknown NDV
+    stats.setColumnStats(Collections.singletonList(cs));
+
+    StatsUtils.updateStats(stats, 500, true, null, Collections.singleton("col1"));
+
+    ColStatistics updated = stats.getColumnStats().get(0);
+    assertEquals(true, updated.isFilteredColumn(),
+        "Filter-column flag should be set even when NDV is unknown");
+    assertEquals(-1, updated.getCountDistint(),
+        "Unknown NDV (-1) should be preserved when affected column has no NDV");
+  }
+
+  @Test
+  void testUpdateStatsRecomputesNDVWhenAffectedAndKnown() {
+    // Regression check: when NDV is known and ratio <= 1.0, the NDV math still runs
+    // inside the new oldDV >= 0 guard.
+    Statistics stats = new Statistics(1000, 8000, 0, 0);
+    ColStatistics cs = createColStats("col1", 100, 0); // known NDV
+    stats.setColumnStats(Collections.singletonList(cs));
+
+    StatsUtils.updateStats(stats, 500, true, null, Collections.singleton("col1"));
+
+    ColStatistics updated = stats.getColumnStats().get(0);
+    assertEquals(true, updated.isFilteredColumn(),
+        "Filter-column flag should be set for affected column with known NDV");
+    // ratio = 500/1000 = 0.5 -> newDV = ceil(0.5 * 100) = 50
+    assertEquals(50, updated.getCountDistint(),
+        "Known NDV should be scaled by the row-count ratio");
+  }
+
+  @Test
+  void testScaleColStatisticsPreservesUnknownCountDistint() {
+    // HIVE-29625: when factor < 1.0 and NDV is unknown (-1), the sentinel is preserved.
+    ColStatistics cs = createColStats("col1", -1, 0); // unknown NDV
+    List<ColStatistics> colStats = Collections.singletonList(cs);
+
+    StatsUtils.scaleColStatistics(colStats, 0.5);
+
+    assertEquals(-1, colStats.get(0).getCountDistint(),
+        "Unknown NDV (-1) should be preserved when factor < 1.0");
   }
 
   @Test
