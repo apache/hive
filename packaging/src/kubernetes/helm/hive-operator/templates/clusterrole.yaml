@@ -50,3 +50,15 @@ rules:
   - apiGroups: [""]
     resources: ["pods"]
     verbs: ["get", "list", "watch"]
+  # PodDisruptionBudgets for graceful autoscaling
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # KEDA ScaledObjects for autoscaling
+  - apiGroups: ["keda.sh"]
+    resources: ["scaledobjects", "triggerauthentications"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # KEDA HTTP Add-on for scale-to-zero (wake-from-zero on HTTP request)
+  - apiGroups: ["http.keda.sh"]
+    resources: ["httpscaledobjects"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

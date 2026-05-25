@@ -56,7 +56,9 @@ public record MetastoreSpec(
     @JsonPropertyDescription("Readiness probe configuration")
     ProbeSpec readinessProbe,
     @JsonPropertyDescription("Liveness probe configuration")
-    ProbeSpec livenessProbe) {
+    ProbeSpec livenessProbe,
+    @JsonPropertyDescription("Autoscaling configuration (requires KEDA installed in the cluster)")
+    AutoscalingSpec autoscaling) {
 
   public MetastoreSpec {
     replicas = replicas != null ? replicas : 1;
@@ -66,6 +68,8 @@ public record MetastoreSpec(
     enabled = enabled != null ? enabled : true;
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
+    autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
+        false, 1, 75, 30, 300, 60);
   }
 
   public boolean isEnabled() {

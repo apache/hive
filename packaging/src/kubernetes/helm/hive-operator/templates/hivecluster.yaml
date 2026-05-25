@@ -67,6 +67,15 @@ spec:
     extraVolumeMounts:
       {{- toYaml .Values.cluster.metastore.extraVolumeMounts | nindent 6 }}
     {{- end }}
+    {{- if and .Values.cluster.metastore.autoscaling .Values.cluster.metastore.autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .Values.cluster.metastore.autoscaling.minReplicas }}
+      scaleUpThreshold: {{ .Values.cluster.metastore.autoscaling.scaleUpThreshold }}
+      scaleDownThreshold: {{ .Values.cluster.metastore.autoscaling.scaleDownThreshold }}
+      cooldownSeconds: {{ .Values.cluster.metastore.autoscaling.cooldownSeconds }}
+      gracePeriodSeconds: {{ .Values.cluster.metastore.autoscaling.gracePeriodSeconds }}
+    {{- end }}
     {{- else }}
     {{- if .Values.cluster.metastore.externalUri }}
     externalUri: {{ .Values.cluster.metastore.externalUri | quote }}
@@ -96,6 +105,15 @@ spec:
     extraVolumeMounts:
       {{- toYaml .Values.cluster.hiveServer2.extraVolumeMounts | nindent 6 }}
     {{- end }}
+    {{- if and .Values.cluster.hiveServer2.autoscaling .Values.cluster.hiveServer2.autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .Values.cluster.hiveServer2.autoscaling.minReplicas }}
+      scaleUpThreshold: {{ .Values.cluster.hiveServer2.autoscaling.scaleUpThreshold }}
+      scaleDownThreshold: {{ .Values.cluster.hiveServer2.autoscaling.scaleDownThreshold }}
+      cooldownSeconds: {{ .Values.cluster.hiveServer2.autoscaling.cooldownSeconds }}
+      gracePeriodSeconds: {{ .Values.cluster.hiveServer2.autoscaling.gracePeriodSeconds }}
+    {{- end }}
 
   llap:
     enabled: {{ .Values.cluster.llap.enabled }}
@@ -119,6 +137,15 @@ spec:
     {{- if .Values.cluster.llap.extraVolumeMounts }}
     extraVolumeMounts:
       {{- toYaml .Values.cluster.llap.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.cluster.llap.autoscaling .Values.cluster.llap.autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .Values.cluster.llap.autoscaling.minReplicas }}
+      scaleUpThreshold: {{ .Values.cluster.llap.autoscaling.scaleUpThreshold }}
+      scaleDownThreshold: {{ .Values.cluster.llap.autoscaling.scaleDownThreshold }}
+      cooldownSeconds: {{ .Values.cluster.llap.autoscaling.cooldownSeconds }}
+      gracePeriodSeconds: {{ .Values.cluster.llap.autoscaling.gracePeriodSeconds }}
     {{- end }}
     {{- end }}
 
@@ -145,6 +172,15 @@ spec:
     {{- if .Values.cluster.tezAm.extraVolumeMounts }}
     extraVolumeMounts:
       {{- toYaml .Values.cluster.tezAm.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.cluster.tezAm.autoscaling .Values.cluster.tezAm.autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .Values.cluster.tezAm.autoscaling.minReplicas }}
+      scaleUpThreshold: {{ .Values.cluster.tezAm.autoscaling.scaleUpThreshold }}
+      scaleDownThreshold: {{ .Values.cluster.tezAm.autoscaling.scaleDownThreshold }}
+      cooldownSeconds: {{ .Values.cluster.tezAm.autoscaling.cooldownSeconds }}
+      gracePeriodSeconds: {{ .Values.cluster.tezAm.autoscaling.gracePeriodSeconds }}
     {{- end }}
     {{- end }}
 

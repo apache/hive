@@ -18,39 +18,24 @@
 
 package org.apache.hive.kubernetes.operator.dependent.condition;
 
-import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 
 /**
- * Ready condition that checks whether the Metastore Deployment has the
- * desired number of ready replicas. Used to gate HiveServer2 Deployment.
+ * Activation condition for HiveServer2 autoscaling dependent resources.
+ * Returns true only when spec.hiveServer2.autoscaling.enabled is true.
  */
-public class MetastoreReadyCondition
-    implements Condition<Deployment, HiveCluster> {
+public class HiveServer2AutoscalingCondition
+    implements Condition<HasMetadata, HiveCluster> {
 
   @Override
   public boolean isMet(
-      DependentResource<Deployment, HiveCluster> dependentResource,
+      DependentResource<HasMetadata, HiveCluster> dependentResource,
       HiveCluster primary,
       Context<HiveCluster> context) {
-    if (!primary.getSpec().metastore().isEnabled()) {
-      return true;
-    }
-    // When autoscaling is enabled, wait for minReplicas (KEDA manages scaling beyond that).
-    // Without autoscaling, wait for all configured replicas.
-    int desiredReplicas;
-    if (primary.getSpec().metastore().autoscaling().isEnabled()) {
-      desiredReplicas = Math.max(1, primary.getSpec().metastore().autoscaling().minReplicas());
-    } else {
-      desiredReplicas = primary.getSpec().metastore().replicas();
-    }
-    return dependentResource.getSecondaryResource(primary, context)
-        .map(deployment -> deployment.getStatus() != null
-            && deployment.getStatus().getReadyReplicas() != null
-            && deployment.getStatus().getReadyReplicas() >= desiredReplicas)
-        .orElse(false);
+    return primary.getSpec().hiveServer2().autoscaling().isEnabled();
   }
 }

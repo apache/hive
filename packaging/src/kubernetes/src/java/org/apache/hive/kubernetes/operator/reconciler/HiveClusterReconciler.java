@@ -40,22 +40,37 @@ import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
 import org.apache.hive.kubernetes.operator.dependent.HadoopConfigMapDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServer2ConfigMapDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServer2DeploymentDependent;
+import org.apache.hive.kubernetes.operator.dependent.HiveServer2PdbDependent;
+import org.apache.hive.kubernetes.operator.dependent.HiveServer2HttpScaledObjectDependent;
+import org.apache.hive.kubernetes.operator.dependent.HiveServer2ScaledObjectDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServer2ServiceDependent;
 import org.apache.hive.kubernetes.operator.dependent.LlapConfigMapDependent;
+import org.apache.hive.kubernetes.operator.dependent.LlapPdbDependent;
+import org.apache.hive.kubernetes.operator.dependent.LlapScaledObjectDependent;
 import org.apache.hive.kubernetes.operator.dependent.LlapServiceDependent;
 import org.apache.hive.kubernetes.operator.dependent.LlapStatefulSetDependent;
 import org.apache.hive.kubernetes.operator.dependent.MetastoreConfigMapDependent;
 import org.apache.hive.kubernetes.operator.dependent.MetastoreDeploymentDependent;
+import org.apache.hive.kubernetes.operator.dependent.MetastorePdbDependent;
+import org.apache.hive.kubernetes.operator.dependent.MetastoreScaledObjectDependent;
 import org.apache.hive.kubernetes.operator.dependent.MetastoreServiceDependent;
 import org.apache.hive.kubernetes.operator.dependent.SchemaInitJobDependent;
 import org.apache.hive.kubernetes.operator.dependent.ScratchPvcDependent;
+import org.apache.hive.kubernetes.operator.dependent.TezAmPdbDependent;
+import org.apache.hive.kubernetes.operator.dependent.TezAmScaledObjectDependent;
 import org.apache.hive.kubernetes.operator.dependent.TezAmServiceDependent;
 import org.apache.hive.kubernetes.operator.dependent.TezAmStatefulSetDependent;
+import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2AutoscalingCondition;
+import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2MetricScalingCondition;
 import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2Precondition;
+import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2ScaleToZeroCondition;
+import org.apache.hive.kubernetes.operator.dependent.condition.LlapAutoscalingCondition;
 import org.apache.hive.kubernetes.operator.dependent.condition.LlapEnabledCondition;
+import org.apache.hive.kubernetes.operator.dependent.condition.MetastoreAutoscalingCondition;
 import org.apache.hive.kubernetes.operator.dependent.condition.MetastoreEnabledCondition;
 import org.apache.hive.kubernetes.operator.dependent.condition.MetastoreReadyCondition;
 import org.apache.hive.kubernetes.operator.dependent.condition.SchemaJobCompletedCondition;
+import org.apache.hive.kubernetes.operator.dependent.condition.TezAmAutoscalingCondition;
 import org.apache.hive.kubernetes.operator.dependent.condition.TezAmEnabledCondition;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterStatus;
@@ -102,7 +117,27 @@ import org.slf4j.LoggerFactory;
     @Dependent(name = "tezam-service", type = TezAmServiceDependent.class,
         activationCondition = TezAmEnabledCondition.class),
     @Dependent(name = "tezam-statefulset", type = TezAmStatefulSetDependent.class, dependsOn = {"hiveserver2-configmap",
-        "hadoop-configmap", "tezam-service", "scratch-pvc"}, activationCondition = TezAmEnabledCondition.class)})
+        "hadoop-configmap", "tezam-service", "scratch-pvc"}, activationCondition = TezAmEnabledCondition.class),
+    // --- Autoscaling: KEDA ScaledObjects (conditional) ---
+    @Dependent(name = "hs2-scaledobject", type = HiveServer2ScaledObjectDependent.class, dependsOn = {
+        "hiveserver2-deployment"}, activationCondition = HiveServer2MetricScalingCondition.class),
+    @Dependent(name = "hs2-httpso", type = HiveServer2HttpScaledObjectDependent.class, dependsOn = {
+        "hiveserver2-deployment"}, activationCondition = HiveServer2ScaleToZeroCondition.class),
+    @Dependent(name = "metastore-scaledobject", type = MetastoreScaledObjectDependent.class, dependsOn = {
+        "metastore-deployment"}, activationCondition = MetastoreAutoscalingCondition.class),
+    @Dependent(name = "llap-scaledobject", type = LlapScaledObjectDependent.class, dependsOn = {
+        "llap-statefulset"}, activationCondition = LlapAutoscalingCondition.class),
+    @Dependent(name = "tezam-scaledobject", type = TezAmScaledObjectDependent.class, dependsOn = {
+        "tezam-statefulset"}, activationCondition = TezAmAutoscalingCondition.class),
+    // --- Autoscaling: PodDisruptionBudgets (conditional) ---
+    @Dependent(name = "hs2-pdb", type = HiveServer2PdbDependent.class, dependsOn = {
+        "hiveserver2-deployment"}, activationCondition = HiveServer2AutoscalingCondition.class),
+    @Dependent(name = "metastore-pdb", type = MetastorePdbDependent.class, dependsOn = {
+        "metastore-deployment"}, activationCondition = MetastoreAutoscalingCondition.class),
+    @Dependent(name = "llap-pdb", type = LlapPdbDependent.class, dependsOn = {
+        "llap-statefulset"}, activationCondition = LlapAutoscalingCondition.class),
+    @Dependent(name = "tezam-pdb", type = TezAmPdbDependent.class, dependsOn = {
+        "tezam-statefulset"}, activationCondition = TezAmAutoscalingCondition.class)})
 public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
@@ -172,9 +207,13 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     // Metastore status
     boolean metastoreReady;
     if (resource.getSpec().metastore().isEnabled()) {
+      // When autoscaling, desired = minReplicas (KEDA manages beyond that)
+      int metastoreDesired = resource.getSpec().metastore().autoscaling().isEnabled()
+          ? Math.max(1, resource.getSpec().metastore().autoscaling().minReplicas())
+          : resource.getSpec().metastore().replicas();
       ComponentStatus metastoreStatus =
           buildComponentStatus(context, Deployment.class, resource.getMetadata().getName() + "-metastore",
-              resource.getSpec().metastore().replicas(),
+              metastoreDesired,
               d -> d.getStatus() != null && d.getStatus().getReadyReplicas() != null ?
                   d.getStatus().getReadyReplicas() :
                   0);
@@ -192,15 +231,17 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
           existingConditions));
     }
 
-    // HiveServer2 status
+    // HiveServer2 status — when scale-to-zero, 0/0 is a valid "ready" state (idle)
+    int hs2Desired = resource.getSpec().hiveServer2().autoscaling().isEnabled()
+        ? resource.getSpec().hiveServer2().autoscaling().minReplicas()
+        : resource.getSpec().hiveServer2().replicas();
     ComponentStatus hs2Status = buildComponentStatus(context, Deployment.class,
         resource.getMetadata().getName() + "-hiveserver2",
-        resource.getSpec().hiveServer2().replicas(),
+        hs2Desired,
         d -> d.getStatus() != null && d.getStatus().getReadyReplicas() != null ? d.getStatus().getReadyReplicas() : 0);
     status.setHiveServer2(hs2Status);
 
-    boolean hs2Ready =
-        hs2Status.getReadyReplicas() >= hs2Status.getDesiredReplicas() && hs2Status.getDesiredReplicas() > 0;
+    boolean hs2Ready = hs2Status.getReadyReplicas() >= hs2Status.getDesiredReplicas();
     conditions.add(buildCondition("HiveServer2Ready", hs2Ready ? "True" : "False",
         hs2Ready ? "DeploymentReady" : "DeploymentNotReady",
         hs2Ready ? "HiveServer2 is ready" : "HiveServer2 not yet ready",
@@ -208,17 +249,23 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
     // LLAP status (optional)
     if (resource.getSpec().llap().isEnabled()) {
+      int llapDesired = resource.getSpec().llap().autoscaling().isEnabled()
+          ? resource.getSpec().llap().autoscaling().minReplicas()
+          : resource.getSpec().llap().replicas();
       status.setLlap(buildComponentStatus(context, StatefulSet.class,
           resource.getMetadata().getName() + "-llap",
-          resource.getSpec().llap().replicas(),
+          llapDesired,
           s -> s.getStatus() != null && s.getStatus().getReadyReplicas() != null ?
               s.getStatus().getReadyReplicas() : 0));
     }
 
     // TezAM status (optional)
     if (resource.getSpec().tezAm().isEnabled()) {
+      int tezAmDesired = resource.getSpec().tezAm().autoscaling().isEnabled()
+          ? resource.getSpec().tezAm().autoscaling().minReplicas()
+          : resource.getSpec().tezAm().replicas();
       status.setTezAm(buildComponentStatus(context, StatefulSet.class, resource.getMetadata().getName() + "-tezam",
-          resource.getSpec().tezAm().replicas(),
+          tezAmDesired,
           s -> s.getStatus() != null &&
               s.getStatus().getReadyReplicas() != null ? s.getStatus().getReadyReplicas() : 0));
     }

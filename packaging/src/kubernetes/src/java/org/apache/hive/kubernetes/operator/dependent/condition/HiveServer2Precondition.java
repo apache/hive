@@ -41,7 +41,14 @@ public class HiveServer2Precondition implements Condition<Deployment, HiveCluste
       return true;
     }
 
-    int desiredReplicas = primary.getSpec().metastore().replicas();
+    // When autoscaling is enabled, wait for minReplicas (KEDA manages scaling beyond that).
+    // Without autoscaling, wait for all configured replicas.
+    int desiredReplicas;
+    if (primary.getSpec().metastore().autoscaling().isEnabled()) {
+      desiredReplicas = Math.max(1, primary.getSpec().metastore().autoscaling().minReplicas());
+    } else {
+      desiredReplicas = primary.getSpec().metastore().replicas();
+    }
     return context.getSecondaryResources(Deployment.class).stream()
         .filter(d -> d.getMetadata().getName().equals(primary.getMetadata().getName() + "-metastore"))
         .findFirst()

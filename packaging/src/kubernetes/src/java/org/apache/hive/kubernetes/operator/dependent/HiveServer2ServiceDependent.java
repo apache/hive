@@ -48,6 +48,9 @@ public class HiveServer2ServiceDependent
     int thriftPort = ConfigUtils.getInt(hs2.configOverrides(),
         ConfigUtils.HIVE_SERVER2_THRIFT_PORT_KEY,
         null, ConfigUtils.HIVE_SERVER2_THRIFT_PORT_DEFAULT);
+    int httpPort = ConfigUtils.getInt(hs2.configOverrides(),
+        ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_KEY,
+        null, ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_DEFAULT);
     int webUiPort = ConfigUtils.getInt(hs2.configOverrides(),
         ConfigUtils.HIVE_SERVER2_WEBUI_PORT_KEY,
         null, ConfigUtils.HIVE_SERVER2_WEBUI_PORT_DEFAULT);
@@ -67,6 +70,11 @@ public class HiveServer2ServiceDependent
             .withName("thrift")
             .withPort(thriftPort)
             .withTargetPort(new IntOrString(thriftPort))
+          .endPort()
+          .addNewPort()
+            .withName("http")
+            .withPort(httpPort)
+            .withTargetPort(new IntOrString(httpPort))
           .endPort()
           .addNewPort()
             .withName("webui")

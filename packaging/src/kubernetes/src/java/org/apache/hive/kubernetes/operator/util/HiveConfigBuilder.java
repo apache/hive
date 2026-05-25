@@ -60,6 +60,12 @@ public final class HiveConfigBuilder {
     props.put(ConfigUtils.HIVE_METASTORE_WAREHOUSE_KEY,
         spec.metastore().warehouseDir());
     props.put(ConfigUtils.HIVE_SERVER2_ENABLE_DOAS_KEY, "false");
+    props.put(ConfigUtils.HIVE_SERVER2_TRANSPORT_MODE_KEY,
+        ConfigUtils.HIVE_SERVER2_TRANSPORT_MODE_DEFAULT);
+    props.put(ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_KEY,
+        String.valueOf(ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_DEFAULT));
+    props.put(ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PATH_KEY,
+        ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PATH_DEFAULT);
     props.put(ConfigUtils.HIVE_TEZ_EXEC_INPLACE_PROGRESS_KEY, "false");
     props.put(ConfigUtils.HIVE_TEZ_EXEC_SUMMARY_KEY, "true");
     props.put(ConfigUtils.HIVE_JAR_DIRECTORY_KEY, "/tmp");
@@ -93,6 +99,14 @@ public final class HiveConfigBuilder {
       props.put(ConfigUtils.TEZ_LOCAL_MODE_KEY, "true");
       props.put(ConfigUtils.TEZ_AM_FRAMEWORK_MODE_KEY, "LOCAL");
       props.put("mapreduce.framework.name", "local");
+    }
+
+    // Enable JMX metrics when autoscaling is active.
+    // The Prometheus JMX Exporter agent (added by the operator) reads JMX MBeans
+    // and exposes them in Prometheus text format at /metrics on the metrics port.
+    if (spec.hiveServer2().autoscaling().isEnabled()) {
+      props.put("hive.server2.metrics.enabled", "true");
+      props.put("hive.server2.metrics.reporter", "JMX");
     }
 
     if (spec.hiveServer2().configOverrides() != null) {
@@ -163,6 +177,14 @@ public final class HiveConfigBuilder {
       if (db.username() != null) {
         props.put(ConfigUtils.METASTORE_CONNECTION_USER_KEY, db.username());
       }
+    }
+
+    // Enable JMX metrics when autoscaling is active.
+    // The Prometheus JMX Exporter agent reads JMX MBeans and exposes them
+    // in Prometheus text format at /metrics on the metrics port.
+    if (metastore.autoscaling().isEnabled()) {
+      props.put("metastore.metrics.enabled", "true");
+      props.put("metastore.metrics.reporter", "JMX");
     }
 
     if (metastore.configOverrides() != null) {
