@@ -625,7 +625,15 @@ public class Table implements Serializable {
       return tablePartCols;
     }
     if (isTableTypeSet() && hasNonNativePartitionSupport()) {
-      tablePartCols = getStorageHandler().getPartitionKeys(this);
+      List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
+      for (FieldSchema partCol : partCols) {
+        FieldSchema storageSchemaField = getFieldSchemaByName(partCol.getName());
+        String storageSchemaComment = storageSchemaField.getComment();
+        if (storageSchemaComment != null) {
+          partCol.setComment(storageSchemaComment);
+        }
+      }
+      tablePartCols = partCols;
     } else {
       tablePartCols = getNativePartCols();
     }
