@@ -12020,6 +12020,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         deserializer.handleJobLevelConfiguration(conf);
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
+        Set<String> partCols = tab.hasNonNativePartitionSupport() ?
+            Sets.newHashSet(tab.getPartColNames()) : Collections.emptySet();
         for (int i = 0; i < fields.size(); i++) {
           /**
            * if the column is a skewed column, use ColumnInfo accordingly
@@ -12027,6 +12029,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ColumnInfo colInfo = new ColumnInfo(fields.get(i).getFieldName(),
               TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
                   .getFieldObjectInspector()), alias, false);
+          if (partCols.contains(colInfo.getInternalName())) {
+            colInfo.setHiddenPartitionCol(true);
+          }
           colInfo.setSkewedCol(isSkewedCol(alias, qb, fields.get(i).getFieldName()));
           rwsch.put(alias, fields.get(i).getFieldName(), colInfo);
         }
@@ -12035,7 +12040,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       // Hack!! - refactor once the metadata APIs with types are ready
       // Finally add the partitioning columns
-      for (FieldSchema partCol : tab.getPartCols()) {
+      List<FieldSchema> partKeys = Objects.requireNonNullElse(tab.getPartitionKeys(),new ArrayList<>());
+      for (FieldSchema partCol : partKeys) {
         LOG.trace("Adding partition col: " + partCol);
         rwsch.put(alias, partCol.getName(), new ColumnInfo(partCol.getName(),
             TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true));

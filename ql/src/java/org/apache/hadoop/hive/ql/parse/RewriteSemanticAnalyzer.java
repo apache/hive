@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -117,9 +118,9 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
    */
   protected void checkValidSetClauseTarget(ASTNode colName, Table targetTable) throws SemanticException {
     String columnName = normalizeColName(colName.getText());
-
+    List<FieldSchema> partKeys = Objects.requireNonNullElse(targetTable.getPartitionKeys(), new ArrayList<>());
     // Make sure this isn't one of the partitioning columns, that's not supported.
-    for (FieldSchema fschema : targetTable.getPartCols()) {
+    for (FieldSchema fschema : partKeys) {
       if (fschema.getName().equalsIgnoreCase(columnName)) {
         throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_PART_VALUE.getMsg());
       }
@@ -129,7 +130,7 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
       throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_BUCKET_VALUE, columnName);
     }
     boolean foundColumnInTargetTable = false;
-    for (FieldSchema col : targetTable.getCols()) {
+    for (FieldSchema col : targetTable.getStorageSchemaCols()) {
       if (columnName.equalsIgnoreCase(col.getName())) {
         foundColumnInTargetTable = true;
         break;
