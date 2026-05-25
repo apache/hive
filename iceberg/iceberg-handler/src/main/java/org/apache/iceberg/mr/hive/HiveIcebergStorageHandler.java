@@ -2151,6 +2151,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       List<FieldSchema> partCols = hmsTable.getPartCols();
       return partCols != null && !partCols.isEmpty();
     }
+    if (hmsTable.getMetaTable() != null) {
+      return false;
+    }
     if (!hmsTable.getTTable().isSetId()) {
       return false;
     }
@@ -2299,6 +2302,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
       List<FieldSchema> partCols = hmsTable.getPartCols();
       return partCols != null ? partCols : Collections.emptyList();
+    }
+    if (hmsTable.getMetaTable() != null) {
+      return Collections.emptyList();
     }
     if (!hmsTable.getTTable().isSetId()) {
       return Collections.emptyList();

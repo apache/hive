@@ -176,7 +176,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
             && table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
           String columnType = table.getFieldSchemaByName(column).getType();
           generateEventOperatorPlan(ctx, parseContext, ts, column, columnType, ctx.parent);
-        } else if (table != null && table.isPartitionKey(column) && !nonEquiJoin) {
+        } else if (table != null && table.isPartitionKey(column) && !nonEquiJoin
+            && !table.hasNonNativePartitionSupport()) {
           String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
