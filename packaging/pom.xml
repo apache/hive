@@ -27,6 +27,9 @@
     <hive.path.to.root>..</hive.path.to.root>
     <hive.jdbc.driver.jar>apache-hive-${project.version}-jdbc.jar</hive.jdbc.driver.jar>
   </properties>
+  <modules>
+    <module>src/kubernetes</module>
+  </modules>
   <profiles>
     <profile>
       <id>dist</id>
@@ -271,6 +274,10 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>kubernetes</id>
+      <!-- Builds the operator Docker image; the module itself is compiled unconditionally -->
     </profile>
   </profiles>
   <dependencies>
