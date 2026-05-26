@@ -164,7 +164,12 @@ public abstract class ParquetRecordReaderBase {
       legacyConversionEnabled =
           DataWritableReadSupport.getZoneConversionLegacy(fileMetaData.getKeyValueMetaData(), conf);
 
-    MessageType requestedSchema = readContext.getRequestedSchema();
+    split = buildParquetInputSplit(finalPath, readContext.getRequestedSchema());
+    return split;
+  }
+
+  private ParquetInputSplit buildParquetInputSplit(final Path finalPath, final MessageType requestedSchema)
+      throws IOException {
     long filteredSize = 0;
     for (BlockMetaData block : filteredBlocks) {
       for (ColumnChunkMetaData column : block.getColumns()) {
@@ -178,9 +183,8 @@ public abstract class ParquetRecordReaderBase {
     for (int i = 0; i < rowGroupOffsets.length; i++) {
       rowGroupOffsets[i] = filteredBlocks.get(i).getStartingPos();
     }
-    split = new ParquetInputSplit(finalPath, splitStart, filteredSize, splitLength,
+    return new ParquetInputSplit(finalPath, fileSplit.getStart(), filteredSize, fileSplit.getLength(),
         fileSplit.getLocations(), rowGroupOffsets);
-    return split;
   }
 
   @SuppressWarnings("deprecation")
