@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl.table;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -75,7 +78,8 @@ public final class AlterTableUtils {
   }
 
   public static boolean isFullPartitionSpec(Table table, Map<String, String> partitionSpec) {
-    for (FieldSchema partitionCol : table.getPartCols()) {
+    List<FieldSchema> partKeys = Objects.requireNonNullElse(table.getPartitionKeys(), new ArrayList<>());
+    for (FieldSchema partitionCol : partKeys) {
       if (partitionSpec.get(partitionCol.getName()) == null) {
         return false;
       }
