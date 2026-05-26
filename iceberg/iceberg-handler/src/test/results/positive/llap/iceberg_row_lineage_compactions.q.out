@@ -135,7 +135,7 @@ POSTHOOK: query: alter table part_tbl set tblproperties ('compactor.threshold.ta
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: ice_comp_all@part_tbl
 POSTHOOK: Output: ice_comp_all@part_tbl
-Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: merge into part_tbl t
 using (select 1 as id, 'p1_upd' as data, 10 as dept_id) s
 on t.dept_id = s.dept_id and t.id = s.id

@@ -276,6 +276,15 @@ public class ColumnStatsAutoGatherContext {
       columnExprMap.put(internalName, exprNodeDesc);
       signature.add(selRSSig.get(selRSIdx));
     }
+    int dynPartsCount=0;
+    if (partSpec != null) {
+      for (Map.Entry<String, String> entry : partSpec.entrySet()) {
+        if (entry.getValue() == null) {
+          dynPartsCount++;
+        }
+      }
+    }
+    boolean inputRRHasStaticParts = (this.columns.size() + dynPartsCount < columns.size());
     // if there is any partition column (in static partition or dynamic
     // partition or mixed case)
     int dynamicPartBegin = 0;
@@ -284,6 +293,8 @@ public class ColumnStatsAutoGatherContext {
       TypeInfo srcType;
       String partColName = partitionColumns.get(i).getName();
       int index = tbl.getColumnIndexByName(partColName);
+      ColumnInfo col;
+
       // 2. deal with static partition columns
       if (partSpec != null && partSpec.containsKey(partColName)
           && partSpec.get(partColName) != null ) {
@@ -291,15 +302,20 @@ public class ColumnStatsAutoGatherContext {
           throw new SemanticException(
               "Dynamic partition columns should not come before static partition columns.");
         }
-        exprNodeDesc = new ExprNodeConstantDesc(partSpec.get(partColName));
+        if (inputRRHasStaticParts) {
+          col = columns.get(index + dynamicPartBegin);
+          exprNodeDesc = new ExprNodeColumnDesc(col);
+        } else {
+          exprNodeDesc = new ExprNodeConstantDesc(partSpec.get(partColName));
+        }
         srcType = exprNodeDesc.getTypeInfo();
-        if (!tbl.hasNonNativePartitionSupport()) {
+        if (!inputRRHasStaticParts) {
           dynamicPartBegin--;
         }
       }
       // 3. dynamic partition columns
       else {
-        ColumnInfo col = columns.get(index + dynamicPartBegin);
+        col = columns.get(index + dynamicPartBegin);
         exprNodeDesc = new ExprNodeColumnDesc(col);
         srcType = col.getType();
       }
