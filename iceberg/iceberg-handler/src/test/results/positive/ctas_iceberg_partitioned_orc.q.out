@@ -273,8 +273,6 @@ POSTHOOK: query: describe formatted tbl_ice
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_ice
 # col_name            	data_type           	comment             
-a                   	int                 	                    
-b                   	string              	                    
 c                   	int                 	                    
 	 	 
 # Partition Information	 	 
