@@ -120,7 +120,8 @@ public abstract class ParquetRecordReaderBase {
       serDeStats.setRawDataSize(serDeStats.getRawDataSize() + bmd.getTotalByteSize());
     }
 
-    schemaSize = readContext.getRequestedSchema().getFieldCount();
+    schemaSize = DataWritableReadSupport.getTableParquetSchema(jobConf, fileMetaData.getSchema(),
+        readContext.getReadSupportMetadata()).getFieldCount();
     final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
     final long splitStart = fileSplit.getStart();
     final long splitLength = fileSplit.getLength();
