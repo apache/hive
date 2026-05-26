@@ -74,6 +74,8 @@ a                   	int
 b                   	string              	                    
 c                   	int                 	                    
 d                   	string              	                    
+c                   	int                 	Transform: identity 
+d                   	string              	Transform: identity 
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

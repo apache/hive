@@ -85,7 +85,7 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.testice1000
                         Select Operator
-                          expressions: _col0 (type: int), _col1 (type: string)
+                          expressions: _col0 (type: int), 'rtyuiy' (type: string)
                           outputColumnNames: a, b
                           Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -162,7 +162,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testice1000
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
