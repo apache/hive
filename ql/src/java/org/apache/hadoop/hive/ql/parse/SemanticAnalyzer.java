@@ -5166,7 +5166,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     List<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
     colListPos = 0;
-    List<FieldSchema> targetTableCols = target != null ? target.getCols() : partition.getCols();
+    List<FieldSchema> targetTableCols = target != null ? target.getStorageSchemaCols() : partition.getCols();
     List<String> targetTableColNames = new ArrayList<String>();
     List<TypeInfo> targetTableColTypes = new ArrayList<TypeInfo>();
     for(FieldSchema fs : targetTableCols) {
