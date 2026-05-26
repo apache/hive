@@ -240,7 +240,7 @@ public class TestHiveIcebergOutputCommitter {
     tableDesc.getProperties().setProperty(InputFormatConfig.CATALOG_NAME, table.properties()
             .get(InputFormatConfig.CATALOG_NAME));
     HiveIcebergStorageHandler.overlayTableProperties(conf, tableDesc, propMap);
-    propMap.forEach((key, value) -> conf.set(key, value));
+    propMap.forEach(conf::set);
     return conf;
   }
 

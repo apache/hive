@@ -1657,10 +1657,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @VisibleForTesting
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
-
-    Maps.fromProperties(props).entrySet().stream()
-      .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
-      .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+    props.forEach((key, value) -> map.putIfAbsent((String) key, (String) value));
 
     String location;
     Schema schema;

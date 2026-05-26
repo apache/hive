@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -484,8 +485,7 @@ public class AcidUtils {
    * @return true, if the tblProperties contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Properties tblProperties) {
-    return tblProperties != null &&
-        StringUtils.isNotBlank((String) tblProperties.get(COMPACTOR_TABLE_PROPERTY));
+    return tblProperties != null && isCompactionTable(tblProperties::getProperty);
   }
 
   /**
@@ -494,7 +494,11 @@ public class AcidUtils {
    * @return true, if the parameters contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Map<String, String> parameters) {
-    return StringUtils.isNotBlank(parameters.get(COMPACTOR_TABLE_PROPERTY));
+    return isCompactionTable(parameters::get);
+  }
+
+  private static boolean isCompactionTable(UnaryOperator<String> props) {
+    return StringUtils.isNotBlank(props.apply(COMPACTOR_TABLE_PROPERTY));
   }
 
   /**
@@ -762,7 +766,7 @@ public class AcidUtils {
       AcidOperationalProperties obj = new AcidOperationalProperties();
       String[] options = propertiesStr.split("\\|");
       for (String option : options) {
-        if (option.trim().length() == 0) continue; // ignore empty strings
+        if (option.trim().isEmpty()) continue; // ignore empty strings
         switch (option) {
           case SPLIT_UPDATE_STRING:
             obj.setSplitUpdate(true);
@@ -1953,17 +1957,17 @@ public class AcidUtils {
   }
 
   public static boolean isTablePropertyTransactional(Properties props) {
-    String resultStr = (String) props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (resultStr == null) {
-      resultStr = (String) props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-    return Boolean.parseBoolean(resultStr);
+    return isTablePropertyTransactional(props::getProperty);
   }
 
   public static boolean isTablePropertyTransactional(Map<String, String> parameters) {
-    String resultStr = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    return isTablePropertyTransactional(parameters::get);
+  }
+
+  private static boolean isTablePropertyTransactional(UnaryOperator<String> props) {
+    String resultStr = props.apply(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     if (resultStr == null) {
-      resultStr = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+      resultStr = props.apply(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
     }
     return Boolean.parseBoolean(resultStr);
   }
@@ -2205,16 +2209,19 @@ public class AcidUtils {
    * @return true if table is an INSERT_ONLY table, false otherwise
    */
   public static boolean isInsertOnlyTable(Map<String, String> params) {
-    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp);
+    return isInsertOnlyTable(params::get);
   }
 
   public static boolean isInsertOnlyTable(Table table) {
-    return isTransactionalTable(table) && getAcidOperationalProperties(table).isInsertOnly();
+    return isTransactionalTable(table) && isInsertOnlyTable(table::getProperty);
   }
 
   public static boolean isInsertOnlyTable(Properties params) {
-    String transactionalProp = (String) params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return isInsertOnlyTable(params::getProperty);
+  }
+
+  private static boolean isInsertOnlyTable(UnaryOperator<String> props) {
+    String transactionalProp = props.apply(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     return INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp);
   }
 
