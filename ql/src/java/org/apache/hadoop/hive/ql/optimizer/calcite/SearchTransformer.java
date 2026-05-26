@@ -33,10 +33,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+import com.google.common.collect.Range;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A class that transforms a call to the internal {@link SqlStdOperatorTable#SEARCH} operator into an equivalent
@@ -82,11 +85,23 @@ public class SearchTransformer<C extends Comparable<C>> {
     }
 
     if (sarg.isComplementedPoints()) {
-      // Generate 'ref <> value1 AND ... AND ref <> valueN'
-      final List<RexNode> list = sarg.rangeSet.complement().asRanges().stream().map(
-          range -> rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref,
-              rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))).toList();
-      orList.add(RexUtil.composeConjunction(rexBuilder, list));
+      Set<Range<C>> rangeSet = sarg.rangeSet.complement().asRanges();
+      if (rangeSet.size() == 1) {
+        // Generate ref <> value
+        Range<C> range = rangeSet.iterator().next();
+        RexNode notEq = rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref,
+            rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true));
+        orList.add(notEq);
+      } else {
+        // Generate NOT (ref IN (value1, value2,... valueN)); which is better for partition pruning and CNF distribution
+        List<RexNode> notInLiterals = rangeSet.stream().map(
+            range -> rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))
+            .toList();
+        List<RexNode> operands = new ArrayList<>(rangeSet.size() + 1);
+        operands.add(ref);
+        operands.addAll(notInLiterals);
+        orList.add(rexBuilder.makeCall(SqlStdOperatorTable.NOT, rexBuilder.makeCall(HiveIn.INSTANCE, operands)));
+      }
     } else {
       RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);
       RangeSets.forEach(sarg.rangeSet, consumer);
