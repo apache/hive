@@ -138,7 +138,6 @@ POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -225,7 +224,6 @@ POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
