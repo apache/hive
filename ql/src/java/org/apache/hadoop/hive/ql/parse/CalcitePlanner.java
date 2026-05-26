@@ -3170,8 +3170,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
           fullyQualifiedTabName.add(tabMetaData.getTableName());
-          if (tabMetaData.getSnapshotRef() != null) {
-            fullyQualifiedTabName.add(tabMetaData.getSnapshotRef());
+          // Include time-travel qualifier (snapshotRef / asOfVersion / asOfTimestamp)
+          // in the table identity so two scans at different snapshots stay distinct.
+          String qualifier = tabMetaData.getQualifier();
+          if (!qualifier.isEmpty()) {
+            fullyQualifiedTabName.add(qualifier);
           }
           optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
