@@ -149,6 +149,13 @@ final class CommandAuthorizerV2 {
         }
       }
 
+      if ((privObject.getTyp() == Type.PARTITION || privObject.getTyp() == Type.DUMMYPARTITION)
+          && privObject instanceof ReadEntity
+          && isPartitionAccessedViaRegularView((ReadEntity) privObject, privObjects)) {
+        // skip Partition Entity auth for regular view
+        continue;
+      }
+
       addHivePrivObject(privObject, tableName2Cols, hivePrivobjs, hiveOpType);
     }
     return hivePrivobjs;
@@ -178,6 +185,79 @@ final class CommandAuthorizerV2 {
       }
     }
     return false;
+  }
+
+  /**
+   * Returns true when a PARTITION entity should not produce its own privilege object
+   * because access is already covered by a view's TABLE_OR_VIEW object.
+   */
+  private static boolean isPartitionAccessedViaRegularView(ReadEntity partitionEntity,
+      List<? extends Entity> allEntities) {
+    if (hasDeferredViewParent(partitionEntity)) {
+      return false;
+    }
+    if (hasRegularViewParent(partitionEntity)) {
+      return true;
+    }
+    Table partTable = partitionEntity.getTable();
+    if (partTable == null) {
+      return false;
+    }
+    for (Entity entity : allEntities) {
+      if (!(entity instanceof ReadEntity) || entity.getTyp() != Type.TABLE) {
+        continue;
+      }
+      ReadEntity tableEntity = (ReadEntity) entity;
+      if (tableEntity.isDirect() || tableEntity.getTable() == null) {
+        continue;
+      }
+      Table table = tableEntity.getTable();
+      if (!partTable.getDbName().equals(table.getDbName())
+          || !partTable.getTableName().equals(table.getTableName())) {
+        continue;
+      }
+      if (hasDeferredViewParent(tableEntity)) {
+        return false;
+      }
+      if (hasRegularViewParent(tableEntity)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasDeferredViewParent(ReadEntity entity) {
+    Set<ReadEntity> parents = entity.getParents();
+    if (parents == null || parents.isEmpty()) {
+      return false;
+    }
+    for (ReadEntity parent : parents) {
+      if (parent.getTyp() == Type.TABLE && parent.getTable() != null
+          && isDeferredAuthView(parent.getTable())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasRegularViewParent(ReadEntity entity) {
+    Set<ReadEntity> parents = entity.getParents();
+    if (parents == null || parents.isEmpty()) {
+      return false;
+    }
+    for (ReadEntity parent : parents) {
+      if (parent.getTyp() == Type.TABLE && parent.getTable() != null
+          && isView(parent.getTable()) && !isDeferredAuthView(parent.getTable())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean isView(Table t) {
+    String tableType = t.getTTable().getTableType();
+    return TableType.MATERIALIZED_VIEW.name().equals(tableType)
+        || TableType.VIRTUAL_VIEW.name().equals(tableType);
   }
 
   private static void addHivePrivObject(Entity privObject, Map<String, List<String>> tableName2Cols,
