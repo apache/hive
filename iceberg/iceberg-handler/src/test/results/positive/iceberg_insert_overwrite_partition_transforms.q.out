@@ -64,7 +64,7 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_year
                         Select Operator
-                          expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                          expressions: _col0 (type: bigint), _col1 (type: int), CAST( '1999-12-05' AS DATE) (type: date)
                           outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -181,7 +181,7 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_year
                         Select Operator
-                          expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                          expressions: _col0 (type: bigint), _col1 (type: int), CAST( '1999-12-26' AS DATE) (type: date)
                           outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -298,7 +298,7 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_year
                         Select Operator
-                          expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                          expressions: _col0 (type: bigint), _col1 (type: int), CAST( '1999-12-12' AS DATE) (type: date)
                           outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -417,7 +417,7 @@ STAGE PLANS:
                           serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                           name: default.ice_parquet_date_transform_year
                     Select Operator
-                      expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                      expressions: _col0 (type: bigint), _col1 (type: int), CAST( '1999-12-13' AS DATE) (type: date)
                       outputColumnNames: bigintcol, intcol, pcol
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
@@ -527,7 +527,7 @@ STAGE PLANS:
                           serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                           name: default.ice_parquet_date_transform_year
                     Select Operator
-                      expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                      expressions: _col0 (type: bigint), _col1 (type: int), CAST( '1999-12-02' AS DATE) (type: date)
                       outputColumnNames: bigintcol, intcol, pcol
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
@@ -606,7 +606,6 @@ POSTHOOK: Input: default@ice_parquet_date_transform_year
 # col_name            	data_type           	comment             
 bigintcol           	bigint              	                    
 intcol              	int                 	                    
-pcol                	date                	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -734,8 +733,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_month
                         Select Operator
-                          expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
-                          outputColumnNames: bigintcol, pcol, intcol
+                          expressions: _col0 (type: bigint), _col2 (type: int), CAST( '1999-12-31' AS DATE) (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -851,8 +850,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_month
                         Select Operator
-                          expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
-                          outputColumnNames: bigintcol, pcol, intcol
+                          expressions: _col0 (type: bigint), _col2 (type: int), CAST( '1999-12-26' AS DATE) (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -968,8 +967,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_month
                         Select Operator
-                          expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
-                          outputColumnNames: bigintcol, pcol, intcol
+                          expressions: _col0 (type: bigint), _col2 (type: int), CAST( '1999-12-12' AS DATE) (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1087,8 +1086,8 @@ STAGE PLANS:
                           serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                           name: default.ice_parquet_date_transform_month
                     Select Operator
-                      expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
-                      outputColumnNames: bigintcol, pcol, intcol
+                      expressions: _col0 (type: bigint), _col2 (type: int), CAST( '1999-12-13' AS DATE) (type: date)
+                      outputColumnNames: bigintcol, intcol, pcol
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1197,8 +1196,8 @@ STAGE PLANS:
                           serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                           name: default.ice_parquet_date_transform_month
                     Select Operator
-                      expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
-                      outputColumnNames: bigintcol, pcol, intcol
+                      expressions: _col0 (type: bigint), _col2 (type: int), CAST( '1999-12-02' AS DATE) (type: date)
+                      outputColumnNames: bigintcol, intcol, pcol
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1275,7 +1274,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_parquet_date_transform_month
 # col_name            	data_type           	comment             
 bigintcol           	bigint              	                    
-pcol                	date                	                    
 intcol              	int                 	                    
 	 	 
 # Partition Information	 	 
@@ -1404,8 +1402,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_day
                         Select Operator
-                          expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
-                          outputColumnNames: pcol, bigintcol, intcol
+                          expressions: _col1 (type: bigint), _col2 (type: int), CAST( '1999-12-31' AS DATE) (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1521,8 +1519,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_day
                         Select Operator
-                          expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
-                          outputColumnNames: pcol, bigintcol, intcol
+                          expressions: _col1 (type: bigint), _col2 (type: int), CAST( '1999-12-26' AS DATE) (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1638,8 +1636,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_day
                         Select Operator
-                          expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
-                          outputColumnNames: pcol, bigintcol, intcol
+                          expressions: _col1 (type: bigint), _col2 (type: int), CAST( '1999-12-12' AS DATE) (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1761,8 +1759,8 @@ STAGE PLANS:
                           serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                           name: default.ice_parquet_date_transform_day
                     Select Operator
-                      expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
-                      outputColumnNames: pcol, bigintcol, intcol
+                      expressions: _col1 (type: bigint), _col2 (type: int), CAST( '1999-12-13' AS DATE) (type: date)
+                      outputColumnNames: bigintcol, intcol, pcol
                       Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1871,8 +1869,8 @@ STAGE PLANS:
                           serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                           name: default.ice_parquet_date_transform_day
                     Select Operator
-                      expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
-                      outputColumnNames: pcol, bigintcol, intcol
+                      expressions: _col1 (type: bigint), _col2 (type: int), CAST( '1999-12-02' AS DATE) (type: date)
+                      outputColumnNames: bigintcol, intcol, pcol
                       Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -1948,7 +1946,6 @@ POSTHOOK: query: describe formatted ice_parquet_date_transform_day
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_parquet_date_transform_day
 # col_name            	data_type           	comment             
-pcol                	date                	                    
 bigintcol           	bigint              	                    
 intcol              	int                 	                    
 	 	 
@@ -2100,8 +2097,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_truncate
                         Select Operator
-                          expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
-                          outputColumnNames: pcol, bigintcol, intcol
+                          expressions: _col1 (type: bigint), _col2 (type: int), 'gfhutjkgkd' (type: string)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -2217,8 +2214,8 @@ STAGE PLANS:
                               serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                               name: default.ice_parquet_date_transform_truncate
                         Select Operator
-                          expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
-                          outputColumnNames: pcol, bigintcol, intcol
+                          expressions: _col1 (type: bigint), _col2 (type: int), 'gfhyuitogh' (type: string)
+                          outputColumnNames: bigintcol, intcol, pcol
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -2326,8 +2323,8 @@ STAGE PLANS:
                           serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                           name: default.ice_parquet_date_transform_truncate
                     Select Operator
-                      expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
-                      outputColumnNames: pcol, bigintcol, intcol
+                      expressions: _col1 (type: bigint), _col2 (type: int), 'gfhuiyoprj' (type: string)
+                      outputColumnNames: bigintcol, intcol, pcol
                       Statistics: Num rows: 2 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
@@ -2403,7 +2400,6 @@ POSTHOOK: query: describe formatted ice_parquet_date_transform_truncate
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_parquet_date_transform_truncate
 # col_name            	data_type           	comment             
-pcol                	string              	                    
 bigintcol           	bigint              	                    
 intcol              	int                 	                    
 	 	 

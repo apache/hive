@@ -909,7 +909,7 @@ public class DDLPlanUtils {
 
   private String getColumns(Table table) {
     List<String> columnDescs = new ArrayList<>();
-    for (FieldSchema column : table.getCols()) {
+    for (FieldSchema column : table.getStorageSchemaCols()) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
       String columnDesc = "  " + unparseIdentifier(column.getName()) + " " + columnType;
       if (column.getComment() != null) {
