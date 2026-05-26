@@ -192,12 +192,12 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
               }
             }
             switch (newOperands.size()) {
-              case 1:
-                return rexBuilder.makeLiteral(false);
-              case 2:
-                return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, newOperands);
-              default:
-                return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
+            case 1:
+              return rexBuilder.makeLiteral(false);
+            case 2:
+              return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, newOperands);
+            default:
+              return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
             }
           }
         } else if (call.getOperands().get(0).getKind() == SqlKind.ROW) {
@@ -276,7 +276,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
           }
         }
       } else if (call.getKind() == SqlKind.SEARCH) {
-        RexNode expanded = new SearchTransformer<> (rexBuilder, call, RexUnknownAs.UNKNOWN).transform();
+        RexNode expanded = new SearchTransformer<>(rexBuilder, call, RexUnknownAs.UNKNOWN).transform();
         RexNode processed = expanded.accept(this);
         if (expanded != processed) {
           return processed;
