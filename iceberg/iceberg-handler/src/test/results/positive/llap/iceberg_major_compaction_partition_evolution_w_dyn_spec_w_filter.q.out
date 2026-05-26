@@ -225,8 +225,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 event_id            	int                 	                    
-event_time          	timestamp with local time zone	                    
-event_src           	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -336,8 +334,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 event_id            	int                 	                    
-event_time          	timestamp with local time zone	                    
-event_src           	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

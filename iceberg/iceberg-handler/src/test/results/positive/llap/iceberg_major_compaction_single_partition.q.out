@@ -177,9 +177,6 @@ POSTHOOK: Input: default@ice_orc_wo_evo
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
-city                	string              	                    
-registration_date   	date                	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -289,9 +286,6 @@ POSTHOOK: Input: default@ice_orc_wo_evo
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
-city                	string              	                    
-registration_date   	date                	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -408,9 +402,6 @@ POSTHOOK: Input: default@ice_orc_wo_evo
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
-city                	string              	                    
-registration_date   	date                	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

@@ -99,7 +99,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
           Table table;
           try {
             table = getDb().getTable(tableName);
-            for (FieldSchema fs : table.getCols()) {
+            for (FieldSchema fs : table.getStorageSchemaCols()) {
               TypeInfo columnType = TypeInfoUtils.getTypeInfoFromTypeString(fs.getType());
               rwsch.put(tableName.getTable(), fs.getName(), 
                   new ColumnInfo(fs.getName(), columnType, null, true));
