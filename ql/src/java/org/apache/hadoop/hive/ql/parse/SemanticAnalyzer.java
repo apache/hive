@@ -1683,7 +1683,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               "PTF invocation in a Join must have an alias"));
         }
 
-      } else if (isASTNodeLateralViewOrOuter(child)) {
+      } else if (isASTNodeLateralView(child)) {
         // SELECT * FROM src1 LATERAL VIEW udtf() AS myTable JOIN src2 ...
         // is not supported. Instead, the lateral view must be in a subquery
         // SELECT * FROM (SELECT * FROM src1 LATERAL VIEW udtf() AS myTable) a
@@ -1886,7 +1886,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           processTable(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
-        } else if (isASTNodeLateralViewOrOuter(frm)) {
+        } else if (isASTNodeLateralView(frm)) {
           queryProperties.setHasLateralViews(true);
           processLateralView(qb, frm);
         } else if (isJoinToken(frm)) {
@@ -15528,7 +15528,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param node AST node
    * @return true if node is of lateral view or lateral view outer; false otherwise.
    */
-  public static boolean isASTNodeLateralViewOrOuter(ASTNode node) {
+  public static boolean isASTNodeLateralView(ASTNode node) {
     return node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
         || node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER;
   }

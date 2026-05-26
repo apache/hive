@@ -187,6 +187,59 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       ListSink
 
+PREHOOK: query: explain ast
+select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+POSTHOOK: query: explain ast
+select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_LATERAL_VIEW_OUTER
+         TOK_SELECT
+            TOK_SELEXPR
+               TOK_FUNCTION
+                  explode
+                  TOK_TABLE_OR_COL
+                     value
+               a
+               TOK_TABALIAS
+                  C
+         TOK_TABREF
+            TOK_TABNAME
+               array_valued
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_DIR
+            TOK_TMP_FILE
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+      TOK_LIMIT
+         10
+
+PREHOOK: query: explain cbo
+select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(fetch=[10])
+  HiveProject(array_valued.key=[$0], array_valued.value=[$1], c.a=[$6])
+    HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) ARRAY value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) c.a)], outer=[true])
+      HiveTableScan(table=[[default, array_valued]], table:alias=[array_valued])
+
 PREHOOK: query: select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@array_valued
@@ -205,3 +258,110 @@ POSTHOOK: Input: default@array_valued
 409	["val_409","val_409"]	val_409
 255	NULL	NULL
 278	NULL	NULL
+PREHOOK: query: CREATE VIEW array_valued_view AS
+SELECT array_valued.key AS key, a
+FROM array_valued
+LATERAL VIEW OUTER explode(value) lv AS a
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@array_valued
+PREHOOK: Output: database:default
+PREHOOK: Output: default@array_valued_view
+POSTHOOK: query: CREATE VIEW array_valued_view AS
+SELECT array_valued.key AS key, a
+FROM array_valued
+LATERAL VIEW OUTER explode(value) lv AS a
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@array_valued
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@array_valued_view
+POSTHOOK: Lineage: array_valued_view.a SCRIPT [(array_valued)array_valued.FieldSchema(name:value, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: array_valued_view.key SIMPLE [(array_valued)array_valued.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN CBO
+SELECT key, a FROM array_valued_view limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+PREHOOK: Input: default@array_valued_view
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT key, a FROM array_valued_view limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+POSTHOOK: Input: default@array_valued_view
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(fetch=[10])
+  HiveProject(key=[$0], a=[$6])
+    HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) ARRAY value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) lv.a)], outer=[true])
+      HiveTableScan(table=[[default, array_valued]], table:alias=[array_valued])
+
+PREHOOK: query: EXPLAIN
+SELECT key, a FROM array_valued_view limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+PREHOOK: Input: default@array_valued_view
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT key, a FROM array_valued_view limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+POSTHOOK: Input: default@array_valued_view
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        TableScan
+          alias: array_valued
+          properties:
+            insideView TRUE
+          Lateral View Forward
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: key
+              Lateral View Join Operator
+                outputColumnNames: _col0, _col6
+                Limit
+                  Number of rows: 10
+                  Select Operator
+                    expressions: _col0 (type: string), _col6 (type: string)
+                    outputColumnNames: _col0, _col1
+                    ListSink
+            Select Operator
+              expressions: value (type: array<string>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                outer lateral view: true
+                Lateral View Join Operator
+                  outputColumnNames: _col0, _col6
+                  Limit
+                    Number of rows: 10
+                    Select Operator
+                      expressions: _col0 (type: string), _col6 (type: string)
+                      outputColumnNames: _col0, _col1
+                      ListSink
+
+PREHOOK: query: SELECT key, a FROM array_valued_view limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@array_valued
+PREHOOK: Input: default@array_valued_view
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, a FROM array_valued_view limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@array_valued
+POSTHOOK: Input: default@array_valued_view
+#### A masked pattern was here ####
+238	NULL
+86	NULL
+311	val_311
+311	val_311
+27	NULL
+165	NULL
+409	val_409
+409	val_409
+255	NULL
+278	NULL

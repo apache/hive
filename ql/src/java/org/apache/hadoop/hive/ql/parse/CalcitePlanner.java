@@ -2980,7 +2980,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         leftRel = aliasToRel.get(leftTableAlias);
       } else if (SemanticAnalyzer.isJoinToken(left)) {
         leftRel = genJoinLogicalPlan(qb, left, aliasToRel, outerNameToPosMap, outerRR);
-      } else if (isASTNodeLateralViewOrOuter(left)) {
+      } else if (isASTNodeLateralView(left)) {
         leftRel = genLateralViewPlans(qb, left, aliasToRel);
       } else {
         assert (false);
@@ -2994,7 +2994,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
         rightTableAlias = getTableAlias(right);
         rightRel = aliasToRel.get(rightTableAlias);
-      } else if (isASTNodeLateralViewOrOuter(right)) {
+      } else if (isASTNodeLateralView(right)) {
         rightRel = genLateralViewPlans(qb, right, aliasToRel);
       }  else {
         assert (false);
@@ -3374,7 +3374,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // next token is either the table alias name or another lateral view (which we will call
       // recursively)
-      RelNode inputRel = isASTNodeLateralViewOrOuter(next)
+      RelNode inputRel = isASTNodeLateralView(next)
           ? genLateralViewPlans(qb, next, aliasToRel)
           : aliasToRel.get(getTableAlias(next));
 

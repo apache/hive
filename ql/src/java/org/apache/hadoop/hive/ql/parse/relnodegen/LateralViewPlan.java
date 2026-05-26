@@ -128,7 +128,7 @@ public class LateralViewPlan {
     }
     ASTNode next = (ASTNode) lateralView.getChild(1);
     if (!TABLE_ALIAS_TOKEN_TYPES.contains(next.getToken().getType()) && 
-        !SemanticAnalyzer.isASTNodeLateralViewOrOuter(next)) {
+        !SemanticAnalyzer.isASTNodeLateralView(next)) {
       throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(), lateralView));
     }
