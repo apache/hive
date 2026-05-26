@@ -439,6 +439,20 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
   }
 
+  public static MessageType getTableParquetSchema(Configuration configuration, MessageType fileSchema,
+    Map<String, String> metadata) {
+    String columnNames = configuration.get(IOConstants.COLUMNS);
+    String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
+    if (columnNames != null && !columnNames.isEmpty() && columnTypes != null && !columnTypes.isEmpty()) {
+      return getRequestedSchemaForIndexAccess(
+          Boolean.parseBoolean(metadata.get(PARQUET_COLUMN_INDEX_ACCESS)),
+          getColumnNames(columnNames),
+          getColumnTypes(columnTypes),
+          fileSchema);
+    }
+    return MessageTypeParser.parseMessageType(metadata.get(HIVE_TABLE_AS_PARQUET_SCHEMA));
+  }
+
   private static MessageType getRequestedSchemaForIndexAccess(
     boolean indexAccess,
     List<String> columnNamesList,
@@ -536,19 +550,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       }
     }
 
-    MessageType tableSchema;
-    String columnNames = configuration.get(IOConstants.COLUMNS);
-    String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
-    if (columnNames != null && !columnNames.isEmpty() && columnTypes != null && !columnTypes.isEmpty()) {
-      tableSchema = getRequestedSchema(
-          Boolean.parseBoolean(metadata.get(PARQUET_COLUMN_INDEX_ACCESS)),
-          getColumnNames(columnNames),
-          getColumnTypes(columnTypes),
-          fileSchema, configuration);
-    } else {
-      tableSchema = MessageTypeParser.parseMessageType(metadata.get(HIVE_TABLE_AS_PARQUET_SCHEMA));
-    }
-
+    MessageType tableSchema = getTableParquetSchema(configuration, fileSchema, metadata);
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema, metadata, hiveTypeInfo);
   }
 }
