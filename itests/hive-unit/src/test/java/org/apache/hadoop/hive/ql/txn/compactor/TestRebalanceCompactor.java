@@ -135,7 +135,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
-    //set grouping size to have 3 buckets, and re-create driver with the new config
+    // set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "400");
     conf.set("tez.grouping.max-size", "5000");
     driver = new Driver(conf);
@@ -143,11 +143,11 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     final String tableName = "rebalance_test";
     TestDataProvider testDataProvider = prepareRebalanceTestData(tableName);
 
-    //Try to do a rebalancing compaction
+    // Run rebalance compaction
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance'", driver);
     runWorker(conf);
 
-    //Check if the compaction succeed
+    // Check if the compaction succeed
     verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
 
     String[][] expectedBuckets = new String[][] {
@@ -522,8 +522,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
         - all the required value present
      */
 
-    int optimalRecordsInBucket = expectedData.size() / bucketCount;
-    int maximumRecordCountInABucket = optimalRecordsInBucket + bucketCount - 1;
+    int maximumRecordCountInABucket = (expectedData.size() + bucketCount - 1) / bucketCount;
 
     long previousValueForColB = Long.MAX_VALUE;
 
@@ -620,11 +619,6 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
 
     int bucketCount = bucketFilenames.size();
 
-    if (bucketCount == 1) {
-      // nothing to rebalance with a single bucket
-      return true;
-    }
-
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
     List<String>[] bucketData = new ArrayList[bucketCount];
     for (int i = 0; i < bucketCount; i++) {
@@ -637,7 +631,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
         .reduce(0, Integer::sum);
 
     int optimalRecordsInBucket = allRecordCount / bucketCount;
-    int maximumRecordCountInABucket = optimalRecordsInBucket + bucketCount - 1;
+    int maximumRecordCountInABucket = (allRecordCount + bucketCount - 1) / bucketCount;
 
     for (int i = 0; i < bucketCount; i++) {
       if (bucketData[i].size() > maximumRecordCountInABucket || bucketData[i].size() < optimalRecordsInBucket) {
