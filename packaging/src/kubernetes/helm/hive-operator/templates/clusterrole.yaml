@@ -60,5 +60,5 @@ rules:
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   # KEDA HTTP Add-on for scale-to-zero (wake-from-zero on HTTP request)
   - apiGroups: ["http.keda.sh"]
-    resources: ["httpscaledobjects"]
+    resources: ["httpscaledobjects", "interceptorroutes"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

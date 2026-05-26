@@ -19,7 +19,11 @@
 package org.apache.hive.kubernetes.operator;
 
 import io.javaoperatorsdk.operator.Operator;
+import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.config.ResolvedControllerConfiguration;
+import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.reconciler.HiveClusterReconciler;
+import org.apache.hive.kubernetes.operator.reconciler.HiveWorkflowSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +40,16 @@ public final class HiveOperatorMain {
   public static void main(String[] args) {
     LOG.info("Starting Hive Kubernetes Operator");
     Operator operator = new Operator();
-    operator.register(new HiveClusterReconciler());
+    HiveClusterReconciler reconciler = new HiveClusterReconciler();
+    // Get the annotation-derived base config, then inject our programmatic workflow spec.
+    ControllerConfiguration<HiveCluster> baseConfig =
+        operator.getConfigurationService().getConfigurationFor(reconciler);
+    HiveWorkflowSpec workflowSpec = new HiveWorkflowSpec();
+    ((ResolvedControllerConfiguration<HiveCluster>) baseConfig)
+        .setWorkflowSpec(workflowSpec);
+    LOG.info("Registered workflow with {} dependent resource specs",
+        workflowSpec.getDependentResourceSpecs().size());
+    operator.register(reconciler, baseConfig);
     operator.start();
     LOG.info("Hive Kubernetes Operator started successfully");
   }

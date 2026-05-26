@@ -78,6 +78,14 @@ public record HiveClusterSpec(
   public HiveClusterSpec {
     Objects.requireNonNull(zookeeper,
         "zookeeper must be provided in the HiveCluster spec");
+    metastore = metastore != null ? metastore : new MetastoreSpec(
+        1, null, null, null, null, null, null, true, null, null, null, null);
+    hiveServer2 = hiveServer2 != null ? hiveServer2 : new HiveServer2Spec(
+        1, null, null, null, null, null, null, null, null, null);
+    llap = llap != null ? llap : new LlapSpec(
+        1, null, null, null, null, true, null, null, null, null, null);
+    tezAm = tezAm != null ? tezAm : new TezAmSpec(
+        1, null, null, null, null, true, null, null, null);
     envVars = envVars != null ? envVars : List.of();
     externalJars = externalJars != null ? externalJars : List.of();
     volumes = volumes != null ? volumes : List.of();

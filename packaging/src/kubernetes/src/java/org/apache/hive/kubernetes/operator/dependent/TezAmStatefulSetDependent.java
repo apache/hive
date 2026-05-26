@@ -24,10 +24,7 @@ import java.util.Map;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerPort;
-import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.Lifecycle;
-import io.fabric8.kubernetes.api.model.LifecycleBuilder;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -60,6 +57,12 @@ public class TezAmStatefulSetDependent
 
   public TezAmStatefulSetDependent() {
     super(StatefulSet.class);
+  }
+
+  @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
   }
 
   @Override
@@ -103,8 +106,8 @@ public class TezAmStatefulSetDependent
     List<io.fabric8.kubernetes.api.model.Volume> volumes =
         new ArrayList<>();
     volumes.add(buildProjectedConfigVolume("hive-config",
-        HiveServer2ConfigMapDependent.resourceName(hiveCluster),
-        HadoopConfigMapDependent.resourceName(hiveCluster)));
+        HiveConfigMapDependent.HiveServer2.resourceName(hiveCluster),
+        HiveConfigMapDependent.Hadoop.resourceName(hiveCluster)));
     volumes.add(new io.fabric8.kubernetes.api.model.VolumeBuilder()
         .withName("scratch")
         .withNewPersistentVolumeClaim()
@@ -133,18 +136,12 @@ public class TezAmStatefulSetDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getTezSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    // When autoscaling is enabled and the StatefulSet already exists, preserve the current
-    // replica count (managed by KEDA/HPA). On initial creation:
-    // - minReplicas == 0: start at 0, KEDA scales up when hs2_active_sessions > 0
-    // - minReplicas > 0: start at configured replicas
-    boolean autoscalingEnabled = tezAm.autoscaling() != null && tezAm.autoscaling().isEnabled();
-    Integer replicas = tezAm.replicas();
-    if (autoscalingEnabled) {
-      int initialReplicas = tezAm.autoscaling().minReplicas() == 0 ? 0 : tezAm.replicas();
-      replicas = getSecondaryResource(hiveCluster, context)
-          .map(s -> s.getSpec().getReplicas())
-          .orElse(initialReplicas);
-    }
+    // When autoscaling is enabled, preserve current replica count (KEDA/HPA manages it).
+    AutoscalingSpec tezAmAutoscaling = tezAm.autoscaling();
+    int initialReplicas = tezAmAutoscaling != null && tezAmAutoscaling.minReplicas() == 0
+        ? 0 : tezAm.replicas();
+    Integer replicas = resolveReplicaCount(
+        hiveCluster, context, tezAmAutoscaling, tezAm.replicas(), initialReplicas);
 
     StatefulSet statefulSet = new StatefulSetBuilder()
         .withNewMetadata()
@@ -185,63 +182,21 @@ public class TezAmStatefulSetDependent
         statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
 
     // Graceful scale-down: poll JMX Exporter (port 9404) for DAGsRunning to reach 0.
-    // K8s removes the pod from Service Endpoints, so HS2 won't assign new DAGs to this AM.
-    // We read from the same Prometheus-format endpoint that KEDA uses — flat text, not brittle JSON.
     if (autoscaling.isEnabled()) {
-      String preStopScript = String.join("\n",
-          "#!/bin/bash",
-          "echo '[preStop] Waiting for active DAGs to complete (polling localhost:9404/metrics)...'",
-          "RETRIES=0",
-          "while true; do",
-          "  RESPONSE=$(curl -sf http://localhost:9404/metrics)",
-          "  if [ $? -ne 0 ]; then",
-          "    RETRIES=$((RETRIES+1))",
-          "    echo \"[preStop] ERROR: JMX Exporter unreachable on port 9404 (attempt $RETRIES)\"",
-          "    if [ $RETRIES -ge 6 ]; then",
-          "      echo '[preStop] JMX Exporter not responding after 60s. Proceeding with shutdown.'",
-          "      break",
-          "    fi",
-          "    sleep 10; continue",
-          "  fi",
-          "  DAGS=$(echo \"$RESPONSE\" | grep '^tez_am_dagsrunning ' | awk '{print $2}')",
-          "  if [ -z \"$DAGS\" ]; then",
-          "    echo '[preStop] WARNING: tez_am_dagsrunning metric not found. JMX Exporter may not be configured.'",
-          "    break",
-          "  fi",
-          "  if [ \"${DAGS%.*}\" -le 0 ] 2>/dev/null; then",
-          "    echo '[preStop] No active DAGs. Safe to terminate Tez AM.'",
-          "    break",
-          "  fi",
-          "  echo \"[preStop] tez_am_dagsrunning=$DAGS — waiting...\"",
-          "  RETRIES=0",
-          "  sleep 10",
-          "done");
-      Lifecycle lifecycle = new LifecycleBuilder()
-          .withNewPreStop()
-            .withNewExec()
-              .withCommand("/bin/bash", "-c", preStopScript)
-            .endExec()
-          .endPreStop()
-          .build();
-      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).setLifecycle(lifecycle);
-      statefulSet.getSpec().getTemplate().getSpec()
-          .setTerminationGracePeriodSeconds((long) autoscaling.gracePeriodSeconds());
+      String preStopScript = buildDrainScript(
+          "Waiting for active DAGs to complete",
+          "tez_am_dagsrunning", "DAGS",
+          "No active DAGs. Safe to terminate Tez AM.",
+          10, 6, null);
+      applyAutoscalingLifecycle(
+          statefulSet.getSpec().getTemplate().getSpec(),
+          statefulSet.getSpec().getTemplate().getMetadata(),
+          preStopScript, autoscaling.gracePeriodSeconds());
     }
 
-    if (spec.volumes() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());
-    }
-    if (spec.volumeMounts() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.volumeMounts());
-    }
-    if (tezAm.extraVolumes() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(tezAm.extraVolumes());
-    }
-    if (tezAm.extraVolumeMounts() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(tezAm.extraVolumeMounts());
-    }
+    appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
+        spec.volumes(), spec.volumeMounts(),
+        tezAm.extraVolumes(), tezAm.extraVolumeMounts());
     return statefulSet;
   }
 

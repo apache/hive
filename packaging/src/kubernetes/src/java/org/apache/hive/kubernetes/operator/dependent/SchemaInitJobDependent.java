@@ -54,6 +54,12 @@ public class SchemaInitJobDependent
   }
 
   @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
   protected Job desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
