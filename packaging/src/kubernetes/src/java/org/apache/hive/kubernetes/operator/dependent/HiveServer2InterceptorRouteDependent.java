@@ -18,6 +18,7 @@
 
 package org.apache.hive.kubernetes.operator.dependent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,34 +33,28 @@ import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /**
- * Manages a KEDA HTTPScaledObject for HiveServer2 scale-to-zero.
+ * Manages a KEDA InterceptorRoute for HiveServer2 scale-to-zero routing.
+ * <p>
+ * Unlike HTTPScaledObject, InterceptorRoute only configures interceptor
+ * routing without auto-creating a ScaledObject. This allows us to manage
+ * scaling entirely through a single Prometheus-based ScaledObject that
+ * combines session/CPU awareness with the HTTP interceptor wake-from-zero
+ * trigger.
  * <p>
  * Requires the KEDA HTTP Add-on to be installed in the cluster.
- * The HTTP Add-on creates an interceptor proxy that:
- * <ul>
- *   <li>Sits in front of the HS2 Service</li>
- *   <li>Queues incoming beeline/HTTP requests when HS2 has 0 pods</li>
- *   <li>Triggers KEDA to scale HS2 from 0 to 1</li>
- *   <li>Forwards the queued request once a pod is ready</li>
- * </ul>
- * <p>
- * This dependent is activated ONLY when minReplicas == 0 (scale-to-zero mode).
- * When minReplicas > 0, the regular ScaledObject (Prometheus-based) is used instead.
  */
-public class HiveServer2HttpScaledObjectDependent extends HiveGenericDependentResource {
+public class HiveServer2InterceptorRouteDependent extends HiveGenericDependentResource {
 
-  public HiveServer2HttpScaledObjectDependent() {
-    super(new GroupVersionKind("http.keda.sh", "v1alpha1", "HTTPScaledObject"));
+  public HiveServer2InterceptorRouteDependent() {
+    super(new GroupVersionKind("http.keda.sh", "v1beta1", "InterceptorRoute"));
   }
 
   @Override
   protected GenericKubernetesResource desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     AutoscalingSpec autoscaling = hiveCluster.getSpec().hiveServer2().autoscaling();
-    int maxReplicas = hiveCluster.getSpec().hiveServer2().replicas();
     String clusterName = hiveCluster.getMetadata().getName();
     String namespace = hiveCluster.getMetadata().getNamespace();
-    String deploymentName = clusterName + "-hiveserver2";
     String serviceName = clusterName + "-hiveserver2";
 
     int httpPort = ConfigUtils.getInt(
@@ -67,49 +62,40 @@ public class HiveServer2HttpScaledObjectDependent extends HiveGenericDependentRe
         ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_KEY,
         null, ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_DEFAULT);
 
-    Map<String, Object> spec = new HashMap<>();
-
-    // Hosts the interceptor matches for routing.
-    // Includes: internal service FQDN, short name, interceptor proxy name
-    // (for in-cluster kubectl exec), and localhost (for port-forward).
-    spec.put("hosts", List.of(
+    // Hosts the interceptor matches for routing
+    List<String> hosts = new ArrayList<>(List.of(
         serviceName + "." + namespace + ".svc.cluster.local",
         serviceName,
         "keda-add-ons-http-interceptor-proxy.keda.svc",
         "localhost"
     ));
-    spec.put("pathPrefixes", List.of("/"));
 
-    // Target deployment and service
-    spec.put("scaleTargetRef", Map.of(
-        "name", deploymentName,
-        "kind", "Deployment",
-        "apiVersion", "apps/v1",
+    Map<String, Object> spec = new HashMap<>();
+
+    // Target backend service
+    spec.put("target", Map.of(
         "service", serviceName,
         "port", httpPort
     ));
 
-    // Replica bounds
-    spec.put("replicas", Map.of(
-        "min", 0,
-        "max", maxReplicas
-    ));
-
-    // Scaling metric: scale up when there are pending requests
-    spec.put("scalingMetric", Map.of(
-        "requestRate", Map.of(
-            "granularity", "1s",
-            "targetValue", autoscaling.scaleUpThreshold(),
-            "window", "1m"
+    // Routing rules
+    spec.put("rules", List.of(
+        Map.of(
+            "hosts", hosts,
+            "paths", List.of(Map.of("value", "/"))
         )
     ));
 
-    // Cooldown before scaling back to 0
-    spec.put("scaledownPeriod", autoscaling.cooldownSeconds());
+    // Scaling metric (required field, used by interceptor for queue management)
+    spec.put("scalingMetric", Map.of(
+        "concurrency", Map.of(
+            "targetValue", autoscaling.scaleUpThreshold()
+        )
+    ));
 
     return new GenericKubernetesResourceBuilder()
-        .withApiVersion("http.keda.sh/v1alpha1")
-        .withKind("HTTPScaledObject")
+        .withApiVersion("http.keda.sh/v1beta1")
+        .withKind("InterceptorRoute")
         .withNewMetadata()
           .withName(resourceName(hiveCluster))
           .withNamespace(namespace)
@@ -125,6 +111,6 @@ public class HiveServer2HttpScaledObjectDependent extends HiveGenericDependentRe
   }
 
   public static String resourceName(HiveCluster hiveCluster) {
-    return hiveCluster.getMetadata().getName() + "-hiveserver2-httpso";
+    return hiveCluster.getMetadata().getName() + "-hiveserver2-route";
   }
 }

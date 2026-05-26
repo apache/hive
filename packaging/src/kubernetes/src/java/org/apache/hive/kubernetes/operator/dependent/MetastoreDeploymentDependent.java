@@ -26,8 +26,6 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.Lifecycle;
-import io.fabric8.kubernetes.api.model.LifecycleBuilder;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -60,6 +58,12 @@ public class MetastoreDeploymentDependent
   }
 
   @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
   protected Deployment desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
@@ -82,9 +86,9 @@ public class MetastoreDeploymentDependent
         ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
     List<ContainerPort> ports = new ArrayList<>();
     ports.add(new ContainerPortBuilder()
-        .withName("thrift").withContainerPort(thriftPort).build());
+        .withName("thrift").withContainerPort(thriftPort).withProtocol("TCP").build());
     ports.add(new ContainerPortBuilder()
-        .withName("rest").withContainerPort(9001).build());
+        .withName("rest").withContainerPort(9001).withProtocol("TCP").build());
 
     Probe readinessProbe = buildTcpProbe(thriftPort, spec.metastore().readinessProbe(), 15, 10, 3);
     Probe livenessProbe = buildTcpProbe(thriftPort, spec.metastore().livenessProbe(), 60, 30, 5);
@@ -124,18 +128,12 @@ public class MetastoreDeploymentDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getMetastoreSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    // When autoscaling is enabled and the Deployment already exists, preserve the current
-    // replica count (managed by KEDA/HPA). On initial creation, start at minReplicas
-    // and let KEDA scale up based on load.
-    boolean autoscalingEnabled = spec.metastore().autoscaling() != null
-        && spec.metastore().autoscaling().isEnabled();
-    Integer replicas = spec.metastore().replicas();
-    if (autoscalingEnabled) {
-      int initialReplicas = Math.max(1, spec.metastore().autoscaling().minReplicas());
-      replicas = getSecondaryResource(hiveCluster, context)
-          .map(d -> d.getSpec().getReplicas())
-          .orElse(initialReplicas);
-    }
+    // When autoscaling is enabled, preserve current replica count (KEDA/HPA manages it).
+    AutoscalingSpec msAutoscaling = spec.metastore().autoscaling();
+    int initialReplicas = msAutoscaling != null
+        ? Math.max(1, msAutoscaling.minReplicas()) : spec.metastore().replicas();
+    Integer replicas = resolveReplicaCount(
+        hiveCluster, context, msAutoscaling, spec.metastore().replicas(), initialReplicas);
 
     Deployment deployment = new DeploymentBuilder()
         .withNewMetadata()
@@ -178,70 +176,21 @@ public class MetastoreDeploymentDependent
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
     // Graceful scale-down: poll JMX Exporter (port 9404) for open_connections to drain.
-    // K8s removes the pod from Service Endpoints on termination, so no new requests arrive.
-    // Uses flat Prometheus text format — same metric KEDA reads — not brittle JSON parsing.
     if (autoscaling.isEnabled()) {
-      String preStopScript = String.join("\n",
-          "#!/bin/bash",
-          "echo '[preStop] Waiting for open connections to drain (polling localhost:9404/metrics)...'",
-          "RETRIES=0",
-          "while true; do",
-          "  RESPONSE=$(curl -sf http://localhost:9404/metrics)",
-          "  if [ $? -ne 0 ]; then",
-          "    RETRIES=$((RETRIES+1))",
-          "    echo \"[preStop] ERROR: JMX Exporter unreachable on port 9404 (attempt $RETRIES)\"",
-          "    if [ $RETRIES -ge 6 ]; then",
-          "      echo '[preStop] JMX Exporter not responding after 30s. Proceeding with shutdown.'",
-          "      break",
-          "    fi",
-          "    sleep 5; continue",
-          "  fi",
-          "  CONNS=$(echo \"$RESPONSE\" | grep '^hive_metastore_open_connections ' | awk '{print $2}')",
-          "  if [ -z \"$CONNS\" ]; then",
-          "    echo '[preStop] WARNING: hive_metastore_open_connections metric not found. JMX Exporter may not be configured.'",
-          "    break",
-          "  fi",
-          "  if [ \"${CONNS%.*}\" -le 0 ] 2>/dev/null; then",
-          "    echo '[preStop] All connections drained. Shutting down.'",
-          "    break",
-          "  fi",
-          "  echo \"[preStop] hive_metastore_open_connections=$CONNS — waiting...\"",
-          "  RETRIES=0",
-          "  sleep 5",
-          "done");
-      Lifecycle lifecycle = new LifecycleBuilder()
-          .withNewPreStop()
-            .withNewExec()
-              .withCommand("/bin/bash", "-c", preStopScript)
-            .endExec()
-          .endPreStop()
-          .build();
-      deployment.getSpec().getTemplate().getSpec().getContainers().get(0).setLifecycle(lifecycle);
-      deployment.getSpec().getTemplate().getSpec()
-          .setTerminationGracePeriodSeconds((long) autoscaling.gracePeriodSeconds());
-      // Prometheus scrape annotations for JMX Exporter metrics endpoint
-      deployment.getSpec().getTemplate().getMetadata().getAnnotations()
-          .put("prometheus.io/scrape", "true");
-      deployment.getSpec().getTemplate().getMetadata().getAnnotations()
-          .put("prometheus.io/port", String.valueOf(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT));
-      deployment.getSpec().getTemplate().getMetadata().getAnnotations()
-          .put("prometheus.io/path", "/metrics");
+      String preStopScript = buildDrainScript(
+          "Waiting for open connections to drain",
+          "hive_metastore_open_connections", "CONNS",
+          "All connections drained. Shutting down.",
+          5, 6, null);
+      applyAutoscalingLifecycle(
+          deployment.getSpec().getTemplate().getSpec(),
+          deployment.getSpec().getTemplate().getMetadata(),
+          preStopScript, autoscaling.gracePeriodSeconds());
     }
 
-    if (spec.volumes() != null) {
-      deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());
-    }
-    if (spec.volumeMounts() != null) {
-      deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.volumeMounts());
-    }
-    if (spec.metastore().extraVolumes() != null) {
-      deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.metastore().extraVolumes());
-    }
-    if (spec.metastore().extraVolumeMounts() != null) {
-      deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.metastore().extraVolumeMounts());
-    }
+    appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
+        spec.volumes(), spec.volumeMounts(),
+        spec.metastore().extraVolumes(), spec.metastore().extraVolumeMounts());
     return deployment;
   }
 

@@ -54,7 +54,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class TestVectorMapJoinOuterGenerateResultOperator {
 
-  /** Concrete subclass that exposes the generateOuterNulls* methods to tests. */
   private static final class TestableOuterOp extends VectorMapJoinOuterGenerateResultOperator {
     @Override
     protected String getLoggingPrefix() {

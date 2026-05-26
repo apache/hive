@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import io.fabric8.kubernetes.api.model.AffinityBuilder;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -80,32 +81,41 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     super(resourceType);
   }
 
+
   /**
-   * Catches 409 AlreadyExists during resource creation caused by
-   * informer lag — the resource exists on the API server but
-   * the informer cache hasn't indexed it yet, so JOSDK calls
-   * create directly.
+   * Returns the expected Kubernetes resource name for this dependent.
+   * Used to disambiguate when multiple dependents share the same resource
+   * type (e.g., multiple ConfigMap or Service dependents). Subclasses that
+   * share a resource type MUST override this method.
+   *
+   * @throws IllegalStateException if not overridden and disambiguation is needed
    */
-  @Override
-  protected R handleCreate(R desired, P primary, Context<P> context) {
-    try {
-      return super.handleCreate(desired, primary, context);
-    } catch (KubernetesClientException e) {
-      if (e.getCode() == 409) {
-        LOG.info("Resource {} already exists (informer lag), "
-            + "will reconcile on next event",
-            desired.getMetadata().getName());
-        return desired;
-      }
-      throw e;
-    }
+  protected String getSecondaryResourceName(P primary, Context<P> context) {
+    throw new IllegalStateException(
+        getClass().getSimpleName() + " must override getSecondaryResourceName() "
+            + "when multiple dependents share the same resource type");
   }
 
   @Override
   public Optional<R> getSecondaryResource(P primary,
       Context<P> context) {
     return eventSource()
-        .flatMap(es -> es.getSecondaryResource(primary));
+        .flatMap(es -> {
+          Set<R> resources = es.getSecondaryResources(primary);
+          if (resources.isEmpty()) {
+            return Optional.empty();
+          }
+          // Always filter by expected name — even when only one resource
+          // is in the cache. Without this, a single Deployment (e.g.
+          // metastore) would be handed to HiveServer2's matcher, causing
+          // a cross-component update loop.
+          String expectedName = getSecondaryResourceName(primary,
+              context);
+          return resources.stream()
+              .filter(r -> expectedName.equals(
+                  r.getMetadata().getName()))
+              .findFirst();
+        });
   }
 
   /**
@@ -125,6 +135,171 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       }
     }
     return super.match(actualResource, desired, primary, context);
+  }
+
+  /**
+   * Handles 409 Conflict errors during resource creation caused by informer
+   * cache lag. When the operator creates a resource but the informer hasn't
+   * yet received the creation event, the framework may attempt to create it
+   * again. Kubernetes rejects the duplicate with 409 — this handler absorbs
+   * that expected race and lets the next reconciliation pick up the resource
+   * from the updated cache.
+   */
+  @Override
+  protected R handleCreate(R desired, P primary, Context<P> context) {
+    try {
+      return super.handleCreate(desired, primary, context);
+    } catch (KubernetesClientException e) {
+      if (e.getCode() == 409) {
+        LOG.info("Resource {} already exists (informer lag), "
+            + "will reconcile on next event",
+            desired.getMetadata().getName());
+        return desired;
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Resolves the replica count to set in the desired workload spec.
+   * When autoscaling is enabled and the workload already exists, the current
+   * replica count is preserved (KEDA/HPA manages it). On initial creation
+   * the provided fallback is used.
+   *
+   * @param primary         the HiveCluster primary resource
+   * @param context         the reconciliation context
+   * @param autoscaling     autoscaling spec for this component (may be null)
+   * @param staticReplicas  replica count from the spec (used when autoscaling is off)
+   * @param initialReplicas replica count on first creation when autoscaling is on
+   */
+  @SuppressWarnings("unchecked")
+  protected Integer resolveReplicaCount(P primary, Context<P> context,
+      AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
+    if (autoscaling == null || !autoscaling.isEnabled()) {
+      return staticReplicas;
+    }
+    return getSecondaryResource(primary, context)
+        .map(existing -> {
+          if (existing instanceof io.fabric8.kubernetes.api.model.apps.Deployment d) {
+            return d.getSpec().getReplicas();
+          } else if (existing instanceof io.fabric8.kubernetes.api.model.apps.StatefulSet s) {
+            return s.getSpec().getReplicas();
+          }
+          return initialReplicas;
+        })
+        .orElse(initialReplicas);
+  }
+
+  /**
+   * Builds a preStop drain script that polls a single Prometheus metric
+   * (from the JMX Exporter at localhost:9404/metrics) until the value
+   * reaches zero, then exits to allow graceful pod termination.
+   *
+   * @param startupMessage  logged at the start (e.g. "Waiting for open connections to drain")
+   * @param metricName      Prometheus metric name (used in grep and log messages)
+   * @param varName         shell variable name for the extracted value (e.g. "CONNS")
+   * @param idleMessage     logged when idle condition is met (e.g. "All connections drained. Shutting down.")
+   * @param sleepSeconds    polling interval in seconds
+   * @param maxRetries      max consecutive curl failures before giving up
+   * @param prefixCommands  optional commands to run before the polling loop (may be null)
+   */
+  protected static String buildDrainScript(
+      String startupMessage, String metricName, String varName,
+      String idleMessage, int sleepSeconds, int maxRetries,
+      List<String> prefixCommands) {
+    List<String> lines = new ArrayList<>();
+    lines.add("#!/bin/bash");
+    if (prefixCommands != null) {
+      lines.addAll(prefixCommands);
+    }
+    lines.add("echo '[preStop] " + startupMessage
+        + " (polling localhost:9404/metrics)...'");
+    lines.add("RETRIES=0");
+    lines.add("while true; do");
+    lines.add("  RESPONSE=$(curl -sf http://localhost:9404/metrics)");
+    lines.add("  if [ $? -ne 0 ]; then");
+    lines.add("    RETRIES=$((RETRIES+1))");
+    lines.add("    echo \"[preStop] ERROR: JMX Exporter unreachable on port 9404 (attempt $RETRIES)\"");
+    lines.add("    if [ $RETRIES -ge " + maxRetries + " ]; then");
+    lines.add("      echo '[preStop] JMX Exporter not responding after "
+        + (maxRetries * sleepSeconds) + "s. Proceeding with shutdown.'");
+    lines.add("      break");
+    lines.add("    fi");
+    lines.add("    sleep " + sleepSeconds + "; continue");
+    lines.add("  fi");
+    lines.add("  " + varName + "=$(echo \"$RESPONSE\" | grep '^"
+        + metricName + " ' | awk '{print $2}')");
+    lines.add("  if [ -z \"$" + varName + "\" ]; then");
+    lines.add("    echo '[preStop] WARNING: " + metricName
+        + " metric not found. JMX Exporter may not be configured.'");
+    lines.add("    break");
+    lines.add("  fi");
+    lines.add("  if [ \"${" + varName + "%.*}\" -le 0 ] 2>/dev/null; then");
+    lines.add("    echo '[preStop] " + idleMessage + "'");
+    lines.add("    break");
+    lines.add("  fi");
+    lines.add("  echo \"[preStop] " + metricName + "=$" + varName + " - waiting...\"");
+    lines.add("  RETRIES=0");
+    lines.add("  sleep " + sleepSeconds);
+    lines.add("done");
+    return String.join("\n", lines);
+  }
+
+  /**
+   * Builds a preStop drain script that polls two Prometheus metrics and
+   * waits until available >= total (all executors idle). Used by LLAP.
+   *
+   * @param startupMessage  logged at the start
+   * @param metricGrepA     grep pattern for the first metric (e.g. includes trailing '{')
+   * @param varNameA        shell variable for the first metric value (e.g. "AVAILABLE")
+   * @param metricGrepB     grep pattern for the second metric
+   * @param varNameB        shell variable for the second metric value (e.g. "TOTAL")
+   * @param notFoundWarning warning message when metrics are not found
+   * @param idleMessage     logged when idle condition is met
+   * @param waitingFormat   format for waiting log (with shell variable references)
+   * @param sleepSeconds    polling interval in seconds
+   * @param maxRetries      max consecutive curl failures before giving up
+   */
+  protected static String buildDualMetricDrainScript(
+      String startupMessage,
+      String metricGrepA, String varNameA,
+      String metricGrepB, String varNameB,
+      String notFoundWarning, String idleMessage,
+      String waitingFormat, int sleepSeconds, int maxRetries) {
+    List<String> lines = new ArrayList<>();
+    lines.add("#!/bin/bash");
+    lines.add("echo '[preStop] " + startupMessage
+        + " (polling localhost:9404/metrics)...'");
+    lines.add("RETRIES=0");
+    lines.add("while true; do");
+    lines.add("  RESPONSE=$(curl -sf http://localhost:9404/metrics)");
+    lines.add("  if [ $? -ne 0 ]; then");
+    lines.add("    RETRIES=$((RETRIES+1))");
+    lines.add("    echo \"[preStop] ERROR: JMX Exporter unreachable on port 9404 (attempt $RETRIES)\"");
+    lines.add("    if [ $RETRIES -ge " + maxRetries + " ]; then");
+    lines.add("      echo '[preStop] JMX Exporter not responding after "
+        + (maxRetries * sleepSeconds) + "s. Proceeding with shutdown.'");
+    lines.add("      break");
+    lines.add("    fi");
+    lines.add("    sleep " + sleepSeconds + "; continue");
+    lines.add("  fi");
+    lines.add("  " + varNameA + "=$(echo \"$RESPONSE\" | grep '^"
+        + metricGrepA + "' | awk '{print $2}')");
+    lines.add("  " + varNameB + "=$(echo \"$RESPONSE\" | grep '^"
+        + metricGrepB + "' | awk '{print $2}')");
+    lines.add("  if [ -z \"$" + varNameA + "\" ] || [ -z \"$" + varNameB + "\" ]; then");
+    lines.add("    echo '[preStop] WARNING: " + notFoundWarning + "'");
+    lines.add("    break");
+    lines.add("  fi");
+    lines.add("  if [ \"${" + varNameA + "%.*}\" -ge \"${" + varNameB + "%.*}\" ] 2>/dev/null; then");
+    lines.add("    echo '[preStop] " + idleMessage + "'");
+    lines.add("    break");
+    lines.add("  fi");
+    lines.add("  echo \"[preStop] " + waitingFormat + "\"");
+    lines.add("  RETRIES=0");
+    lines.add("  sleep " + sleepSeconds);
+    lines.add("done");
+    return String.join("\n", lines);
   }
 
   /**
@@ -237,8 +412,8 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         .withMountPath(CONF_MOUNT_PATH).build());
 
     volumes.add(buildProjectedConfigVolume("hive-config",
-        MetastoreConfigMapDependent.resourceName(hiveCluster),
-        HadoopConfigMapDependent.resourceName(hiveCluster)));
+        HiveConfigMapDependent.Metastore.resourceName(hiveCluster),
+        HiveConfigMapDependent.Hadoop.resourceName(hiveCluster)));
   }
 
   /** Builds Kubernetes ResourceRequirements from the operator's spec. */
@@ -424,6 +599,65 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     return builder.build();
   }
 
+  /**
+   * Applies the autoscaling lifecycle to a workload's pod template: sets a preStop
+   * exec lifecycle hook, terminationGracePeriodSeconds, and Prometheus scrape annotations.
+   *
+   * @param podSpec           the pod spec of the workload (Deployment or StatefulSet)
+   * @param podMetadata       the pod template metadata (for annotations)
+   * @param preStopScript     the shell script to run in the preStop hook
+   * @param gracePeriodSeconds termination grace period
+   */
+  protected static void applyAutoscalingLifecycle(
+      io.fabric8.kubernetes.api.model.PodSpec podSpec,
+      io.fabric8.kubernetes.api.model.ObjectMeta podMetadata,
+      String preStopScript, int gracePeriodSeconds) {
+    io.fabric8.kubernetes.api.model.Lifecycle lifecycle =
+        new io.fabric8.kubernetes.api.model.LifecycleBuilder()
+            .withNewPreStop()
+              .withNewExec()
+                .withCommand("/bin/bash", "-c", preStopScript)
+              .endExec()
+            .endPreStop()
+            .build();
+    podSpec.getContainers().get(0).setLifecycle(lifecycle);
+    podSpec.setTerminationGracePeriodSeconds((long) gracePeriodSeconds);
+    podMetadata.getAnnotations().put("prometheus.io/scrape", "true");
+    podMetadata.getAnnotations().put("prometheus.io/port",
+        String.valueOf(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT));
+    podMetadata.getAnnotations().put("prometheus.io/path", "/metrics");
+  }
+
+  /**
+   * Appends user-provided volumes and volume mounts to a workload's pod template.
+   * Handles both global (spec-level) and component-specific extras.
+   *
+   * @param podSpec             the pod spec
+   * @param globalVolumes       spec.volumes() (may be null)
+   * @param globalVolumeMounts  spec.volumeMounts() (may be null)
+   * @param extraVolumes        component-specific extraVolumes (may be null)
+   * @param extraVolumeMounts   component-specific extraVolumeMounts (may be null)
+   */
+  protected static void appendUserVolumes(
+      io.fabric8.kubernetes.api.model.PodSpec podSpec,
+      List<Volume> globalVolumes,
+      List<VolumeMount> globalVolumeMounts,
+      List<Volume> extraVolumes,
+      List<VolumeMount> extraVolumeMounts) {
+    if (globalVolumes != null) {
+      podSpec.getVolumes().addAll(globalVolumes);
+    }
+    if (globalVolumeMounts != null) {
+      podSpec.getContainers().get(0).getVolumeMounts().addAll(globalVolumeMounts);
+    }
+    if (extraVolumes != null) {
+      podSpec.getVolumes().addAll(extraVolumes);
+    }
+    if (extraVolumeMounts != null) {
+      podSpec.getContainers().get(0).getVolumeMounts().addAll(extraVolumeMounts);
+    }
+  }
+
   /** Path where the JMX Exporter agent JAR is stored inside the pod. */
   protected static final String JMX_EXPORTER_DIR = "/opt/jmx-exporter";
   protected static final String JMX_EXPORTER_JAR = JMX_EXPORTER_DIR + "/jmx_prometheus_javaagent.jar";
@@ -485,7 +719,8 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     // Expose the metrics port
     ports.add(new io.fabric8.kubernetes.api.model.ContainerPortBuilder()
         .withName("metrics")
-        .withContainerPort(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT).build());
+        .withContainerPort(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT)
+        .withProtocol("TCP").build());
 
     // Add javaagent flag to the appropriate JVM opts env var.
     // LLAP uses LLAP_DAEMON_OPTS (its startup script ignores SERVICE_OPTS).
@@ -536,7 +771,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("- pattern: 'metrics<name=api_(.+)><>Count'\n");
         sb.append("  name: api_$1_total\n");
         sb.append("  type: COUNTER\n");
-        sb.append("- pattern: 'metrics<name=open_connections><>Value'\n");
+        sb.append("- pattern: 'metrics<name=open_connections><>Count'\n");
         sb.append("  name: hive_metastore_open_connections\n");
         sb.append("  type: GAUGE\n");
         break;

@@ -35,43 +35,6 @@ import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
-import io.javaoperatorsdk.operator.api.reconciler.Workflow;
-import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
-import org.apache.hive.kubernetes.operator.dependent.HadoopConfigMapDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveServer2ConfigMapDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveServer2DeploymentDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveServer2PdbDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveServer2HttpScaledObjectDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveServer2ScaledObjectDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveServer2ServiceDependent;
-import org.apache.hive.kubernetes.operator.dependent.LlapConfigMapDependent;
-import org.apache.hive.kubernetes.operator.dependent.LlapPdbDependent;
-import org.apache.hive.kubernetes.operator.dependent.LlapScaledObjectDependent;
-import org.apache.hive.kubernetes.operator.dependent.LlapServiceDependent;
-import org.apache.hive.kubernetes.operator.dependent.LlapStatefulSetDependent;
-import org.apache.hive.kubernetes.operator.dependent.MetastoreConfigMapDependent;
-import org.apache.hive.kubernetes.operator.dependent.MetastoreDeploymentDependent;
-import org.apache.hive.kubernetes.operator.dependent.MetastorePdbDependent;
-import org.apache.hive.kubernetes.operator.dependent.MetastoreScaledObjectDependent;
-import org.apache.hive.kubernetes.operator.dependent.MetastoreServiceDependent;
-import org.apache.hive.kubernetes.operator.dependent.SchemaInitJobDependent;
-import org.apache.hive.kubernetes.operator.dependent.ScratchPvcDependent;
-import org.apache.hive.kubernetes.operator.dependent.TezAmPdbDependent;
-import org.apache.hive.kubernetes.operator.dependent.TezAmScaledObjectDependent;
-import org.apache.hive.kubernetes.operator.dependent.TezAmServiceDependent;
-import org.apache.hive.kubernetes.operator.dependent.TezAmStatefulSetDependent;
-import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2AutoscalingCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2MetricScalingCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2Precondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.HiveServer2ScaleToZeroCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.LlapAutoscalingCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.LlapEnabledCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.MetastoreAutoscalingCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.MetastoreEnabledCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.MetastoreReadyCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.SchemaJobCompletedCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.TezAmAutoscalingCondition;
-import org.apache.hive.kubernetes.operator.dependent.condition.TezAmEnabledCondition;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterStatus;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
@@ -83,74 +46,21 @@ import org.slf4j.LoggerFactory;
  * Orchestrates all dependent resources with proper dependency ordering.
  */
 @ControllerConfiguration
-@Workflow(dependents = {
-    // --- ConfigMap dependents ---
-    @Dependent(name = "hadoop-configmap", type = HadoopConfigMapDependent.class),
-    @Dependent(name = "metastore-configmap", type = MetastoreConfigMapDependent.class,
-        activationCondition = MetastoreEnabledCondition.class),
-    @Dependent(name = "hiveserver2-configmap", type = HiveServer2ConfigMapDependent.class),
-    // --- Job dependents ---
-    @Dependent(name = "schema-init-job", type = SchemaInitJobDependent.class, dependsOn = {"metastore-configmap",
-        "hadoop-configmap"}, readyPostcondition = SchemaJobCompletedCondition.class,
-        activationCondition = MetastoreEnabledCondition.class),
-    // --- Deployment dependents ---
-    @Dependent(name = "metastore-deployment", type = MetastoreDeploymentDependent.class, dependsOn = {
-        "schema-init-job"}, readyPostcondition = MetastoreReadyCondition.class,
-        activationCondition = MetastoreEnabledCondition.class),
-    // --- Service dependents ---
-    @Dependent(name = "metastore-service", type = MetastoreServiceDependent.class, dependsOn = {
-        "metastore-configmap"}, activationCondition = MetastoreEnabledCondition.class),
-    @Dependent(name = "hiveserver2-deployment", type = HiveServer2DeploymentDependent.class, dependsOn = {
-        "hiveserver2-configmap", "hadoop-configmap"}, reconcilePrecondition = HiveServer2Precondition.class),
-    @Dependent(name = "hiveserver2-service", type = HiveServer2ServiceDependent.class, dependsOn = {
-        "hiveserver2-configmap"}),
-    // --- LLAP (conditional) ---
-    @Dependent(name = "llap-configmap", type = LlapConfigMapDependent.class,
-        activationCondition = LlapEnabledCondition.class),
-    @Dependent(name = "llap-statefulset", type = LlapStatefulSetDependent.class, dependsOn = {"llap-configmap",
-        "hadoop-configmap"}, activationCondition = LlapEnabledCondition.class),
-    @Dependent(name = "llap-service", type = LlapServiceDependent.class,
-        activationCondition = LlapEnabledCondition.class),
-    // --- TezAM (conditional) ---
-    @Dependent(name = "scratch-pvc", type = ScratchPvcDependent.class,
-        activationCondition = TezAmEnabledCondition.class),
-    @Dependent(name = "tezam-service", type = TezAmServiceDependent.class,
-        activationCondition = TezAmEnabledCondition.class),
-    @Dependent(name = "tezam-statefulset", type = TezAmStatefulSetDependent.class, dependsOn = {"hiveserver2-configmap",
-        "hadoop-configmap", "tezam-service", "scratch-pvc"}, activationCondition = TezAmEnabledCondition.class),
-    // --- Autoscaling: KEDA ScaledObjects (conditional) ---
-    @Dependent(name = "hs2-scaledobject", type = HiveServer2ScaledObjectDependent.class, dependsOn = {
-        "hiveserver2-deployment"}, activationCondition = HiveServer2MetricScalingCondition.class),
-    @Dependent(name = "hs2-httpso", type = HiveServer2HttpScaledObjectDependent.class, dependsOn = {
-        "hiveserver2-deployment"}, activationCondition = HiveServer2ScaleToZeroCondition.class),
-    @Dependent(name = "metastore-scaledobject", type = MetastoreScaledObjectDependent.class, dependsOn = {
-        "metastore-deployment"}, activationCondition = MetastoreAutoscalingCondition.class),
-    @Dependent(name = "llap-scaledobject", type = LlapScaledObjectDependent.class, dependsOn = {
-        "llap-statefulset"}, activationCondition = LlapAutoscalingCondition.class),
-    @Dependent(name = "tezam-scaledobject", type = TezAmScaledObjectDependent.class, dependsOn = {
-        "tezam-statefulset"}, activationCondition = TezAmAutoscalingCondition.class),
-    // --- Autoscaling: PodDisruptionBudgets (conditional) ---
-    @Dependent(name = "hs2-pdb", type = HiveServer2PdbDependent.class, dependsOn = {
-        "hiveserver2-deployment"}, activationCondition = HiveServer2AutoscalingCondition.class),
-    @Dependent(name = "metastore-pdb", type = MetastorePdbDependent.class, dependsOn = {
-        "metastore-deployment"}, activationCondition = MetastoreAutoscalingCondition.class),
-    @Dependent(name = "llap-pdb", type = LlapPdbDependent.class, dependsOn = {
-        "llap-statefulset"}, activationCondition = LlapAutoscalingCondition.class),
-    @Dependent(name = "tezam-pdb", type = TezAmPdbDependent.class, dependsOn = {
-        "tezam-statefulset"}, activationCondition = TezAmAutoscalingCondition.class)})
 public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
 
   @Override
   public UpdateControl<HiveCluster> reconcile(HiveCluster resource, Context<HiveCluster> context) {
-    LOG.debug("Reconciling HiveCluster: {}/{}", resource.getMetadata().getNamespace(),
-        resource.getMetadata().getName());
+    LOG.debug("Reconciling HiveCluster: {}/{}  generation={}",
+        resource.getMetadata().getNamespace(),
+        resource.getMetadata().getName(),
+        resource.getMetadata().getGeneration());
 
     HiveClusterStatus existingStatus = resource.getStatus();
     HiveClusterStatus newStatus = buildStatus(resource, context, existingStatus);
 
-    if (Objects.equals(existingStatus, newStatus)) {
+    if (statusEqualsIgnoringTimestamps(existingStatus, newStatus)) {
       return UpdateControl.noUpdate();
     }
 
@@ -161,8 +71,8 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
   @Override
   public ErrorStatusUpdateControl<HiveCluster> updateErrorStatus(HiveCluster resource, Context<HiveCluster> context,
       Exception e) {
-    LOG.error("Error reconciling HiveCluster: {}/{}", resource.getMetadata().getNamespace(),
-        resource.getMetadata().getName(), e);
+    LOG.error("Error reconciling HiveCluster: {}/{} - {}", resource.getMetadata().getNamespace(),
+        resource.getMetadata().getName(), e.getMessage(), e);
 
     HiveClusterStatus status = resource.getStatus() != null ? resource.getStatus() : new HiveClusterStatus();
 
@@ -312,14 +222,86 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     condition.setReason(reason);
     condition.setMessage(message);
 
-    // Preserve lastTransitionTime when the condition status has not changed
+    // Preserve lastTransitionTime from ANY existing condition of this type
+    // (regardless of status) to avoid generating new timestamps on every
+    // reconcile which would cause an infinite status-patch loop.
     String preservedTime = existingConditions.stream()
-        .filter(c -> type.equals(c.getType()) && conditionStatus.equals(c.getStatus()))
+        .filter(c -> type.equals(c.getType()))
         .map(Condition::getLastTransitionTime)
         .findFirst()
         .orElse(null);
 
-    condition.setLastTransitionTime(preservedTime != null ? preservedTime : Instant.now().toString());
+    if (preservedTime != null) {
+      // Only update the timestamp if the status actually changed
+      String oldStatus = existingConditions.stream()
+          .filter(c -> type.equals(c.getType()))
+          .map(Condition::getStatus)
+          .findFirst()
+          .orElse(null);
+      if (conditionStatus.equals(oldStatus)) {
+        condition.setLastTransitionTime(preservedTime);
+      } else {
+        condition.setLastTransitionTime(Instant.now().toString());
+      }
+    } else {
+      condition.setLastTransitionTime(Instant.now().toString());
+    }
     return condition;
+  }
+
+  /**
+   * Compares two HiveClusterStatus objects ignoring condition timestamps.
+   * This prevents infinite reconciliation loops caused by informer cache lag:
+   * after a status patch, the informer may still have the old status, causing
+   * the next reconcile to see a "different" status (new timestamp vs old) and
+   * patch again, perpetuating the loop.
+   */
+  private boolean statusEqualsIgnoringTimestamps(HiveClusterStatus a, HiveClusterStatus b) {
+    if (a == b) {
+      return true;
+    }
+    if (a == null || b == null) {
+      return false;
+    }
+    if (!Objects.equals(a.getObservedGeneration(), b.getObservedGeneration())) {
+      return false;
+    }
+    if (!Objects.equals(a.getMetastore(), b.getMetastore())) {
+      return false;
+    }
+    if (!Objects.equals(a.getHiveServer2(), b.getHiveServer2())) {
+      return false;
+    }
+    if (!Objects.equals(a.getLlap(), b.getLlap())) {
+      return false;
+    }
+    if (!Objects.equals(a.getTezAm(), b.getTezAm())) {
+      return false;
+    }
+    // Compare conditions by type+status+reason+message, ignoring lastTransitionTime
+    return conditionsEqualIgnoringTime(a.getConditions(), b.getConditions());
+  }
+
+  private boolean conditionsEqualIgnoringTime(List<Condition> a, List<Condition> b) {
+    if (a == b) {
+      return true;
+    }
+    if (a == null || b == null) {
+      return a == null && b == null;
+    }
+    if (a.size() != b.size()) {
+      return false;
+    }
+    for (int i = 0; i < a.size(); i++) {
+      Condition ca = a.get(i);
+      Condition cb = b.get(i);
+      if (!Objects.equals(ca.getType(), cb.getType())
+          || !Objects.equals(ca.getStatus(), cb.getStatus())
+          || !Objects.equals(ca.getReason(), cb.getReason())
+          || !Objects.equals(ca.getMessage(), cb.getMessage())) {
+        return false;
+      }
+    }
+    return true;
   }
 }
