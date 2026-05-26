@@ -238,10 +238,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ax
-                  filterExpr: (((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) or (null and (CAST( t AS STRING) = 'bb'))) is null (type: boolean)
+                  filterExpr: ((struct(CAST( s AS STRING),CAST( t AS STRING)) = const struct('a','a')) or (struct(s,CAST( t AS STRING)) = const struct(null,'bb'))) is null (type: boolean)
                   Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a')) or (null and (CAST( t AS STRING) = 'bb'))) is null (type: boolean)
+                    predicate: ((struct(CAST( s AS STRING),CAST( t AS STRING)) = const struct('a','a')) or (struct(s,CAST( t AS STRING)) = const struct(null,'bb'))) is null (type: boolean)
                     Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
@@ -292,7 +292,7 @@ POSTHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-expected 1	1
+expected 1	0
 PREHOOK: query: explain cbo select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
 PREHOOK: type: QUERY
@@ -390,7 +390,7 @@ POSTHOOK: Input: default@ax
 CBO PLAN:
 HiveProject(_c0=[$0])
   HiveAggregate(group=[{}], agg#0=[count()])
-    HiveFilter(condition=[IN($1, _UTF-16LE'a', _UTF-16LE'aa', _UTF-16LE'aaa', _UTF-16LE'ab', _UTF-16LE'abc', _UTF-16LE'ac', _UTF-16LE'ba', _UTF-16LE'bb', _UTF-16LE'bbb', _UTF-16LE'bc', _UTF-16LE'bca', _UTF-16LE'ca', _UTF-16LE'cab', _UTF-16LE'cb', _UTF-16LE'cbc', _UTF-16LE'z')])
+    HiveFilter(condition=[IN($1, _UTF-16LE'a         ', _UTF-16LE'bb        ', _UTF-16LE'aa        ', _UTF-16LE'bbb       ', _UTF-16LE'ab        ', _UTF-16LE'ba        ', _UTF-16LE'aaa       ', _UTF-16LE'bbb       ', _UTF-16LE'abc       ', _UTF-16LE'bc        ', _UTF-16LE'ac        ', _UTF-16LE'bca       ', _UTF-16LE'cab       ', _UTF-16LE'cb        ', _UTF-16LE'ca        ', _UTF-16LE'cbc       ', _UTF-16LE'z         ')])
       HiveTableScan(table=[[default, ax]], table:alias=[ax])
 
 PREHOOK: query: explain select count(*) from ax where t in
@@ -419,10 +419,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ax
-                  filterExpr: (t) IN ('a         ', 'aa        ', 'aaa       ', 'ab        ', 'abc       ', 'ac        ', 'ba        ', 'bb        ', 'bbb       ', 'bc        ', 'bca       ', 'ca        ', 'cab       ', 'cb        ', 'cbc       ', 'z         ') (type: boolean)
+                  filterExpr: (t) IN ('a         ', 'bb        ', 'aa        ', 'bbb       ', 'ab        ', 'ba        ', 'aaa       ', 'bbb       ', 'abc       ', 'bc        ', 'ac        ', 'bca       ', 'cab       ', 'cb        ', 'ca        ', 'cbc       ', 'z         ') (type: boolean)
                   Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (t) IN ('a         ', 'aa        ', 'aaa       ', 'ab        ', 'abc       ', 'ac        ', 'ba        ', 'bb        ', 'bbb       ', 'bc        ', 'bca       ', 'ca        ', 'cab       ', 'cb        ', 'cbc       ', 'z         ') (type: boolean)
+                    predicate: (t) IN ('a         ', 'bb        ', 'aa        ', 'bbb       ', 'ab        ', 'ba        ', 'aaa       ', 'bbb       ', 'abc       ', 'bc        ', 'ac        ', 'bca       ', 'cab       ', 'cb        ', 'ca        ', 'cbc       ', 'z         ') (type: boolean)
                     Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE

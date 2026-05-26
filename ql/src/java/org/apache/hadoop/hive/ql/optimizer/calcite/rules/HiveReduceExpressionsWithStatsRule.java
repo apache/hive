@@ -276,7 +276,6 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
           }
         }
       } else if (call.getKind() == SqlKind.SEARCH) {
-        // TODO process SEARCH as is?
         RexNode expanded = new SearchTransformer<> (rexBuilder, call, RexUnknownAs.UNKNOWN).transform();
         RexNode processed = expanded.accept(this);
         if (expanded != processed) {
