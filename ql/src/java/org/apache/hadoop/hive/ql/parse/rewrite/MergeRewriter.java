@@ -238,10 +238,9 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
                              List<String> values) {
-      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias, 
+      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias,
           HiveUtils.unparseIdentifier(name, conf));
-      
-      for (FieldSchema fieldSchema : targetTable.getCols()) {
+      for (FieldSchema fieldSchema : targetTable.getStorageSchemaCols()) {
         if (newValues.containsKey(fieldSchema.getName())) {
           String rhsExp = newValues.get(fieldSchema.getName());
           values.add(getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
@@ -250,8 +249,10 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         }
       }
 
-      targetTable.getPartCols().forEach(fieldSchema -> values.add(
-          formatter.apply(fieldSchema.getName())));
+      if (!targetTable.getPartitionKeys().isEmpty()) {
+        targetTable.getPartitionKeys().forEach(fieldSchema -> values.add(
+            formatter.apply(fieldSchema.getName())));
+      }
     }
     
     protected String getRhsExpValue(String newValue, String alias) {

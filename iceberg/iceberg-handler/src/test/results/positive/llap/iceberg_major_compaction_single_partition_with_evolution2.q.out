@@ -106,7 +106,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
@@ -199,7 +198,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
@@ -306,7 +304,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
@@ -413,7 +410,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
