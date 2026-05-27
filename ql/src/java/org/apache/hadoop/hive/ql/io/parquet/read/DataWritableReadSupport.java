@@ -440,7 +440,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   }
 
   public static MessageType getTableParquetSchema(Configuration configuration, MessageType fileSchema,
-    Map<String, String> metadata) {
+      Map<String, String> metadata) {
     String columnNames = configuration.get(IOConstants.COLUMNS);
     String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
     if (columnNames != null && !columnNames.isEmpty() && columnTypes != null && !columnTypes.isEmpty()) {
