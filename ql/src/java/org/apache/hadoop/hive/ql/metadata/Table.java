@@ -32,10 +32,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -118,7 +116,7 @@ public class Table implements Serializable {
    * These fields are all cached fields.  The information comes from tTable.
    */
   private List<FieldSchema> tablePartCols;
-  private Map<String, Pair<Integer, FieldSchema>> inputColumnIndexByName;
+  private Map<String, Pair<Integer, FieldSchema>> inputColnameToIndFsMap;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
@@ -607,14 +605,6 @@ public class Table implements Serializable {
         && Objects.equals(snapshotRef, other.snapshotRef);
   }
 
-  private List<FieldSchema> getNativePartCols() {
-    List<FieldSchema> partKeys = tTable.getPartitionKeys();
-    if (partKeys == null) {
-      partKeys = new ArrayList<>();
-      tTable.setPartitionKeys(partKeys);
-    }
-    return partKeys;
-  }
 
   /**
    * Returns partition columns, consulting the storage handler for non-native tables (e.g. Iceberg)
@@ -635,7 +625,7 @@ public class Table implements Serializable {
       }
       tablePartCols = partCols;
     } else {
-      tablePartCols = getNativePartCols();
+      tablePartCols = getPartitionKeys();
     }
     return tablePartCols;
   }
@@ -770,28 +760,28 @@ public class Table implements Serializable {
   }
 
   private void fillColumnIndexByName() {
-    inputColumnIndexByName = new HashMap<>();
+    inputColnameToIndFsMap = new HashMap<>();
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
     if (!isNonNative()) {
-      fsList.addAll(getNativePartCols());
+      fsList.addAll(getPartitionKeys());
     }
     for (int i = 0; i < fsList.size(); i++) {
-      inputColumnIndexByName.put(fsList.get(i).getName(), Pair.of(i, fsList.get(i)));
+      inputColnameToIndFsMap.put(fsList.get(i).getName(), Pair.of(i, fsList.get(i)));
     }
   }
 
   public int getColumnIndexByName(String colName) {
-    if (inputColumnIndexByName == null) {
+    if (inputColnameToIndFsMap == null) {
       fillColumnIndexByName();
     }
-    return inputColumnIndexByName.get(colName.toLowerCase()).getLeft();
+    return inputColnameToIndFsMap.get(colName.toLowerCase()).getLeft();
   }
 
   public FieldSchema getFieldSchemaByName(String colName) {
-    if (inputColumnIndexByName == null) {
+    if (inputColnameToIndFsMap == null) {
       fillColumnIndexByName();
     }
-    return inputColumnIndexByName.get(colName).getRight();
+    return inputColnameToIndFsMap.get(colName).getRight();
   }
 
   public List<FieldSchema> getStorageSchemaCols() {
@@ -845,7 +835,7 @@ public class Table implements Serializable {
   public List<FieldSchema> getAllCols() {
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
     if (!isNonNative()) {
-      fsList.addAll(getNativePartCols());
+      fsList.addAll(getPartitionKeys());
     }
     return fsList;
   }
@@ -998,6 +988,9 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getPartitionKeys() {
+    if (tTable.getPartitionKeys() == null) {
+      tTable.setPartitionKeys(new ArrayList<>());
+    }
     return tTable.getPartitionKeys();
   }
 
