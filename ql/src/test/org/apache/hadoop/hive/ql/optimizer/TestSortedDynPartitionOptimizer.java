@@ -19,14 +19,12 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -61,27 +59,18 @@ class TestSortedDynPartitionOptimizer {
     RowSchema schema = mock(RowSchema.class);
     when(fsParent.getSchema()).thenReturn(schema);
 
+    ColStatistics[] colStats = buildColStats(ndvs, firstStatNull, "p");
     List<ColumnInfo> sig = new ArrayList<>();
+    List<Integer> partitionPos = new ArrayList<>();
     for (int i = 0; i < ndvs.length; i++) {
       String colName = "p" + i;
       ColumnInfo ci = mock(ColumnInfo.class);
       when(ci.getInternalName()).thenReturn(colName);
       sig.add(ci);
-
-      if (i == 0 && firstStatNull) {
-        when(tStats.getColumnStatisticsFromColName(colName)).thenReturn(null);
-      } else {
-        ColStatistics cs = new ColStatistics(colName, "int");
-        cs.setCountDistint(ndvs[i]);
-        when(tStats.getColumnStatisticsFromColName(colName)).thenReturn(cs);
-      }
-    }
-    when(schema.getSignature()).thenReturn(sig);
-
-    List<Integer> partitionPos = new ArrayList<>();
-    for (int i = 0; i < ndvs.length; i++) {
+      when(tStats.getColumnStatisticsFromColName(colName)).thenReturn(colStats[i]);
       partitionPos.add(i);
     }
+    when(schema.getSignature()).thenReturn(sig);
 
     long result = proc.computePartCardinality(
         partitionPos, Collections.emptyList(), tStats, fsParent, new ArrayList<>());
@@ -127,18 +116,12 @@ class TestSortedDynPartitionOptimizer {
       exprs.add(cols -> resolved);
     }
 
+    ColStatistics[] colStats = buildColStats(ndvs, firstStatNull, "e");
     try (MockedStatic<StatsUtils> stub = mockStatic(StatsUtils.class)) {
       for (int i = 0; i < ndvs.length; i++) {
         final int idx = i;
-        final ColStatistics cs;
-        if (idx == 0 && firstStatNull) {
-          cs = null;
-        } else {
-          cs = new ColStatistics("e" + idx, "int");
-          cs.setCountDistint(ndvs[idx]);
-        }
         stub.when(() -> StatsUtils.getColStatisticsFromExpression(eq(conf), eq(tStats), eq(resolvedExprs.get(idx))))
-            .thenReturn(cs);
+            .thenReturn(colStats[idx]);
       }
 
       long result = proc.computePartCardinality(
@@ -174,5 +157,24 @@ class TestSortedDynPartitionOptimizer {
   private static SortedDynPartitionOptimizer.SortedDynamicPartitionProc newProc(ParseContext parseCtx) {
     SortedDynPartitionOptimizer outer = new SortedDynPartitionOptimizer();
     return outer.new SortedDynamicPartitionProc(parseCtx);
+  }
+
+  /**
+   * Builds one ColStatistics per ndvs entry; the first entry is null when firstStatNull
+   * is true (used to simulate "missing stats" for either the partition-column or the
+   * custom-expression branch).
+   */
+  private static ColStatistics[] buildColStats(long[] ndvs, boolean firstStatNull, String prefix) {
+    ColStatistics[] result = new ColStatistics[ndvs.length];
+    for (int i = 0; i < ndvs.length; i++) {
+      if (i == 0 && firstStatNull) {
+        result[i] = null;
+      } else {
+        ColStatistics cs = new ColStatistics(prefix + i, "int");
+        cs.setCountDistint(ndvs[i]);
+        result[i] = cs;
+      }
+    }
+    return result;
   }
 }

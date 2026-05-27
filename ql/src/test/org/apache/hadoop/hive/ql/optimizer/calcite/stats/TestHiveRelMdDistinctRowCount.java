@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -51,8 +50,7 @@ class TestHiveRelMdDistinctRowCount {
     HiveRelMdDistinctRowCount provider = new HiveRelMdDistinctRowCount();
     Double result = provider.getDistinctRowCount(htRel, mq, ImmutableBitSet.of(0), null);
 
-    assertEquals(expected, result,
-        "getDistinctRowCount for ndvs=" + Arrays.toString(ndvs) + " rowCount=" + rowCount);
+    assertEquals(expected, result);
   }
 
   private static Stream<Arguments> getDistinctRowCountCases() {

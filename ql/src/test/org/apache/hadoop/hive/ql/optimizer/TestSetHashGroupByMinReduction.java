@@ -31,6 +31,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -41,95 +43,81 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 
 class TestSetHashGroupByMinReduction {
 
-  @Test
-  void testProcessReturnsNullWhenNdvProductIsUnknown() throws SemanticException {
-    GroupByOperator op = setupCompleteHashGroupBy(0.5f, 0.1f);
+  // Default-reduction tuple used across all tests. Picked so the known-positive case
+  // (ndvProduct=100, numRows=1000) produces a factor (0.9) strictly below the default
+  // (0.99), triggering setMinReductionHashAggr.
+  private static final float DEFAULT_MIN_REDUCTION = 0.99f;
+  private static final float DEFAULT_MIN_REDUCTION_LOWER_BOUND = 0.1f;
+
+  /**
+   * NDV product drives the central HIVE-29625 disambiguation:
+   *   ndvProduct < 0  -> unknown -> early-return null (no setMinReductionHashAggr call)
+   *   ndvProduct == 0 -> verified zero -> factor = 1.0, NOT less than default 0.99 (no call)
+   *   ndvProduct > 0  -> compute factor = 1 - ndvProduct/numRows, set if < default
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("ndvProductCases")
+  void testProcessByNdvProduct(String name, long ndvProduct, boolean expectSetCall)
+      throws SemanticException {
+    GroupByOperator op = setupCompleteHashGroupBy();
     GroupByDesc desc = op.getConf();
 
     try (MockedStatic<StatsUtils> stub = mockStatic(StatsUtils.class)) {
       stub.when(() -> StatsUtils.computeNDVGroupingColumns(any(), any(), eq(true)))
-          .thenReturn(-1L);
-
-      Object result = new SetHashGroupByMinReduction().process(op, null, null);
-
-      assertNull(result, "Unknown ndvProduct (-1) makes process() return null");
-      verify(desc, never()).setMinReductionHashAggr(anyFloat());
-    }
-  }
-
-  @Test
-  void testProcessProceedsWhenNdvProductIsVerifiedZero() throws SemanticException {
-    // HIVE-29625 disambiguation: ndvProduct == 0 (verified) now distinct from ndvProduct < 0 (unknown).
-    // Verified-zero means there are zero distinct group keys -> maximum reduction (factor = 1.0).
-    GroupByOperator op = setupCompleteHashGroupBy(0.99f, 0.5f);
-    GroupByDesc desc = op.getConf();
-
-    try (MockedStatic<StatsUtils> stub = mockStatic(StatsUtils.class)) {
-      stub.when(() -> StatsUtils.computeNDVGroupingColumns(any(), any(), eq(true)))
-          .thenReturn(0L);
+          .thenReturn(ndvProduct);
 
       Object result = new SetHashGroupByMinReduction().process(op, null, null);
 
       assertNull(result, "process() always returns null sentinel");
-      // 1f - (0 / numRows) = 1.0; capped by lowerBound 0.5 -> stays 1.0; less than default 0.99? No, 1.0 > 0.99.
-      // So setMinReductionHashAggr is NOT called (newFactor not strictly less than default).
-      verify(desc, never()).setMinReductionHashAggr(anyFloat());
+      verify(desc, expectSetCall ? atLeastOnce() : never()).setMinReductionHashAggr(anyFloat());
     }
   }
 
-  @Test
-  void testProcessProceedsWhenNdvProductIsKnownPositive() throws SemanticException {
-    // numRows=1000, ndvProduct=100 -> factor = 1 - 100/1000 = 0.9
-    // default = 0.99 -> 0.9 < 0.99 -> setMinReductionHashAggr(0.9)
-    GroupByOperator op = setupCompleteHashGroupBy(0.99f, 0.1f);
-    GroupByDesc desc = op.getConf();
-
-    try (MockedStatic<StatsUtils> stub = mockStatic(StatsUtils.class)) {
-      stub.when(() -> StatsUtils.computeNDVGroupingColumns(any(), any(), eq(true)))
-          .thenReturn(100L);
-
-      new SetHashGroupByMinReduction().process(op, null, null);
-
-      verify(desc, atLeastOnce()).setMinReductionHashAggr(anyFloat());
-    }
+  private static Stream<Arguments> ndvProductCases() {
+    return Stream.of(
+        Arguments.of("unknownNDVEarlyReturns",        -1L,  false),
+        Arguments.of("verifiedZeroFactorTooHigh",      0L,  false),
+        Arguments.of("knownPositiveBelowDefault",    100L,  true)
+    );
   }
 
-  @Test
-  void testProcessReturnsNullWhenModeNotHash() throws SemanticException {
-    GroupByOperator op = setupCompleteHashGroupBy(0.99f, 0.5f);
-    when(op.getConf().getMode()).thenReturn(Mode.MERGEPARTIAL);
+  /**
+   * Each gate is one of the early-return conditions in process(): non-HASH mode,
+   * incomplete basic stats, or incomplete column stats. All three early-return without
+   * touching setMinReductionHashAggr.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("earlyReturnGateCases")
+  void testProcessEarlyReturnsOnUnsupportedState(String name, Consumer<GroupByOperator> flipGate)
+      throws SemanticException {
+    GroupByOperator op = setupCompleteHashGroupBy();
+    flipGate.accept(op);
 
     Object result = new SetHashGroupByMinReduction().process(op, null, null);
 
-    assertNull(result, "Non-HASH mode -> early return null");
+    assertNull(result);
     verify(op.getConf(), never()).setMinReductionHashAggr(anyFloat());
   }
 
-  @Test
-  void testProcessReturnsNullWhenBasicStatsIncomplete() throws SemanticException {
-    GroupByOperator op = setupCompleteHashGroupBy(0.99f, 0.5f);
-    when(op.getStatistics().getBasicStatsState()).thenReturn(State.PARTIAL);
-
-    Object result = new SetHashGroupByMinReduction().process(op, null, null);
-
-    assertNull(result, "Incomplete basic stats -> early return null");
-    verify(op.getConf(), never()).setMinReductionHashAggr(anyFloat());
-  }
-
-  @Test
-  void testProcessReturnsNullWhenColumnStatsIncomplete() throws SemanticException {
-    GroupByOperator op = setupCompleteHashGroupBy(0.99f, 0.5f);
-    when(op.getStatistics().getColumnStatsState()).thenReturn(State.PARTIAL);
-
-    Object result = new SetHashGroupByMinReduction().process(op, null, null);
-
-    assertNull(result, "Incomplete column stats -> early return null");
-    verify(op.getConf(), never()).setMinReductionHashAggr(anyFloat());
+  private static Stream<Arguments> earlyReturnGateCases() {
+    return Stream.of(
+        Arguments.of("modeNotHash",
+            (Consumer<GroupByOperator>) op ->
+                when(op.getConf().getMode()).thenReturn(Mode.MERGEPARTIAL)),
+        Arguments.of("basicStatsIncomplete",
+            (Consumer<GroupByOperator>) op ->
+                when(op.getStatistics().getBasicStatsState()).thenReturn(State.PARTIAL)),
+        Arguments.of("columnStatsIncomplete",
+            (Consumer<GroupByOperator>) op ->
+                when(op.getStatistics().getColumnStatsState()).thenReturn(State.PARTIAL))
+    );
   }
 
   /**
@@ -137,8 +125,7 @@ class TestSetHashGroupByMinReduction {
    * so the colStats loop is a no-op (the inputs to computeNDVGroupingColumns are
    * controlled directly via mockStatic in each test).
    */
-  private static GroupByOperator setupCompleteHashGroupBy(
-      float defaultMinReduction, float defaultMinReductionLowerBound) {
+  private static GroupByOperator setupCompleteHashGroupBy() {
     GroupByOperator op = mock(GroupByOperator.class);
     GroupByDesc desc = mock(GroupByDesc.class);
     Statistics stats = mock(Statistics.class);
@@ -153,8 +140,8 @@ class TestSetHashGroupByMinReduction {
 
     when(desc.getMode()).thenReturn(Mode.HASH);
     when(desc.getKeys()).thenReturn(Collections.emptyList());
-    when(desc.getMinReductionHashAggr()).thenReturn(defaultMinReduction);
-    when(desc.getMinReductionHashAggrLowerBound()).thenReturn(defaultMinReductionLowerBound);
+    when(desc.getMinReductionHashAggr()).thenReturn(DEFAULT_MIN_REDUCTION);
+    when(desc.getMinReductionHashAggrLowerBound()).thenReturn(DEFAULT_MIN_REDUCTION_LOWER_BOUND);
 
     when(stats.getBasicStatsState()).thenReturn(State.COMPLETE);
     when(stats.getColumnStatsState()).thenReturn(State.COMPLETE);

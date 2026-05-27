@@ -80,7 +80,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TestStatsRulesProcFactory {
+class TestStatsRulesProcFactory {
 
   private final static String COL_NAME = "col1";
   private final static ExprNodeDesc COL_EXPR = new  ExprNodeColumnDesc(
@@ -91,7 +91,7 @@ public class TestStatsRulesProcFactory {
   private final static long[] VALUES = { 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 4L, 5L, 6L, 7L };
 
   @Test
-  public void testComparisonRowCountZeroNonNullValues() throws SemanticException {
+  void testComparisonRowCountZeroNonNullValues() throws SemanticException {
     long numNulls = 2;
     long[] values = {};
     Statistics stats = createStatistics(values, numNulls);
@@ -105,7 +105,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountInvalidKll() throws SemanticException {
+  void testComparisonRowCountInvalidKll() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     stats.getColumnStats().get(0).setHistogram(null);
@@ -127,13 +127,17 @@ public class TestStatsRulesProcFactory {
     assertEquals((VALUES.length + numNulls) / 3, numRows);
   }
 
-  @Test
-  public void testEvaluateInExprWithUnknownNDVAppliesHalfFactor() throws SemanticException {
-    // HIVE-29625: when the column's NDV is unknown (-1), the IN filter takes
-    // factor *= 0.5 and continues (rather than the old behavior of treating
-    // dvs==0 as unknown). currNumRows=13, factor=0.5, inFactor=1.0 (default).
+  /**
+   * HIVE-29625: IN-filter row-count estimate by NDV of the column.
+   *   unknown NDV (-1) -> factor *= 0.5 per IN value, currNumRows = round(rows * 0.5)
+   *   verified-zero NDV (0) -> factor = 0, no rows match
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("evaluateInExprCases")
+  void testEvaluateInExprByNDV(String name, long ndvOverride, long expectedRows)
+      throws SemanticException {
     Statistics stats = createStatistics(VALUES, 0);
-    stats.getColumnStats().get(0).setCountDistint(-1); // force unknown NDV
+    stats.getColumnStats().get(0).setCountDistint(ndvOverride);
 
     AnnotateStatsProcCtx ctx = spy(new AnnotateStatsProcCtx(null));
     when(ctx.getConf()).thenReturn(new HiveConf());
@@ -145,15 +149,28 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, inExpr, ctx, Arrays.asList(COL_NAME), null, VALUES.length);
 
-    assertEquals(Math.round(VALUES.length * 0.5), numRows);
+    assertEquals(expectedRows, numRows);
   }
 
-  @Test
-  public void testEvaluateEqualWithUnknownNDVUsesHalfRows() throws SemanticException {
-    // HIVE-29625: col = const where col.NDV=-1 (unknown) falls back to numRows/2.
-    // VALUES.length=13, expected = 13/2 = 6 (long division).
+  private static Stream<Arguments> evaluateInExprCases() {
+    return Stream.of(
+        Arguments.of("unknownNDVAppliesHalfFactor", -1L, Math.round(VALUES.length * 0.5)),
+        Arguments.of("verifiedZeroReturnsZero",      0L, 0L)
+    );
+  }
+
+  /**
+   * HIVE-29625: col = const row-count estimate by NDV of the column.
+   *   unknown NDV (-1) -> numRows/2 (13/2 = 6)
+   *   verified-zero NDV (0) -> 0 rows match
+   *   known NDV (n) -> uniform distribution numRows/n (13/7 = 1 ~ rounded to 2)
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("evaluateEqualCases")
+  void testEvaluateEqualByNDV(String name, long ndvOverride, long expectedRows)
+      throws SemanticException {
     Statistics stats = createStatistics(VALUES, 0);
-    stats.getColumnStats().get(0).setCountDistint(-1);
+    stats.getColumnStats().get(0).setCountDistint(ndvOverride);
 
     AnnotateStatsProcCtx ctx = spy(new AnnotateStatsProcCtx(null));
     when(ctx.getConf()).thenReturn(new HiveConf());
@@ -165,31 +182,20 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, eqExpr, ctx, Arrays.asList(COL_NAME), null, VALUES.length);
 
-    assertEquals(6, numRows);
+    assertEquals(expectedRows, numRows);
   }
 
-  @Test
-  public void testEvaluateEqualWithVerifiedZeroNDVReturnsZero() throws SemanticException {
-    // HIVE-29625: col = const where col.NDV=0 (verified zero) returns 0 rows.
-    Statistics stats = createStatistics(VALUES, 0);
-    stats.getColumnStats().get(0).setCountDistint(0);
-
-    AnnotateStatsProcCtx ctx = spy(new AnnotateStatsProcCtx(null));
-    when(ctx.getConf()).thenReturn(new HiveConf());
-
-    ExprNodeDesc eqExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-        new GenericUDFOPEqual(),
-        Arrays.asList(COL_EXPR, createExprNodeConstantDesc(1)));
-
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, eqExpr, ctx, Arrays.asList(COL_NAME), null, VALUES.length);
-
-    assertEquals(0, numRows);
+  private static Stream<Arguments> evaluateEqualCases() {
+    return Stream.of(
+        Arguments.of("unknownNDVUsesHalfRows",      -1L, 6L),
+        Arguments.of("verifiedZeroReturnsZero",      0L, 0L),
+        Arguments.of("knownNDVUsesUniformDistribution", 7L, 2L)
+    );
   }
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("groupByFinalCases")
-  public void testGroupByStatsRuleFinalCardinality(String name, long keyNdv, long expectedRows) throws SemanticException {
+  void testGroupByStatsRuleFinalCardinality(String name, long keyNdv, long expectedRows) throws SemanticException {
     assertGroupByFinalCardinality(keyNdv, expectedRows);
   }
 
@@ -203,7 +209,8 @@ public class TestStatsRulesProcFactory {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("groupByHashCases")
-  public void testCheckMapSideAggregationHashCardinality(String name, long keyNdv, long expectedRows) throws SemanticException {
+  void testCheckMapSideAggregationHashCardinality(String name, long keyNdv, long expectedRows)
+      throws SemanticException {
     assertGroupByHashCardinality(keyNdv, expectedRows);
   }
 
@@ -324,46 +331,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testEvaluateEqualWithKnownNDVUsesUniformDistribution() throws SemanticException {
-    // Regression check: col = const where col.NDV=7 returns round(13/7)=2 rows.
-    // VALUES has 7 distinct values, so createStatistics sets NDV=7.
-    Statistics stats = createStatistics(VALUES, 0);
-
-    AnnotateStatsProcCtx ctx = spy(new AnnotateStatsProcCtx(null));
-    when(ctx.getConf()).thenReturn(new HiveConf());
-
-    ExprNodeDesc eqExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-        new GenericUDFOPEqual(),
-        Arrays.asList(COL_EXPR, createExprNodeConstantDesc(1)));
-
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, eqExpr, ctx, Arrays.asList(COL_NAME), null, VALUES.length);
-
-    assertEquals(2, numRows);
-  }
-
-  @Test
-  public void testEvaluateInExprWithVerifiedZeroNDVReturnsZero() throws SemanticException {
-    // HIVE-29625: when the column's NDV is verified zero (0), the IN filter
-    // sets factor=0 and breaks out of the loop, so no rows match.
-    Statistics stats = createStatistics(VALUES, 0);
-    stats.getColumnStats().get(0).setCountDistint(0); // force verified-zero NDV
-
-    AnnotateStatsProcCtx ctx = spy(new AnnotateStatsProcCtx(null));
-    when(ctx.getConf()).thenReturn(new HiveConf());
-
-    ExprNodeDesc inExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
-        new GenericUDFIn(),
-        Arrays.asList(COL_EXPR, createExprNodeConstantDesc(1), createExprNodeConstantDesc(2)));
-
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, inExpr, ctx, Arrays.asList(COL_NAME), null, VALUES.length);
-
-    assertEquals(0, numRows);
-  }
-
-  @Test
-  public void testComparisonRowCountLessThan() throws SemanticException {
+  void testComparisonRowCountLessThan() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -376,7 +344,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountLessThanMin() throws SemanticException {
+  void testComparisonRowCountLessThanMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -389,7 +357,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountLessThanBelowMin() throws SemanticException {
+  void testComparisonRowCountLessThanBelowMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -402,7 +370,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountLessThanMax() throws SemanticException {
+  void testComparisonRowCountLessThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -415,7 +383,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountLessThanAboveMax() throws SemanticException {
+  void testComparisonRowCountLessThanAboveMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -428,7 +396,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrLessThan() throws SemanticException {
+  void testComparisonRowCountEqualOrLessThan() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -440,7 +408,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrLessThanMin() throws SemanticException {
+  void testComparisonRowCountEqualOrLessThanMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -452,7 +420,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrLessThanBelowMin() throws SemanticException {
+  void testComparisonRowCountEqualOrLessThanBelowMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -464,7 +432,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrLessThanMax() throws SemanticException {
+  void testComparisonRowCountEqualOrLessThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -476,7 +444,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrLessThanAboveMax() throws SemanticException {
+  void testComparisonRowCountEqualOrLessThanAboveMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -488,7 +456,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountGreaterThan() throws SemanticException {
+  void testComparisonRowCountGreaterThan() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -500,7 +468,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountGreaterThanMin() throws SemanticException {
+  void testComparisonRowCountGreaterThanMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -512,7 +480,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountGreaterThanBelowMin() throws SemanticException {
+  void testComparisonRowCountGreaterThanBelowMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -524,7 +492,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountGreaterThanMax() throws SemanticException {
+  void testComparisonRowCountGreaterThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -536,7 +504,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountGreaterThanAboveMax() throws SemanticException {
+  void testComparisonRowCountGreaterThanAboveMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -548,7 +516,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrGreaterThan() throws SemanticException {
+  void testComparisonRowCountEqualOrGreaterThan() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -560,7 +528,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrGreaterThanMin() throws SemanticException {
+  void testComparisonRowCountEqualOrGreaterThanMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -572,7 +540,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrGreaterThanBelowMin() throws SemanticException {
+  void testComparisonRowCountEqualOrGreaterThanBelowMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -584,7 +552,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrGreaterThanMax() throws SemanticException {
+  void testComparisonRowCountEqualOrGreaterThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -596,7 +564,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrGreaterThanBeyondMax() throws SemanticException {
+  void testComparisonRowCountEqualOrGreaterThanBeyondMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
@@ -608,7 +576,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrLessThanWhenMinEqualMax() throws SemanticException {
+  void testComparisonRowCountEqualOrLessThanWhenMinEqualMax() throws SemanticException {
     long[] values = { 1L, 1L };
     long numNulls = 2;
     Statistics stats = createStatistics(values, numNulls);
@@ -622,7 +590,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComparisonRowCountEqualOrGreaterThanWhenMinEqualMax() throws SemanticException {
+  void testComparisonRowCountEqualOrGreaterThanWhenMinEqualMax() throws SemanticException {
     long[] values = { 1L, 1L };
     long numNulls = 2;
     Statistics stats = createStatistics(values, numNulls);
@@ -636,7 +604,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testBetween() throws SemanticException {
+  void testBetween() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -650,7 +618,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testLiteralExtraction() {
+  void testLiteralExtraction() {
     final double DELTA = 1e-5;
 
     assertEquals((float) 100,
@@ -680,7 +648,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testLiteralExtractionFailures() {
+  void testLiteralExtractionFailures() {
     // make sure the correct exceptions are raised so that we can default to standard computation
     String[] types = {"int", "tinyint", "smallint", "bigint", "date", "timestamp", "float", "double"};
     for (String type : types) {
@@ -697,7 +665,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testBetweenLeftLowerThanMin() throws SemanticException {
+  void testBetweenLeftLowerThanMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -717,7 +685,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testBetweenLeftLowerThanMinRightHigherThanMax() throws SemanticException {
+  void testBetweenLeftLowerThanMinRightHigherThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -731,7 +699,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testBetweenRightHigherThanMax() throws SemanticException {
+  void testBetweenRightHigherThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -751,7 +719,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testBetweenRightLowerThanMin() throws SemanticException {
+  void testBetweenRightLowerThanMin() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -765,7 +733,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testBetweenLeftHigherThanMax() throws SemanticException {
+  void testBetweenLeftHigherThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -779,7 +747,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testBetweenLeftEqualMax() throws SemanticException {
+  void testBetweenLeftEqualMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -793,7 +761,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testNotBetween() throws SemanticException {
+  void testNotBetween() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -818,7 +786,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testNotBetweenLowerThanMinHigherThanMax() throws SemanticException {
+  void testNotBetweenLowerThanMinHigherThanMax() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -832,7 +800,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testNotBetweenLeftEqualsRight() throws SemanticException {
+  void testNotBetweenLeftEqualsRight() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -846,7 +814,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testNotBetweenRightLowerThanLeft() throws SemanticException {
+  void testNotBetweenRightLowerThanLeft() throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
@@ -908,7 +876,7 @@ public class TestStatsRulesProcFactory {
    * Without the fix, valuesCount = numRows - (-1) = numRows + 1 (wrong).
    */
   @Test
-  public void testComputeAggregateColumnMinMaxWithUnknownNumNulls() throws SemanticException {
+  void testComputeAggregateColumnMinMaxWithUnknownNumNulls() throws SemanticException {
     ColStatistics cs = new ColStatistics("_col0", "bigint");
     HiveConf conf = new HiveConf();
 
@@ -943,7 +911,7 @@ public class TestStatsRulesProcFactory {
   }
 
   @Test
-  public void testComputeAggregateColumnMinMaxWithKnownNumNulls() throws SemanticException {
+  void testComputeAggregateColumnMinMaxWithKnownNumNulls() throws SemanticException {
     ColStatistics cs = new ColStatistics("_col0", "bigint");
     HiveConf conf = new HiveConf();
 
@@ -974,17 +942,21 @@ public class TestStatsRulesProcFactory {
         "COUNT max should be 80 (numRows - numNulls)");
   }
 
-  @Test
-  public void testComputeAggregateColumnMinMaxDistinctWithUnknownNDVReturnsEarly() throws SemanticException {
-    // HIVE-29625: for COUNT(DISTINCT col), valuesCount = parentCS.getCountDistint().
-    // When that NDV is -1 (unknown), the new guard returns early to avoid building
-    // a Range with a negative maxValue.
+  /**
+   * HIVE-29625: COUNT(DISTINCT col) uses parentCS.getCountDistint() as the max range.
+   * When NDV is unknown (-1) the new guard short-circuits before building a Range with
+   * negative maxValue. When NDV is known, Range is set to [0, NDV].
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("computeAggregateColumnMinMaxDistinctCases")
+  void testComputeAggregateColumnMinMaxDistinctByNDV(
+      String name, long parentNDV, Long expectedMax) throws SemanticException {
     ColStatistics cs = new ColStatistics("_col0", "bigint");
     HiveConf conf = new HiveConf();
 
     ColStatistics parentColStats = new ColStatistics("val", "int");
     parentColStats.setNumNulls(0);
-    parentColStats.setCountDistint(-1);   // unknown NDV
+    parentColStats.setCountDistint(parentNDV);
     parentColStats.setRange(1, 100);
 
     Statistics parentStats = new Statistics(100, 400, 400, 400);
@@ -1001,38 +973,21 @@ public class TestStatsRulesProcFactory {
     StatsRulesProcFactory.GroupByStatsRule.computeAggregateColumnMinMax(
         cs, conf, agg, "bigint", parentStats);
 
-    assertNull(cs.getRange(), "Range should NOT be set when DISTINCT NDV is unknown");
+    if (expectedMax == null) {
+      assertNull(cs.getRange(), "Range should NOT be set when DISTINCT NDV is unknown");
+    } else {
+      assertNotNull(cs.getRange(), "Range should be set when DISTINCT NDV is known");
+      assertEquals(0L, ((Number) cs.getRange().minValue).longValue());
+      assertEquals(expectedMax.longValue(), ((Number) cs.getRange().maxValue).longValue(),
+          "COUNT DISTINCT max should equal the parent NDV");
+    }
   }
 
-  @Test
-  public void testComputeAggregateColumnMinMaxDistinctWithKnownNDVSetsRange() throws SemanticException {
-    // Regression: COUNT(DISTINCT col) with known parentCS.NDV=50 sets Range(0, 50).
-    ColStatistics cs = new ColStatistics("_col0", "bigint");
-    HiveConf conf = new HiveConf();
-
-    ColStatistics parentColStats = new ColStatistics("val", "int");
-    parentColStats.setNumNulls(0);
-    parentColStats.setCountDistint(50);
-    parentColStats.setRange(1, 100);
-
-    Statistics parentStats = new Statistics(100, 400, 400, 400);
-    parentStats.addToColumnStats(Collections.singletonList(parentColStats));
-
-    ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(
-        TypeInfoFactory.intTypeInfo, "val", "t", false);
-    AggregationDesc agg = new AggregationDesc();
-    agg.setGenericUDAFName("count");
-    agg.setParameters(Collections.singletonList(colExpr));
-    agg.setDistinct(true);
-    agg.setMode(GenericUDAFEvaluator.Mode.COMPLETE);
-
-    StatsRulesProcFactory.GroupByStatsRule.computeAggregateColumnMinMax(
-        cs, conf, agg, "bigint", parentStats);
-
-    assertNotNull(cs.getRange(), "Range should be set when DISTINCT NDV is known");
-    assertEquals(0L, ((Number) cs.getRange().minValue).longValue());
-    assertEquals(50L, ((Number) cs.getRange().maxValue).longValue(),
-        "COUNT DISTINCT max should equal the NDV (50)");
+  private static Stream<Arguments> computeAggregateColumnMinMaxDistinctCases() {
+    return Stream.of(
+        Arguments.of("unknownNDVReturnsEarlyNoRange", -1L, null),
+        Arguments.of("knownNDVSetsRangeUpToNDV",      50L, 50L)
+    );
   }
 
   /**
@@ -1041,7 +996,7 @@ public class TestStatsRulesProcFactory {
    * Without the fix, LEFT_OUTER_JOIN would calculate: newNumNulls = oldNumNulls + leftUnmatchedRows = -1 + 100 = 99
    */
   @Test
-  public void testUpdateNumNullsPreservesUnknownNumNulls() {
+  void testUpdateNumNullsPreservesUnknownNumNulls() {
     StatsRulesProcFactory.JoinStatsRule joinStatsRule = new StatsRulesProcFactory.JoinStatsRule();
 
     // Create ColStatistics with numNulls = -1 (unknown)
@@ -1076,7 +1031,7 @@ public class TestStatsRulesProcFactory {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("calculateUnmatchedRowsForOuterCases")
-  public void testCalculateUnmatchedRowsForOuter(
+  void testCalculateUnmatchedRowsForOuter(
       String name, long ndv, long distinctUnmatched, long expected) {
     assertCalculateUnmatchedRowsForOuter(ndv, distinctUnmatched, expected);
   }
@@ -1093,7 +1048,7 @@ public class TestStatsRulesProcFactory {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("computeRowCountAssumingInnerJoinCases")
-  public void testComputeRowCountAssumingInnerJoin(String name, long denom, long expected) {
+  void testComputeRowCountAssumingInnerJoin(String name, long denom, long expected) {
     assertComputeRowCountAssumingInnerJoin(denom, expected);
   }
 
@@ -1107,7 +1062,7 @@ public class TestStatsRulesProcFactory {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("updateColStatsCases")
-  public void testUpdateColStats(String name, long initialNdv, long expectedNdv) {
+  void testUpdateColStats(String name, long initialNdv, long expectedNdv) {
     ColStatistics cs = new ColStatistics("k", "int");
     cs.setCountDistint(initialNdv);
     cs.setNumNulls(0);

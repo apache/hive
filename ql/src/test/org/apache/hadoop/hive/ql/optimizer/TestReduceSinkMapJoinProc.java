@@ -29,14 +29,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.GenTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -44,10 +48,10 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -60,12 +64,15 @@ class TestReduceSinkMapJoinProc {
    * Master used `cs.getCountDistint() <= 0` to fall back to MAX_VALUE; HIVE-29625 uses
    * `cs.getCountDistint() < 0`, so verified-zero NDV no longer cascades to "no info"
    * but falls through to `maxKeyCount *= 0` (then clamped to 1 by later logic).
+   *
+   * A null `ndv` row represents StatsUtils.getColStatisticsFromExpression returning null
+   * (no derivable stat) - shares the same MAX_VALUE fallback as NDV < 0.
    */
   @ParameterizedTest(name = "{0}")
   @MethodSource("keyCountFromNdvCases")
   void testProcessReduceSinkToHashJoinKeyCountFromNdv(
-      String scenarioName, long ndv, long parentRows, long expectedKeyCount) throws Exception {
-    invokeAndAssertKeyCount(buildColStat(ndv), parentRows, expectedKeyCount, scenarioName);
+      String scenarioName, Long ndv, long parentRows, long expectedKeyCount) throws Exception {
+    invokeAndAssertKeyCount(ndv == null ? null : buildColStat(ndv), parentRows, expectedKeyCount);
   }
 
   private static Stream<Arguments> keyCountFromNdvCases() {
@@ -79,21 +86,16 @@ class TestReduceSinkMapJoinProc {
     //   joinConf.getParentKeyCounts().put(pos, keyCount)   [only if keyCount != MAX_VALUE]
     return Stream.of(
         // NDV > 0 and below parentRows -> keyCount = NDV
-        Arguments.of("knownPositiveBelowParent",  10L,    1000L, 10L),
+        Arguments.of("knownPositiveBelowParent",       10L,    1000L, 10L),
         // NDV > 0 but above parentRows -> capped at parentRows
-        Arguments.of("knownPositiveAboveParent",  5000L,  1000L, 1000L),
+        Arguments.of("knownPositiveAboveParent",       5000L,  1000L, 1000L),
         // NDV = 0 (verified zero under HIVE-29625) -> maxKeyCount = 0 -> keyCount = 0 -> bumped to 1
-        Arguments.of("verifiedZeroBumpsToOne",     0L,    1000L, 1L),
+        Arguments.of("verifiedZeroBumpsToOne",         0L,     1000L, 1L),
         // NDV = -1 (unknown under HIVE-29625) -> maxKeyCount = MAX_VALUE -> keyCount = parentRows
-        Arguments.of("unknownFallsBackToParent",  -1L,    1000L, 1000L)
+        Arguments.of("unknownFallsBackToParent",       -1L,    1000L, 1000L),
+        // cs == null (no derivable stat) -> shares the MAX_VALUE fallback path
+        Arguments.of("nullColStatsFallsBackToParent",  null,   1000L, 1000L)
     );
-  }
-
-  @Test
-  void testProcessReduceSinkToHashJoinNullColStatsFallsBackToParent() throws Exception {
-    // cs == null case (StatsUtils could not derive a stat for the expr) -> same fallback as < 0
-    invokeAndAssertKeyCount(null, 1000L, 1000L,
-        "Null ColStatistics falls back to parent row count (same as NDV < 0)");
   }
 
   /**
@@ -103,7 +105,7 @@ class TestReduceSinkMapJoinProc {
    * landed in joinConf.getParentKeyCounts() at position 0.
    */
   private static void invokeAndAssertKeyCount(
-      ColStatistics csForKey, long parentRows, long expectedKeyCount, String desc) throws Exception {
+      ColStatistics csForKey, long parentRows, long expectedKeyCount) throws Exception {
 
     // ---- Operator chain mocks ----
     ReduceSinkOperator parentRS = mock(ReduceSinkOperator.class);
@@ -116,9 +118,16 @@ class TestReduceSinkMapJoinProc {
 
     when(parentRS.getConf()).thenReturn(rsConf);
     when(parentRS.getStatistics()).thenReturn(rsStats);
+    when(parentRS.getCompilationOpContext()).thenReturn(new CompilationOpContext());
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<>();
     columnExprMap.put(Utilities.ReduceField.KEY.toString() + ".k0", keyExpr);
     when(parentRS.getColumnExprMap()).thenReturn(columnExprMap);
+    Operator<?> upstreamParent = mock(Operator.class);
+    when(upstreamParent.getSchema()).thenReturn(new RowSchema(Collections.emptyList()));
+    when(parentRS.getParentOperators()).thenReturn(Arrays.asList(upstreamParent));
+    List<Operator<? extends OperatorDesc>> childOps = new ArrayList<>();
+    childOps.add(mapJoinOp);
+    when(parentRS.getChildOperators()).thenReturn(childOps);
 
     when(mapJoinOp.getConf()).thenReturn(joinConf);
 
@@ -130,6 +139,9 @@ class TestReduceSinkMapJoinProc {
     when(joinConf.getParentKeyCounts()).thenReturn(parentKeyCounts);
     when(joinConf.getParentToInput()).thenReturn(new LinkedHashMap<>());
     when(joinConf.getParentDataSizes()).thenReturn(new LinkedHashMap<>());
+    Map<Byte, List<ExprNodeDesc>> keyExprMap = new HashMap<>();
+    keyExprMap.put((byte) 0, Collections.emptyList());
+    when(joinConf.getKeys()).thenReturn(keyExprMap);
 
     when(rsStats.getNumRows()).thenReturn(parentRows);
     when(rsStats.getDataSize()).thenReturn(8000L);
@@ -155,21 +167,11 @@ class TestReduceSinkMapJoinProc {
               any(HiveConf.class), any(Statistics.class), any(ExprNodeDesc.class)))
           .thenReturn(csForKey);
 
-      try {
-        ReduceSinkMapJoinProc.processReduceSinkToHashJoin(parentRS, mapJoinOp, context);
-      } catch (NullPointerException expected) {
-        // The method continues for ~100 more lines past the keyCount put() that this
-        // test is verifying - dummy-operator construction, key-table-desc setup, edge
-        // wiring, etc. - all requiring deep operator-chain mocking irrelevant to the
-        // HIVE-29625 NDV branch. By the time any NPE fires from that downstream code,
-        // joinConf.getParentKeyCounts() already received the put() we asserted on
-        // (line ~229 of ReduceSinkMapJoinProc, well before the first dependency this
-        // harness doesn't mock).
-      }
+      ReduceSinkMapJoinProc.processReduceSinkToHashJoin(parentRS, mapJoinOp, context);
     }
 
     Long actual = parentKeyCounts.get(0);
-    assertEquals(expectedKeyCount, actual.longValue(), desc);
+    assertEquals(expectedKeyCount, actual.longValue());
   }
 
   private static ColStatistics buildColStat(long ndv) {

@@ -1536,8 +1536,7 @@ public class StatsRulesProcFactory {
           ndvProduct = parentNumRows / 2;
 
           if (LOG.isDebugEnabled()) {
-            LOG.debug("STATS-" + gop.toString() + ": ndvProduct unknown; falling back to "
-                + ndvProduct);
+            LOG.debug("STATS-{}: ndvProduct unknown; falling back to {}", gop, ndvProduct);
           }
         }
         final long maxColumnNDV = colStats.stream()
