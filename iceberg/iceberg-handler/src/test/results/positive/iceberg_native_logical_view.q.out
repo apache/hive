@@ -143,14 +143,6 @@ Sort Columns:       	[]
 # View Information	 	 
 Original Query:     	select first_name || '-' || dept_id from src_ice where dept_id = 1	 
 Expanded Query:     	select `src_ice`.`first_name` || '-' || `src_ice`.`dept_id` from `ice_native_view_db`.`src_ice` where `src_ice`.`dept_id` = 1	 
-PREHOOK: query: drop view v_ice
-PREHOOK: type: DROPVIEW
-PREHOOK: Input: ice_native_view_db@v_ice
-PREHOOK: Output: ice_native_view_db@v_ice
-POSTHOOK: query: drop view v_ice
-POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: ice_native_view_db@v_ice
-POSTHOOK: Output: ice_native_view_db@v_ice
 PREHOOK: query: create view if not exists v_def 
 as select first_name, last_name, dept_id from src_ice where dept_id = 2
 PREHOOK: type: CREATEVIEW
@@ -314,3 +306,72 @@ POSTHOOK: query: drop view v_hive
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: ice_native_view_db@v_hive
 POSTHOOK: Output: ice_native_view_db@v_hive
+PREHOOK: query: create or replace view v_ice 
+as select first_name from src_ice where dept_id = 2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Output: database:ice_native_view_db
+PREHOOK: Output: ice_native_view_db@v_ice
+POSTHOOK: query: create or replace view v_ice 
+as select first_name from src_ice where dept_id = 2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Output: database:ice_native_view_db
+POSTHOOK: Output: ice_native_view_db@v_ice
+PREHOOK: query: select * from v_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_native_view_db@src_ice
+PREHOOK: Input: ice_native_view_db@v_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from v_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_native_view_db@src_ice
+POSTHOOK: Input: ice_native_view_db@v_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+fn5
+fn6
+fn7
+PREHOOK: query: desc formatted v_ice
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: ice_native_view_db@v_ice
+POSTHOOK: query: desc formatted v_ice
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: ice_native_view_db@v_ice
+# col_name            	data_type           	comment             
+first_name          	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	ice_native_view_db  	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
+	metadata_location   	hdfs://### HDFS PATH ###
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	table_type          	ICEBERG-VIEW        
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	view-format         	iceberg             
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.FileInputFormat	 
+OutputFormat:       	org.apache.hadoop.mapred.FileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	0                   	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select first_name from src_ice where dept_id = 2	 
+Expanded Query:     	select `src_ice`.`first_name` from `ice_native_view_db`.`src_ice` where `src_ice`.`dept_id` = 2	 
+PREHOOK: query: drop view v_ice
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: ice_native_view_db@v_ice
+PREHOOK: Output: ice_native_view_db@v_ice
+POSTHOOK: query: drop view v_ice
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: ice_native_view_db@v_ice
+POSTHOOK: Output: ice_native_view_db@v_ice

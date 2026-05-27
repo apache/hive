@@ -179,18 +179,14 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   @Override
-  public void rollbackCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // do nothing
-  }
-
-  @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isNativeIcebergLogicalView(hmsTable)) {
+    if (isNativeIcebergLogicalView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       if (Catalogs.hiveCatalog(conf, tableProperties)) {
         boolean replace =
             Boolean.parseBoolean(
-                SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE).orElse("false"));
+                SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE)
+                    .orElse("false"));
         boolean ifNotExists =
             Boolean.parseBoolean(
                 SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS)
@@ -237,11 +233,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   @Override
-  public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // do nothing
-  }
-
-  @Override
   public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, boolean deleteData) {
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
     this.deleteIcebergTable = hmsTable.getParameters() != null &&
@@ -261,11 +252,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
             hmsTable.getDbName(), hmsTable.getTableName(), hmsTable.getSd().getLocation(), e);
       }
     }
-  }
-
-  @Override
-  public void rollbackDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // do nothing
   }
 
   @Override

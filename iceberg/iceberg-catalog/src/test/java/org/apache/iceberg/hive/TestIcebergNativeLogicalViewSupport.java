@@ -115,6 +115,8 @@ class TestIcebergNativeLogicalViewSupport {
             IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
                 conf, DB, VIEW, cols, "select 2 as id", null, null, false, true))
         .isFalse();
+    assertThat(loadCatalog().loadView(TableIdentifier.of(DB, VIEW)).sqlFor("hive").sql().trim())
+        .isEqualTo("select 1 as id");
   }
 
   @Test

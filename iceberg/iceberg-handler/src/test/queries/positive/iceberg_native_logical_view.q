@@ -38,9 +38,7 @@ create or replace view v_ice tblproperties ('view-format'='iceberg')
 as select first_name || '-' || dept_id from src_ice where dept_id = 1;
 
 select * from v_ice;
-
 desc formatted v_ice;
-drop view v_ice;
 
 -------------------------------------------------------------------------------
 -- Native Iceberg view when default storage handler is Iceberg 
@@ -76,3 +74,14 @@ create view v_hive as select * from src_ice;
 select * from v_hive;
 desc formatted v_hive;
 drop view v_hive;
+
+-----------------------------------------------------------------------------------------
+-- Replace Iceberg logical view with a Hive-native logical view
+-----------------------------------------------------------------------------------------
+
+create or replace view v_ice 
+as select first_name from src_ice where dept_id = 2;
+
+select * from v_ice;
+desc formatted v_ice;
+drop view v_ice;
