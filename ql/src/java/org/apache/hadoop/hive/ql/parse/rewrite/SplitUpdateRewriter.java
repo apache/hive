@@ -100,10 +100,8 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
       insertValues.add(sqlGenerator.qualify(identifier));
     }
-    if (updateBlock.getTargetTable().getPartitionKeys() != null) {
-      updateBlock.getTargetTable().getPartitionKeys().forEach(
-          fieldSchema -> insertValues.add(sqlGenerator.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
-    }
+    updateBlock.getTargetTable().getPartitionKeys().forEach(
+        fieldSchema -> insertValues.add(sqlGenerator.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
     addRowLineageColumnsForUpdate(updateBlock.getTargetTable(), sqlGenerator, insertValues, conf);
 
     sqlGenerator.append(" FROM ").append(sqlGenerator.getTargetTableFullName()).append(") ");

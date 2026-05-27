@@ -249,10 +249,8 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         }
       }
 
-      if (!targetTable.getPartitionKeys().isEmpty()) {
-        targetTable.getPartitionKeys().forEach(fieldSchema -> values.add(
-            formatter.apply(fieldSchema.getName())));
-      }
+      targetTable.getPartitionKeys().forEach(fieldSchema -> values.add(
+          formatter.apply(fieldSchema.getName())));
     }
     
     protected String getRhsExpValue(String newValue, String alias) {

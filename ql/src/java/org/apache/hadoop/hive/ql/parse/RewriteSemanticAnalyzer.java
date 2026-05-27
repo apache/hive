@@ -118,9 +118,8 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
    */
   protected void checkValidSetClauseTarget(ASTNode colName, Table targetTable) throws SemanticException {
     String columnName = normalizeColName(colName.getText());
-    List<FieldSchema> partKeys = Objects.requireNonNullElse(targetTable.getPartitionKeys(), new ArrayList<>());
     // Make sure this isn't one of the partitioning columns, that's not supported.
-    for (FieldSchema fschema : partKeys) {
+    for (FieldSchema fschema : targetTable.getPartitionKeys()) {
       if (fschema.getName().equalsIgnoreCase(columnName)) {
         throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_PART_VALUE.getMsg());
       }

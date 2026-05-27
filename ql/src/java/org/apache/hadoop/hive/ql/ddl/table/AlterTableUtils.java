@@ -78,8 +78,7 @@ public final class AlterTableUtils {
   }
 
   public static boolean isFullPartitionSpec(Table table, Map<String, String> partitionSpec) {
-    List<FieldSchema> partKeys = Objects.requireNonNullElse(table.getPartitionKeys(), new ArrayList<>());
-    for (FieldSchema partitionCol : partKeys) {
+    for (FieldSchema partitionCol : table.getPartitionKeys()) {
       if (partitionSpec.get(partitionCol.getName()) == null) {
         return false;
       }
