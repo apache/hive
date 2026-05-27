@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
@@ -211,32 +212,27 @@ public class AcidCompactionService extends CompactionService {
 
       // Don't start compaction or cleaning if not necessary
       if (isDynPartAbort(table, ci)) {
-        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-        compactionTxn.wasSuccessful();
+        compactionTxn.onCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
         return false;
       }
       dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
       if (!isEnoughToCompact(ci, dir, sd)) {
         if (needsCleaning(dir, sd)) {
-          msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+          compactionTxn.onCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
         } else {
           // do nothing
           ci.errorMessage = "None of the compaction thresholds met, compaction request is refused!";
           LOG.debug(ci.errorMessage + " Compaction info: {}", ci);
-          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+          compactionTxn.onCommit(() -> msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
+
         }
-        compactionTxn.wasSuccessful();
         return false;
       }
       if (!ci.isMajorCompaction() && !CompactorUtil.isMinorCompactionSupported(conf, table.getParameters(), dir)) {
         ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
             "(non-acid) data in them.";
         LOG.error(ci.errorMessage + " Compaction info: {}", ci);
-        try {
-          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
-        } catch (Throwable tr) {
-          LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, tr);
-        }
+        compactionTxn.onAbort(() -> msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
         return false;
       }
       CompactorUtil.checkInterrupt(CLASS_NAME);
@@ -261,8 +257,7 @@ public class AcidCompactionService extends CompactionService {
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");
-        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-        compactionTxn.wasSuccessful();
+        compactionTxn.onCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
 
         AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
@@ -346,7 +341,9 @@ public class AcidCompactionService extends CompactionService {
     private long lockId = 0;
 
     private TxnStatus status = TxnStatus.UNKNOWN;
-    private boolean successfulCompaction = false;
+
+    private ThrowingRunnable onCommitAction;
+    private ThrowingRunnable onAbortAction;
 
     /**
      * Try to open a new txn.
@@ -380,8 +377,11 @@ public class AcidCompactionService extends CompactionService {
     /**
      * Mark compaction as successful. This means the txn will be committed; otherwise it will be aborted.
      */
-    void wasSuccessful() {
-      this.successfulCompaction = true;
+    void onCommit(ThrowingRunnable action) {
+      this.onCommitAction = action;
+    }
+    void onAbort(ThrowingRunnable action) {
+      this.onAbortAction = action;
     }
 
     /**
@@ -396,10 +396,18 @@ public class AcidCompactionService extends CompactionService {
         //the transaction is about to close, we can stop heartbeating regardless of it's state
         CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
       } finally {
-        if (successfulCompaction) {
-          commit();
+        if (onCommitAction != null) {
+          try {
+            commit();
+          } catch (Exception e) {
+            abort();
+            if (onAbortAction != null) onAbortAction.run();
+            throw e;
+          }
+          onCommitAction.run();
         } else {
           abort();
+          if (onAbortAction != null) onAbortAction.run();
         }
       }
     }
