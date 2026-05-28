@@ -29,9 +29,11 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 
@@ -150,6 +152,9 @@ public class HiveInBetweenExpandRule {
     @Override
     public RexNode visitCall(final RexCall call) {
       switch (call.getKind()) {
+      case SEARCH: {
+        return new SearchTransformer<>(rexBuilder, call, RexUnknownAs.UNKNOWN).transform().accept(this);
+      }
       case AND: {
         boolean[] update = {false};
         List<RexNode> newOperands = visitList(call.operands, update);
@@ -177,13 +182,16 @@ public class HiveInBetweenExpandRule {
       }
       default:
         if (HiveIn.INSTANCE.equals(call.op)) {
-          RexNode newCall = RexNodeConverter.rewriteInClause(call.getOperands(), rexBuilder);
-          if (newCall == null) {
+          List<RexNode> newOperands = RexNodeConverter.transformInToOrOperands(call.getOperands(), rexBuilder);
+          if (newOperands == null) {
             // We could not execute transformation, return expression
             return call;
           }
           modified = true;
-          return newCall;
+          if (newOperands.size() > 1) {
+            return rexBuilder.makeCall(SqlStdOperatorTable.OR, newOperands);
+          }
+          return newOperands.get(0);
         }
         return super.visitCall(call);
       }
