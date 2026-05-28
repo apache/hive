@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.plan.RelOptSchema;
@@ -82,7 +81,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class RelOptHiveTable implements RelOptTable {
 
@@ -125,7 +123,7 @@ public class RelOptHiveTable implements RelOptTable {
     this.schema = calciteSchema;
     this.typeFactory = typeFactory;
     this.qualifiedTblName = ImmutableList.copyOf(qualifiedTblName);
-    this.name = this.qualifiedTblName.stream().collect(Collectors.joining("."));
+    this.name = String.join(".", this.qualifiedTblName);
     this.rowType = rowType;
     this.hiveTblMetadata = hiveTblMetadata;
     this.hiveColStatsMap = new HashMap<>();
@@ -192,15 +190,15 @@ public class RelOptHiveTable implements RelOptTable {
   public RelOptHiveTable copy(RelDataType newRowType) {
     // 1. Build map of column name to col index of original schema
     // Assumption: Hive Table can not contain duplicate column names
-    Map<String, Integer> nameToColIndxMap = new HashMap<String, Integer>();
+    Map<String, Integer> nameToColIndxMap = new HashMap<>();
     for (RelDataTypeField f : this.rowType.getFieldList()) {
       nameToColIndxMap.put(f.getName(), f.getIndex());
     }
 
     // 2. Build nonPart/Part/Virtual column info for new RowSchema
-    List<ColumnInfo> newHiveNonPartitionCols = new ArrayList<ColumnInfo>();
-    List<ColumnInfo> newHivePartitionCols = new ArrayList<ColumnInfo>();
-    List<VirtualColumn> newHiveVirtualCols = new ArrayList<VirtualColumn>();
+    List<ColumnInfo> newHiveNonPartitionCols = new ArrayList<>();
+    List<ColumnInfo> newHivePartitionCols = new ArrayList<>();
+    List<VirtualColumn> newHiveVirtualCols = new ArrayList<>();
     Map<Integer, VirtualColumn> virtualColInfoMap = HiveCalciteUtil.getVColsMap(this.hiveVirtualCols,
         this.noOfNonVirtualCols);
     Integer originalColIndx;
@@ -329,8 +327,8 @@ public class RelOptHiveTable implements RelOptTable {
     ImmutableList.Builder<RelReferentialConstraint> builder = ImmutableList.builder();
     if (foreignKeyInfo != null && !foreignKeyInfo.getForeignKeys().isEmpty()) {
       for (List<ForeignKeyCol> fkCols : foreignKeyInfo.getForeignKeys().values()) {
-        String parentDatabaseName = fkCols.get(0).parentDatabaseName;
-        String parentTableName = fkCols.get(0).parentTableName;
+        String parentDatabaseName = fkCols.getFirst().parentDatabaseName;
+        String parentTableName = fkCols.getFirst().parentTableName;
         String qualifiedName;
         List<String> parentTableQualifiedName = new ArrayList<>();
         if (parentDatabaseName != null && !parentDatabaseName.isEmpty()) {
@@ -390,7 +388,7 @@ public class RelOptHiveTable implements RelOptTable {
 
   @Override
   public List<RelCollation> getCollationList() {
-    ImmutableList.Builder<RelFieldCollation> collationList = new ImmutableList.Builder<RelFieldCollation>();
+    ImmutableList.Builder<RelFieldCollation> collationList = new ImmutableList.Builder<>();
     for (Order sortColumn : this.hiveTblMetadata.getSortCols()) {
       for (int i=0; i<this.hiveTblMetadata.getSd().getCols().size(); i++) {
         FieldSchema field = this.hiveTblMetadata.getSd().getCols().get(i);
@@ -411,7 +409,7 @@ public class RelOptHiveTable implements RelOptTable {
 
   @Override
   public RelDistribution getDistribution() {
-    ImmutableList.Builder<Integer> columnPositions = new ImmutableList.Builder<Integer>();
+    ImmutableList.Builder<Integer> columnPositions = new ImmutableList.Builder<>();
     for (String bucketColumn : this.hiveTblMetadata.getBucketCols()) {
       for (int i=0; i<this.hiveTblMetadata.getSd().getCols().size(); i++) {
         FieldSchema field = this.hiveTblMetadata.getSd().getCols().get(i);
@@ -435,7 +433,7 @@ public class RelOptHiveTable implements RelOptTable {
       if (null == partitionList) {
         // we are here either unpartitioned table or partitioned table with no
         // predicates
-        computePartitionList(hiveConf, null, new HashSet<Integer>());
+        computePartitionList(hiveConf, null, new HashSet<>());
       }
       rowCount = StatsUtils.getNumRows(hiveConf, getNonPartColumns(), hiveTblMetadata,
           partitionList, noColsMissingStats);
@@ -465,7 +463,7 @@ public class RelOptHiveTable implements RelOptTable {
   public void computePartitionList(HiveConf conf, RexNode pruneNode, Set<Integer> partOrVirtualCols) {
     try {
       if (!hiveTblMetadata.isPartitioned() || pruneNode == null
-          || InputFinder.bits(pruneNode).length() == 0) {
+          || InputFinder.bits(pruneNode).isEmpty()) {
         // there is no predicate on partitioning column, we need all partitions
         // in this case.
         partitionList = PartitionPruner.prune(hiveTblMetadata, null, conf, getName(),
@@ -485,11 +483,11 @@ public class RelOptHiveTable implements RelOptTable {
   }
 
   private void updateColStats(Set<Integer> projIndxLst, boolean allowMissingStats) {
-    List<String> nonPartColNamesThatRqrStats = new ArrayList<String>();
-    List<Integer> nonPartColIndxsThatRqrStats = new ArrayList<Integer>();
-    List<String> partColNamesThatRqrStats = new ArrayList<String>();
-    List<Integer> partColIndxsThatRqrStats = new ArrayList<Integer>();
-    Set<String> colNamesFailedStats = new HashSet<String>();
+    List<String> nonPartColNamesThatRqrStats = new ArrayList<>();
+    List<Integer> nonPartColIndxsThatRqrStats = new ArrayList<>();
+    List<String> partColNamesThatRqrStats = new ArrayList<>();
+    List<Integer> partColIndxsThatRqrStats = new ArrayList<>();
+    Set<String> colNamesFailedStats = new HashSet<>();
 
     // 1. Separate required columns to Non Partition and Partition Cols
     ColumnInfo tmp;
@@ -514,19 +512,19 @@ public class RelOptHiveTable implements RelOptTable {
     if (null == partitionList) {
       // We could be here either because its an unpartitioned table or because
       // there are no pruning predicates on a partitioned table.
-      computePartitionList(hiveConf, null, new HashSet<Integer>());
+      computePartitionList(hiveConf, null, new HashSet<>());
     }
 
-    String partitionListKey = partitionList.getKey().orElse(null);
-    ColumnStatsList colStatsCached = colStatsCache.get(partitionListKey);
-    if (colStatsCached == null) {
-      colStatsCached = new ColumnStatsList();
-      colStatsCache.put(partitionListKey, colStatsCached);
-    }
+    String partitionListKey = partitionList.getKey();
+
+    ColumnStatsList colStatsCached = colStatsCache.computeIfAbsent(
+        partitionListKey,
+        k -> new ColumnStatsList()
+    );
 
     // 2. Obtain Col Stats for Non Partition Cols
-    if (nonPartColNamesThatRqrStats.size() > 0) {
-      List<ColStatistics> hiveColStats = new ArrayList<ColStatistics>();
+    if (!nonPartColNamesThatRqrStats.isEmpty()) {
+      List<ColStatistics> hiveColStats = new ArrayList<>();
 
       if (!hiveTblMetadata.isPartitioned()) {
         // 2.1 Handle the case for unpartitioned table.
@@ -547,9 +545,9 @@ public class RelOptHiveTable implements RelOptTable {
           if (hiveColStats.isEmpty()) {
             colNamesFailedStats.addAll(nonPartColNamesThatRqrStats);
           } else if (hiveColStats.size() != nonPartColNamesThatRqrStats.size()) {
-            Set<String> setOfFiledCols = new HashSet<String>(nonPartColNamesThatRqrStats);
+            Set<String> setOfFiledCols = new HashSet<>(nonPartColNamesThatRqrStats);
 
-            Set<String> setOfObtainedColStats = new HashSet<String>();
+            Set<String> setOfObtainedColStats = new HashSet<>();
             for (ColStatistics cs : hiveColStats) {
               setOfObtainedColStats.add(cs.getColumnName());
             }
@@ -561,7 +559,7 @@ public class RelOptHiveTable implements RelOptTable {
             // nonPartColNamesThatRqrStats. reorder hiveColStats so we can build hiveColStatsMap
             // using nonPartColIndxsThatRqrStats as below
             Map<String, ColStatistics> columnStatsMap =
-                new HashMap<String, ColStatistics>(hiveColStats.size());
+                new HashMap<>(hiveColStats.size());
             for (ColStatistics cs : hiveColStats) {
               columnStatsMap.put(cs.getColumnName(), cs);
               // even though the stats were estimated we need to warn user that
@@ -586,7 +584,7 @@ public class RelOptHiveTable implements RelOptTable {
           if (partitionList.getNotDeniedPartns().isEmpty()) {
             // no need to make a metastore call
             rowCount = 0;
-            hiveColStats = new ArrayList<ColStatistics>();
+            hiveColStats = new ArrayList<>();
             for (int i = 0; i < nonPartColNamesThatRqrStats.size(); i++) {
               // add empty stats object for each column
               hiveColStats.add(
@@ -594,14 +592,13 @@ public class RelOptHiveTable implements RelOptTable {
                       nonPartColNamesThatRqrStats.get(i),
                       hiveNonPartitionColsMap.get(nonPartColIndxsThatRqrStats.get(i)).getTypeName()));
             }
-            colNamesFailedStats.clear();
             colStatsCached.updateState(State.COMPLETE);
           } else {
             Statistics stats = StatsUtils.collectStatistics(hiveConf, partitionList,
                 hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats, colStatsCached,
                 nonPartColNamesThatRqrStats, true);
             rowCount = stats.getNumRows();
-            hiveColStats = new ArrayList<ColStatistics>();
+            hiveColStats = new ArrayList<>();
             for (String c : nonPartColNamesThatRqrStats) {
               ColStatistics cs = stats.getColumnStatisticsFromColName(c);
               if (cs != null) {
@@ -622,7 +619,7 @@ public class RelOptHiveTable implements RelOptTable {
         }
       }
 
-      if (hiveColStats != null && hiveColStats.size() == nonPartColNamesThatRqrStats.size()) {
+      if (hiveColStats.size() == nonPartColNamesThatRqrStats.size()) {
         for (int i = 0; i < hiveColStats.size(); i++) {
           // the columns in nonPartColIndxsThatRqrStats/nonPartColNamesThatRqrStats/hiveColStats
           // are in same order
@@ -754,7 +751,7 @@ public class RelOptHiveTable implements RelOptTable {
   }
 
   public String getPartitionListKey() {
-    return partitionList != null ? partitionList.getKey().orElse(null) : null;
+    return partitionList != null ? partitionList.getKey() : null;
   }
 
 }
