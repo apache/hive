@@ -1208,7 +1208,7 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void testExceptionWhenTxnCommitAndMarkFailed() throws Exception {
-    prepareTableAndCompaction("default", "tableForCommitAndMarkFailedError");
+    prepareTableAndCompaction("default", "tbforcomperror");
     runWorkerWithException(MethodToFail.COMMIT_TXN, MethodToFail.MARK_FAILED);
 
     List<ShowCompactResponseElement> compacts =
@@ -1224,7 +1224,7 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void testExceptionWhenTxnCommit() throws Exception {
-    prepareTableAndCompaction("default", "tableForCommitError");
+    prepareTableAndCompaction("default", "tbforcomperror");
     runWorkerWithException(MethodToFail.COMMIT_TXN);
 
     List<ShowCompactResponseElement> compacts = txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
@@ -1241,7 +1241,7 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void testExceptionWhenMarkCompacted() throws Exception {
-    prepareTableAndCompaction("default", "tableForMarkCompactedError");
+    prepareTableAndCompaction("default", "tbforcomperror");
     runWorkerWithException(MethodToFail.MARK_COMPACTED);
 
     List<ShowCompactResponseElement> compacts = txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
@@ -1254,7 +1254,7 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void testExceptionDuringCompact() throws Exception {
-    prepareTableAndCompaction("default", "tableForCompactError");
+    prepareTableAndCompaction("default", "tbforcomperror");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST, true);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, true);
     startWorker();
@@ -1273,7 +1273,7 @@ public class TestWorker extends CompactorTest {
   @Test
   public void testWorkerIfIsDynPartAbort() throws Exception {
     String dbName = "default";
-    String tableName = "tableWithPartition";
+    String tableName = "tbforcomperror";
     Table t = newTable(dbName, tableName, true);
     addBaseFile(t, null, 1L, 3, 1);
     addDeltaFile(t, null, 2L, 2L, 1);
@@ -1297,7 +1297,7 @@ public class TestWorker extends CompactorTest {
   @Test
   public void testWorkerNotEnoughToCompact() throws Exception {
     String dbName = "default";
-    String tableName = "tableWithNoDelta";
+    String tableName = "tbforcomperror";
     Table t = newTable(dbName, tableName, false);
     addBaseFile(t, null, 1L, 3, 1);
     burnThroughTransactions(dbName, tableName, 1, null, null);
@@ -1317,12 +1317,14 @@ public class TestWorker extends CompactorTest {
   @Test
   public void testWorkerNotEnoughToCompactNeedsCleaning() throws Exception {
     String dbName = "default";
-    String tableName = "tableNeedsCleaning";
+    String tableName = "tbforcomperror";
     Table t = newTable(dbName, tableName, false);
-    addDeltaFile(t, null, 1L, 1L, 1);
-    addDeltaFile(t, null, 2L, 2L, 1);
-    addBaseFile(t, null, 4L, 3, 6);
-    burnThroughTransactions(dbName, tableName, 6, null, new HashSet<Long>(Arrays.asList(1L, 2L)));
+    addDeltaFile(t, null, 20L, 20L, 10);
+    addDeltaFile(t, null, 21L, 21L, 10);
+    addDeltaFile(t, null, 22L, 22L, 10);
+    addDeltaFile(t, null, 23L, 23L, 10);
+    addDeltaFile(t, null, 24L, 24L, 10);
+    burnThroughTransactions(dbName, tableName, 25, null, new HashSet<Long>(Arrays.asList(20L, 21L, 22L, 23L, 24L)));
     // trigger compaction
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -1333,9 +1335,13 @@ public class TestWorker extends CompactorTest {
     assertEquals(TxnStore.CLEANING_RESPONSE, compaction.getState());
     assertTrue(compaction.getNextTxnId() > 0L);
     List<TxnInfo> openTxns = HiveMetaStoreUtils.getHiveMetastoreClient(conf).showTxns().getOpen_txns();
-    assertEquals(2, openTxns.size());
-    assertEquals(1L, openTxns.get(0).getId());
-    assertEquals(2L, openTxns.get(1).getId());
+    assertEquals(5, openTxns.size());
+    assertEquals(20L, openTxns.get(0).getId());
+    assertEquals(21L, openTxns.get(1).getId());
+    assertEquals(22L, openTxns.get(2).getId());
+    assertEquals(23L, openTxns.get(3).getId());
+    assertEquals(24L, openTxns.get(4).getId());
+
   }
 
   private void runWorkerWithException(MethodToFail... methodToFail) throws Exception {
@@ -1362,11 +1368,13 @@ public class TestWorker extends CompactorTest {
 
   private void prepareTableAndCompaction(String dbName, String tableName) throws Exception {
     Table t = newTable(dbName, tableName, false);
-    addBaseFile(t, null, 1L, 3, 1);
-    addDeltaFile(t, null, 2L, 2L, 1);
-    addDeltaFile(t, null, 3L, 3L, 1);
-    addDeltaFile(t, null, 4L, 4L, 1);
-    burnThroughTransactions(dbName, tableName, 4, null, null);
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 23L, 2);
+    addDeltaFile(t, null, 23L, 23L, 3);
+    addDeltaFile(t, null, 24L, 24L, 2);
+    addDeltaFile(t, null, 25L, 25L, 3);
+    addDeltaFile(t, null, 26L, 26L, 3);
+    burnThroughTransactions(dbName, tableName, 27, null, null);
     // trigger compaction
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
     txnHandler.compact(rqst);

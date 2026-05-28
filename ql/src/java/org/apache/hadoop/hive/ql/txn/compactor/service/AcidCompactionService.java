@@ -382,7 +382,6 @@ public class AcidCompactionService extends CompactionService {
     }
 
     void markForAbort(ThrowingRunnable action) {
-      this.rollbackOnly = true;
       this.onAbortSuccess = action;
     }
 
