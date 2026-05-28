@@ -212,18 +212,18 @@ public class AcidCompactionService extends CompactionService {
 
       // Don't start compaction or cleaning if not necessary
       if (isDynPartAbort(table, ci)) {
-        compactionTxn.onCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
+        compactionTxn.markForCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
         return false;
       }
       dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
       if (!isEnoughToCompact(ci, dir, sd)) {
         if (needsCleaning(dir, sd)) {
-          compactionTxn.onCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
+          compactionTxn.markForCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
         } else {
           // do nothing
           ci.errorMessage = "None of the compaction thresholds met, compaction request is refused!";
           LOG.debug(ci.errorMessage + " Compaction info: {}", ci);
-          compactionTxn.onCommit(() -> msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
+          compactionTxn.markForCommit(() -> msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
 
         }
         return false;
@@ -232,7 +232,7 @@ public class AcidCompactionService extends CompactionService {
         ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
             "(non-acid) data in them.";
         LOG.error(ci.errorMessage + " Compaction info: {}", ci);
-        compactionTxn.onAbort(() -> msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
+        compactionTxn.markForAbort(() -> msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
         return false;
       }
       CompactorUtil.checkInterrupt(CLASS_NAME);
@@ -257,7 +257,7 @@ public class AcidCompactionService extends CompactionService {
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");
-        compactionTxn.onCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
+        compactionTxn.markForCommit(() -> msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
 
         AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
@@ -342,8 +342,10 @@ public class AcidCompactionService extends CompactionService {
 
     private TxnStatus status = TxnStatus.UNKNOWN;
 
-    private ThrowingRunnable onCommitAction;
-    private ThrowingRunnable onAbortAction;
+    private ThrowingRunnable onCommitSuccess;
+    private ThrowingRunnable onAbortSuccess;
+
+    private boolean rollbackOnly = true;
 
     /**
      * Try to open a new txn.
@@ -374,14 +376,14 @@ public class AcidCompactionService extends CompactionService {
       return CompactorUtil.createLockRequest(conf, ci, txnId, lockAndOpType.getKey(), lockAndOpType.getValue());
     }
 
-    /**
-     * Mark compaction as successful. This means the txn will be committed; otherwise it will be aborted.
-     */
-    void onCommit(ThrowingRunnable action) {
-      this.onCommitAction = action;
+    void markForCommit(ThrowingRunnable action) {
+      this.rollbackOnly = false;
+      this.onCommitSuccess = action;
     }
-    void onAbort(ThrowingRunnable action) {
-      this.onAbortAction = action;
+
+    void markForAbort(ThrowingRunnable action) {
+      this.rollbackOnly = true;
+      this.onAbortSuccess = action;
     }
 
     /**
@@ -396,18 +398,16 @@ public class AcidCompactionService extends CompactionService {
         //the transaction is about to close, we can stop heartbeating regardless of it's state
         CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
       } finally {
-        if (onCommitAction != null) {
-          try {
-            commit();
-          } catch (Exception e) {
-            abort();
-            if (onAbortAction != null) onAbortAction.run();
-            throw e;
-          }
-          onCommitAction.run();
-        } else {
+        if (rollbackOnly) {
           abort();
-          if (onAbortAction != null) onAbortAction.run();
+          if (onAbortSuccess != null) {
+            onAbortSuccess.run();
+          }
+          return;
+        }
+        commit();
+        if (onCommitSuccess != null) {
+          onCommitSuccess.run();
         }
       }
     }
