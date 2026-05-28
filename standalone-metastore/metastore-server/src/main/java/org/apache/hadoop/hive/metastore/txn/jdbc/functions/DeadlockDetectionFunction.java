@@ -40,7 +40,6 @@ import java.sql.Types;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,15 +47,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnHandler.notifyCommitOrAbortEvent;
 
 /**
  * Single-snapshot scan: loads the wait-for graph from {@code HIVE_LOCKS} in one query, runs
- * Tarjan's SCC, and aborts the youngest eligible txn (wait-die) in each cycle with
- * {@link TxnErrorMsg#ABORT_DEADLOCK}. See {@link #isProtectedFromAbort} for the protected
- * set; if every cycle member is protected the cycle is left to timeout.
+ * Tarjan's SCC, re-verifies each victim on a fresh read, and aborts the youngest hard
+ * blocker (wait-die) in each cycle with {@link TxnErrorMsg#ABORT_DEADLOCK}. See
+ * {@link #pickVictim} for the hard/soft edge distinction and victim eligibility.
  */
 public class DeadlockDetectionFunction implements TransactionalFunction<Integer> {
 
@@ -70,44 +68,52 @@ public class DeadlockDetectionFunction implements TransactionalFunction<Integer>
   private static final int MAX_GRAPH_SIZE = 10_000;
 
   /**
-   * Loads WAITER -> BLOCKER edges plus the waiter's {@link TxnType}. Read-side complement
-   * of {@code CheckLockFunction}: it writes both {@code HL_BLOCKEDBY_*} columns on the
-   * waiter row when it parks the lock, and NULLs them on acquire — so a NOT-NULL JOIN on
-   * the {@code (ext_id, int_id)} PK naturally drops acquired locks. The {@code TXNS} JOIN
-   * filters {@code HL_TXNID = 0} (autocommit reads, which can't form txn-level cycles) and
-   * captures the type in the same MVCC snapshot. No {@code TXN_STATE} filter: HIVE_LOCKS
-   * rows only exist for OPEN txns. {@code DISTINCT} dedups DB-side to avoid shipping the
-   * duplicate edges a multi-statement waiter generates.
+   * Loads WAITER -> BLOCKER edges in one snapshot, each with a HARD_BLOCKER flag ("does
+   * the waiter also hold an acquired lock" — see {@link #pickVictim}). Read-side complement
+   * of {@code CheckLockFunction}: it stamps the {@code HL_BLOCKEDBY_*} columns on the waiter
+   * row when it parks the lock and NULLs them on acquire, so the JOIN on the
+   * {@code (ext_id, int_id)} PK matches waiting locks only. No {@code TXN_STATE} filter:
+   * HIVE_LOCKS rows only exist for OPEN txns. {@code HL_TXNID > 0} excludes txn-less locks
+   * (external/Iceberg reads outside a txn block): they all share id 0, so unrelated sessions
+   * would otherwise collapse into one vertex and fabricate cycles.
    */
   // No SELECT keyword: addLimitClause prepends one and applies the dialect-correct row cap.
   private static final String LOAD_WAIT_EDGES_SQL_BODY = """
-      DISTINCT "WAITER"."HL_TXNID"  AS "WAITER_TXN",
-               "BLOCKER"."HL_TXNID" AS "BLOCKER_TXN",
-               "WTXN"."TXN_TYPE"    AS "WAITER_TYPE"
-        FROM "HIVE_LOCKS" "WAITER"
-        INNER JOIN "HIVE_LOCKS" "BLOCKER"
-                ON "BLOCKER"."HL_LOCK_EXT_ID" = "WAITER"."HL_BLOCKEDBY_EXT_ID"
-               AND "BLOCKER"."HL_LOCK_INT_ID" = "WAITER"."HL_BLOCKEDBY_INT_ID"
-        INNER JOIN "TXNS" "WTXN"
-                ON "WAITER"."HL_TXNID" = "WTXN"."TXN_ID"
-       WHERE "WAITER"."HL_LOCK_STATE" = :waitingState
-         AND "WAITER"."HL_TXNID" <> "BLOCKER"."HL_TXNID"
+      "WAITER"."HL_TXNID" AS "WAITER_TXN",
+      "BLOCKER"."HL_TXNID" AS "BLOCKER_TXN",
+      "BLOCKER"."HL_DB",
+      "BLOCKER"."HL_TABLE",
+      "BLOCKER"."HL_PARTITION",
+      CASE WHEN EXISTS (
+          SELECT 1
+          FROM "HIVE_LOCKS" "HELD"
+          WHERE "HELD"."HL_TXNID" = "WAITER"."HL_TXNID"
+            AND "HELD"."HL_LOCK_STATE" = :acquiredState
+        ) THEN 1 ELSE 0 END AS "HARD_BLOCKER"
+      FROM "HIVE_LOCKS" "WAITER"
+      INNER JOIN "HIVE_LOCKS" "BLOCKER"
+        ON "BLOCKER"."HL_LOCK_EXT_ID" = "WAITER"."HL_BLOCKEDBY_EXT_ID"
+        AND "BLOCKER"."HL_LOCK_INT_ID" = "WAITER"."HL_BLOCKEDBY_INT_ID"
+      WHERE "WAITER"."HL_LOCK_STATE" = :waitingState
+        AND "WAITER"."HL_TXNID" > 0
+        AND "BLOCKER"."HL_TXNID" > 0
+        AND "WAITER"."HL_TXNID" <> "BLOCKER"."HL_TXNID"
       """;
 
   private final List<TransactionalMetaStoreEventListener> transactionalListeners;
 
-  public DeadlockDetectionFunction(
-      List<TransactionalMetaStoreEventListener> transactionalListeners) {
+  public DeadlockDetectionFunction(List<TransactionalMetaStoreEventListener> transactionalListeners) {
     this.transactionalListeners = transactionalListeners;
   }
 
   @Override
   public Integer execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     Map<Long, Set<Long>> graph = new HashMap<>();
-    Map<Long, TxnType> txnTypes = new HashMap<>();
+    Set<Long> hardBlockers = new HashSet<>();
+    Map<Long, Map<Long, String>> edgeResources = new HashMap<>();
     boolean truncated;
     try {
-      truncated = loadGraph(jdbcResource, graph, txnTypes);
+      truncated = loadGraph(jdbcResource, graph, hardBlockers, edgeResources);
     } catch (Exception e) {
       LOG.warn("Deadlock detection scan failed: {}", e.getMessage(), e);
       Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_DEADLOCK_DETECTOR_SCAN_FAILURES).inc();
@@ -132,11 +138,17 @@ public class DeadlockDetectionFunction implements TransactionalFunction<Integer>
       if (scc.size() < 2) {
         continue;
       }
-      Long victim = pickVictim(scc, txnTypes);
+      Long victim = pickVictim(scc, hardBlockers);
       if (victim == null) {
-        LOG.warn("Deadlock detected in cycle {} but no eligible victim exists "
-            + "(all members are protected txn types). Cycle will resolve via timeout.",
-            formatTxnList(scc));
+        // Unreachable in a consistent snapshot (see pickVictim); defensive skip.
+        LOG.warn("Deadlock cycle {} has no hard blocker; skipping.", scc);
+        continue;
+      }
+      // The cycle may have dissolved since the graph was loaded (client abort, lock-wait
+      // timeout, concurrent txn timeout): abort only a victim that is still deadlocked.
+      if (!stillDeadlocked(jdbcResource, victim)) {
+        LOG.info("Deadlock cycle {} dissolved before abort; sparing {}.",
+            scc, JavaUtils.txnIdToString(victim));
         continue;
       }
       // Per-cycle savepoint isolates a failing abort/notify from earlier successful aborts
@@ -146,13 +158,14 @@ public class DeadlockDetectionFunction implements TransactionalFunction<Integer>
         savepoint = txContext.createSavepoint();
       } catch (Exception e) {
         // Must throw, not return: a bare return would commit earlier aborts while
-        // reporting 0, desynchronizing DB state from fired listeners.
-        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_DEADLOCK_DETECTOR_SCAN_FAILURES).inc();
+        // reporting 0, desynchronizing DB state from fired listeners. The service
+        // counts the scan failure.
+        LOG.error("Failed to create savepoint for deadlock cycle {}", scc, e);
         throw new MetaException("Failed to create savepoint for deadlock cycle "
-            + formatTxnList(scc) + ": " + e.getMessage());
+            + scc + ": " + e.getMessage());
       }
       try {
-        if (abortVictim(jdbcResource, victim, scc, txnTypes)) {
+        if (abortVictim(jdbcResource, victim, formatCycle(scc, graph, edgeResources))) {
           totalAborted++;
         }
         txContext.releaseSavepoint(savepoint);
@@ -173,10 +186,10 @@ public class DeadlockDetectionFunction implements TransactionalFunction<Integer>
    * Returns true iff the UPDATE actually flipped OPEN -> ABORTED. Throws on abort/notify
    * failure; caller must hold a savepoint.
    */
-  private boolean abortVictim(MultiDataSourceJdbcResource jdbcResource, long victim,
-                              List<Long> scc, Map<Long, TxnType> txnTypes) throws MetaException {
+  private boolean abortVictim(MultiDataSourceJdbcResource jdbcResource, long victim, String cycle)
+      throws MetaException {
     LOG.info("Deadlock detected. Cycle: {}. Victim: {}",
-        formatTxnList(scc), JavaUtils.txnIdToString(victim));
+        cycle, JavaUtils.txnIdToString(victim));
     // checkHeartbeat=false: deadlock victims are healthy (heartbeater still pinging);
     // the heartbeat-aware UPDATE in PerformTimeouts would match zero rows here.
     int aborted = new AbortTxnsFunction(Collections.singletonList(victim),
@@ -186,46 +199,97 @@ public class DeadlockDetectionFunction implements TransactionalFunction<Integer>
           JavaUtils.txnIdToString(victim));
       return false;
     }
-    // Order matters: notify before metric inc. The savepoint can roll back the UPDATE,
-    // but a Codahale counter inc() cannot be undone.
-    notifyAbort(jdbcResource, victim, txnTypes.get(victim));
+    notifyAbort(jdbcResource, victim);
     Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_DEADLOCKED_TXNS).inc();
     return true;
   }
 
   /**
-   * Loads up to {@code maxGraphSize} edges. Returns true iff truncated. Only waiter-side
-   * types are captured — every cycle member has an outgoing edge, so blocker-only leaves
-   * never need a type. Unknown {@link TxnType} ints map to {@code null}, treated as
-   * protected by {@link #pickVictim}.
+   * Loads up to {@link #MAX_GRAPH_SIZE} edges. Returns true iff truncated (asks for max+1
+   * rows so an extra row signals that the graph is incomplete).
    */
-  private boolean loadGraph(MultiDataSourceJdbcResource jdbcResource,
-                            Map<Long, Set<Long>> graph,
-                            Map<Long, TxnType> txnTypes) throws MetaException {
-    // Server-side cap: ask for max+1 rows so an extra row signals truncation. Stops the DB
-    // from materializing a full DISTINCT self-join under contention.
+  private boolean loadGraph(
+      MultiDataSourceJdbcResource jdbcResource, Map<Long, Set<Long>> graph, Set<Long> hardBlockers,
+      Map<Long, Map<Long, String>> edgeResources) throws MetaException {
     String sql = jdbcResource.getSqlGenerator()
         .addLimitClause(MAX_GRAPH_SIZE + 1, LOAD_WAIT_EDGES_SQL_BODY);
-    final boolean[] truncated = {false};
     MapSqlParameterSource params = new MapSqlParameterSource()
-        .addValue("waitingState", String.valueOf(LockInfo.LOCK_WAITING), Types.CHAR);
-    jdbcResource.getJdbcTemplate().query(sql, params, (ResultSet rs) -> {
+        .addValue("waitingState", String.valueOf(LockInfo.LOCK_WAITING), Types.CHAR)
+        .addValue("acquiredState", String.valueOf(LockInfo.LOCK_ACQUIRED), Types.CHAR);
+    Boolean truncated = jdbcResource.getJdbcTemplate().query(sql, params, (ResultSet rs) -> {
       int loaded = 0;
       while (rs.next()) {
         if (loaded >= MAX_GRAPH_SIZE) {
-          truncated[0] = true;
-          return null;
+          return true;
         }
         long waiter = rs.getLong("WAITER_TXN");
         long blocker = rs.getLong("BLOCKER_TXN");
         graph.computeIfAbsent(waiter, k -> new HashSet<>()).add(blocker);
         graph.computeIfAbsent(blocker, k -> new HashSet<>());
-        txnTypes.put(waiter, TxnType.findByValue(rs.getInt("WAITER_TYPE")));
+        if (rs.getInt("HARD_BLOCKER") == 1) {
+          hardBlockers.add(waiter);
+        }
+        StringBuilder resource = new StringBuilder(rs.getString("HL_DB"));
+        String table = rs.getString("HL_TABLE");
+        if (table != null) {
+          resource.append('.').append(table);
+        }
+        String partition = rs.getString("HL_PARTITION");
+        if (partition != null) {
+          resource.append('/').append(partition);
+        }
+        edgeResources.computeIfAbsent(waiter, k -> new HashMap<>())
+            .putIfAbsent(blocker, resource.toString());
         loaded++;
       }
-      return null;
+      return false;
     });
-    return truncated[0];
+    return Boolean.TRUE.equals(truncated);
+  }
+
+  /**
+   * Re-reads the wait-for graph and returns true iff the victim is still a hard blocker
+   * inside a cycle. Errs toward sparing: a truncated or failed re-read skips this victim
+   * and leaves a genuine cycle to the next scan.
+   */
+  private boolean stillDeadlocked(MultiDataSourceJdbcResource jdbcResource, long victim) {
+    Map<Long, Set<Long>> graph = new HashMap<>();
+    Set<Long> hardBlockers = new HashSet<>();
+    try {
+      if (loadGraph(jdbcResource, graph, hardBlockers, new HashMap<>())
+          || !hardBlockers.contains(victim)) {
+        return false;
+      }
+    } catch (Exception e) {
+      LOG.warn("Deadlock re-verification for {} failed; sparing it this scan: {}",
+          JavaUtils.txnIdToString(victim), e.getMessage(), e);
+      return false;
+    }
+    return tarjanSCCs(graph).stream().anyMatch(scc -> scc.size() >= 2 && scc.contains(victim));
+  }
+
+  /**
+   * Renders the intra-cycle wait edges (waiter -> blocker) with the contended resource, e.g.
+   * {@code txnid:21 -[default.t2]-> txnid:22, txnid:22 -[default.t1/p=1]-> txnid:21}.
+   */
+  private static String formatCycle(
+      List<Long> scc, Map<Long, Set<Long>> graph, Map<Long, Map<Long, String>> edgeResources) {
+    Set<Long> members = new HashSet<>(scc);
+    StringBuilder sb = new StringBuilder();
+    scc.stream().sorted().forEach(waiter -> {
+      for (long blocker : graph.getOrDefault(waiter, Collections.emptySet())) {
+        if (!members.contains(blocker)) {
+          continue;
+        }
+        if (!sb.isEmpty()) {
+          sb.append(", ");
+        }
+        sb.append(JavaUtils.txnIdToString(waiter))
+            .append(" -[").append(edgeResources.get(waiter).get(blocker)).append("]-> ")
+            .append(JavaUtils.txnIdToString(blocker));
+      }
+    });
+    return sb.toString();
   }
 
   /** Iterative (not recursive) Tarjan's SCC: a long wait chain must not blow the JVM stack. */
@@ -235,21 +299,20 @@ public class DeadlockDetectionFunction implements TransactionalFunction<Integer>
     Set<Long> onStack = new HashSet<>();
     Deque<Long> sccStack = new ArrayDeque<>();
     List<List<Long>> result = new ArrayList<>();
-    int[] counter = {0};
     Deque<DfsFrame> callStack = new ArrayDeque<>();
 
     for (Long start : graph.keySet()) {
       if (index.containsKey(start)) {
         continue;
       }
-      pushFrame(callStack, start, graph, index, lowlink, onStack, sccStack, counter);
+      pushFrame(callStack, start, graph, index, lowlink, onStack, sccStack);
       while (!callStack.isEmpty()) {
         DfsFrame frame = callStack.peek();
         boolean recursed = false;
         while (frame.blockers().hasNext()) {
           long blocker = frame.blockers().next();
           if (!index.containsKey(blocker)) {
-            pushFrame(callStack, blocker, graph, index, lowlink, onStack, sccStack, counter);
+            pushFrame(callStack, blocker, graph, index, lowlink, onStack, sccStack);
             recursed = true;
             break;
           } else if (onStack.contains(blocker)) {
@@ -280,57 +343,47 @@ public class DeadlockDetectionFunction implements TransactionalFunction<Integer>
     return result;
   }
 
-  private static void pushFrame(Deque<DfsFrame> callStack, long txnId, Map<Long, Set<Long>> graph,
-                                Map<Long, Integer> index, Map<Long, Integer> lowlink,
-                                Set<Long> onStack, Deque<Long> sccStack, int[] counter) {
-    index.put(txnId, counter[0]);
-    lowlink.put(txnId, counter[0]);
-    counter[0]++;
+  private static void pushFrame(
+      Deque<DfsFrame> callStack, long txnId, Map<Long, Set<Long>> graph, Map<Long, Integer> index,
+      Map<Long, Integer> lowlink, Set<Long> onStack, Deque<Long> sccStack) {
+    // index only grows, so its size is the next DFS visit number.
+    int visit = index.size();
+    index.put(txnId, visit);
+    lowlink.put(txnId, visit);
     sccStack.push(txnId);
     onStack.add(txnId);
-    callStack.push(new DfsFrame(txnId, graph.getOrDefault(txnId, Collections.emptySet()).iterator()));
+    callStack.push(
+        new DfsFrame(txnId, graph.getOrDefault(txnId, Collections.emptySet()).iterator()));
   }
 
-  /** Youngest eligible (highest txn ID) member, or null if every member is protected. */
-  private static Long pickVictim(List<Long> scc, Map<Long, TxnType> txnTypes) {
+  /**
+   * Youngest hard blocker in the cycle (highest txn ID) — wait-die victim selection.
+   * A wait edge is <i>hard</i> when its blocker lock is acquired and <i>soft</i> when the
+   * blocker lock is itself still waiting (FIFO queue order). Only a hard blocker — a txn
+   * holding an acquired lock while it waits — is eligible: aborting it releases what the
+   * cycle waits on, and every cycle contains at least one (lock IDs are monotonic, so a
+   * cycle must pass through a txn owning two lock requests). A soft-only waiter holds
+   * nothing and is never chosen. Returns {@code null} only if the SCC has no hard blocker,
+   * unreachable in a consistent snapshot.
+   */
+  private static Long pickVictim(List<Long> scc, Set<Long> hardBlockers) {
     return scc.stream()
-        .filter(txn -> !isProtectedFromAbort(txnTypes.get(txn)))
-        .max(Comparator.naturalOrder())
+        .filter(hardBlockers::contains)
+        .max(Long::compareTo)
         .orElse(null);
   }
 
-  /**
-   * Aborting REPL_CREATED would diverge source/destination state; SOFT_DELETE leaves the
-   * table half-deleted. {@code null} = type unrecognized by this build (newer client);
-   * treat as protected rather than guess.
-   */
-  private static boolean isProtectedFromAbort(TxnType type) {
-    return type == null
-        || type == TxnType.REPL_CREATED
-        || type == TxnType.SOFT_DELETE;
-  }
-
-  /**
-   * Listener exceptions must propagate: swallowing them would persist the abort locally
-   * while leaving replication unaware, diverging source/destination until timeout. The
-   * next scan re-detects the cycle.
-   */
-  private void notifyAbort(MultiDataSourceJdbcResource jdbcResource, long victim, TxnType txnType)
+  private void notifyAbort(MultiDataSourceJdbcResource jdbcResource, long victim)
       throws MetaException {
     if (transactionalListeners == null || transactionalListeners.isEmpty()) {
       return;
     }
     List<TxnWriteDetails> writeDetails = jdbcResource.execute(
         new GetWriteIdsMappingForTxnIdsHandler(Collections.singleton(victim)));
-    notifyCommitOrAbortEvent(victim, EventMessage.EventType.ABORT_TXN,
-        txnType == null ? TxnType.DEFAULT : txnType,
+    // The victim is always a hard blocker = multi-statement txn (pickVictim), and only
+    // explicit multi-statement txns are TxnType.DEFAULT, so DEFAULT is exact.
+    notifyCommitOrAbortEvent(victim, EventMessage.EventType.ABORT_TXN, TxnType.DEFAULT,
         jdbcResource.getConnection(), writeDetails, transactionalListeners);
-  }
-
-  private static String formatTxnList(List<Long> txns) {
-    return txns.stream()
-        .map(JavaUtils::txnIdToString)
-        .collect(Collectors.joining(", ", "[", "]"));
   }
 
   /** Heap-backed stack frame for the iterative Tarjan walker. */

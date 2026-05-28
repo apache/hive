@@ -567,9 +567,9 @@ public interface TxnStore extends Configurable {
   void performTimeOuts();
 
   /**
-   * Scan HIVE_LOCKS for wait-for cycles and abort the youngest eligible txn in each
-   * (REPL_CREATED/SOFT_DELETE protected). Driven by {@code DeadlockDetectorService}; tests
-   * may invoke synchronously.
+   * Scan HIVE_LOCKS for wait-for cycles and abort the youngest hold-and-wait
+   * (multi-statement) txn in each; single-statement txns are never aborted.
+   * Driven by {@code DeadlockDetectorService}; tests may invoke synchronously.
    *
    * @return number of transactions aborted as deadlock victims
    */

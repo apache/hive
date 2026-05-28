@@ -322,14 +322,14 @@ public class MetastoreConf {
         "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
         "Time interval describing how often aborted and committed txns are cleaned."),
     TXN_DEADLOCK_DETECTOR_ENABLED("metastore.txn.deadlock.detector.enabled",
-        "hive.metastore.txn.deadlock.detector.enabled", true,
+        "hive.metastore.txn.deadlock.detector.enabled", false,
         "Run a metastore background thread that scans HIVE_LOCKS for wait-for cycles among "
-            + "ACID transactions. The youngest eligible transaction in each cycle is aborted "
-            + "with ABORT_DEADLOCK; REPL_CREATED and SOFT_DELETE are protected. When false, "
-            + "cycles resolve only via lock/txn timeouts. Toggling requires a metastore "
-            + "restart; this setting is not exposed via setMetaConf."),
+            + "ACID transactions. The youngest transaction in each cycle that holds a lock "
+            + "while waiting for another (i.e. a multi-statement transaction) is aborted "
+            + "with ABORT_DEADLOCK; single-statement transactions are never aborted. "
+            + "When false, cycles resolve only via lock/txn timeouts."),
     TXN_DEADLOCK_DETECTOR_INTERVAL("metastore.txn.deadlock.detector.interval",
-        "hive.metastore.txn.deadlock.detector.interval", 5, TimeUnit.SECONDS,
+        "hive.metastore.txn.deadlock.detector.interval", 30, TimeUnit.SECONDS,
         "Interval between deadlock-detector scans. Lower values shorten detection latency "
             + "at the cost of extra metastore DB load."),
     ADDED_JARS("metastore.added.jars.path", "hive.added.jars.path", "",
