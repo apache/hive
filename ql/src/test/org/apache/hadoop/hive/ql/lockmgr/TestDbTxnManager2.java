@@ -4833,7 +4833,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
   }
 
   /**
-   * Linear wait chain (no cycle): A holds lock, B waits for A.
+   * Linear wait chain (no cycle): txn1 holds lock, txn2 waits for txn1.
    * The detector must NOT abort either transaction.
    */
   @Test
@@ -4843,52 +4843,51 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     driver.run("create table NF_T1 (a int, b int) " +
         "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
 
-    HiveTxnManager txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgrA);
-    txnMgrA.openTxn(ctx, "TxnA");
+    HiveTxnManager txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr1);
+    txnMgr1.openTxn(ctx, "Txn1");
     driver.compileAndRespond("update NF_T1 set a = 1 where b = 1", true);
-    txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
+    txnMgr1.acquireLocks(driver.getPlan(), ctx, "Txn1");
 
-    HiveTxnManager txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgrB);
-    txnMgrB.openTxn(ctx, "TxnB");
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    txnMgr2.openTxn(ctx, "Txn2");
     driver.compileAndRespond("update NF_T1 set a = 2 where b = 2", true);
-    ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+    ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Txn2", false);
 
-    List<ShowLocksResponseElement> locks = getLocks(txnMgrB);
-    long txnBWaitingLockId = -1;
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr2);
+    long waitingLockId = -1;
     for (ShowLocksResponseElement lock : locks) {
       if (lock.getState() == LockState.WAITING) {
-        txnBWaitingLockId = lock.getLockid();
+        waitingLockId = lock.getLockid();
         break;
       }
     }
-    Assert.assertTrue("Should have found B's waiting lock", txnBWaitingLockId > 0);
+    Assert.assertTrue("Should have found txn2's waiting lock", waitingLockId > 0);
 
     long deadlockedBefore = getDeadlockedCounter();
     runDeadlockDetector();
     Assert.assertEquals("Linear chain must not increment deadlock counter",
         deadlockedBefore, getDeadlockedCounter());
 
-    // Neither txn should have been aborted; B remains WAITING.
-    txnMgrA.heartbeat();
-    txnMgrB.heartbeat();
-    LockState state = ((DbLockManager) txnMgrB.getLockManager()).checkLock(txnBWaitingLockId);
-    Assert.assertEquals("B should still be WAITING (no deadlock)", LockState.WAITING, state);
+    // Neither txn should have been aborted; txn2 remains WAITING.
+    txnMgr1.heartbeat();
+    txnMgr2.heartbeat();
+    LockState state = ((DbLockManager) txnMgr2.getLockManager()).checkLock(waitingLockId);
+    Assert.assertEquals("Txn2 should still be WAITING (no deadlock)", LockState.WAITING, state);
 
-    txnMgrA.rollbackTxn();
-    txnMgrB.rollbackTxn();
-    txnMgrA.closeTxnManager();
-    txnMgrB.closeTxnManager();
+    txnMgr1.rollbackTxn();
+    txnMgr2.rollbackTxn();
+    txnMgr1.closeTxnManager();
+    txnMgr2.closeTxnManager();
     swapTxnManager(txnMgr);
   }
 
   /**
-   * The headline soundness test: a young transaction {@code D} is blocked by a member of
+   * The headline soundness test: a young transaction (txn3) is blocked by a member of
    * an established two-party cycle but is itself NOT in the cycle. The detector must
-   * abort the cycle's youngest member ({@code B}) — never {@code D}, even though
-   * {@code D} has the highest txn ID overall. This pins the fix for the original
-   * detector's seed-based victim-selection bug.
+   * abort the cycle's youngest member (txn2) — never txn3, even though txn3 has the
+   * highest txn ID overall.
    */
   @Test
   public void testInnocentWaiterNotAborted() throws Exception {
@@ -4899,52 +4898,52 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     driver.run("create table IW_T2 (a int, b int) "
         + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
 
-    // A holds IW_T1
-    HiveTxnManager txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgrA);
-    txnMgrA.openTxn(ctx, "TxnA");
-    long txnIdA = txnMgrA.getCurrentTxnId();
+    // txn1 holds IW_T1
+    HiveTxnManager txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr1);
+    txnMgr1.openTxn(ctx, "Txn1");
+    long txnId1 = txnMgr1.getCurrentTxnId();
     driver.compileAndRespond("update IW_T1 set a = 1 where b = 1", true);
-    txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
+    txnMgr1.acquireLocks(driver.getPlan(), ctx, "Txn1");
 
-    // B holds IW_T2
-    HiveTxnManager txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgrB);
-    txnMgrB.openTxn(ctx, "TxnB");
-    long txnIdB = txnMgrB.getCurrentTxnId();
+    // txn2 holds IW_T2
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    txnMgr2.openTxn(ctx, "Txn2");
+    long txnId2 = txnMgr2.getCurrentTxnId();
     driver.compileAndRespond("update IW_T2 set a = 1 where b = 1", true);
-    txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
+    txnMgr2.acquireLocks(driver.getPlan(), ctx, "Txn2");
 
-    // A waits for IW_T2 (-> B); B waits for IW_T1 (-> A): cycle {A,B}.
-    swapTxnManager(txnMgrA);
+    // txn1 waits for IW_T2 (-> txn2); txn2 waits for IW_T1 (-> txn1): cycle {txn1, txn2}.
+    swapTxnManager(txnMgr1);
     driver.compileAndRespond("update IW_T2 set a = 2 where b = 2", true);
-    ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
-    swapTxnManager(txnMgrB);
+    ((DbTxnManager) txnMgr1).acquireLocks(driver.getPlan(), ctx, "Txn1", false);
+    swapTxnManager(txnMgr2);
     driver.compileAndRespond("update IW_T1 set a = 2 where b = 2", true);
-    ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+    ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Txn2", false);
 
-    // D — newest txn, NOT in the cycle. D simply waits on IW_T1 (held by A).
-    HiveTxnManager txnMgrD = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgrD);
-    txnMgrD.openTxn(ctx, "TxnD");
-    long txnIdD = txnMgrD.getCurrentTxnId();
-    Assert.assertTrue("D should have the highest txn ID", txnIdD > txnIdB && txnIdB > txnIdA);
+    // txn3 — newest txn, NOT in the cycle. Simply waits on IW_T1 (held by txn1).
+    HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr3);
+    txnMgr3.openTxn(ctx, "Txn3");
+    long txnId3 = txnMgr3.getCurrentTxnId();
+    Assert.assertTrue("Txn3 should have the highest txn ID", txnId3 > txnId2 && txnId2 > txnId1);
     driver.compileAndRespond("update IW_T1 set a = 3 where b = 3", true);
-    ((DbTxnManager) txnMgrD).acquireLocks(driver.getPlan(), ctx, "TxnD", false);
+    ((DbTxnManager) txnMgr3).acquireLocks(driver.getPlan(), ctx, "Txn3", false);
 
     runDeadlockDetector();
 
-    // B is the youngest cycle member -> aborted. A and D survive.
-    Assert.assertTrue("B (younger of the two cycle members) should be aborted",
-        heartbeatThrowsTxnAborted(txnMgrB));
-    txnMgrA.heartbeat();
-    txnMgrD.heartbeat();
+    // txn2 is the youngest cycle member -> aborted. txn1 and txn3 survive.
+    Assert.assertTrue("Txn2 (younger of the two cycle members) should be aborted",
+        heartbeatThrowsTxnAborted(txnMgr2));
+    txnMgr1.heartbeat();
+    txnMgr3.heartbeat();
 
-    txnMgrA.rollbackTxn();
-    txnMgrD.rollbackTxn();
-    txnMgrA.closeTxnManager();
-    txnMgrB.closeTxnManager();
-    txnMgrD.closeTxnManager();
+    txnMgr1.rollbackTxn();
+    txnMgr3.rollbackTxn();
+    txnMgr1.closeTxnManager();
+    txnMgr2.closeTxnManager();
+    txnMgr3.closeTxnManager();
     swapTxnManager(txnMgr);
   }
 
@@ -4961,45 +4960,45 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     boolean originalEnabled = MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.TXN_DEADLOCK_DETECTOR_ENABLED);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_DEADLOCK_DETECTOR_ENABLED, false);
-    HiveTxnManager txnMgrA = null;
-    HiveTxnManager txnMgrB = null;
+    HiveTxnManager txnMgr1 = null;
+    HiveTxnManager txnMgr2 = null;
     try {
       driver.run("create table KS_T1 (a int, b int) "
           + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
       driver.run("create table KS_T2 (a int, b int) "
           + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
-      txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-      swapTxnManager(txnMgrA);
-      txnMgrA.openTxn(ctx, "TxnA");
+      txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgr1);
+      txnMgr1.openTxn(ctx, "Txn1");
       driver.compileAndRespond("update KS_T1 set a = 1 where b = 1", true);
-      txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
-      txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-      swapTxnManager(txnMgrB);
-      txnMgrB.openTxn(ctx, "TxnB");
+      txnMgr1.acquireLocks(driver.getPlan(), ctx, "Txn1");
+      txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgr2);
+      txnMgr2.openTxn(ctx, "Txn2");
       driver.compileAndRespond("update KS_T2 set a = 1 where b = 1", true);
-      txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
-      swapTxnManager(txnMgrA);
+      txnMgr2.acquireLocks(driver.getPlan(), ctx, "Txn2");
+      swapTxnManager(txnMgr1);
       driver.compileAndRespond("update KS_T2 set a = 2 where b = 2", true);
-      ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
-      swapTxnManager(txnMgrB);
+      ((DbTxnManager) txnMgr1).acquireLocks(driver.getPlan(), ctx, "Txn1", false);
+      swapTxnManager(txnMgr2);
       driver.compileAndRespond("update KS_T1 set a = 2 where b = 2", true);
-      ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+      ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Txn2", false);
 
       runDeadlockDetector();
 
       // Both txns must still be alive — kill switch must skip the scan entirely.
-      txnMgrA.heartbeat();
-      txnMgrB.heartbeat();
+      txnMgr1.heartbeat();
+      txnMgr2.heartbeat();
     } finally {
       MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_DEADLOCK_DETECTOR_ENABLED,
           originalEnabled);
-      if (txnMgrA != null) {
-        try { txnMgrA.rollbackTxn(); } catch (Exception ignored) { }
-        txnMgrA.closeTxnManager();
+      if (txnMgr1 != null) {
+        try { txnMgr1.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgr1.closeTxnManager();
       }
-      if (txnMgrB != null) {
-        try { txnMgrB.rollbackTxn(); } catch (Exception ignored) { }
-        txnMgrB.closeTxnManager();
+      if (txnMgr2 != null) {
+        try { txnMgr2.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgr2.closeTxnManager();
       }
       swapTxnManager(txnMgr);
     }
@@ -5020,36 +5019,36 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     driver.run("create table IR_T2 (a int, b int) "
         + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
 
-    HiveTxnManager txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgrA);
-    txnMgrA.openTxn(ctx, "TxnA");
+    HiveTxnManager txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr1);
+    txnMgr1.openTxn(ctx, "Txn1");
     driver.compileAndRespond("update IR_T1 set a = 1 where b = 1", true);
-    txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
-    HiveTxnManager txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgrB);
-    txnMgrB.openTxn(ctx, "TxnB");
+    txnMgr1.acquireLocks(driver.getPlan(), ctx, "Txn1");
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    txnMgr2.openTxn(ctx, "Txn2");
     driver.compileAndRespond("update IR_T2 set a = 1 where b = 1", true);
-    txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
-    swapTxnManager(txnMgrA);
+    txnMgr2.acquireLocks(driver.getPlan(), ctx, "Txn2");
+    swapTxnManager(txnMgr1);
     driver.compileAndRespond("update IR_T2 set a = 2 where b = 2", true);
-    ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
-    swapTxnManager(txnMgrB);
+    ((DbTxnManager) txnMgr1).acquireLocks(driver.getPlan(), ctx, "Txn1", false);
+    swapTxnManager(txnMgr2);
     driver.compileAndRespond("update IR_T1 set a = 2 where b = 2", true);
-    ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+    ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Txn2", false);
 
     runDeadlockDetector();
-    Assert.assertTrue("First run must abort B", heartbeatThrowsTxnAborted(txnMgrB));
+    Assert.assertTrue("First run must abort txn2", heartbeatThrowsTxnAborted(txnMgr2));
 
     long deadlockedAfterFirst = getDeadlockedCounter();
     runDeadlockDetector();
-    // Second run: cycle already broken, A still alive, metric must not move.
-    txnMgrA.heartbeat();
+    // Second run: cycle already broken, txn1 still alive, metric must not move.
+    txnMgr1.heartbeat();
     Assert.assertEquals("Re-running the detector must not increment the deadlock counter",
         deadlockedAfterFirst, getDeadlockedCounter());
 
-    txnMgrA.rollbackTxn();
-    txnMgrA.closeTxnManager();
-    txnMgrB.closeTxnManager();
+    txnMgr1.rollbackTxn();
+    txnMgr1.closeTxnManager();
+    txnMgr2.closeTxnManager();
     swapTxnManager(txnMgr);
   }
 
@@ -5076,29 +5075,29 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     // ours.
     Metrics.shutdown();
     Metrics.initialize(conf);
-    HiveTxnManager txnMgrA = null;
-    HiveTxnManager txnMgrB = null;
+    HiveTxnManager txnMgr1 = null;
+    HiveTxnManager txnMgr2 = null;
     try {
       driver.run("create table DM_T1 (a int, b int) "
           + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
       driver.run("create table DM_T2 (a int, b int) "
           + "clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
-      txnMgrA = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-      swapTxnManager(txnMgrA);
-      txnMgrA.openTxn(ctx, "TxnA");
+      txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgr1);
+      txnMgr1.openTxn(ctx, "Txn1");
       driver.compileAndRespond("update DM_T1 set a = 1 where b = 1", true);
-      txnMgrA.acquireLocks(driver.getPlan(), ctx, "TxnA");
-      txnMgrB = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-      swapTxnManager(txnMgrB);
-      txnMgrB.openTxn(ctx, "TxnB");
+      txnMgr1.acquireLocks(driver.getPlan(), ctx, "Txn1");
+      txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+      swapTxnManager(txnMgr2);
+      txnMgr2.openTxn(ctx, "Txn2");
       driver.compileAndRespond("update DM_T2 set a = 1 where b = 1", true);
-      txnMgrB.acquireLocks(driver.getPlan(), ctx, "TxnB");
-      swapTxnManager(txnMgrA);
+      txnMgr2.acquireLocks(driver.getPlan(), ctx, "Txn2");
+      swapTxnManager(txnMgr1);
       driver.compileAndRespond("update DM_T2 set a = 2 where b = 2", true);
-      ((DbTxnManager) txnMgrA).acquireLocks(driver.getPlan(), ctx, "TxnA", false);
-      swapTxnManager(txnMgrB);
+      ((DbTxnManager) txnMgr1).acquireLocks(driver.getPlan(), ctx, "Txn1", false);
+      swapTxnManager(txnMgr2);
       driver.compileAndRespond("update DM_T1 set a = 2 where b = 2", true);
-      ((DbTxnManager) txnMgrB).acquireLocks(driver.getPlan(), ctx, "TxnB", false);
+      ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Txn2", false);
 
       long before = getDeadlockedCounter();
       runDeadlockDetector();
@@ -5109,22 +5108,102 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
       MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON,
           originalAcidExt);
       MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, originalMetrics);
-      // Restore Metrics to its prior state so subsequent tests in this class are not
-      // observing a registry that this test re-initialized.
       Metrics.shutdown();
       if (originalMetrics) {
         Metrics.initialize(conf);
       }
-      if (txnMgrA != null) {
-        try { txnMgrA.rollbackTxn(); } catch (Exception ignored) { }
-        txnMgrA.closeTxnManager();
+      if (txnMgr1 != null) {
+        try { txnMgr1.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgr1.closeTxnManager();
       }
-      if (txnMgrB != null) {
-        try { txnMgrB.rollbackTxn(); } catch (Exception ignored) { }
-        txnMgrB.closeTxnManager();
+      if (txnMgr2 != null) {
+        try { txnMgr2.rollbackTxn(); } catch (Exception ignored) { }
+        txnMgr2.closeTxnManager();
       }
       swapTxnManager(txnMgr);
     }
+  }
+
+  /**
+   * Two disjoint 2-party cycles in the same scan: {txn1<->txn2} on tables T1/T2 and
+   * {txn3<->txn4} on tables T3/T4. The detector must abort one victim per cycle (txn2 and
+   * txn4 — the youngest in each), increment the metric by 2, and leave txn1 and txn3
+   * alive. This exercises savepoint iteration across multiple SCCs in a single pass.
+   */
+  @Test
+  public void testTwoIndependentCycles() throws Exception {
+    String[] tables = {"TIC_T1", "TIC_T2", "TIC_T3", "TIC_T4"};
+    dropTable(tables);
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    for (String t : tables) {
+      driver.run("create table " + t + " (a int, b int) clustered by(b) into 2 buckets "
+          + "stored as orc TBLPROPERTIES ('transactional'='true')");
+    }
+
+    // Cycle 1: txn1 holds T1, txn2 holds T2; txn1 waits T2, txn2 waits T1.
+    HiveTxnManager txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    // Cycle 2: txn3 holds T3, txn4 holds T4; txn3 waits T4, txn4 waits T3.
+    HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    HiveTxnManager txnMgr4 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+
+    // Open in order so txn1 < txn2 < txn3 < txn4 (victims will be txn2 and txn4).
+    swapTxnManager(txnMgr1);
+    txnMgr1.openTxn(ctx, "Txn1");
+    swapTxnManager(txnMgr2);
+    txnMgr2.openTxn(ctx, "Txn2");
+    swapTxnManager(txnMgr3);
+    txnMgr3.openTxn(ctx, "Txn3");
+    swapTxnManager(txnMgr4);
+    txnMgr4.openTxn(ctx, "Txn4");
+
+    // Acquire held locks.
+    swapTxnManager(txnMgr1);
+    driver.compileAndRespond("update TIC_T1 set a = 1 where b = 1", true);
+    txnMgr1.acquireLocks(driver.getPlan(), ctx, "Txn1");
+    swapTxnManager(txnMgr2);
+    driver.compileAndRespond("update TIC_T2 set a = 1 where b = 1", true);
+    txnMgr2.acquireLocks(driver.getPlan(), ctx, "Txn2");
+    swapTxnManager(txnMgr3);
+    driver.compileAndRespond("update TIC_T3 set a = 1 where b = 1", true);
+    txnMgr3.acquireLocks(driver.getPlan(), ctx, "Txn3");
+    swapTxnManager(txnMgr4);
+    driver.compileAndRespond("update TIC_T4 set a = 1 where b = 1", true);
+    txnMgr4.acquireLocks(driver.getPlan(), ctx, "Txn4");
+
+    // Create cross-waits to form two independent cycles.
+    swapTxnManager(txnMgr1);
+    driver.compileAndRespond("update TIC_T2 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgr1).acquireLocks(driver.getPlan(), ctx, "Txn1", false);
+    swapTxnManager(txnMgr2);
+    driver.compileAndRespond("update TIC_T1 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Txn2", false);
+    swapTxnManager(txnMgr3);
+    driver.compileAndRespond("update TIC_T4 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgr3).acquireLocks(driver.getPlan(), ctx, "Txn3", false);
+    swapTxnManager(txnMgr4);
+    driver.compileAndRespond("update TIC_T3 set a = 2 where b = 2", true);
+    ((DbTxnManager) txnMgr4).acquireLocks(driver.getPlan(), ctx, "Txn4", false);
+
+    long before = getDeadlockedCounter();
+    runDeadlockDetector();
+    long after = getDeadlockedCounter();
+
+    Assert.assertEquals("Two independent cycles must increment metric by 2", before + 2, after);
+    Assert.assertTrue("Txn2 (youngest in cycle 1) must be aborted",
+        heartbeatThrowsTxnAborted(txnMgr2));
+    Assert.assertTrue("Txn4 (youngest in cycle 2) must be aborted",
+        heartbeatThrowsTxnAborted(txnMgr4));
+    txnMgr1.heartbeat();
+    txnMgr3.heartbeat();
+
+    txnMgr1.rollbackTxn();
+    txnMgr3.rollbackTxn();
+    txnMgr1.closeTxnManager();
+    txnMgr2.closeTxnManager();
+    txnMgr3.closeTxnManager();
+    txnMgr4.closeTxnManager();
+    swapTxnManager(txnMgr);
   }
 
   /**
