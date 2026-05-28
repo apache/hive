@@ -1036,9 +1036,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  boolean isCBOSupportedLateralView(ASTNode lateralView) {
-    // LATERAL VIEW OUTER not supported in CBO
-    return lateralView.getToken().getType() != HiveParser.TOK_LATERAL_VIEW_OUTER;
+  boolean isCBOSupportedLateralView() {
+    // Both LATERAL VIEW and LATERAL VIEW OUTER are supported in CBO.
+    return !this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP);
   }
 
   @Override
@@ -2930,7 +2930,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         leftRel = aliasToRel.get(leftTableAlias);
       } else if (SemanticAnalyzer.isJoinToken(left)) {
         leftRel = genJoinLogicalPlan(qb, left, aliasToRel, outerNameToPosMap, outerRR);
-      } else if (left.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+      } else if (isASTNodeLateralView(left)) {
         leftRel = genLateralViewPlans(qb, left, aliasToRel);
       } else {
         assert (false);
@@ -2944,7 +2944,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
         rightTableAlias = getTableAlias(right);
         rightRel = aliasToRel.get(rightTableAlias);
-      } else if (right.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+      } else if (isASTNodeLateralView(right)) {
         rightRel = genLateralViewPlans(qb, right, aliasToRel);
       }  else {
         assert (false);
@@ -3327,7 +3327,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // next token is either the table alias name or another lateral view (which we will call
       // recursively)
-      RelNode inputRel = next.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
+      RelNode inputRel = isASTNodeLateralView(next)
           ? genLateralViewPlans(qb, next, aliasToRel)
           : aliasToRel.get(getTableAlias(next));
 
