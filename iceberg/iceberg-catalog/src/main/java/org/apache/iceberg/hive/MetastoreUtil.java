@@ -139,7 +139,11 @@ public class MetastoreUtil {
     result.setDbName(tableName.getDb());
     result.setTableName(tableName.getTable());
     result.setTableType(TableType.EXTERNAL_TABLE.toString());
+
+    // TODO: Revert after HIVE-29633 is fixed
+    // result.setPartitionKeys(getPartitionKeys(table, table.spec().specId()));
     result.setPartitionKeys(Lists.newArrayList());
+
     TableMetadata metadata = ((BaseTable) table).operations().current();
     long maxHiveTablePropertySize = conf.getLong(HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE,
         HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);

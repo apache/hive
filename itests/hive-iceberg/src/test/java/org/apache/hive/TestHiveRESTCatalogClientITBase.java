@@ -179,7 +179,11 @@ public abstract class TestHiveRESTCatalogClientITBase {
     Assertions.assertEquals(TABLE_NAME, table.getTableName());
     Assertions.assertEquals(HIVE_ICEBERG_STORAGE_HANDLER, table.getParameters().get("storage_handler"));
     Assertions.assertNotNull(table.getParameters().get(TableProperties.DEFAULT_PARTITION_SPEC));
+    
+    // TODO: Revert after HIVE-29633 is fixed
+    // Assertions.assertEquals(1, table.getPartitionKeys().size());
     Assertions.assertTrue(table.getPartitionKeys().isEmpty());
+    
     List<String> columnNames =
         table.getSd().getCols().stream().map(FieldSchema::getName).toList();
     Assertions.assertTrue(columnNames.contains("city"));
