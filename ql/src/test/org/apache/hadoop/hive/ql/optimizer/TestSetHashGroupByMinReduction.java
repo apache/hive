@@ -56,12 +56,6 @@ class TestSetHashGroupByMinReduction {
   private static final float DEFAULT_MIN_REDUCTION = 0.99f;
   private static final float DEFAULT_MIN_REDUCTION_LOWER_BOUND = 0.1f;
 
-  /**
-   * NDV product drives the central HIVE-29625 disambiguation:
-   *   ndvProduct < 0  -> unknown -> early-return null (no setMinReductionHashAggr call)
-   *   ndvProduct == 0 -> verified zero -> factor = 1.0, NOT less than default 0.99 (no call)
-   *   ndvProduct > 0  -> compute factor = 1 - ndvProduct/numRows, set if < default
-   */
   @ParameterizedTest(name = "{0}")
   @MethodSource("ndvProductCases")
   void testProcessByNdvProduct(String name, long ndvProduct, boolean expectSetCall)
@@ -88,11 +82,6 @@ class TestSetHashGroupByMinReduction {
     );
   }
 
-  /**
-   * Each gate is one of the early-return conditions in process(): non-HASH mode,
-   * incomplete basic stats, or incomplete column stats. All three early-return without
-   * touching setMinReductionHashAggr.
-   */
   @ParameterizedTest(name = "{0}")
   @MethodSource("earlyReturnGateCases")
   void testProcessEarlyReturnsOnUnsupportedState(String name, Consumer<GroupByOperator> flipGate)
@@ -120,11 +109,7 @@ class TestSetHashGroupByMinReduction {
     );
   }
 
-  /**
-   * Build a GroupByOperator that passes all the early-return gates, with empty keys
-   * so the colStats loop is a no-op (the inputs to computeNDVGroupingColumns are
-   * controlled directly via mockStatic in each test).
-   */
+  // Passes all early-return gates; empty keys make the colStats loop a no-op.
   private static GroupByOperator setupCompleteHashGroupBy() {
     GroupByOperator op = mock(GroupByOperator.class);
     GroupByDesc desc = mock(GroupByDesc.class);

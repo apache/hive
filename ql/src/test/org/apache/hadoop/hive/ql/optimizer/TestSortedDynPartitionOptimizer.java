@@ -159,11 +159,7 @@ class TestSortedDynPartitionOptimizer {
     return outer.new SortedDynamicPartitionProc(parseCtx);
   }
 
-  /**
-   * Builds one ColStatistics per ndvs entry; the first entry is null when firstStatNull
-   * is true (used to simulate "missing stats" for either the partition-column or the
-   * custom-expression branch).
-   */
+  // First entry is null when firstStatNull is true; simulates a missing stat for either branch.
   private static ColStatistics[] buildColStats(long[] ndvs, boolean firstStatNull, String prefix) {
     ColStatistics[] result = new ColStatistics[ndvs.length];
     for (int i = 0; i < ndvs.length; i++) {

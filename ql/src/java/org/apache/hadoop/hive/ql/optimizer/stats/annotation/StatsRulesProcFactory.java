@@ -559,23 +559,23 @@ public class StatsRulesProcFactory {
       for (int i = 0; i < columnStats.size(); i++) {
         ColStatistics cs = columnStats.get(i);
         long dvs = cs == null ? -1L : cs.getCountDistint();
-        if (dvs < 0) {
-          // missing stats or unknown NDV
-          factor *= 0.5;
-          continue;
-        }
         if (dvs == 0) {
           // verified zero distinct values: IN cannot match any row
           factor = 0;
           break;
         }
-        // (num of distinct vals for col in IN clause  / num of distinct vals for col )
-        double columnFactor = 1.0 / dvs;
-        if (!multiColumn) {
-          columnFactor *= estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
+        if (dvs < 0) {
+          // missing stats or unknown NDV
+          factor *= 0.5;
+        } else {
+          // (num of distinct vals for col in IN clause  / num of distinct vals for col )
+          double columnFactor = 1.0 / dvs;
+          if (!multiColumn) {
+            columnFactor *= estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
+          }
+          // max can be 1, even when ndv is larger in IN clause than in column stats
+          factor *= Math.min(columnFactor, 1.0);
         }
-        // max can be 1, even when ndv is larger in IN clause than in column stats
-        factor *= Math.min(columnFactor, 1.0);
       }
 
       // Clamp at 1 to be sure that we don't get out of range.

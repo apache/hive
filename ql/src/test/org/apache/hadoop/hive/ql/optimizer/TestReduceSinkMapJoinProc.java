@@ -59,15 +59,7 @@ import org.mockito.MockedStatic;
 
 class TestReduceSinkMapJoinProc {
 
-  /**
-   * Exercises the keyCount-from-NDV branch in processReduceSinkToHashJoin (HIVE-29625).
-   * Master used `cs.getCountDistint() <= 0` to fall back to MAX_VALUE; HIVE-29625 uses
-   * `cs.getCountDistint() < 0`, so verified-zero NDV no longer cascades to "no info"
-   * but falls through to `maxKeyCount *= 0` (then clamped to 1 by later logic).
-   *
-   * A null `ndv` row represents StatsUtils.getColStatisticsFromExpression returning null
-   * (no derivable stat) - shares the same MAX_VALUE fallback as NDV < 0.
-   */
+  // A null ndv row represents StatsUtils.getColStatisticsFromExpression returning null.
   @ParameterizedTest(name = "{0}")
   @MethodSource("keyCountFromNdvCases")
   void testProcessReduceSinkToHashJoinKeyCountFromNdv(
@@ -98,12 +90,7 @@ class TestReduceSinkMapJoinProc {
     );
   }
 
-  /**
-   * Shared invocation harness: build a real GenTezProcContext + mocked operator chain,
-   * stub StatsUtils.getColStatisticsFromExpression to return the given colStat for
-   * the single key column, run processReduceSinkToHashJoin, and assert the keyCount
-   * landed in joinConf.getParentKeyCounts() at position 0.
-   */
+  // Shared harness: build GenTezProcContext + mocked operators, run the method, read the keyCount put().
   private static void invokeAndAssertKeyCount(
       ColStatistics csForKey, long parentRows, long expectedKeyCount) throws Exception {
 

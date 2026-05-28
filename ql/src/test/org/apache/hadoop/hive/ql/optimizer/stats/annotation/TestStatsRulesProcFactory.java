@@ -330,249 +330,97 @@ class TestStatsRulesProcFactory {
     assertEquals(expectedRows, captor.getValue().getNumRows());
   }
 
-  @Test
-  void testComparisonRowCountLessThan() throws SemanticException {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("comparisonRowCountLessThanCases")
+  void testComparisonRowCountLessThan(String name, int constant, long expected) throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
 
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(3)));
+        new GenericUDFOPLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(constant)));
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(8, numRows);
+    assertEquals(expected, numRows);
   }
 
-  @Test
-  void testComparisonRowCountLessThanMin() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(1)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(0, numRows);
+  private static Stream<Arguments> comparisonRowCountLessThanCases() {
+    return Stream.of(
+        Arguments.of("midRange",      3, 8L),
+        Arguments.of("equalToMin",    1, 0L),
+        Arguments.of("belowMin",      0, 0L),
+        Arguments.of("equalToMax",    7, 12L),
+        Arguments.of("aboveMax",      8, 13L)
+    );
   }
 
-  @Test
-  void testComparisonRowCountLessThanBelowMin() throws SemanticException {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("comparisonRowCountEqualOrLessThanCases")
+  void testComparisonRowCountEqualOrLessThan(String name, int constant, long expected) throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
-
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(0)));
+        new GenericUDFOPEqualOrLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(constant)));
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(0, numRows);
+    assertEquals(expected, numRows);
   }
 
-  @Test
-  void testComparisonRowCountLessThanMax() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(7)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(12, numRows);
+  private static Stream<Arguments> comparisonRowCountEqualOrLessThanCases() {
+    return Stream.of(
+        Arguments.of("midRange",      3, 9L),
+        Arguments.of("equalToMin",    1, 1L),
+        Arguments.of("belowMin",      0, 0L),
+        Arguments.of("equalToMax",    7, 13L),
+        Arguments.of("aboveMax",      8, 13L)
+    );
   }
 
-  @Test
-  void testComparisonRowCountLessThanAboveMax() throws SemanticException {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("comparisonRowCountGreaterThanCases")
+  void testComparisonRowCountGreaterThan(String name, int constant, long expected) throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
-
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(8)));
+        new GenericUDFOPGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(constant)));
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(13, numRows);
+    assertEquals(expected, numRows);
   }
 
-  @Test
-  void testComparisonRowCountEqualOrLessThan() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(3)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(9, numRows);
+  private static Stream<Arguments> comparisonRowCountGreaterThanCases() {
+    return Stream.of(
+        Arguments.of("midRange",      5, 2L),
+        Arguments.of("equalToMin",    1, 12L),
+        Arguments.of("belowMin",      0, 13L),
+        Arguments.of("equalToMax",    7, 0L),
+        Arguments.of("aboveMax",      8, 0L)
+    );
   }
 
-  @Test
-  void testComparisonRowCountEqualOrLessThanMin() throws SemanticException {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("comparisonRowCountEqualOrGreaterThanCases")
+  void testComparisonRowCountEqualOrGreaterThan(String name, int constant, long expected) throws SemanticException {
     long numNulls = 2;
     Statistics stats = createStatistics(VALUES, numNulls);
     ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(1)));
+        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(constant)));
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    assertEquals(1, numRows);
+    assertEquals(expected, numRows);
   }
 
-  @Test
-  void testComparisonRowCountEqualOrLessThanBelowMin() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(0)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(0, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountEqualOrLessThanMax() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(7)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(13, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountEqualOrLessThanAboveMax() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(8)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(13, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountGreaterThan() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(5)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(2, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountGreaterThanMin() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(1)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(12, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountGreaterThanBelowMin() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(0)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(13, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountGreaterThanMax() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(7)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(0, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountGreaterThanAboveMax() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(8)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(0, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountEqualOrGreaterThan() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(5)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(3, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountEqualOrGreaterThanMin() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(1)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(13, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountEqualOrGreaterThanBelowMin() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(0)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(13, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountEqualOrGreaterThanMax() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(7)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(1, numRows);
-  }
-
-  @Test
-  void testComparisonRowCountEqualOrGreaterThanBeyondMax() throws SemanticException {
-    long numNulls = 2;
-    Statistics stats = createStatistics(VALUES, numNulls);
-    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(8)));
-    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
-        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
-
-    assertEquals(0, numRows);
+  private static Stream<Arguments> comparisonRowCountEqualOrGreaterThanCases() {
+    return Stream.of(
+        Arguments.of("midRange",      5, 3L),
+        Arguments.of("equalToMin",    1, 13L),
+        Arguments.of("belowMin",      0, 13L),
+        Arguments.of("equalToMax",    7, 1L),
+        Arguments.of("aboveMax",      8, 0L)
+    );
   }
 
   @Test
