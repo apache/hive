@@ -29,11 +29,9 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 
@@ -152,9 +150,9 @@ public class HiveInBetweenExpandRule {
     @Override
     public RexNode visitCall(final RexCall call) {
       switch (call.getKind()) {
-      case SEARCH: {
+      /* case SEARCH: {
         return new SearchTransformer<>(rexBuilder, call, RexUnknownAs.UNKNOWN).transform().accept(this);
-      }
+      } */
       case AND: {
         boolean[] update = {false};
         List<RexNode> newOperands = visitList(call.operands, update);

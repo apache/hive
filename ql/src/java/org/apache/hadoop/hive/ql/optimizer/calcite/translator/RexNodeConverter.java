@@ -606,10 +606,9 @@ public class RexNodeConverter {
         && !RexLiteral.isNullLiteral(range)
         && SqlTypeUtil.inSameFamily(arg.getType(), range.getType()))) {
       RexNode search = rexBuilder.makeIn(arg, ranges);
-      if (search.getKind() != SqlKind.SEARCH) {
-        throw new AssertionError("SEARCH creation failed: " + search);
+      if (search.getKind() == SqlKind.SEARCH) {
+        return search;
       }
-      return search;
     }
 
     // Calcite SEARCH conversion was not possible: generate our own OR expression
