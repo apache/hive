@@ -48,6 +48,10 @@ spec:
                     description: Autoscaling configuration (requires KEDA installed
                       in the cluster)
                     properties:
+                      activationCpuValue:
+                        description: CPU average value below which the trigger is
+                          inactive. Required if targetCpuValue is set.
+                        type: string
                       cooldownSeconds:
                         default: 600
                         description: Cooldown period in seconds after a scaling event
@@ -70,17 +74,19 @@ spec:
                         type: integer
                       scaleDownThreshold:
                         default: 20
-                        description: "Percentage threshold that triggers scale-down\
-                          \ (all conditions must be met: metric below threshold AND\
-                          \ CPU below threshold)"
+                        description: Threshold that triggers scale-down for Prometheus-based
+                          metrics
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
-                          \ with resources, pending tasks per AM for TezAM without\
-                          \ resources)"
+                          \ sessions for HS2, connections for HMS, queue depth for\
+                          \ LLAP, pending tasks for TezAM)"
                         type: integer
+                      targetCpuValue:
+                        description: "Target CPU average value for scaling (e.g.,\
+                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
+                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:
@@ -194,6 +200,10 @@ spec:
                     description: Autoscaling configuration (requires KEDA installed
                       in the cluster)
                     properties:
+                      activationCpuValue:
+                        description: CPU average value below which the trigger is
+                          inactive. Required if targetCpuValue is set.
+                        type: string
                       cooldownSeconds:
                         default: 600
                         description: Cooldown period in seconds after a scaling event
@@ -216,17 +226,19 @@ spec:
                         type: integer
                       scaleDownThreshold:
                         default: 20
-                        description: "Percentage threshold that triggers scale-down\
-                          \ (all conditions must be met: metric below threshold AND\
-                          \ CPU below threshold)"
+                        description: Threshold that triggers scale-down for Prometheus-based
+                          metrics
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
-                          \ with resources, pending tasks per AM for TezAM without\
-                          \ resources)"
+                          \ sessions for HS2, connections for HMS, queue depth for\
+                          \ LLAP, pending tasks for TezAM)"
                         type: integer
+                      targetCpuValue:
+                        description: "Target CPU average value for scaling (e.g.,\
+                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
+                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:
@@ -315,6 +327,10 @@ spec:
                     description: Autoscaling configuration (requires KEDA installed
                       in the cluster)
                     properties:
+                      activationCpuValue:
+                        description: CPU average value below which the trigger is
+                          inactive. Required if targetCpuValue is set.
+                        type: string
                       cooldownSeconds:
                         default: 600
                         description: Cooldown period in seconds after a scaling event
@@ -337,17 +353,19 @@ spec:
                         type: integer
                       scaleDownThreshold:
                         default: 20
-                        description: "Percentage threshold that triggers scale-down\
-                          \ (all conditions must be met: metric below threshold AND\
-                          \ CPU below threshold)"
+                        description: Threshold that triggers scale-down for Prometheus-based
+                          metrics
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
-                          \ with resources, pending tasks per AM for TezAM without\
-                          \ resources)"
+                          \ sessions for HS2, connections for HMS, queue depth for\
+                          \ LLAP, pending tasks for TezAM)"
                         type: integer
+                      targetCpuValue:
+                        description: "Target CPU average value for scaling (e.g.,\
+                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
+                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:
@@ -489,6 +507,10 @@ spec:
                     description: Autoscaling configuration (requires KEDA installed
                       in the cluster)
                     properties:
+                      activationCpuValue:
+                        description: CPU average value below which the trigger is
+                          inactive. Required if targetCpuValue is set.
+                        type: string
                       cooldownSeconds:
                         default: 600
                         description: Cooldown period in seconds after a scaling event
@@ -511,17 +533,19 @@ spec:
                         type: integer
                       scaleDownThreshold:
                         default: 20
-                        description: "Percentage threshold that triggers scale-down\
-                          \ (all conditions must be met: metric below threshold AND\
-                          \ CPU below threshold)"
+                        description: Threshold that triggers scale-down for Prometheus-based
+                          metrics
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, queue depth for LLAP, CPU% for TezAM\
-                          \ with resources, pending tasks per AM for TezAM without\
-                          \ resources)"
+                          \ sessions for HS2, connections for HMS, queue depth for\
+                          \ LLAP, pending tasks for TezAM)"
                         type: integer
+                      targetCpuValue:
+                        description: "Target CPU average value for scaling (e.g.,\
+                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
+                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:

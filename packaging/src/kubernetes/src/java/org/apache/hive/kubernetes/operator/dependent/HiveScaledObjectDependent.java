@@ -30,6 +30,8 @@ import io.javaoperatorsdk.operator.processing.GroupVersionKind;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.util.Labels;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Unified KEDA ScaledObject dependent resource for metric-based autoscaling.
@@ -40,6 +42,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
  * trigger from the KEDA HTTP Add-on (via InterceptorRoute) for wake-from-zero.
  */
 public abstract class HiveScaledObjectDependent extends HiveGenericDependentResource {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveScaledObjectDependent.class);
 
   private final String component;
   private final String targetKind;
@@ -113,7 +117,9 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
    * HiveServer2 ScaledObject: scales on hs2_active_sessions + CPU.
    */
   public static class HiveServer2 extends HiveScaledObjectDependent {
-    public HiveServer2() { super("hiveserver2", "Deployment"); }
+    public HiveServer2() {
+      super("hiveserver2", "Deployment");
+    }
 
     @Override
     protected AutoscalingSpec getAutoscalingSpec(HiveCluster hiveCluster) {
@@ -153,15 +159,20 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
               "activationThreshold", "0"
           )
       ));
-      if (hiveCluster.getSpec().hiveServer2().resources() != null) {
-        triggers.add(Map.of(
-            "type", "cpu",
-            "metricType", "Utilization",
-            "metadata", Map.of(
-                "value", String.valueOf(autoscaling.scaleUpThreshold()),
-                "activationValue", String.valueOf(autoscaling.scaleDownThreshold())
-            )
-        ));
+      if (autoscaling.targetCpuValue() != null && autoscaling.activationCpuValue() != null) {
+        if (hiveCluster.getSpec().hiveServer2().resources() != null) {
+          triggers.add(Map.of(
+              "type", "cpu",
+              "metricType", "AverageValue",
+              "metadata", Map.of(
+                  "value", autoscaling.targetCpuValue(),
+                  "activationValue", autoscaling.activationCpuValue()
+              )
+          ));
+        } else {
+          LOG.warn("targetCpuValue is set for HiveServer2, but no pod resources are defined. "
+              + "Skipping CPU trigger to prevent erratic scaling.");
+        }
       }
       // When scale-to-zero is enabled, add KEDA HTTP Add-on external-push
       // trigger to wake HS2 from 0 when requests arrive at the interceptor.
@@ -184,7 +195,9 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
    * Metastore ScaledObject: scales on open_connections + CPU.
    */
   public static class Metastore extends HiveScaledObjectDependent {
-    public Metastore() { super("metastore", "Deployment"); }
+    public Metastore() {
+      super("metastore", "Deployment");
+    }
 
     @Override
     protected AutoscalingSpec getAutoscalingSpec(HiveCluster hiveCluster) {
@@ -224,15 +237,20 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
               "activationThreshold", "0"
           )
       ));
-      if (hiveCluster.getSpec().metastore().resources() != null) {
-        triggers.add(Map.of(
-            "type", "cpu",
-            "metricType", "Utilization",
-            "metadata", Map.of(
-                "value", String.valueOf(autoscaling.scaleUpThreshold()),
-                "activationValue", String.valueOf(autoscaling.scaleDownThreshold())
-            )
-        ));
+      if (autoscaling.targetCpuValue() != null && autoscaling.activationCpuValue() != null) {
+        if (hiveCluster.getSpec().metastore().resources() != null) {
+          triggers.add(Map.of(
+              "type", "cpu",
+              "metricType", "AverageValue",
+              "metadata", Map.of(
+                  "value", autoscaling.targetCpuValue(),
+                  "activationValue", autoscaling.activationCpuValue()
+              )
+          ));
+        } else {
+          LOG.warn("targetCpuValue is set for Metastore, but no pod resources are defined. "
+              + "Skipping CPU trigger to prevent erratic scaling.");
+        }
       }
       return triggers;
     }
@@ -243,7 +261,9 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
    * Scale-down is slow (preserves in-memory cache).
    */
   public static class Llap extends HiveScaledObjectDependent {
-    public Llap() { super("llap", "StatefulSet"); }
+    public Llap() {
+      super("llap", "StatefulSet");
+    }
 
     @Override
     protected AutoscalingSpec getAutoscalingSpec(HiveCluster hiveCluster) {
@@ -299,7 +319,9 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
    * Tez AMs run in a warm pool; claimed AMs consume CPU, idle ones do not.
    */
   public static class TezAm extends HiveScaledObjectDependent {
-    public TezAm() { super("tezam", "StatefulSet"); }
+    public TezAm() {
+      super("tezam", "StatefulSet");
+    }
 
     @Override
     protected AutoscalingSpec getAutoscalingSpec(HiveCluster hiveCluster) {
@@ -329,15 +351,20 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
       String hs2TargetName = hiveCluster.getMetadata().getName() + "-hiveserver2";
       String namespace = hiveCluster.getMetadata().getNamespace();
       List<Map<String, Object>> triggers = new ArrayList<>();
-      if (hiveCluster.getSpec().tezAm().resources() != null) {
-        triggers.add(Map.of(
-            "type", "cpu",
-            "metricType", "Utilization",
-            "metadata", Map.of(
-                "value", String.valueOf(autoscaling.scaleUpThreshold()),
-                "activationValue", String.valueOf(autoscaling.scaleDownThreshold())
-            )
-        ));
+      if (autoscaling.targetCpuValue() != null && autoscaling.activationCpuValue() != null) {
+        if (hiveCluster.getSpec().tezAm().resources() != null) {
+          triggers.add(Map.of(
+              "type", "cpu",
+              "metricType", "AverageValue",
+              "metadata", Map.of(
+                  "value", autoscaling.targetCpuValue(),
+                  "activationValue", autoscaling.activationCpuValue()
+              )
+          ));
+        } else {
+          LOG.warn("targetCpuValue is set for TezAM, but no pod resources are defined. "
+              + "Skipping CPU trigger to prevent erratic scaling.");
+        }
         triggers.add(buildHs2ActivationTrigger(namespace, hs2TargetName, maxReplicas));
       } else {
         triggers.add(Map.of(

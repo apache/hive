@@ -119,6 +119,8 @@ cluster:
       minReplicas: 1
       scaleUpThreshold: 75
       scaleDownThreshold: 30
+      # targetCpuValue: "750m"      # Uncomment to enable CPU-based scaling (AverageValue)
+      # activationCpuValue: "200m"  # CPU trigger inactive below this value
       cooldownSeconds: 300
       gracePeriodSeconds: 60
     # Set to use an external Metastore instead of deploying one:
@@ -144,6 +146,8 @@ cluster:
       minReplicas: 0
       scaleUpThreshold: 80
       scaleDownThreshold: 20
+      # targetCpuValue: "1600m"     # Uncomment to enable CPU-based scaling (AverageValue)
+      # activationCpuValue: "400m"  # CPU trigger inactive below this value
       cooldownSeconds: 600
       gracePeriodSeconds: 300
 
@@ -186,12 +190,13 @@ cluster:
     # Autoscaling (requires KEDA + Prometheus in the cluster)
     # minReplicas: 0 enables scale-to-zero — wakes when HS2 receives queries
     # When enabled, 'replicas' above acts as the max replica ceiling
-    # scaleUpThreshold: with CPU resources set → CPU% (e.g., 60 = 60% utilization);
-    #   without CPU resources → pending tasks per AM (e.g., 5 = scale when 5+ tasks waiting)
+    # scaleUpThreshold: pending tasks per AM (e.g., 5 = scale when 5+ tasks waiting)
     autoscaling:
       enabled: false
       minReplicas: 0
       scaleUpThreshold: 5
       scaleDownThreshold: 10
+      # targetCpuValue: "600m"      # Uncomment to enable CPU-based scaling (AverageValue)
+      # activationCpuValue: "100m"  # CPU trigger inactive below this value
       cooldownSeconds: 600
       gracePeriodSeconds: 120

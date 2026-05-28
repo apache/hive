@@ -68,7 +68,7 @@ public record LlapSpec(
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 0, 1, 0, 900, 600);
+        false, 0, 1, 0, null, null, 900, 600);
   }
 
   public boolean isEnabled() {
