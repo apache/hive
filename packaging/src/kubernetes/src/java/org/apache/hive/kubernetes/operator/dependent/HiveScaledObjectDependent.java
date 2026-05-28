@@ -67,12 +67,8 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
         "kind", targetKind,
         "name", targetName
     ));
-    int minReplicaCount = Math.max(1, autoscaling.minReplicas());
-    spec.put("minReplicaCount", minReplicaCount);
+    spec.put("minReplicaCount", autoscaling.minReplicas());
     spec.put("maxReplicaCount", maxReplicas);
-    if (autoscaling.minReplicas() == 0) {
-      spec.put("idleReplicaCount", 0);
-    }
     spec.put("cooldownPeriod", autoscaling.cooldownSeconds());
     spec.put("pollingInterval", getPollingInterval());
     spec.put("advanced", getAdvanced(hiveCluster, autoscaling, maxReplicas));
