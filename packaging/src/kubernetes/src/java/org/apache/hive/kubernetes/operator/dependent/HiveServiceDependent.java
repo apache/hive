@@ -25,7 +25,6 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
-import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
@@ -74,7 +73,9 @@ public abstract class HiveServiceDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class HiveServer2 extends HiveServiceDependent {
-    public HiveServer2() { super("hiveserver2"); }
+    public HiveServer2() {
+      super("hiveserver2");
+    }
 
     @Override
     protected void customizeSpec(ServiceBuilder builder, HiveCluster hiveCluster) {
@@ -106,7 +107,9 @@ public abstract class HiveServiceDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class Metastore extends HiveServiceDependent {
-    public Metastore() { super("metastore"); }
+    public Metastore() {
+      super("metastore");
+    }
 
     @Override
     protected void customizeSpec(ServiceBuilder builder, HiveCluster hiveCluster) {
@@ -131,7 +134,9 @@ public abstract class HiveServiceDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class Llap extends HiveServiceDependent {
-    public Llap() { super("llap"); }
+    public Llap() {
+      super("llap");
+    }
 
     @Override
     protected void customizeSpec(ServiceBuilder builder, HiveCluster hiveCluster) {
@@ -153,7 +158,9 @@ public abstract class HiveServiceDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class TezAm extends HiveServiceDependent {
-    public TezAm() { super("tezam"); }
+    public TezAm() {
+      super("tezam");
+    }
 
     @Override
     protected void customizeSpec(ServiceBuilder builder, HiveCluster hiveCluster) {

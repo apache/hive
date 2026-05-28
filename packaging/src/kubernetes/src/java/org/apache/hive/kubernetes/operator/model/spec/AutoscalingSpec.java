@@ -31,14 +31,19 @@ public record AutoscalingSpec(
     @Default("0")
     Integer minReplicas,
     @JsonPropertyDescription("Threshold that triggers scale-up (component-specific: "
-        + "sessions for HS2, queue depth for LLAP, CPU% for TezAM with resources, "
-        + "pending tasks per AM for TezAM without resources)")
+        + "sessions for HS2, connections for HMS, queue depth for LLAP, "
+        + "pending tasks for TezAM)")
     @Default("80")
     Integer scaleUpThreshold,
-    @JsonPropertyDescription("Percentage threshold that triggers scale-down "
-        + "(all conditions must be met: metric below threshold AND CPU below threshold)")
+    @JsonPropertyDescription("Threshold that triggers scale-down for Prometheus-based metrics")
     @Default("20")
     Integer scaleDownThreshold,
+    @JsonPropertyDescription("Target CPU average value for scaling (e.g., '1500m' or '1'). "
+        + "If omitted, CPU scaling is disabled.")
+    String targetCpuValue,
+    @JsonPropertyDescription("CPU average value below which the trigger is inactive. "
+        + "Required if targetCpuValue is set.")
+    String activationCpuValue,
     @JsonPropertyDescription("Cooldown period in seconds after a scaling event before another can occur")
     @Default("600")
     Integer cooldownSeconds,

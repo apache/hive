@@ -647,7 +647,7 @@ without creating a conflicting second ScaledObject.
 
 The HS2 ScaledObject combines three trigger types in a single resource:
 - **Prometheus trigger** (`hs2_open_sessions`) — session-aware scaling
-- **CPU trigger** — load-based scaling when resources are configured
+- **CPU trigger** (`AverageValue` in millicores) — load-based scaling when `targetCpuValue` is configured
 - **external-push trigger** — wake-from-zero via the KEDA HTTP Add-on interceptor
 
 The `InterceptorRoute` CRD (`http.keda.sh/v1beta1`) configures only the interceptor
@@ -791,69 +791,82 @@ When autoscaling is enabled, the operator automatically:
 | **LLAP** | `hadoop_llapdaemon_executornumqueuedrequests`, `hadoop_llapdaemon_executornumexecutorsconfigured`, `hadoop_llapdaemon_executornumexecutorsavailable` | Total busy slots = queued + configured - available (scaling trigger) |
 | **Tez AM** | Standard K8s CPU metrics or `tez_session_pending_tasks` (from HS2) | CPU utilization or pending task count (scaling trigger) |
 
-### CPU-Based Scaling and Resource Requests
+### CPU-Based Scaling
 
-The operator includes a **CPU utilization trigger** in the ScaledObject for HS2, Metastore,
-and Tez AM. KEDA's CPU trigger uses the `Utilization` metric type, which is defined as a
-percentage of the container's CPU request. This means **the container must have a CPU request
-defined** for the trigger to work.
+The operator can include a **CPU trigger** in the ScaledObject for HS2, Metastore, and Tez AM.
+The trigger uses KEDA's `AverageValue` metric type with **absolute millicore targets** that
+you specify directly. This handles burstable QoS pods correctly — unlike `Utilization`
+(which measures against the CPU request), `AverageValue` uses actual CPU consumption in
+absolute terms, so pods with a small request but high limit won't show perpetual >100%
+utilization that prevents scale-down.
+
+**The CPU trigger is opt-in:** it is only added to the ScaledObject when you explicitly set
+both `targetCpuValue` and `activationCpuValue` in the autoscaling config. If omitted, the
+operator relies solely on the Prometheus-based trigger (sessions, connections, etc.).
 
 **How it works:**
 
-- The CPU trigger scales up when pod CPU utilization exceeds `scaleUpThreshold`% of the CPU request
-- The `scaleDownThreshold` configures the **activation threshold** — below this CPU%, the
-  trigger is completely inactive (doesn't participate in scaling decisions)
-- Both the CPU trigger and the Prometheus-based trigger (sessions/connections) are evaluated
-  independently — if **either** exceeds its threshold, the component scales up (OR logic)
-- Scale-down only happens when **both** triggers agree load is low (all below threshold)
+- `targetCpuValue` — the average CPU per pod (e.g., `"1500m"` or `"1"`) that triggers scale-up
+- `activationCpuValue` — below this CPU value, the trigger is completely inactive
+  (doesn't participate in scaling decisions at all)
+- Both the CPU trigger and the Prometheus-based trigger are evaluated independently —
+  if **either** exceeds its threshold, the component scales up (OR logic)
+- Scale-down only happens when **both** triggers agree load is low
+- The component must also have `resources` defined on its pods; if `targetCpuValue` is set
+  but `resources` is missing, the operator logs a warning and skips the CPU trigger
 
-This means a long-running CPU-intensive query will keep the pod scaled even if there's
-only one session open. Conversely, many idle sessions will keep it scaled even at low CPU.
+**Example:** With `targetCpuValue: "1600m"` and `activationCpuValue: "400m"`, KEDA scales up
+when average pod CPU exceeds 1600m and considers the trigger inactive below 400m.
 
-If you enable autoscaling without setting `resources` for that component, the operator
-will omit the CPU trigger and rely solely on the Prometheus-based trigger. For Tez AM
-specifically, without CPU resources the operator uses `tez_session_pending_tasks` (queued
-tasks waiting for AM slots) as the proportional scaler — this reflects real query demand
-rather than connection count, avoiding spurious scale-ups from idle or zombie sessions.
+For Tez AM specifically, without CPU targets the operator uses `tez_session_pending_tasks`
+(queued tasks waiting for AM slots) as the proportional scaler — this reflects real query
+demand rather than connection count, avoiding spurious scale-ups from idle sessions.
 
-To get both Prometheus and CPU-based scaling, set `resources` on the component:
+To enable both Prometheus and CPU-based scaling:
 
 ```yaml
 cluster:
   hiveServer2:
     resources:
-      requestsCpu: "1"        # Required for CPU-based autoscaling
+      requestsCpu: "500m"
+      limitsCpu: "2"
       requestsMemory: "2Gi"
     autoscaling:
       enabled: true
-      scaleDownThreshold: 30  # CPU trigger inactive below 30% (default)
+      scaleUpThreshold: 1       # scale up when avg sessions > 1 per pod
+      targetCpuValue: "1600m"   # scale up when avg CPU > 1600m per pod
+      activationCpuValue: "400m" # CPU trigger inactive below 400m
 
   metastore:
     resources:
-      requestsCpu: "500m"     # Required for CPU-based autoscaling
+      requestsCpu: "500m"
+      limitsCpu: "1"
       requestsMemory: "1Gi"
     autoscaling:
       enabled: true
+      targetCpuValue: "750m"
+      activationCpuValue: "200m"
 
   tezAm:
     resources:
-      requestsCpu: "500m"     # Required for CPU-based autoscaling
+      requestsCpu: "250m"
+      limitsCpu: "1"
       requestsMemory: "1Gi"
     autoscaling:
       enabled: true
-      scaleUpThreshold: 60    # For TezAM with resources, this IS the CPU target %
-      scaleDownThreshold: 10  # CPU trigger inactive below 10%
+      targetCpuValue: "600m"
+      activationCpuValue: "100m"
 ```
 
 | Setting | Effect on CPU trigger |
 |---------|----------------------|
-| `resources.requestsCpu` | **Enables** the CPU trigger (required) |
-| `scaleUpThreshold` | CPU target % — scales up when utilization exceeds this (default 80) |
-| `scaleDownThreshold` | Activation value — CPU trigger ignored below this % (default 30) |
+| `targetCpuValue` | Absolute CPU target (e.g., `"1500m"` or `"1"`). **Required** to enable CPU trigger. |
+| `activationCpuValue` | CPU below which trigger is inactive. **Required** with targetCpuValue. |
+| `resources` | Pod resources must be defined — operator warns and skips CPU trigger otherwise. |
 
 > **Note:** LLAP scaling uses only Prometheus triggers (total busy slots)
-> and does not include a CPU trigger, so LLAP does not require `resources` to
-> be set for autoscaling to work.
+> and does not include a CPU trigger, so LLAP does not require `targetCpuValue`
+> for autoscaling to work.
 
 ### Helm Values Reference (Autoscaling)
 
@@ -1073,7 +1086,9 @@ kubectl exec -it deployment/hive-hiveserver2 -- beeline -u "jdbc:hive2://hive-hi
 | `cluster.<component>.autoscaling.enabled` | `false` | Enable KEDA-based autoscaling for this component |
 | `cluster.<component>.autoscaling.minReplicas` | `0` | Floor replica count. 0 enables scale-to-zero (HS2 requires KEDA HTTP Add-on) |
 | `cluster.<component>.autoscaling.scaleUpThreshold` | `80` | Metric threshold triggering scale-up (sessions for HS2, connections for HMS, busy slots for LLAP, pending tasks or CPU% for TezAM) |
-| `cluster.<component>.autoscaling.scaleDownThreshold` | `30` | CPU activation threshold below which the CPU trigger is inactive |
+| `cluster.<component>.autoscaling.scaleDownThreshold` | `30` | Prometheus metric threshold for scale-down (component-specific) |
+| `cluster.<component>.autoscaling.targetCpuValue` | — | Absolute CPU target for scale-up (e.g., `1500m`). Omit to disable CPU trigger. |
+| `cluster.<component>.autoscaling.activationCpuValue` | — | CPU value below which CPU trigger is inactive. Required with targetCpuValue. |
 | `cluster.<component>.autoscaling.cooldownSeconds` | `300` | Seconds to wait after last scale event before scaling down again |
 | `cluster.<component>.autoscaling.gracePeriodSeconds` | `60-600` | Max time (seconds) to wait for graceful drain before forced termination |
 
