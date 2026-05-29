@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.security.authorization.command;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,6 +106,9 @@ final class CommandAuthorizerV2 {
       return hivePrivobjs;
     }
 
+    // Pre-scan once to collect base tables that are accessed via a regular view.
+    Set<String> baseTablesViaRegularView = buildBaseTablesViaRegularView(privObjects);
+
     for (Entity privObject : privObjects) {
       if (privObject.isDummy()) {
         //do not authorize dummy readEntity or writeEntity
@@ -148,10 +152,7 @@ final class CommandAuthorizerV2 {
           continue;
         }
       }
-
-      if ((privObject.getTyp() == Type.PARTITION || privObject.getTyp() == Type.DUMMYPARTITION)
-          && privObject instanceof ReadEntity
-          && isPartitionAccessedViaRegularView((ReadEntity) privObject, privObjects)) {
+      if (isPartitionAccessedViaRegularView(privObject, baseTablesViaRegularView)) {
         // skip Partition Entity auth for regular view
         continue;
       }
@@ -159,6 +160,25 @@ final class CommandAuthorizerV2 {
       addHivePrivObject(privObject, tableName2Cols, hivePrivobjs, hiveOpType);
     }
     return hivePrivobjs;
+  }
+
+  /**
+   * Pre-scans the entity list once and returns the set of "db.table" keys for base tables
+   * that are accessed indirectly via a regular view.
+   */
+  private static Set<String> buildBaseTablesViaRegularView(List<? extends Entity> entities) {
+    Set<String> result = new HashSet<>();
+    for (Entity entity : entities) {
+      if (!(entity instanceof ReadEntity) || entity.getTyp() != Type.TABLE) {
+        continue;
+      }
+      ReadEntity re = (ReadEntity) entity;
+      Table t = re.getTable();
+      if (!re.isDirect() && t != null && !hasDeferredViewParent(re) && hasRegularViewParent(re)) {
+        result.add(t.getDbName() + "." + t.getTableName());
+      }
+    }
+    return result;
   }
 
   /**
@@ -191,39 +211,24 @@ final class CommandAuthorizerV2 {
    * Returns true when a PARTITION entity should not produce its own privilege object
    * because access is already covered by a view's TABLE_OR_VIEW object.
    */
-  private static boolean isPartitionAccessedViaRegularView(ReadEntity partitionEntity,
-      List<? extends Entity> allEntities) {
-    if (hasDeferredViewParent(partitionEntity)) {
+  private static boolean isPartitionAccessedViaRegularView(Entity entity,
+      Set<String> baseTablesViaRegularView) {
+    if (!(entity instanceof ReadEntity)
+        || (entity.getTyp() != Type.PARTITION && entity.getTyp() != Type.DUMMYPARTITION)) {
       return false;
     }
-    if (hasRegularViewParent(partitionEntity)) {
+    ReadEntity re = (ReadEntity) entity;
+    // Deferred-auth views must still authorize the underlying base table.
+    if (hasDeferredViewParent(re)) {
+      return false;
+    }
+
+    if (hasRegularViewParent(re)) {
       return true;
     }
-    Table partTable = partitionEntity.getTable();
-    if (partTable == null) {
-      return false;
-    }
-    for (Entity entity : allEntities) {
-      if (!(entity instanceof ReadEntity) || entity.getTyp() != Type.TABLE) {
-        continue;
-      }
-      ReadEntity tableEntity = (ReadEntity) entity;
-      if (tableEntity.isDirect() || tableEntity.getTable() == null) {
-        continue;
-      }
-      Table table = tableEntity.getTable();
-      if (!partTable.getDbName().equals(table.getDbName())
-          || !partTable.getTableName().equals(table.getTableName())) {
-        continue;
-      }
-      if (hasDeferredViewParent(tableEntity)) {
-        return false;
-      }
-      if (hasRegularViewParent(tableEntity)) {
-        return true;
-      }
-    }
-    return false;
+    Table partTable = re.getTable();
+    return partTable != null
+        && baseTablesViaRegularView.contains(partTable.getDbName() + "." + partTable.getTableName());
   }
 
   private static boolean hasDeferredViewParent(ReadEntity entity) {
