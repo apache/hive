@@ -465,9 +465,11 @@ public class HiveServer2 extends CompositeService {
     builder.setContextAttribute("hs2.failover.callback", new FailoverHandlerCallback(hs2HARegistry));
   }
   
-  private static HttpServer.Builder createHttpServerBuilder(String webHost, int port, String name, String contextPath,
+  @VisibleForTesting
+  static HttpServer.Builder createHttpServerBuilder(String webHost, int port, String name, String contextPath,
       HiveConf hiveConf, CLIService cliService, PamAuthenticator pamAuthenticator) throws IOException {
     HttpServer.Builder builder = new HttpServer.Builder(name);
+    hiveConf.set("startcode", String.valueOf(System.currentTimeMillis()));
     builder.setConf(hiveConf);
     builder.setHost(webHost);
     builder.setPort(port);
@@ -476,7 +478,6 @@ public class HiveServer2 extends CompositeService {
     builder.setAdmins(hiveConf.getVar(ConfVars.USERS_IN_ADMIN_ROLE));
     // SessionManager is initialized
     builder.setContextAttribute("hive.sm", cliService.getSessionManager());
-    hiveConf.set("startcode", String.valueOf(System.currentTimeMillis()));
     if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
       String keyStorePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
       if (StringUtils.isBlank(keyStorePath)) {
