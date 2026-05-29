@@ -272,13 +272,11 @@ public class RexNodeConverter {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst, rexBuilder);
       } else if (HiveIn.INSTANCE.equals(calciteOp) && isAllPrimitive) {
-        if (childRexNodeLst.size() == 2 || RexUtil.isReferenceOrAccess(childRexNodeLst.get(0), true)) {
-          RexNode rewritten = rewriteInClause(childRexNodeLst, rexBuilder);
-          assert rewritten instanceof RexCall;
-          RexCall call = (RexCall) rewritten;
-          calciteOp = call.op;
-          childRexNodeLst = call.operands;
-        }
+        RexNode rewritten = rewriteInClause(childRexNodeLst, rexBuilder);
+        assert rewritten instanceof RexCall;
+        RexCall call = (RexCall) rewritten;
+        calciteOp = call.op;
+        childRexNodeLst = call.operands;
       } else if (calciteOp.getKind() == SqlKind.COALESCE &&
           childRexNodeLst.size() > 1) {
         // Rewrite COALESCE as a CASE
