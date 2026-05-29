@@ -1684,8 +1684,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               "PTF invocation in a Join must have an alias"));
         }
 
-      } else if (child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
-          child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
+      } else if (isASTNodeLateralView(child)) {
         // SELECT * FROM src1 LATERAL VIEW udtf() AS myTable JOIN src2 ...
         // is not supported. Instead, the lateral view must be in a subquery
         // SELECT * FROM (SELECT * FROM src1 LATERAL VIEW udtf() AS myTable) a
@@ -1714,9 +1713,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numChildren = lateralView.getChildCount();
     assert (numChildren == 2);
 
-    if (!isCBOSupportedLateralView(lateralView)) {
-      queryProperties.setCBOSupportedLateralViews(false);
-    }
+    queryProperties.setCBOSupportedLateralViews(isCBOSupportedLateralView());
 
     ASTNode next = (ASTNode) lateralView.getChild(1);
     String alias = null;
@@ -1890,8 +1887,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           processTable(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
-        } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
-            frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
+        } else if (isASTNodeLateralView(frm)) {
           queryProperties.setHasLateralViews(true);
           processLateralView(qb, frm);
         } else if (isJoinToken(frm)) {
@@ -11124,7 +11120,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  boolean isCBOSupportedLateralView(ASTNode lateralView) {
+  boolean isCBOSupportedLateralView() {
     return false;
   }
 
@@ -15526,5 +15522,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
       queryState.createHMSCache();
     }
+  }
+
+  /**
+   * Utility method to determine if an AST node represents a lateral view or lateral view outer.
+   * @param node AST node
+   * @return true if node is of lateral view or lateral view outer; false otherwise.
+   */
+  public static boolean isASTNodeLateralView(ASTNode node) {
+    return node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
+        || node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER;
   }
 }
