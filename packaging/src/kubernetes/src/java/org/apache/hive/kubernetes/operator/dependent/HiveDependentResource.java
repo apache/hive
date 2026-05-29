@@ -247,7 +247,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     // the JVM — causing a full grace-period wait before SIGKILL.
     // Use 'java' pattern to avoid matching this script itself.
     lines.add("echo '[preStop] Sending SIGTERM to Java process...'");
-    lines.add("kill $(pgrep -f 'java.*org.apache') 2>/dev/null");
+    lines.add("pkill -f 'java.*org.apache' || true");
     lines.add("exit 0");
     return String.join("\n", lines);
   }
@@ -311,7 +311,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     // the JVM — causing a full grace-period wait before SIGKILL.
     // Use 'java' pattern to avoid matching this script itself.
     lines.add("echo '[preStop] Sending SIGTERM to Java process...'");
-    lines.add("kill $(pgrep -f 'java.*org.apache') 2>/dev/null");
+    lines.add("pkill -f 'java.*org.apache' || true");
     lines.add("exit 0");
     return String.join("\n", lines);
   }
@@ -803,12 +803,23 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("  type: GAUGE\n");
         break;
       case "llap":
-        // LLAP uses its own MetricsSystem (not DefaultMetricsSystem).
-        // Default JMX exporter pattern (.*) exports Hadoop Metrics2 MBeans as:
-        //   hadoop_llapdaemon_<attribute>{name="<source>"}
-        // e.g., hadoop_llapdaemon_executornumqueuedrequests{name="LlapDaemonExecutorMetrics-..."}
-        // No custom rules needed — the default naming is usable directly.
-        sb.append("- pattern: '.*'\n");
+        // Only export the executor metrics KEDA and the drain script need.
+        // A wildcard '.*' pattern serializes 600+ metrics every scrape interval,
+        // causing CPU spikes and GC pressure on the LLAP JVM.
+        // Internal format: Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics-<pod>><>Attribute
+        // Separate rules per attribute — JMX Exporter 1.x caches per-bean, not per-attribute.
+        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumQueuedRequests'\n");
+        sb.append("  name: hadoop_llapdaemon_executornumqueuedrequests\n");
+        sb.append("  type: GAUGE\n");
+        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsConfigured'\n");
+        sb.append("  name: hadoop_llapdaemon_executornumexecutorsconfigured\n");
+        sb.append("  type: GAUGE\n");
+        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsAvailable'\n");
+        sb.append("  name: hadoop_llapdaemon_executornumexecutorsavailable\n");
+        sb.append("  type: GAUGE\n");
+        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutors'\n");
+        sb.append("  name: hadoop_llapdaemon_executornumexecutors\n");
+        sb.append("  type: GAUGE\n");
         break;
       case "tezam":
         // TezAM DAG execution metrics
