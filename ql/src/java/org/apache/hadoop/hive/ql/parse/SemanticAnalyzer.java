@@ -3072,6 +3072,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           if (rightAliases.size() > rhssize) { // the new table is rhs table
             rhsAlias = rightAliases.get(rightAliases.size() - 1);
+          } else if (condn.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL) {
+            String alias = unescapeIdentifier(condn.getChild(0).getChild(0).getText().toLowerCase());
+            if (isPresent(joinTree.getRightAliases(), alias)) {
+              rhsAlias = alias;
+            }
           }
 
           parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
