@@ -182,7 +182,7 @@ public class MetastoreDeploymentDependent
       String preStopScript = String.join("\n",
           "#!/bin/bash",
           "echo '[preStop] Sending SIGTERM to Metastore Java process...'",
-          "kill $(pgrep -f 'java.*org.apache') 2>/dev/null",
+          "pkill -f 'java.*org.apache' || true",
           "exit 0");
       applyAutoscalingLifecycle(
           deployment.getSpec().getTemplate().getSpec(),

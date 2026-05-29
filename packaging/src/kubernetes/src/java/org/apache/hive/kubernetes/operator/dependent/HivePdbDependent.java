@@ -74,7 +74,9 @@ public abstract class HivePdbDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class HiveServer2 extends HivePdbDependent {
-    public HiveServer2() { super("hiveserver2"); }
+    public HiveServer2() {
+      super("hiveserver2");
+    }
   }
 
   @KubernetesDependent(
@@ -82,7 +84,9 @@ public abstract class HivePdbDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class Metastore extends HivePdbDependent {
-    public Metastore() { super("metastore"); }
+    public Metastore() {
+      super("metastore");
+    }
   }
 
   @KubernetesDependent(
@@ -90,7 +94,9 @@ public abstract class HivePdbDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class Llap extends HivePdbDependent {
-    public Llap() { super("llap"); }
+    public Llap() {
+      super("llap");
+    }
   }
 
   @KubernetesDependent(
@@ -98,6 +104,8 @@ public abstract class HivePdbDependent
           + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
   )
   public static class TezAm extends HivePdbDependent {
-    public TezAm() { super("tezam"); }
+    public TezAm() {
+      super("tezam");
+    }
   }
 }
