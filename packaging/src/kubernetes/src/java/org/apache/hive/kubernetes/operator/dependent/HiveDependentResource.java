@@ -242,6 +242,13 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     lines.add("  RETRIES=0");
     lines.add("  sleep " + sleepSeconds);
     lines.add("done");
+    // Send SIGTERM directly to the Java process. Shell entrypoint scripts
+    // (PID 1) often don't forward signals, so K8s SIGTERM never reaches
+    // the JVM — causing a full grace-period wait before SIGKILL.
+    // Use 'java' pattern to avoid matching this script itself.
+    lines.add("echo '[preStop] Sending SIGTERM to Java process...'");
+    lines.add("kill $(pgrep -f 'java.*org.apache') 2>/dev/null");
+    lines.add("exit 0");
     return String.join("\n", lines);
   }
 
@@ -299,6 +306,13 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     lines.add("  RETRIES=0");
     lines.add("  sleep " + sleepSeconds);
     lines.add("done");
+    // Send SIGTERM directly to the Java process. Shell entrypoint scripts
+    // (PID 1) often don't forward signals, so K8s SIGTERM never reaches
+    // the JVM — causing a full grace-period wait before SIGKILL.
+    // Use 'java' pattern to avoid matching this script itself.
+    lines.add("echo '[preStop] Sending SIGTERM to Java process...'");
+    lines.add("kill $(pgrep -f 'java.*org.apache') 2>/dev/null");
+    lines.add("exit 0");
     return String.join("\n", lines);
   }
 
@@ -611,7 +625,8 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   protected static void applyAutoscalingLifecycle(
       io.fabric8.kubernetes.api.model.PodSpec podSpec,
       io.fabric8.kubernetes.api.model.ObjectMeta podMetadata,
-      String preStopScript, int gracePeriodSeconds) {
+      String preStopScript, int gracePeriodSeconds,
+      int metricsScrapeIntervalSeconds) {
     io.fabric8.kubernetes.api.model.Lifecycle lifecycle =
         new io.fabric8.kubernetes.api.model.LifecycleBuilder()
             .withNewPreStop()
@@ -622,10 +637,22 @@ public abstract class HiveDependentResource<R extends HasMetadata,
             .build();
     podSpec.getContainers().get(0).setLifecycle(lifecycle);
     podSpec.setTerminationGracePeriodSeconds((long) gracePeriodSeconds);
+    applyPrometheusScrapeAnnotations(podMetadata, metricsScrapeIntervalSeconds);
+  }
+
+  /**
+   * Adds Prometheus scrape annotations to a pod template so that
+   * the JMX Exporter metrics endpoint is discovered by Prometheus.
+   */
+  private static void applyPrometheusScrapeAnnotations(
+      io.fabric8.kubernetes.api.model.ObjectMeta podMetadata,
+      int scrapeIntervalSeconds) {
     podMetadata.getAnnotations().put("prometheus.io/scrape", "true");
     podMetadata.getAnnotations().put("prometheus.io/port",
         String.valueOf(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT));
     podMetadata.getAnnotations().put("prometheus.io/path", "/metrics");
+    podMetadata.getAnnotations().put("prometheus.io/scrape-interval",
+        scrapeIntervalSeconds + "s");
   }
 
   /**

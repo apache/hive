@@ -73,11 +73,26 @@ public final class ConfigUtils {
 
   public static final String HIVE_LLAP_DAEMON_NUM_EXECUTORS_KEY = "hive.llap.daemon.num.executors";
 
+  public static final String METASTORE_SERVER_TRANSPORT_MODE_KEY = "metastore.server.thrift.transport.mode";
+  public static final String METASTORE_SERVER_TRANSPORT_MODE_DEFAULT = "http";
+
+  public static final String METASTORE_SERVER_HTTP_PATH_KEY = "metastore.server.thrift.http.path";
+  public static final String METASTORE_SERVER_HTTP_PATH_DEFAULT = "metastore";
+
+  public static final String METASTORE_CLIENT_TRANSPORT_MODE_KEY = "hive.metastore.client.thrift.transport.mode";
+  public static final String METASTORE_CLIENT_TRANSPORT_MODE_DEFAULT = "http";
+
+  public static final String METASTORE_CLIENT_HTTP_PATH_KEY = "metastore.client.thrift.http.path";
+  public static final String METASTORE_CLIENT_HTTP_PATH_DEFAULT = "metastore";
+
   public static final String METASTORE_SERVER_MAX_THREADS_KEY = "metastore.server.max.threads";
   public static final String METASTORE_SERVER_MAX_THREADS_HIVE_KEY = "hive.metastore.server.max.threads";
   public static final int METASTORE_SERVER_MAX_THREADS_DEFAULT = 1000;
 
   public static final String HIVE_METASTORE_URIS_KEY = "hive.metastore.uris";
+
+  public static final String HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_KEY = "hive.server2.tez.sessions.per.default.queue";
+  public static final int HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_DEFAULT = 1;
 
   public static final String HIVE_SERVER2_THRIFT_PORT_KEY = "hive.server2.thrift.port";
   public static final int HIVE_SERVER2_THRIFT_PORT_DEFAULT = 10000;

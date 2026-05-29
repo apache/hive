@@ -29,6 +29,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.GroupVersionKind;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,14 +129,16 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
     }
 
     @Override
-    protected int getPollingInterval() { return 30; }
+    protected int getPollingInterval() {
+      return 30;
+    }
 
     @Override
     protected Map<String, Object> getAdvanced(
         HiveCluster hiveCluster, AutoscalingSpec autoscaling, int maxReplicas) {
       return buildHpaBehavior(
-          autoscaling.cooldownSeconds(), "Pods", 1, 60,
-          60, "Percent", 100, 60);
+          autoscaling.scaleDownStabilizationSeconds(), "Pods", 1, 60,
+          autoscaling.scaleUpStabilizationSeconds(), "Percent", 100, 60);
     }
 
     @Override
@@ -143,32 +146,22 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
         HiveCluster hiveCluster, AutoscalingSpec autoscaling,
         int maxReplicas, String targetName) {
       List<Map<String, Object>> triggers = new ArrayList<>();
-      triggers.add(Map.of(
-          "type", "prometheus",
-          "metadata", Map.of(
-              "serverAddress", "http://prometheus-server.monitoring.svc.cluster.local",
-              "metricName", "hs2_open_sessions",
-              "query", String.format(
-                  "avg(hs2_open_sessions{namespace=\"%s\",pod=~\"%s-.*\"}) or vector(0)",
-                  hiveCluster.getMetadata().getNamespace(), targetName),
-              "threshold", String.valueOf(autoscaling.scaleUpThreshold()),
-              "activationThreshold", "0"
-          )
-      ));
-      if (autoscaling.targetCpuValue() != null && autoscaling.activationCpuValue() != null) {
-        if (hiveCluster.getSpec().hiveServer2().resources() != null) {
-          triggers.add(Map.of(
-              "type", "cpu",
-              "metricType", "AverageValue",
-              "metadata", Map.of(
-                  "value", autoscaling.targetCpuValue(),
-                  "activationValue", autoscaling.activationCpuValue()
-              )
-          ));
-        } else {
-          LOG.warn("targetCpuValue is set for HiveServer2, but no pod resources are defined. "
-              + "Skipping CPU trigger to prevent erratic scaling.");
-        }
+      // Use sum() so KEDA computes desired replicas from total session count.
+      // desired = ceil(sum / threshold). With sum=2, threshold=1: desired=2
+      // → prevents premature scale-down while sessions are active.
+      // avg() would divide across pods, hiding load and causing scale-down
+      // of pods with sessions.
+      triggers.add(buildPrometheusTrigger(
+          "hs2_open_sessions",
+          String.format(
+              "sum(hs2_open_sessions{namespace=\"%s\",pod=~\"%s-.*\"}) or vector(0)",
+              hiveCluster.getMetadata().getNamespace(), targetName),
+          String.valueOf(autoscaling.scaleUpThreshold())));
+      Map<String, Object> cpuTrigger = buildCpuTrigger(
+          autoscaling, hiveCluster.getSpec().hiveServer2().resources(),
+          "HiveServer2", LOG);
+      if (cpuTrigger != null) {
+        triggers.add(cpuTrigger);
       }
       // When scale-to-zero is enabled, add KEDA HTTP Add-on external-push
       // trigger to wake HS2 from 0 when requests arrive at the interceptor.
@@ -206,14 +199,16 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
     }
 
     @Override
-    protected int getPollingInterval() { return 30; }
+    protected int getPollingInterval() {
+      return 30;
+    }
 
     @Override
     protected Map<String, Object> getAdvanced(
         HiveCluster hiveCluster, AutoscalingSpec autoscaling, int maxReplicas) {
       return buildHpaBehavior(
-          autoscaling.cooldownSeconds(), "Pods", 1, 60,
-          120, "Percent", 50, 60);
+          autoscaling.scaleDownStabilizationSeconds(), "Pods", 1, 60,
+          autoscaling.scaleUpStabilizationSeconds(), "Percent", 50, 60);
     }
 
     @Override
@@ -221,32 +216,24 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
         HiveCluster hiveCluster, AutoscalingSpec autoscaling,
         int maxReplicas, String targetName) {
       List<Map<String, Object>> triggers = new ArrayList<>();
-      triggers.add(Map.of(
-          "type", "prometheus",
-          "metadata", Map.of(
-              "serverAddress", "http://prometheus-server.monitoring.svc.cluster.local",
-              "metricName", "hive_metastore_open_connections",
-              "query", String.format(
-                  "sum(hive_metastore_open_connections{namespace=\"%s\",pod=~\"%s-.*\"}) or vector(0)",
-                  hiveCluster.getMetadata().getNamespace(), targetName),
-              "threshold", String.valueOf(autoscaling.scaleUpThreshold()),
-              "activationThreshold", "0"
-          )
-      ));
-      if (autoscaling.targetCpuValue() != null && autoscaling.activationCpuValue() != null) {
-        if (hiveCluster.getSpec().metastore().resources() != null) {
-          triggers.add(Map.of(
-              "type", "cpu",
-              "metricType", "AverageValue",
-              "metadata", Map.of(
-                  "value", autoscaling.targetCpuValue(),
-                  "activationValue", autoscaling.activationCpuValue()
-              )
-          ));
-        } else {
-          LOG.warn("targetCpuValue is set for Metastore, but no pod resources are defined. "
-              + "Skipping CPU trigger to prevent erratic scaling.");
-        }
+      // HMS runs in HTTP transport mode — connections are per-request (stateless),
+      // so open_connections is always ~0. Use aggregate API request rate instead.
+      // Note: Prometheus 3.x rejects rate() on __name__ regex selectors, so we
+      // compute rate manually as (sum(counters) - sum(counters offset 2m)) / 120.
+      triggers.add(buildPrometheusTrigger(
+          "hive_metastore_api_rate",
+          String.format(
+              "(sum({__name__=~\"api_.+_total\",namespace=\"%s\",pod=~\"%s-.*\"})"
+                  + " - sum({__name__=~\"api_.+_total\",namespace=\"%s\",pod=~\"%s-.*\"} offset 2m))"
+                  + " / 120 or vector(0)",
+              hiveCluster.getMetadata().getNamespace(), targetName,
+              hiveCluster.getMetadata().getNamespace(), targetName),
+          String.valueOf(autoscaling.scaleUpThreshold())));
+      Map<String, Object> cpuTrigger = buildCpuTrigger(
+          autoscaling, hiveCluster.getSpec().metastore().resources(),
+          "Metastore", LOG);
+      if (cpuTrigger != null) {
+        triggers.add(cpuTrigger);
       }
       return triggers;
     }
@@ -272,13 +259,17 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
     }
 
     @Override
-    protected int getPollingInterval() { return 5; }
+    protected int getPollingInterval() {
+      return 5;
+    }
 
     @Override
     protected Map<String, Object> getAdvanced(
         HiveCluster hiveCluster, AutoscalingSpec autoscaling, int maxReplicas) {
+      // Scale-up stabilization=0: LLAP is a reactive dependent that must
+      // track HS2 immediately — no delay on scale-up.
       return buildHpaBehavior(
-          autoscaling.cooldownSeconds(), "Pods", 1, autoscaling.cooldownSeconds(),
+          autoscaling.scaleDownStabilizationSeconds(), "Pods", 1, autoscaling.scaleDownStabilizationSeconds(),
           0, "Pods", maxReplicas, 15);
     }
 
@@ -289,30 +280,26 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
       String hs2TargetName = hiveCluster.getMetadata().getName() + "-hiveserver2";
       String namespace = hiveCluster.getMetadata().getNamespace();
       return List.of(
-          Map.of(
-              "type", "prometheus",
-              "metadata", Map.of(
-                  "serverAddress", "http://prometheus-server.monitoring.svc.cluster.local",
-                  "metricName", "llap_total_busy_slots",
-                  "query", String.format(
-                      "avg("
-                          + "hadoop_llapdaemon_executornumqueuedrequests{namespace=\"%1$s\",pod=~\"%2$s-.*\"}"
-                          + " + on(pod) hadoop_llapdaemon_executornumexecutorsconfigured{namespace=\"%1$s\",pod=~\"%2$s-.*\"}"
-                          + " - on(pod) hadoop_llapdaemon_executornumexecutorsavailable{namespace=\"%1$s\",pod=~\"%2$s-.*\"}"
-                          + ") or vector(0)",
-                      namespace, targetName),
-                  "threshold", String.valueOf(autoscaling.scaleUpThreshold()),
-                  "activationThreshold", "0"
-              )
-          ),
+          buildPrometheusTrigger(
+              "llap_total_busy_slots",
+              String.format(
+                  "avg("
+                      + "hadoop_llapdaemon_executornumqueuedrequests{namespace=\"%1$s\",pod=~\"%2$s-.*\"}"
+                      + " + on(pod) hadoop_llapdaemon_executornumexecutorsconfigured{namespace=\"%1$s\",pod=~\"%2$s-.*\"}"
+                      + " - on(pod) hadoop_llapdaemon_executornumexecutorsavailable{namespace=\"%1$s\",pod=~\"%2$s-.*\"}"
+                      + ") or vector(0)",
+                  namespace, targetName),
+              String.valueOf(autoscaling.scaleUpThreshold())),
           buildHs2ActivationTrigger(namespace, hs2TargetName, maxReplicas)
       );
     }
   }
 
   /**
-   * TezAM ScaledObject: scales on CPU (or pending tasks) + HS2 activation trigger.
-   * Tez AMs run in a warm pool; claimed AMs consume CPU, idle ones do not.
+   * TezAM ScaledObject: scales on HS2 session demand.
+   * Each HS2 pod claims {@code sessions.per.default.queue} TezAM sessions
+   * (exclusive binding). Demand = active HS2 pods × sessions per queue.
+   * Primary trigger: count of HS2 pods with open sessions × sessions_per_queue.
    */
   public static class TezAm extends HiveScaledObjectDependent {
     public TezAm() {
@@ -330,14 +317,18 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
     }
 
     @Override
-    protected int getPollingInterval() { return 5; }
+    protected int getPollingInterval() {
+      return 5;
+    }
 
     @Override
     protected Map<String, Object> getAdvanced(
         HiveCluster hiveCluster, AutoscalingSpec autoscaling, int maxReplicas) {
+      // Scale-up stabilization=0: TezAM is a reactive dependent that must
+      // track HS2 sessions immediately — no delay on scale-up.
       return buildHpaBehavior(
-          autoscaling.cooldownSeconds(), "Pods", 1, 60,
-          60, "Pods", 2, 30);
+          autoscaling.scaleDownStabilizationSeconds(), "Pods", 1, 60,
+          0, "Pods", maxReplicas, 15);
     }
 
     @Override
@@ -346,37 +337,36 @@ public abstract class HiveScaledObjectDependent extends HiveGenericDependentReso
         int maxReplicas, String targetName) {
       String hs2TargetName = hiveCluster.getMetadata().getName() + "-hiveserver2";
       String namespace = hiveCluster.getMetadata().getNamespace();
+
+      // Read sessions.per.default.queue from HS2 configOverrides (default 1).
+      // Each HS2 pod pre-warms this many TezAM sessions in its pool.
+      int sessionsPerQueue = ConfigUtils.getInt(
+          hiveCluster.getSpec().hiveServer2().configOverrides(),
+          ConfigUtils.HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_KEY,
+          null, ConfigUtils.HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_DEFAULT);
+
       List<Map<String, Object>> triggers = new ArrayList<>();
-      if (autoscaling.targetCpuValue() != null && autoscaling.activationCpuValue() != null) {
-        if (hiveCluster.getSpec().tezAm().resources() != null) {
-          triggers.add(Map.of(
-              "type", "cpu",
-              "metricType", "AverageValue",
-              "metadata", Map.of(
-                  "value", autoscaling.targetCpuValue(),
-                  "activationValue", autoscaling.activationCpuValue()
-              )
-          ));
-        } else {
-          LOG.warn("targetCpuValue is set for TezAM, but no pod resources are defined. "
-              + "Skipping CPU trigger to prevent erratic scaling.");
-        }
-        triggers.add(buildHs2ActivationTrigger(namespace, hs2TargetName, maxReplicas));
-      } else {
-        triggers.add(Map.of(
-            "type", "prometheus",
-            "metadata", Map.of(
-                "serverAddress", "http://prometheus-server.monitoring.svc.cluster.local",
-                "metricName", "tez_session_pending_tasks",
-                "query", String.format(
-                    "sum(tez_session_pending_tasks{namespace=\"%s\",pod=~\"%s-.*\"}) or vector(0)",
-                    namespace, hs2TargetName),
-                "threshold", String.valueOf(autoscaling.scaleUpThreshold()),
-                "activationThreshold", "0"
-            )
-        ));
-        triggers.add(buildHs2ActivationTrigger(namespace, hs2TargetName, maxReplicas));
-      }
+      // Trigger 1: Concurrent demand — total open sessions across all HS2 pods.
+      // Each session may run a query needing its own TezAM.
+      // threshold=1 → desired = total open sessions.
+      triggers.add(buildPrometheusTrigger(
+          "hs2_tezam_session_demand",
+          String.format(
+              "sum(hs2_open_sessions{namespace=\"%s\",pod=~\"%s-.*\"}) or vector(0)",
+              namespace, hs2TargetName),
+          "1"));
+      // Trigger 2: Pre-warm — each running HS2 pod needs sessions_per_queue TezAMs
+      // in its pool (claimed eagerly at startup by default).
+      // threshold=1 → desired = HS2_pod_count × sessions_per_queue.
+      triggers.add(buildPrometheusTrigger(
+          "hs2_tezam_prewarm",
+          String.format(
+              "count(hs2_open_sessions{namespace=\"%s\",pod=~\"%s-.*\"}) * %d or vector(0)",
+              namespace, hs2TargetName, sessionsPerQueue),
+          "1"));
+      // KEDA uses max(trigger1, trigger2) → ensures enough TezAMs for both
+      // concurrent queries AND per-HS2 pre-warm pools.
+      triggers.add(buildHs2ActivationTrigger(namespace, hs2TargetName, maxReplicas));
       return triggers;
     }
   }

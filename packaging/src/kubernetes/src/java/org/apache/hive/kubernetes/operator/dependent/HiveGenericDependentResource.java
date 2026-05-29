@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.javaoperatorsdk.operator.api.config.informer.InformerEventSourceConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -145,16 +146,63 @@ public abstract class HiveGenericDependentResource
    */
   protected static Map<String, Object> buildHs2ActivationTrigger(
       String namespace, String hs2TargetName, int maxReplicas) {
+    return buildPrometheusTrigger(
+        "hs2_open_sessions_activation",
+        String.format(
+            "(max(hs2_open_sessions{namespace=\"%s\",pod=~\"%s-.*\"}) > bool 0) or vector(0)",
+            namespace, hs2TargetName),
+        String.valueOf(maxReplicas));
+  }
+
+  /**
+   * Builds a KEDA Prometheus trigger entry.
+   *
+   * @param metricName the KEDA metric name
+   * @param query      the PromQL query
+   * @param threshold  the scaling threshold value
+   */
+  protected static Map<String, Object> buildPrometheusTrigger(
+      String metricName, String query, String threshold) {
     return Map.of(
         "type", "prometheus",
         "metadata", Map.of(
             "serverAddress", "http://prometheus-server.monitoring.svc.cluster.local",
-            "metricName", "hs2_open_sessions_activation",
-            "query", String.format(
-                "(max(hs2_open_sessions{namespace=\"%s\",pod=~\"%s-.*\"}) > bool 0) or vector(0)",
-                namespace, hs2TargetName),
-            "threshold", String.valueOf(maxReplicas),
+            "metricName", metricName,
+            "query", query,
+            "threshold", threshold,
             "activationThreshold", "0"
+        )
+    );
+  }
+
+  /**
+   * Builds a KEDA CPU AverageValue trigger if both targetCpuValue and
+   * activationCpuValue are configured. Returns null if CPU scaling is
+   * not configured, or if resources are missing (logs a warning).
+   *
+   * @param autoscaling   the autoscaling spec
+   * @param resources     the pod resource spec (null means not set)
+   * @param componentName component name for the warning message
+   * @param log           the logger to use for warnings
+   */
+  protected static Map<String, Object> buildCpuTrigger(
+      org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec autoscaling,
+      Object resources, String componentName,
+      org.slf4j.Logger log) {
+    if (autoscaling.targetCpuValue() == null || autoscaling.activationCpuValue() == null) {
+      return null;
+    }
+    if (resources == null) {
+      log.warn("targetCpuValue is set for {}, but no pod resources are defined. "
+          + "Skipping CPU trigger to prevent erratic scaling.", componentName);
+      return null;
+    }
+    return Map.of(
+        "type", "cpu",
+        "metricType", "AverageValue",
+        "metadata", Map.of(
+            "value", autoscaling.targetCpuValue(),
+            "activationValue", autoscaling.activationCpuValue()
         )
     );
   }

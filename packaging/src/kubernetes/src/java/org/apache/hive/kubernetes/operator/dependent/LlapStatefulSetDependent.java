@@ -192,7 +192,8 @@ public class LlapStatefulSetDependent
       applyAutoscalingLifecycle(
           statefulSet.getSpec().getTemplate().getSpec(),
           statefulSet.getSpec().getTemplate().getMetadata(),
-          preStopScript, autoscaling.gracePeriodSeconds());
+          preStopScript, autoscaling.gracePeriodSeconds(),
+          autoscaling.metricsScrapeIntervalSeconds());
     }
 
     appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),

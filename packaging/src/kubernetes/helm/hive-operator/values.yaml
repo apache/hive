@@ -122,6 +122,8 @@ cluster:
       # targetCpuValue: "750m"      # Uncomment to enable CPU-based scaling (AverageValue)
       # activationCpuValue: "200m"  # CPU trigger inactive below this value
       cooldownSeconds: 300
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 300
       gracePeriodSeconds: 60
     # Set to use an external Metastore instead of deploying one:
     # enabled: false
@@ -149,6 +151,8 @@ cluster:
       # targetCpuValue: "1600m"     # Uncomment to enable CPU-based scaling (AverageValue)
       # activationCpuValue: "400m"  # CPU trigger inactive below this value
       cooldownSeconds: 600
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 300
       gracePeriodSeconds: 300
 
   # ---------------------------------------------------------------------------
@@ -173,6 +177,8 @@ cluster:
       scaleUpThreshold: 1
       scaleDownThreshold: 0
       cooldownSeconds: 900
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 300
       gracePeriodSeconds: 600
 
   # ---------------------------------------------------------------------------
@@ -199,4 +205,6 @@ cluster:
       # targetCpuValue: "600m"      # Uncomment to enable CPU-based scaling (AverageValue)
       # activationCpuValue: "100m"  # CPU trigger inactive below this value
       cooldownSeconds: 600
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 300
       gracePeriodSeconds: 120

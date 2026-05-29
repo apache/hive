@@ -57,6 +57,11 @@ public final class HiveConfigBuilder {
     if (metastoreUri != null && !metastoreUri.isEmpty()) {
       props.put(ConfigUtils.METASTORE_URIS_KEY, metastoreUri);
     }
+    // Client-side HTTP transport mode to match metastore server config.
+    props.put(ConfigUtils.METASTORE_CLIENT_TRANSPORT_MODE_KEY,
+        ConfigUtils.METASTORE_CLIENT_TRANSPORT_MODE_DEFAULT);
+    props.put(ConfigUtils.METASTORE_CLIENT_HTTP_PATH_KEY,
+        ConfigUtils.METASTORE_CLIENT_HTTP_PATH_DEFAULT);
     props.put(ConfigUtils.HIVE_METASTORE_WAREHOUSE_KEY,
         spec.metastore().warehouseDir());
     props.put(ConfigUtils.HIVE_SERVER2_ENABLE_DOAS_KEY, "false");
@@ -162,6 +167,13 @@ public final class HiveConfigBuilder {
   public static Map<String, String> getMetastoreSite(HiveClusterSpec spec) {
     MetastoreSpec metastore = spec.metastore();
     Map<String, String> props = new LinkedHashMap<>();
+
+    // HTTP transport mode: stateless connections allow safe scale-down
+    // without breaking active client connections.
+    props.put(ConfigUtils.METASTORE_SERVER_TRANSPORT_MODE_KEY,
+        ConfigUtils.METASTORE_SERVER_TRANSPORT_MODE_DEFAULT);
+    props.put(ConfigUtils.METASTORE_SERVER_HTTP_PATH_KEY,
+        ConfigUtils.METASTORE_SERVER_HTTP_PATH_DEFAULT);
 
     props.put(ConfigUtils.METASTORE_WAREHOUSE_KEY,
         metastore.warehouseDir());

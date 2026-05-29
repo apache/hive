@@ -44,13 +44,28 @@ public record AutoscalingSpec(
     @JsonPropertyDescription("CPU average value below which the trigger is inactive. "
         + "Required if targetCpuValue is set.")
     String activationCpuValue,
-    @JsonPropertyDescription("Cooldown period in seconds after a scaling event before another can occur")
+    @JsonPropertyDescription("Cooldown period in seconds after all KEDA triggers are inactive "
+        + "before scaling from 1 to 0 (scale-to-zero delay)")
     @Default("600")
     Integer cooldownSeconds,
-    @JsonPropertyDescription("Maximum time in seconds to wait for graceful drain "
-        + "during scale-down before the pod is forcibly terminated")
+    @JsonPropertyDescription("Stabilization window in seconds for scale-up decisions. "
+        + "HPA picks the highest recommendation within this window to prevent flapping.")
+    @Default("60")
+    Integer scaleUpStabilizationSeconds,
+    @JsonPropertyDescription("Stabilization window in seconds for scale-down decisions. "
+        + "HPA picks the highest recommendation within this window to prevent premature scale-down.")
     @Default("300")
-    Integer gracePeriodSeconds) {
+    Integer scaleDownStabilizationSeconds,
+    @JsonPropertyDescription("Maximum time in seconds to wait for graceful drain "
+        + "during scale-down before the pod is forcibly terminated. "
+        + "The pod terminates immediately once sessions/connections drain to 0; "
+        + "this value is only the upper safety cap.")
+    @Default("3600")
+    Integer gracePeriodSeconds,
+    @JsonPropertyDescription("Prometheus scrape interval in seconds for this component's metrics. "
+        + "Lower values make autoscaling react faster but increase Prometheus load.")
+    @Default("10")
+    Integer metricsScrapeIntervalSeconds) {
 
   public AutoscalingSpec {
     enabled = enabled != null ? enabled : false;
@@ -58,7 +73,10 @@ public record AutoscalingSpec(
     scaleUpThreshold = scaleUpThreshold != null ? scaleUpThreshold : 80;
     scaleDownThreshold = scaleDownThreshold != null ? scaleDownThreshold : 20;
     cooldownSeconds = cooldownSeconds != null ? cooldownSeconds : 600;
-    gracePeriodSeconds = gracePeriodSeconds != null ? gracePeriodSeconds : 300;
+    scaleUpStabilizationSeconds = scaleUpStabilizationSeconds != null ? scaleUpStabilizationSeconds : 60;
+    scaleDownStabilizationSeconds = scaleDownStabilizationSeconds != null ? scaleDownStabilizationSeconds : 300;
+    gracePeriodSeconds = gracePeriodSeconds != null ? gracePeriodSeconds : 3600;
+    metricsScrapeIntervalSeconds = metricsScrapeIntervalSeconds != null ? metricsScrapeIntervalSeconds : 10;
   }
 
   public boolean isEnabled() {

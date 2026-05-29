@@ -91,6 +91,7 @@ public abstract class HiveServiceDependent
           null, ConfigUtils.HIVE_SERVER2_WEBUI_PORT_DEFAULT);
       builder.editSpec()
           .withType(hs2.serviceType())
+          .withSessionAffinity("ClientIP")
           .addNewPort().withName("thrift").withProtocol("TCP")
             .withPort(thriftPort).withTargetPort(new IntOrString(thriftPort)).endPort()
           .addNewPort().withName("http").withProtocol("TCP")

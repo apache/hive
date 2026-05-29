@@ -175,17 +175,20 @@ public class MetastoreDeploymentDependent
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    // Graceful scale-down: poll JMX Exporter (port 9404) for open_connections to drain.
+    // HMS uses HTTP transport mode — connections are stateless, so no session
+    // drain is needed. The preStop hook simply sends SIGTERM directly to the
+    // JVM (the shell entrypoint doesn't forward signals from K8s).
     if (autoscaling.isEnabled()) {
-      String preStopScript = buildDrainScript(
-          "Waiting for open connections to drain",
-          "hive_metastore_open_connections", "CONNS",
-          "All connections drained. Shutting down.",
-          5, 6, null);
+      String preStopScript = String.join("\n",
+          "#!/bin/bash",
+          "echo '[preStop] Sending SIGTERM to Metastore Java process...'",
+          "kill $(pgrep -f 'java.*org.apache') 2>/dev/null",
+          "exit 0");
       applyAutoscalingLifecycle(
           deployment.getSpec().getTemplate().getSpec(),
           deployment.getSpec().getTemplate().getMetadata(),
-          preStopScript, autoscaling.gracePeriodSeconds());
+          preStopScript, autoscaling.gracePeriodSeconds(),
+          autoscaling.metricsScrapeIntervalSeconds());
     }
 
     appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
