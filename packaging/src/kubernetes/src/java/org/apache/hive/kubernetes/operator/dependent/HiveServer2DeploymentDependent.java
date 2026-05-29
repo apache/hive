@@ -265,7 +265,8 @@ public class HiveServer2DeploymentDependent
     if (autoscaling.isEnabled()) {
       List<String> zkDeregister = List.of(
           "echo '[preStop] Deregistering HiveServer2 from ZooKeeper...'",
-          "hive --service hiveserver2 --deregister || echo '[preStop] WARNING: ZK deregister failed'");
+          "hive --service hiveserver2 --deregister $(hive --service version 2>/dev/null | head -1 || echo '4.0.0')"
+              + " || echo '[preStop] WARNING: ZK deregister failed'");
       String preStopScript = buildDrainScript(
           "Waiting for open sessions to drain",
           "hs2_open_sessions", "SESSIONS",
@@ -274,7 +275,8 @@ public class HiveServer2DeploymentDependent
       applyAutoscalingLifecycle(
           deployment.getSpec().getTemplate().getSpec(),
           deployment.getSpec().getTemplate().getMetadata(),
-          preStopScript, autoscaling.gracePeriodSeconds());
+          preStopScript, autoscaling.gracePeriodSeconds(),
+          autoscaling.metricsScrapeIntervalSeconds());
     }
 
     appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),

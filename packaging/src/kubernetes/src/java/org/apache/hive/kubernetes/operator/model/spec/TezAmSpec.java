@@ -63,7 +63,7 @@ public record TezAmSpec(
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 0, 5, 10, null, null, 600, 120);
+        false, 0, 5, 10, null, null, 600, 60, 300, 120, 10);
   }
 
   public boolean isEnabled() {

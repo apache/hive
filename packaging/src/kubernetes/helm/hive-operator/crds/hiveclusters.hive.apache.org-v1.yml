@@ -54,17 +54,25 @@ spec:
                         type: string
                       cooldownSeconds:
                         default: 600
-                        description: Cooldown period in seconds after a scaling event
-                          before another can occur
+                        description: Cooldown period in seconds after all KEDA triggers
+                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
                         type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
                         type: boolean
                       gracePeriodSeconds:
-                        default: 300
+                        default: 3600
                         description: Maximum time in seconds to wait for graceful
-                          drain during scale-down before the pod is forcibly terminated
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: Prometheus scrape interval in seconds for this
+                          component's metrics. Lower values make autoscaling react
+                          faster but increase Prometheus load.
                         type: integer
                       minReplicas:
                         default: 0
@@ -72,10 +80,22 @@ spec:
                           Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
                           for wake-from-zero)
                         type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 300
+                        description: Stabilization window in seconds for scale-down
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent premature scale-down.
+                        type: integer
                       scaleDownThreshold:
                         default: 20
                         description: Threshold that triggers scale-down for Prometheus-based
                           metrics
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
@@ -206,17 +226,25 @@ spec:
                         type: string
                       cooldownSeconds:
                         default: 600
-                        description: Cooldown period in seconds after a scaling event
-                          before another can occur
+                        description: Cooldown period in seconds after all KEDA triggers
+                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
                         type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
                         type: boolean
                       gracePeriodSeconds:
-                        default: 300
+                        default: 3600
                         description: Maximum time in seconds to wait for graceful
-                          drain during scale-down before the pod is forcibly terminated
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: Prometheus scrape interval in seconds for this
+                          component's metrics. Lower values make autoscaling react
+                          faster but increase Prometheus load.
                         type: integer
                       minReplicas:
                         default: 0
@@ -224,10 +252,22 @@ spec:
                           Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
                           for wake-from-zero)
                         type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 300
+                        description: Stabilization window in seconds for scale-down
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent premature scale-down.
+                        type: integer
                       scaleDownThreshold:
                         default: 20
                         description: Threshold that triggers scale-down for Prometheus-based
                           metrics
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
@@ -333,17 +373,25 @@ spec:
                         type: string
                       cooldownSeconds:
                         default: 600
-                        description: Cooldown period in seconds after a scaling event
-                          before another can occur
+                        description: Cooldown period in seconds after all KEDA triggers
+                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
                         type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
                         type: boolean
                       gracePeriodSeconds:
-                        default: 300
+                        default: 3600
                         description: Maximum time in seconds to wait for graceful
-                          drain during scale-down before the pod is forcibly terminated
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: Prometheus scrape interval in seconds for this
+                          component's metrics. Lower values make autoscaling react
+                          faster but increase Prometheus load.
                         type: integer
                       minReplicas:
                         default: 0
@@ -351,10 +399,22 @@ spec:
                           Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
                           for wake-from-zero)
                         type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 300
+                        description: Stabilization window in seconds for scale-down
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent premature scale-down.
+                        type: integer
                       scaleDownThreshold:
                         default: 20
                         description: Threshold that triggers scale-down for Prometheus-based
                           metrics
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
@@ -513,17 +573,25 @@ spec:
                         type: string
                       cooldownSeconds:
                         default: 600
-                        description: Cooldown period in seconds after a scaling event
-                          before another can occur
+                        description: Cooldown period in seconds after all KEDA triggers
+                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
                         type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
                         type: boolean
                       gracePeriodSeconds:
-                        default: 300
+                        default: 3600
                         description: Maximum time in seconds to wait for graceful
-                          drain during scale-down before the pod is forcibly terminated
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: Prometheus scrape interval in seconds for this
+                          component's metrics. Lower values make autoscaling react
+                          faster but increase Prometheus load.
                         type: integer
                       minReplicas:
                         default: 0
@@ -531,10 +599,22 @@ spec:
                           Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
                           for wake-from-zero)
                         type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 300
+                        description: Stabilization window in seconds for scale-down
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent premature scale-down.
+                        type: integer
                       scaleDownThreshold:
                         default: 20
                         description: Threshold that triggers scale-down for Prometheus-based
                           metrics
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. HPA picks the highest recommendation within this
+                          window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
