@@ -100,9 +100,6 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
     } else {
       // We create new view
       Table view = createViewObject();
-      if (desc.usesStorageHandler()) {
-          pushExternalLogicalViewSessionHints(desc.isReplace(), desc.getIfNotExists());
-      }
       context.getDb().createTable(view, desc.getIfNotExists());
       DDLUtils.addIfAbsentByName(new WriteEntity(view, WriteEntity.WriteType.DDL_NO_LOCK),
           context.getWork().getOutputs());
@@ -112,13 +109,6 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
       context.getQueryState().getLineageState().setLineage(new Path(desc.getViewName()), dc, view.getCols());
     }
     return 0;
-  }
-
-  private void pushExternalLogicalViewSessionHints(boolean replace, boolean ifNotExists) {
-    SessionStateUtil.addResource(context.getConf(), Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE,
-        Boolean.toString(replace));
-    SessionStateUtil.addResource(context.getConf(), Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS,
-        Boolean.toString(ifNotExists));
   }
 
   private void clearStorageHandlerProp(Table oldview) {

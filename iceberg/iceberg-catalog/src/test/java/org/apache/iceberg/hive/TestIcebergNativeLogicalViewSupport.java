@@ -78,7 +78,7 @@ class TestIcebergNativeLogicalViewSupport {
   }
 
   @Test
-  void testCreateCommitsNativeViewWithUserProperties() throws Exception {
+  void testCreateCommitsNativeViewWithUserProperties() {
     HiveConf conf = nativeViewConf();
     List<FieldSchema> cols =
         Arrays.asList(new FieldSchema("id", "int", null), new FieldSchema("name", "string", null));
@@ -87,7 +87,7 @@ class TestIcebergNativeLogicalViewSupport {
 
     boolean created =
         IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-            conf, DB, VIEW, cols, sql, props, "hello-view", false, false);
+            conf, DB, VIEW, cols, sql, props, "hello-view", false);
     assertThat(created).isTrue();
 
     HiveCatalog cat = loadCatalog();
@@ -103,49 +103,19 @@ class TestIcebergNativeLogicalViewSupport {
   }
 
   @Test
-  void testCreateOrReplaceNativeViewSkipsWhenViewExistsAndIfNotExistsFlagTrue() throws Exception {
-    HiveConf conf = nativeViewConf();
-    List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
-
-    assertThat(
-            IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-                conf, DB, VIEW, cols, "select 1 as id", null, null, false, false))
-        .isTrue();
-    assertThat(
-            IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-                conf, DB, VIEW, cols, "select 2 as id", null, null, false, true))
-        .isFalse();
-    assertThat(loadCatalog().loadView(TableIdentifier.of(DB, VIEW)).sqlFor("hive").sql().trim())
-        .isEqualTo("select 1 as id");
-  }
-
-  @Test
-  void testCreateOrReplaceNativeViewOrThrowDoesNotThrowWhenIfNotExistsSkips() {
+  void testCreateOrReplaceNativeViewReplacesExistingWhenReplaceFlagTrue() {
     HiveConf conf = nativeViewConf();
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
     TableIdentifier id = TableIdentifier.of(DB, VIEW);
 
     IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-        conf, DB, VIEW, cols, "select 1 as id", null, null, false, false);
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-        conf, DB, VIEW, cols, "select 2 as id", null, null, false, true);
-    assertThat(loadCatalog().loadView(id).sqlFor("hive").sql().trim()).isEqualTo("select 1 as id");
-  }
-
-  @Test
-  void testCreateOrReplaceNativeViewReplacesExistingWhenReplaceFlagTrue() throws Exception {
-    HiveConf conf = nativeViewConf();
-    List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
-    TableIdentifier id = TableIdentifier.of(DB, VIEW);
-
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-        conf, DB, VIEW, cols, "select 1 as id", null, null, false, false);
+        conf, DB, VIEW, cols, "select 1 as id", null, null, false);
     View afterCreate = loadCatalog().loadView(id);
     assertThat(afterCreate.sqlFor("hive").sql().trim()).isEqualTo("select 1 as id");
 
     assertThat(
             IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-                conf, DB, VIEW, cols, "select 2 as id", null, null, true, false))
+                conf, DB, VIEW, cols, "select 2 as id", null, null, true))
         .isTrue();
 
     assertThat(loadCatalog().viewExists(id)).isTrue();

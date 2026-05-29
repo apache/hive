@@ -29,7 +29,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -237,33 +236,25 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   }
 
   @Override
+  public void alter_table(String catName, String dbName, String tblName, Table newTable,
+      EnvironmentContext envContext, String validWriteIdList) throws TException {
+    validateCurrentCatalog(catName);
+    if (hasIcebergNativeViewTableType(newTable) && restCatalog instanceof ViewCatalog) {
+      createOrReplaceLogicalView(newTable, dbName, tblName, true);
+    }
+  }
+
+  @Override
   public void createTable(CreateTableRequest request) throws TException {
     Table table = request.getTable();
-    List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
-
-    if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
-      cols.addAll(table.getPartitionKeys());
-    }
-
     if (hasIcebergNativeViewTableType(table) && restCatalog instanceof ViewCatalog) {
-      Map<String, String> envProps =
-          Optional.ofNullable(request.getEnvContext())
-              .map(EnvironmentContext::getProperties)
-              .orElse(Collections.emptyMap());
-      boolean replace =
-          Boolean.parseBoolean(
-              envProps.getOrDefault(Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE, "false"));
-      boolean ifNotExists =
-          Boolean.parseBoolean(
-              envProps.getOrDefault(Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS, "false"));
-      Map<String, String> tblProps =
-          table.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(table.getParameters());
-      String comment = tblProps.get("comment");
-
-      IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-          conf, table.getDbName(), table.getTableName(), cols, table.getViewExpandedText(), tblProps, comment, replace,
-          ifNotExists);
+      createOrReplaceLogicalView(
+          table, table.getDbName(), table.getTableName(), false);
     } else {
+      List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
+      if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
+        cols.addAll(table.getPartitionKeys());
+      }
       Properties tableProperties = IcebergTableProperties.getTableProperties(table, conf);
       Schema schema = HiveSchemaUtil.convert(cols, Collections.emptyMap(), true);
       Map<String, String> envCtxProps = Optional.ofNullable(request.getEnvContext())
@@ -280,6 +271,22 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
           .withProperties(Maps.fromProperties(tableProperties))
           .create();
     }
+  }
+
+  private void createOrReplaceLogicalView(
+      Table table, String dbName, String tableName, boolean replace) {
+
+    List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
+    if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
+      cols.addAll(table.getPartitionKeys());
+    }
+
+    Map<String, String> tblProps =
+        table.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(table.getParameters());
+
+    String comment = tblProps.get("comment");
+    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment, replace);
   }
 
   @Override

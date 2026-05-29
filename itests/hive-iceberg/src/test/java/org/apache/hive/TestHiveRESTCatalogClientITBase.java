@@ -227,7 +227,6 @@ public abstract class TestHiveRESTCatalogClientITBase {
         "select 1 as x",
         null,
         "rest-native-view",
-        false,
         false);
 
     GetTableRequest getTableRequest = new GetTableRequest();

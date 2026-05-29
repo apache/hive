@@ -124,9 +124,8 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	hdfs://### HDFS PATH ###
-	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
@@ -347,9 +346,8 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	hdfs://### HDFS PATH ###
-	previous_metadata_location	hdfs://### HDFS PATH ###
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
 	uuid                	#Masked#

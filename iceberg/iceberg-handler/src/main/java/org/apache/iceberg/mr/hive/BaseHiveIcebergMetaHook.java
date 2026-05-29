@@ -33,13 +33,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -47,7 +45,6 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
-import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.NullOrder;
@@ -224,17 +221,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void preCreateNativeIcebergLogicalView(CreateTableRequest request) {
-    org.apache.hadoop.hive.metastore.api.Table hmsTable = request.getTable();
-    this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
-    if (request.getEnvContext() == null) {
-      request.setEnvContext(new EnvironmentContext());
-    }
-    final EnvironmentContext env = request.getEnvContext();
-    SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE)
-        .ifPresent(v -> env.putToProperties(Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE, v));
-    SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS)
-        .ifPresent(v -> env.putToProperties(Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS, v));
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = request.getTable();
+    tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
     hmsTable
         .getParameters()
@@ -381,7 +370,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
+  public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     // do nothing
   }
 

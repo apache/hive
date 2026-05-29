@@ -76,47 +76,36 @@ select * from ice_orc2;
 --! Iceberg Native View tests
 ---------------------------------------------------------------------------------------------------------------------
 
------------------------------------------------------------------------------------------------
---! Native Iceberg view with TBLPROPERTIES ('view-format'='iceberg') on a REST catalog table
---! without a catalog name in the base table properties
------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+--! Native Iceberg logical view with TBLPROPERTIES ('view-format'='iceberg') on a REST catalog table
+-----------------------------------------------------------------------------------------------------
 
-create view ice_v1 tblproperties ('view-format'='iceberg') as select * from ice_orc1;
+create view if not exists ice_v1 tblproperties ('view-format'='iceberg')
+as select first_name, last_name from ice_orc2 where dept_id in (1, 3);
+
 select * from ice_v1;
 desc formatted ice_v1;
+
+create or replace view ice_v1 tblproperties ('view-format'='iceberg')
+as select first_name || '-' || dept_id from ice_orc2 where dept_id = 2;
+
+select * from ice_v1;
+desc formatted ice_v1;
+
 drop view ice_v1;
 
 -----------------------------------------------------------------------------------------------
---! Iceberg native view with TBLPROPERTIES ('view-format'='iceberg') on a REST catalog table
---! with a catalog name in the base table properties
------------------------------------------------------------------------------------------------
-
-create view ice_v2 tblproperties ('view-format'='iceberg') as select * from ice_orc2;
-select * from ice_v2;
-desc formatted ice_v2;
-drop view ice_v2;
-
------------------------------------------------------------------------------------------------
---! Native Iceberg view: 'view-format' table properly omitted, Hive config 'hive.default.storage.handler.class' 
---! set to 'HiveIcebergStorageHandler' and no catalog name in the base table properties
+--! Native Iceberg logical view with default Iceberg storage handler and REST catalog table 
 -----------------------------------------------------------------------------------------------
 
 set hive.default.storage.handler.class=org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
 
-create view ice_v3 as select * from ice_orc1;
-select * from ice_v3;
-desc formatted ice_v3;
-drop view ice_v3;
+create view ice_v2
+as select first_name, last_name || '-' || dept_id from ice_orc2 where team_id in (20, 30);
 
------------------------------------------------------------------------------------------------
---! Native Iceberg view with default Iceberg storage handler and REST catalog table 
---! with catalog name in the base table properties 
------------------------------------------------------------------------------------------------
-
-create view ice_v4 as select * from ice_orc2;
-select * from ice_v4;
-desc formatted ice_v4;
-drop view ice_v4;
+select * from ice_v2;
+desc formatted ice_v2;
+drop view ice_v2;
 
 -----------------------------------------------------------------------------
 

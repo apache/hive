@@ -111,7 +111,4 @@ public class Constants {
   public static final String CLUSTER_ID_CLI_OPT_NAME = "hive.cluster.id";
   public static final String CLUSTER_ID_HIVE_CONF_PROP = "hive.cluster.id";
   public static final String ICEBERG_PARTITION_COLUMNS = "partition,spec_id";
-
-  public static final String EXTERNAL_LOGICAL_VIEW_DDL_REPLACE = "externalLogicalViewDdlReplace";
-  public static final String EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS = "externalLogicalViewCreateIfNotExists";
 }

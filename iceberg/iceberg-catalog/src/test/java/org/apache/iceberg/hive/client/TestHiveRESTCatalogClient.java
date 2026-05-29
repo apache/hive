@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -43,7 +45,9 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -59,6 +63,7 @@ import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 public class TestHiveRESTCatalogClient {
 
@@ -196,5 +201,51 @@ public class TestHiveRESTCatalogClient {
     Database aDefault = spyHiveRESTCatalogClient.getDatabase("default");
     assertThat(aDefault.getName()).isEqualTo("default");
     Mockito.verify(mockRestCatalog).listNamespaces(Namespace.empty());
+  }
+
+  @Test
+  public void testAlterNativeIcebergView() throws TException {
+    RESTCatalog viewCapableCatalog =
+        Mockito.mock(RESTCatalog.class, Mockito.withSettings().extraInterfaces(ViewCatalog.class));
+    Mockito.doReturn("hive").when(viewCapableCatalog).name();
+    mockCatalogUtil.when(() -> CatalogUtil.buildIcebergCatalog(any(), any(), any()))
+        .thenReturn(viewCapableCatalog);
+
+    Configuration configuration = new Configuration();
+    configuration.set("iceberg.catalog", "ice01");
+    configuration.set("iceberg.catalog.ice01.uri", "http://localhost");
+    HiveRESTCatalogClient client = new HiveRESTCatalogClient(configuration);
+
+    try (MockedStatic<IcebergNativeLogicalViewSupport> viewSupport =
+        Mockito.mockStatic(IcebergNativeLogicalViewSupport.class)) {
+      client.alter_table("hive", "ice_db", "ice_v1", createLogicalView(), null, null);
+      viewSupport.verify(
+          () ->
+              IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+                  any(),
+                  eq("ice_db"),
+                  eq("ice_v1"),
+                  any(),
+                  eq("select 1"),
+                  any(),
+                  eq(null),
+                  eq(true)));
+    }
+  }
+
+  private static Table createLogicalView() {
+    Table view = new Table();
+    view.setTableName("ice_v1");
+    view.setDbName("ice_db");
+    view.setTableType(TableType.VIRTUAL_VIEW.toString());
+    view.setViewExpandedText("select 1");
+    view.setSd(new StorageDescriptor());
+    view.getSd().setCols(Collections.singletonList(new FieldSchema("x", "int", "")));
+    view.setParameters(
+        Maps.newHashMap(
+            Map.of(
+                BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                IcebergNativeLogicalViewSupport.ICEBERG_VIEW_HMS_TABLE_TYPE_VALUE)));
+    return view;
   }
 }

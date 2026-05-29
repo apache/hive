@@ -39,10 +39,6 @@ import org.apache.iceberg.view.ViewBuilder;
 /**
  * Commits a native Iceberg view through the configured default Iceberg catalog (HiveCatalog or REST
  * catalog, etc.) when {@code Catalog} also implements {@link ViewCatalog}.
- *
- * <p>CREATE VIEW session hints and metastore {@code EnvironmentContext} keys use
- * {@link org.apache.hadoop.hive.conf.Constants#EXTERNAL_LOGICAL_VIEW_DDL_REPLACE} and
- * {@link org.apache.hadoop.hive.conf.Constants#EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS}.
  */
 public final class IcebergNativeLogicalViewSupport {
 
@@ -56,7 +52,7 @@ public final class IcebergNativeLogicalViewSupport {
   /**
    * Creates or replaces a view in the Iceberg catalog.
    *
-   * @return {@code false} if skipped because {@code ifNotExists} is true and the view already exists
+   * @return {@code false} if skipped because the view already exists and {@code replace} is false
    */
   public static boolean createOrReplaceNativeView(
       Configuration conf,
@@ -66,55 +62,66 @@ public final class IcebergNativeLogicalViewSupport {
       String viewSql,
       Map<String, String> tblProperties,
       String comment,
-      boolean replace,
-      boolean ifNotExists) {
+      boolean replace) {
 
     TableIdentifier identifier = TableIdentifier.of(databaseName, viewName);
     String catalogName = IcebergCatalogProperties.getCatalogName(conf);
     Map<String, String> catalogProps = IcebergCatalogProperties.getCatalogProperties(conf, catalogName);
     Catalog catalog = CatalogUtil.buildIcebergCatalog(catalogName, catalogProps, conf);
 
-    try {
-      ViewCatalog viewCatalog = asViewCatalog(catalog, catalogName);
-      if (!replace && ifNotExists && viewCatalog.viewExists(identifier)) {
-        return false;
-      }
-
-      ViewBuilder builder =
-          viewCatalog
-              .buildView(identifier)
-              .withSchema(HiveSchemaUtil.convert(fieldSchemas, Collections.emptyMap(), true))
-              .withDefaultNamespace(Namespace.of(identifier.namespace().level(0)))
-              .withQuery("hive", viewSql);
-
-      if (StringUtils.isNotBlank(comment)) {
-        builder = builder.withProperty("comment", comment);
-      }
-
-      Map<String, String> tblProps =
-          tblProperties == null ? Maps.newHashMap() : Maps.newHashMap(tblProperties);
-
-      for (Map.Entry<String, String> e : tblProps.entrySet()) {
-        if (e.getKey() != null && e.getValue() != null) {
-          builder = builder.withProperty(e.getKey(), e.getValue());
-        }
-      }
-
-      if (replace) {
-        builder.createOrReplace();
-      } else {
-        builder.create();
-      }
-      return true;
-    } finally {
-      if (catalog instanceof Closeable closeable) {
-        try {
-          closeable.close();
-        } catch (IOException e) {
-          throw new UncheckedIOException("Failed to close Iceberg catalog", e);
-        }
+    if (catalog instanceof Closeable closeable) {
+      try (Closeable ignored = closeable) {
+        return commitNativeView(
+            catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment, replace);
+      } catch (IOException e) {
+        throw new UncheckedIOException("Failed to close Iceberg catalog", e);
       }
     }
+
+    return commitNativeView(
+        catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment, replace);
+  }
+
+  private static boolean commitNativeView(
+      Catalog catalog,
+      String catalogName,
+      TableIdentifier identifier,
+      List<FieldSchema> fieldSchemas,
+      String viewSql,
+      Map<String, String> tblProperties,
+      String comment,
+      boolean replace) {
+    ViewCatalog viewCatalog = asViewCatalog(catalog, catalogName);
+    if (!replace && viewCatalog.viewExists(identifier)) {
+      return false;
+    }
+
+    ViewBuilder builder =
+        viewCatalog
+            .buildView(identifier)
+            .withSchema(HiveSchemaUtil.convert(fieldSchemas, Collections.emptyMap(), true))
+            .withDefaultNamespace(Namespace.of(identifier.namespace().level(0)))
+            .withQuery("hive", viewSql);
+
+    if (StringUtils.isNotBlank(comment)) {
+      builder = builder.withProperty("comment", comment);
+    }
+
+    Map<String, String> tblProps =
+        tblProperties == null ? Maps.newHashMap() : Maps.newHashMap(tblProperties);
+
+    for (Map.Entry<String, String> e : tblProps.entrySet()) {
+      if (e.getKey() != null && e.getValue() != null) {
+        builder = builder.withProperty(e.getKey(), e.getValue());
+      }
+    }
+
+    if (replace) {
+      builder.createOrReplace();
+    } else {
+      builder.create();
+    }
+    return true;
   }
 
   private static ViewCatalog asViewCatalog(Catalog catalog, String catalogName) {

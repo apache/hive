@@ -37,7 +37,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -183,14 +182,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     if (isNativeIcebergLogicalView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       if (Catalogs.hiveCatalog(conf, tableProperties)) {
-        boolean replace =
-            Boolean.parseBoolean(
-                SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_DDL_REPLACE)
-                    .orElse("false"));
-        boolean ifNotExists =
-            Boolean.parseBoolean(
-                SessionStateUtil.getProperty(conf, Constants.EXTERNAL_LOGICAL_VIEW_CREATE_IF_NOT_EXISTS)
-                    .orElse("false"));
         Map<String, String> tblProps =
             hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
         String comment = tblProps.get("comment");
@@ -202,8 +193,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
             hmsTable.getViewExpandedText(),
             tblProps,
             comment,
-            replace,
-            ifNotExists);
+            false);
       }
       return;
     }
@@ -530,8 +520,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           hmsTable.getViewExpandedText(),
           tblProps,
           comment,
-          true,
-          false);
+          true);
       return;
     }
     if (isTableMigration) {
