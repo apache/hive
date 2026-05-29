@@ -1,0 +1,112 @@
+PREHOOK: query: CREATE TABLE sample01 (
+  index INT,
+  date_col DATE,
+  timestamp_col TIMESTAMP,
+  str_col VARCHAR(24),
+  string_col STRING,
+  double_col DOUBLE,
+  float_col FLOAT,
+  decimal_col DECIMAL(9,3),
+  tinyint_col TINYINT,
+  smallint_col SMALLINT,
+  int_col INT,
+  bigint_col BIGINT,
+  boolean_col BOOLEAN
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sample01
+POSTHOOK: query: CREATE TABLE sample01 (
+  index INT,
+  date_col DATE,
+  timestamp_col TIMESTAMP,
+  str_col VARCHAR(24),
+  string_col STRING,
+  double_col DOUBLE,
+  float_col FLOAT,
+  decimal_col DECIMAL(9,3),
+  tinyint_col TINYINT,
+  smallint_col SMALLINT,
+  int_col INT,
+  bigint_col BIGINT,
+  boolean_col BOOLEAN
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sample01
+PREHOOK: query: INSERT INTO sample01 VALUES
+(1003,"1969-10-27","1993-05-17 07:39:58.375409",NULL,"sloppy bronze hare",-181.01933598375618,-181.019336,-999999.999,-128,-32768,-2147483648,-9223372036854775808,false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sample01
+POSTHOOK: query: INSERT INTO sample01 VALUES
+(1003,"1969-10-27","1993-05-17 07:39:58.375409",NULL,"sloppy bronze hare",-181.01933598375618,-181.019336,-999999.999,-128,-32768,-2147483648,-9223372036854775808,false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sample01
+POSTHOOK: Lineage: sample01.bigint_col SCRIPT []
+POSTHOOK: Lineage: sample01.boolean_col SCRIPT []
+POSTHOOK: Lineage: sample01.date_col SCRIPT []
+POSTHOOK: Lineage: sample01.decimal_col SCRIPT []
+POSTHOOK: Lineage: sample01.double_col SCRIPT []
+POSTHOOK: Lineage: sample01.float_col SCRIPT []
+POSTHOOK: Lineage: sample01.index SCRIPT []
+POSTHOOK: Lineage: sample01.int_col SCRIPT []
+POSTHOOK: Lineage: sample01.smallint_col SCRIPT []
+POSTHOOK: Lineage: sample01.str_col EXPRESSION []
+POSTHOOK: Lineage: sample01.string_col SCRIPT []
+POSTHOOK: Lineage: sample01.timestamp_col SCRIPT []
+POSTHOOK: Lineage: sample01.tinyint_col SCRIPT []
+PREHOOK: query: CREATE EXTERNAL TABLE ice01 (
+  index INT,
+  date_col DATE,
+  timestamp_col TIMESTAMP,
+  string_col STRING,
+  double_col DOUBLE,
+  float_col FLOAT,
+  decimal_col DECIMAL(9,3),
+  smallint_col int,
+  int_col INT,
+  bigint_col BIGINT,
+  boolean_col BOOLEAN
+) PARTITIONED BY (str_col String, tinyint_col int)
+STORED BY iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: CREATE EXTERNAL TABLE ice01 (
+  index INT,
+  date_col DATE,
+  timestamp_col TIMESTAMP,
+  string_col STRING,
+  double_col DOUBLE,
+  float_col FLOAT,
+  decimal_col DECIMAL(9,3),
+  smallint_col int,
+  int_col INT,
+  bigint_col BIGINT,
+  boolean_col BOOLEAN
+) PARTITIONED BY (str_col String, tinyint_col int)
+STORED BY iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: INSERT INTO ice01 PARTITION (str_col, tinyint_col)
+  SELECT index, date_col, timestamp_col, string_col, double_col, float_col, decimal_col, smallint_col, int_col, bigint_col, boolean_col, str_col, tinyint_col FROM sample01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: INSERT INTO ice01 PARTITION (str_col, tinyint_col)
+  SELECT index, date_col, timestamp_col, string_col, double_col, float_col, decimal_col, smallint_col, int_col, bigint_col, boolean_col, str_col, tinyint_col FROM sample01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: SELECT * FROM ice01 WHERE str_col is NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM ice01 WHERE str_col is NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1003	1969-10-27	1993-05-17 07:39:58.375409	sloppy bronze hare	-181.01933598375618	-181.01933	-999999.999	-32768	-2147483648	-9223372036854775808	false	NULL	-128

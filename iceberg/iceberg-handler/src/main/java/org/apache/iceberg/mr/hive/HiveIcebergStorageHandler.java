@@ -2316,8 +2316,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
             String partName = spec.partitionToPath(partitionData);
 
-            Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-            Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+            Map<String, String> partSpecMap =
+                IcebergTableUtil.makeSpecFromName(partName, spec, partitionData);
 
             DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
             partitions.add(partition);
