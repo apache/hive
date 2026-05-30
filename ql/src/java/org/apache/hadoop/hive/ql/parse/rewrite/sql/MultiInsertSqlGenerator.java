@@ -148,7 +148,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendPartColsOfTargetTableWithComma(String alias) {
-    if (targetTable.getPartitionKeys() == null || targetTable.getPartitionKeys().isEmpty()) {
+    if (targetTable.getPartCols().isEmpty()) {
       return;
     }
     queryStr.append(',');
