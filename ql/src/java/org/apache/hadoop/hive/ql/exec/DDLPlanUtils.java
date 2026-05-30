@@ -525,7 +525,7 @@ public class DDLPlanUtils {
     List<String> accessedColumns = getTableColumnNames(tbl);
     List<ColumnStatisticsObj> tableColumnStatistics = Hive.get(conf).getTableColumnStatistics(
         tbl, accessedColumns, true);
-    
+
     ColumnStatisticsObj[] columnStatisticsObj = tableColumnStatistics.toArray(new ColumnStatisticsObj[0]);
     for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
       alterTblStmt.add(getAlterTableStmtCol(
@@ -910,15 +910,17 @@ public class DDLPlanUtils {
   }
 
   private String getColumns(Table table) {
-    List<String> columnDescs = new ArrayList<>();
-    for (FieldSchema column : table.getStorageSchemaCols()) {
+    Map<Integer, String> indexColDescsMap = new TreeMap<>();
+    List<FieldSchema> colsToLookUp = table.hasNonNativePartitionSupport() ? table.getAllCols() : table.getCols();
+    for (FieldSchema column : colsToLookUp) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
       String columnDesc = "  " + unparseIdentifier(column.getName()) + " " + columnType;
       if (column.getComment() != null) {
         columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(column.getComment()) + "'";
       }
-      columnDescs.add(columnDesc);
+      indexColDescsMap.put(table.getColumnIndexByName(column.getName()), columnDesc);
     }
+    List<String> columnDescs = indexColDescsMap.values().stream().toList();
     return StringUtils.join(columnDescs, ", \n");
   }
 

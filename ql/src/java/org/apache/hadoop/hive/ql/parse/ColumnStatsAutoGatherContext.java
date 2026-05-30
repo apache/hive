@@ -319,6 +319,9 @@ public class ColumnStatsAutoGatherContext {
         exprNodeDesc = new ExprNodeColumnDesc(col);
         srcType = col.getType();
       }
+      if (inputRRHasStaticParts) {
+        index = columnNameToIndex.get(partColName);
+      }
       TypeInfo destType = selRSSig.get(index).getType();
       if (!srcType.equals(destType)) {
         // This may be possible when srcType is string but destType is integer
