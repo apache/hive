@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -116,7 +117,7 @@ public class Table implements Serializable {
    * These fields are all cached fields.  The information comes from tTable.
    */
   private List<FieldSchema> tablePartCols;
-  private Map<String, Pair<Integer, FieldSchema>> inputColnameToIndFsMap;
+  private transient Map<String, Pair<Integer, FieldSchema>> inputColnameToIndFsMap;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
@@ -618,9 +619,8 @@ public class Table implements Serializable {
       List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
       for (FieldSchema partCol : partCols) {
         FieldSchema storageSchemaField = getFieldSchemaByName(partCol.getName());
-        String storageSchemaComment = storageSchemaField.getComment();
-        if (storageSchemaComment != null) {
-          partCol.setComment(storageSchemaComment);
+        if (storageSchemaField != null && storageSchemaField.getComment() != null) {
+          partCol.setComment(storageSchemaField.getComment());
         }
       }
       tablePartCols = partCols;
@@ -766,22 +766,25 @@ public class Table implements Serializable {
       fsList.addAll(getPartitionKeys());
     }
     for (int i = 0; i < fsList.size(); i++) {
-      inputColnameToIndFsMap.put(fsList.get(i).getName(), Pair.of(i, fsList.get(i)));
+      inputColnameToIndFsMap.put(fsList.get(i).getName().toLowerCase(), Pair.of(i, fsList.get(i)));
     }
   }
 
-  public int getColumnIndexByName(String colName) {
+  public Integer getColumnIndexByName(String colName) {
     if (inputColnameToIndFsMap == null) {
       fillColumnIndexByName();
     }
-    return inputColnameToIndFsMap.get(colName.toLowerCase()).getLeft();
+    Pair<Integer, FieldSchema> indFsPair = inputColnameToIndFsMap.get(colName.toLowerCase());
+
+    return indFsPair != null ? indFsPair.getLeft() : null;
   }
 
   public FieldSchema getFieldSchemaByName(String colName) {
     if (inputColnameToIndFsMap == null) {
       fillColumnIndexByName();
     }
-    return inputColnameToIndFsMap.get(colName).getRight();
+    Pair<Integer, FieldSchema> indFsPair = inputColnameToIndFsMap.get(colName.toLowerCase());
+    return indFsPair == null ? null : indFsPair.getRight();
   }
 
   public List<FieldSchema> getStorageSchemaCols() {
