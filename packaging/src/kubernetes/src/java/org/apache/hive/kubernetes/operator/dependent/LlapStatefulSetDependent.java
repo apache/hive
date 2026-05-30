@@ -64,6 +64,11 @@ public class LlapStatefulSetDependent
   }
 
   @Override
+  protected String getComponentName() {
+    return COMPONENT;
+  }
+
+  @Override
   protected StatefulSet desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
@@ -133,10 +138,9 @@ public class LlapStatefulSetDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    // When autoscaling is enabled, preserve current replica count (KEDA/HPA manages it).
     AutoscalingSpec llapAutoscaling = llap.autoscaling();
-    int initialReplicas = llapAutoscaling != null && llapAutoscaling.minReplicas() == 0
-        ? 0 : llap.replicas();
+    int initialReplicas = llapAutoscaling != null && llapAutoscaling.isEnabled()
+        ? llapAutoscaling.minReplicas() : llap.replicas();
     Integer replicas = resolveReplicaCount(
         hiveCluster, context, llapAutoscaling, llap.replicas(), initialReplicas);
 
@@ -199,6 +203,7 @@ public class LlapStatefulSetDependent
     appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         llap.extraVolumes(), llap.extraVolumeMounts());
+
     return statefulSet;
   }
 

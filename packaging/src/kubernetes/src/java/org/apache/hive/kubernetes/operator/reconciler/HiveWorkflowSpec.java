@@ -29,9 +29,7 @@ import io.javaoperatorsdk.operator.api.config.workflow.WorkflowSpec;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import org.apache.hive.kubernetes.operator.dependent.HiveConfigMapDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServer2DeploymentDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveServer2InterceptorRouteDependent;
 import org.apache.hive.kubernetes.operator.dependent.HivePdbDependent;
-import org.apache.hive.kubernetes.operator.dependent.HiveScaledObjectDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServiceDependent;
 import org.apache.hive.kubernetes.operator.dependent.LlapStatefulSetDependent;
 import org.apache.hive.kubernetes.operator.dependent.MetastoreDeploymentDependent;
@@ -72,9 +70,6 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
   private static final Condition<?, HiveCluster> HS2_AUTOSCALING =
       (dr, primary, ctx) -> primary.getSpec().hiveServer2().autoscaling().isEnabled();
 
-  private static final Condition<?, HiveCluster> HS2_SCALE_TO_ZERO =
-      (dr, primary, ctx) -> primary.getSpec().hiveServer2().autoscaling().isEnabled()
-          && primary.getSpec().hiveServer2().autoscaling().minReplicas() == 0;
 
   // SPECS must be declared AFTER all conditions to avoid static init order issues.
   private static final List<DependentResourceSpec> SPECS = buildSpecs();
@@ -152,30 +147,6 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
         Set.of("hiveserver2-configmap", "hadoop-configmap", "tezam-service", "scratch-pvc"),
         null, null, null, TEZAM_ENABLED, null));
 
-    specs.add(new DependentResourceSpec(
-        HiveScaledObjectDependent.HiveServer2.class, "hs2-scaledobject",
-        Set.of("hiveserver2-deployment"),
-        null, HS2_AUTOSCALING, null, null, null));
-
-    specs.add(new DependentResourceSpec(
-        HiveServer2InterceptorRouteDependent.class, "hs2-interceptor-route",
-        Set.of("hiveserver2-deployment"),
-        null, HS2_SCALE_TO_ZERO, null, null, null));
-
-    specs.add(new DependentResourceSpec(
-        HiveScaledObjectDependent.Metastore.class, "metastore-scaledobject",
-        Set.of("metastore-deployment"),
-        null, METASTORE_AUTOSCALING, null, null, null));
-
-    specs.add(new DependentResourceSpec(
-        HiveScaledObjectDependent.Llap.class, "llap-scaledobject",
-        Set.of("llap-statefulset", "hs2-scaledobject"),
-        null, LLAP_AUTOSCALING, null, null, null));
-
-    specs.add(new DependentResourceSpec(
-        HiveScaledObjectDependent.TezAm.class, "tezam-scaledobject",
-        Set.of("tezam-statefulset", "hs2-scaledobject"),
-        null, TEZAM_AUTOSCALING, null, null, null));
 
     // --- Autoscaling: PodDisruptionBudgets (conditional) ---
     specs.add(new DependentResourceSpec(

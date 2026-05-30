@@ -18,25 +18,31 @@
 
 package org.apache.hive.kubernetes.operator.reconciler;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 
 import io.fabric8.kubernetes.api.model.Condition;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
+import org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
+import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterStatus;
+import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +56,8 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
 
+  private volatile HiveClusterAutoscaler autoscaler;
+
   @Override
   public UpdateControl<HiveCluster> reconcile(HiveCluster resource, Context<HiveCluster> context) {
     LOG.debug("Reconciling HiveCluster: {}/{}  generation={}",
@@ -60,7 +68,26 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     HiveClusterStatus existingStatus = resource.getStatus();
     HiveClusterStatus newStatus = buildStatus(resource, context, existingStatus);
 
-    if (statusEqualsIgnoringTimestamps(existingStatus, newStatus)) {
+    boolean statusChanged = !statusEqualsIgnoringTimestamps(existingStatus, newStatus);
+
+    // Operator-driven autoscaling: evaluate metrics and patch workloads
+    if (anyAutoscalingEnabled(resource.getSpec())) {
+      KubernetesClient client = context.getClient();
+      HiveClusterAutoscaler scaler = getOrCreateAutoscaler(client);
+      HiveClusterAutoscaler.AutoscalingEvaluation eval = scaler.evaluate(resource, client);
+      for (Map.Entry<String, Integer> entry : eval.patches().entrySet()) {
+        patchReplicas(client, resource, entry.getKey(), entry.getValue());
+      }
+      // Set autoscaling status on each component
+      applyAutoscalingStatuses(newStatus, eval.statuses());
+      // Always patch status when autoscaling is active (metrics change each scrape)
+      int interval = getMinScrapeInterval(resource.getSpec());
+      resource.setStatus(newStatus);
+      return UpdateControl.<HiveCluster>patchStatus(resource)
+          .rescheduleAfter(Duration.ofSeconds(interval));
+    }
+
+    if (!statusChanged) {
       return UpdateControl.noUpdate();
     }
 
@@ -117,20 +144,15 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     // Metastore status
     boolean metastoreReady;
     if (resource.getSpec().metastore().isEnabled()) {
-      // When autoscaling, desired = minReplicas (KEDA manages beyond that)
-      int metastoreDesired = resource.getSpec().metastore().autoscaling().isEnabled()
+      int msMin = resource.getSpec().metastore().autoscaling().isEnabled()
           ? Math.max(1, resource.getSpec().metastore().autoscaling().minReplicas())
           : resource.getSpec().metastore().replicas();
       ComponentStatus metastoreStatus =
           buildComponentStatus(context, Deployment.class, resource.getMetadata().getName() + "-metastore",
-              metastoreDesired,
-              d -> d.getStatus() != null && d.getStatus().getReadyReplicas() != null ?
-                  d.getStatus().getReadyReplicas() :
-                  0);
+              resource.getSpec().metastore().replicas(), msMin);
       status.setMetastore(metastoreStatus);
 
-      metastoreReady = metastoreStatus.getReadyReplicas() >= metastoreStatus.getDesiredReplicas()
-          && metastoreStatus.getDesiredReplicas() > 0;
+      metastoreReady = metastoreStatus.getReadyReplicas() >= msMin && msMin > 0;
 
       conditions.add(buildCondition("MetastoreReady", metastoreReady ? "True" : "False",
           metastoreReady ? "DeploymentReady" : "DeploymentNotReady",
@@ -141,17 +163,16 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
           existingConditions));
     }
 
-    // HiveServer2 status — when scale-to-zero, 0/0 is a valid "ready" state (idle)
-    int hs2Desired = resource.getSpec().hiveServer2().autoscaling().isEnabled()
-        ? resource.getSpec().hiveServer2().autoscaling().minReplicas()
+    // HiveServer2 status
+    int hs2Min = resource.getSpec().hiveServer2().autoscaling().isEnabled()
+        ? Math.max(1, resource.getSpec().hiveServer2().autoscaling().minReplicas())
         : resource.getSpec().hiveServer2().replicas();
     ComponentStatus hs2Status = buildComponentStatus(context, Deployment.class,
         resource.getMetadata().getName() + "-hiveserver2",
-        hs2Desired,
-        d -> d.getStatus() != null && d.getStatus().getReadyReplicas() != null ? d.getStatus().getReadyReplicas() : 0);
+        resource.getSpec().hiveServer2().replicas(), hs2Min);
     status.setHiveServer2(hs2Status);
 
-    boolean hs2Ready = hs2Status.getReadyReplicas() >= hs2Status.getDesiredReplicas();
+    boolean hs2Ready = hs2Status.getReadyReplicas() >= hs2Min;
     conditions.add(buildCondition("HiveServer2Ready", hs2Ready ? "True" : "False",
         hs2Ready ? "DeploymentReady" : "DeploymentNotReady",
         hs2Ready ? "HiveServer2 is ready" : "HiveServer2 not yet ready",
@@ -159,25 +180,22 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
     // LLAP status (optional)
     if (resource.getSpec().llap().isEnabled()) {
-      int llapDesired = resource.getSpec().llap().autoscaling().isEnabled()
+      int llapMin = resource.getSpec().llap().autoscaling().isEnabled()
           ? resource.getSpec().llap().autoscaling().minReplicas()
           : resource.getSpec().llap().replicas();
       status.setLlap(buildComponentStatus(context, StatefulSet.class,
           resource.getMetadata().getName() + "-llap",
-          llapDesired,
-          s -> s.getStatus() != null && s.getStatus().getReadyReplicas() != null ?
-              s.getStatus().getReadyReplicas() : 0));
+          resource.getSpec().llap().replicas(), llapMin));
     }
 
     // TezAM status (optional)
     if (resource.getSpec().tezAm().isEnabled()) {
-      int tezAmDesired = resource.getSpec().tezAm().autoscaling().isEnabled()
+      int tezAmMin = resource.getSpec().tezAm().autoscaling().isEnabled()
           ? resource.getSpec().tezAm().autoscaling().minReplicas()
           : resource.getSpec().tezAm().replicas();
-      status.setTezAm(buildComponentStatus(context, StatefulSet.class, resource.getMetadata().getName() + "-tezam",
-          tezAmDesired,
-          s -> s.getStatus() != null &&
-              s.getStatus().getReadyReplicas() != null ? s.getStatus().getReadyReplicas() : 0));
+      status.setTezAm(buildComponentStatus(context, StatefulSet.class,
+          resource.getMetadata().getName() + "-tezam",
+          resource.getSpec().tezAm().replicas(), tezAmMin));
     }
 
     // Overall Ready condition
@@ -197,19 +215,51 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
    */
   private <T extends HasMetadata> ComponentStatus buildComponentStatus(
       Context<HiveCluster> context, Class<T> resourceClass, String expectedResourceName,
-      int desiredReplicas, Function<T, Integer> readyExtractor) {
+      int maxReplicas, int minReplicas) {
 
     ComponentStatus cs = new ComponentStatus();
-    cs.setDesiredReplicas(desiredReplicas);
+    cs.setMaxReplicas(maxReplicas);
+    cs.setMinReplicas(minReplicas);
 
-    int ready = context.getSecondaryResources(resourceClass).stream()
+    // Read actual spec.replicas and readyReplicas from the live workload
+    var workload = context.getSecondaryResources(resourceClass).stream()
         .filter(r -> r.getMetadata().getName().equals(expectedResourceName))
-        .findFirst()
-        .map(readyExtractor)
-        .orElse(0);
+        .findFirst();
 
+    int currentReplicas = workload.map(r -> {
+      if (r instanceof Deployment d) {
+        return d.getSpec() != null && d.getSpec().getReplicas() != null
+            ? d.getSpec().getReplicas() : 0;
+      } else if (r instanceof StatefulSet s) {
+        return s.getSpec() != null && s.getSpec().getReplicas() != null
+            ? s.getSpec().getReplicas() : 0;
+      }
+      return 0;
+    }).orElse(0);
+
+    int ready = workload.map(r -> {
+      if (r instanceof Deployment d) {
+        return d.getStatus() != null && d.getStatus().getReadyReplicas() != null
+            ? d.getStatus().getReadyReplicas() : 0;
+      } else if (r instanceof StatefulSet s) {
+        return s.getStatus() != null && s.getStatus().getReadyReplicas() != null
+            ? s.getStatus().getReadyReplicas() : 0;
+      }
+      return 0;
+    }).orElse(0);
+
+    cs.setCurrentReplicas(currentReplicas);
     cs.setReadyReplicas(ready);
-    cs.setPhase(ready >= desiredReplicas && desiredReplicas > 0 ? "Running" : "Pending");
+
+    if (currentReplicas == 0 && ready == 0) {
+      cs.setPhase("Idle");
+    } else if (ready >= currentReplicas && currentReplicas > 0) {
+      cs.setPhase("Running");
+    } else if (currentReplicas == 0 && ready > 0) {
+      cs.setPhase("ScalingDown");
+    } else {
+      cs.setPhase("Pending");
+    }
     return cs;
   }
 
@@ -303,5 +353,80 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
       }
     }
     return true;
+  }
+
+  private void applyAutoscalingStatuses(HiveClusterStatus status,
+      Map<String, AutoscalingStatus> statuses) {
+    if (statuses.containsKey("hiveserver2") && status.getHiveServer2() != null) {
+      status.getHiveServer2().setAutoscaling(statuses.get("hiveserver2"));
+    }
+    if (statuses.containsKey("metastore") && status.getMetastore() != null) {
+      status.getMetastore().setAutoscaling(statuses.get("metastore"));
+    }
+    if (statuses.containsKey("llap") && status.getLlap() != null) {
+      status.getLlap().setAutoscaling(statuses.get("llap"));
+    }
+    if (statuses.containsKey("tezam") && status.getTezAm() != null) {
+      status.getTezAm().setAutoscaling(statuses.get("tezam"));
+    }
+  }
+
+  // --- Autoscaling helpers ---
+
+  private HiveClusterAutoscaler getOrCreateAutoscaler(KubernetesClient client) {
+    if (autoscaler == null) {
+      synchronized (this) {
+        if (autoscaler == null) {
+          autoscaler = new HiveClusterAutoscaler(new MetricsScraper(client));
+        }
+      }
+    }
+    return autoscaler;
+  }
+
+  private static boolean anyAutoscalingEnabled(HiveClusterSpec spec) {
+    if (spec.hiveServer2().autoscaling().isEnabled()) {
+      return true;
+    }
+    if (spec.metastore().isEnabled() && spec.metastore().autoscaling().isEnabled()) {
+      return true;
+    }
+    if (spec.llap().isEnabled() && spec.llap().autoscaling().isEnabled()) {
+      return true;
+    }
+    if (spec.tezAm().isEnabled() && spec.tezAm().autoscaling().isEnabled()) {
+      return true;
+    }
+    return false;
+  }
+
+  private static int getMinScrapeInterval(HiveClusterSpec spec) {
+    int min = Integer.MAX_VALUE;
+    if (spec.hiveServer2().autoscaling().isEnabled()) {
+      min = Math.min(min, spec.hiveServer2().autoscaling().metricsScrapeIntervalSeconds());
+    }
+    if (spec.metastore().isEnabled() && spec.metastore().autoscaling().isEnabled()) {
+      min = Math.min(min, spec.metastore().autoscaling().metricsScrapeIntervalSeconds());
+    }
+    if (spec.llap().isEnabled() && spec.llap().autoscaling().isEnabled()) {
+      min = Math.min(min, spec.llap().autoscaling().metricsScrapeIntervalSeconds());
+    }
+    if (spec.tezAm().isEnabled() && spec.tezAm().autoscaling().isEnabled()) {
+      min = Math.min(min, spec.tezAm().autoscaling().metricsScrapeIntervalSeconds());
+    }
+    return min == Integer.MAX_VALUE ? 10 : min;
+  }
+
+  private void patchReplicas(KubernetesClient client, HiveCluster resource,
+      String component, int replicas) {
+    String namespace = resource.getMetadata().getNamespace();
+    String workloadName = resource.getMetadata().getName() + "-" + component;
+    if ("llap".equals(component) || "tezam".equals(component)) {
+      client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
+      LOG.info("Scaled StatefulSet {}/{} to {} replicas", namespace, workloadName, replicas);
+    } else {
+      client.apps().deployments().inNamespace(namespace).withName(workloadName).scale(replicas);
+      LOG.info("Scaled Deployment {}/{} to {} replicas", namespace, workloadName, replicas);
+    }
   }
 }

@@ -56,7 +56,7 @@ public record LlapSpec(
     String serviceHosts,
     @JsonPropertyDescription("Readiness probe configuration")
     ProbeSpec readinessProbe,
-    @JsonPropertyDescription("Autoscaling configuration (requires KEDA installed in the cluster)")
+    @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
     AutoscalingSpec autoscaling) {
 
   public LlapSpec {
@@ -68,7 +68,7 @@ public record LlapSpec(
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 0, 1, 0, null, null, 900, 60, 300, 600, 10);
+        false, 0, 1, 60, 900, 600, 10);
   }
 
   public boolean isEnabled() {

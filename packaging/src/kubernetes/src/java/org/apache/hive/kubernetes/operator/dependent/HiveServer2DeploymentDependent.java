@@ -63,6 +63,11 @@ public class HiveServer2DeploymentDependent
   }
 
   @Override
+  protected String getComponentName() {
+    return COMPONENT;
+  }
+
+  @Override
   protected Deployment desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
@@ -215,10 +220,9 @@ public class HiveServer2DeploymentDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getTezSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    // When autoscaling is enabled, preserve current replica count (KEDA/HPA manages it).
     AutoscalingSpec hs2Autoscaling = hs2.autoscaling();
-    int initialReplicas = hs2Autoscaling != null && hs2Autoscaling.minReplicas() == 0
-        ? 0 : hs2.replicas();
+    int initialReplicas = hs2Autoscaling != null && hs2Autoscaling.isEnabled()
+        ? Math.max(1, hs2Autoscaling.minReplicas()) : hs2.replicas();
     Integer replicas = resolveReplicaCount(
         hiveCluster, context, hs2Autoscaling, hs2.replicas(), initialReplicas);
 

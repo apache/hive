@@ -23,9 +23,36 @@ package org.apache.hive.kubernetes.operator.model.status;
  */
 public class ComponentStatus {
 
+  private int maxReplicas;
+  private int minReplicas;
+  private int currentReplicas;
   private int readyReplicas;
-  private int desiredReplicas;
   private String phase;
+  private AutoscalingStatus autoscaling;
+
+  public int getMaxReplicas() {
+    return maxReplicas;
+  }
+
+  public void setMaxReplicas(int maxReplicas) {
+    this.maxReplicas = maxReplicas;
+  }
+
+  public int getMinReplicas() {
+    return minReplicas;
+  }
+
+  public void setMinReplicas(int minReplicas) {
+    this.minReplicas = minReplicas;
+  }
+
+  public int getCurrentReplicas() {
+    return currentReplicas;
+  }
+
+  public void setCurrentReplicas(int currentReplicas) {
+    this.currentReplicas = currentReplicas;
+  }
 
   public int getReadyReplicas() {
     return readyReplicas;
@@ -35,20 +62,20 @@ public class ComponentStatus {
     this.readyReplicas = readyReplicas;
   }
 
-  public int getDesiredReplicas() {
-    return desiredReplicas;
-  }
-
-  public void setDesiredReplicas(int desiredReplicas) {
-    this.desiredReplicas = desiredReplicas;
-  }
-
   public String getPhase() {
     return phase;
   }
 
   public void setPhase(String phase) {
     this.phase = phase;
+  }
+
+  public AutoscalingStatus getAutoscaling() {
+    return autoscaling;
+  }
+
+  public void setAutoscaling(AutoscalingStatus autoscaling) {
+    this.autoscaling = autoscaling;
   }
 
   @Override
@@ -60,12 +87,15 @@ public class ComponentStatus {
       return false;
     }
     ComponentStatus that = (ComponentStatus) o;
-    return readyReplicas == that.readyReplicas && desiredReplicas == that.desiredReplicas && java.util.Objects.equals(
-        phase, that.phase);
+    return maxReplicas == that.maxReplicas && minReplicas == that.minReplicas
+        && currentReplicas == that.currentReplicas && readyReplicas == that.readyReplicas
+        && java.util.Objects.equals(phase, that.phase)
+        && java.util.Objects.equals(autoscaling, that.autoscaling);
   }
 
   @Override
   public int hashCode() {
-    return java.util.Objects.hash(readyReplicas, desiredReplicas, phase);
+    return java.util.Objects.hash(maxReplicas, minReplicas, currentReplicas,
+        readyReplicas, phase, autoscaling);
   }
 }

@@ -66,6 +66,11 @@ public class TezAmStatefulSetDependent
   }
 
   @Override
+  protected String getComponentName() {
+    return COMPONENT;
+  }
+
+  @Override
   protected StatefulSet desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
@@ -136,10 +141,9 @@ public class TezAmStatefulSetDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getTezSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    // When autoscaling is enabled, preserve current replica count (KEDA/HPA manages it).
     AutoscalingSpec tezAmAutoscaling = tezAm.autoscaling();
-    int initialReplicas = tezAmAutoscaling != null && tezAmAutoscaling.minReplicas() == 0
-        ? 0 : tezAm.replicas();
+    int initialReplicas = tezAmAutoscaling != null && tezAmAutoscaling.isEnabled()
+        ? tezAmAutoscaling.minReplicas() : tezAm.replicas();
     Integer replicas = resolveReplicaCount(
         hiveCluster, context, tezAmAutoscaling, tezAm.replicas(), initialReplicas);
 
@@ -198,6 +202,7 @@ public class TezAmStatefulSetDependent
     appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         tezAm.extraVolumes(), tezAm.extraVolumeMounts());
+
     return statefulSet;
   }
 

@@ -45,18 +45,9 @@ spec:
                 description: HiveServer2 component configuration
                 properties:
                   autoscaling:
-                    description: Autoscaling configuration (requires KEDA installed
-                      in the cluster)
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
                     properties:
-                      activationCpuValue:
-                        description: CPU average value below which the trigger is
-                          inactive. Required if targetCpuValue is set.
-                        type: string
-                      cooldownSeconds:
-                        default: 600
-                        description: Cooldown period in seconds after all KEDA triggers
-                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
-                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -70,43 +61,35 @@ spec:
                         type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10
-                        description: Prometheus scrape interval in seconds for this
-                          component's metrics. Lower values make autoscaling react
-                          faster but increase Prometheus load.
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
                         type: integer
                       minReplicas:
                         default: 0
-                        description: Minimum number of replicas (floor for scale-down).
-                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
-                          for wake-from-zero)
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
                         type: integer
                       scaleDownStabilizationSeconds:
-                        default: 300
+                        default: 600
                         description: Stabilization window in seconds for scale-down
-                          decisions. HPA picks the highest recommendation within this
-                          window to prevent premature scale-down.
-                        type: integer
-                      scaleDownThreshold:
-                        default: 20
-                        description: Threshold that triggers scale-down for Prometheus-based
-                          metrics
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
                         type: integer
                       scaleUpStabilizationSeconds:
                         default: 60
                         description: Stabilization window in seconds for scale-up
-                          decisions. HPA picks the highest recommendation within this
+                          decisions. Picks the highest recommendation within this
                           window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, connections for HMS, queue depth for\
-                          \ LLAP, pending tasks for TezAM)"
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
                         type: integer
-                      targetCpuValue:
-                        description: "Target CPU average value for scaling (e.g.,\
-                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
-                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:
@@ -217,18 +200,9 @@ spec:
                 description: LLAP daemon configuration. Enabled by default.
                 properties:
                   autoscaling:
-                    description: Autoscaling configuration (requires KEDA installed
-                      in the cluster)
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
                     properties:
-                      activationCpuValue:
-                        description: CPU average value below which the trigger is
-                          inactive. Required if targetCpuValue is set.
-                        type: string
-                      cooldownSeconds:
-                        default: 600
-                        description: Cooldown period in seconds after all KEDA triggers
-                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
-                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -242,43 +216,35 @@ spec:
                         type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10
-                        description: Prometheus scrape interval in seconds for this
-                          component's metrics. Lower values make autoscaling react
-                          faster but increase Prometheus load.
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
                         type: integer
                       minReplicas:
                         default: 0
-                        description: Minimum number of replicas (floor for scale-down).
-                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
-                          for wake-from-zero)
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
                         type: integer
                       scaleDownStabilizationSeconds:
-                        default: 300
+                        default: 600
                         description: Stabilization window in seconds for scale-down
-                          decisions. HPA picks the highest recommendation within this
-                          window to prevent premature scale-down.
-                        type: integer
-                      scaleDownThreshold:
-                        default: 20
-                        description: Threshold that triggers scale-down for Prometheus-based
-                          metrics
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
                         type: integer
                       scaleUpStabilizationSeconds:
                         default: 60
                         description: Stabilization window in seconds for scale-up
-                          decisions. HPA picks the highest recommendation within this
+                          decisions. Picks the highest recommendation within this
                           window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, connections for HMS, queue depth for\
-                          \ LLAP, pending tasks for TezAM)"
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
                         type: integer
-                      targetCpuValue:
-                        description: "Target CPU average value for scaling (e.g.,\
-                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
-                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:
@@ -364,18 +330,9 @@ spec:
                 description: Metastore component configuration
                 properties:
                   autoscaling:
-                    description: Autoscaling configuration (requires KEDA installed
-                      in the cluster)
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
                     properties:
-                      activationCpuValue:
-                        description: CPU average value below which the trigger is
-                          inactive. Required if targetCpuValue is set.
-                        type: string
-                      cooldownSeconds:
-                        default: 600
-                        description: Cooldown period in seconds after all KEDA triggers
-                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
-                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -389,43 +346,35 @@ spec:
                         type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10
-                        description: Prometheus scrape interval in seconds for this
-                          component's metrics. Lower values make autoscaling react
-                          faster but increase Prometheus load.
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
                         type: integer
                       minReplicas:
                         default: 0
-                        description: Minimum number of replicas (floor for scale-down).
-                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
-                          for wake-from-zero)
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
                         type: integer
                       scaleDownStabilizationSeconds:
-                        default: 300
+                        default: 600
                         description: Stabilization window in seconds for scale-down
-                          decisions. HPA picks the highest recommendation within this
-                          window to prevent premature scale-down.
-                        type: integer
-                      scaleDownThreshold:
-                        default: 20
-                        description: Threshold that triggers scale-down for Prometheus-based
-                          metrics
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
                         type: integer
                       scaleUpStabilizationSeconds:
                         default: 60
                         description: Stabilization window in seconds for scale-up
-                          decisions. HPA picks the highest recommendation within this
+                          decisions. Picks the highest recommendation within this
                           window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, connections for HMS, queue depth for\
-                          \ LLAP, pending tasks for TezAM)"
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
                         type: integer
-                      targetCpuValue:
-                        description: "Target CPU average value for scaling (e.g.,\
-                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
-                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:
@@ -564,18 +513,9 @@ spec:
                 description: Tez Application Master configuration. Enabled by default.
                 properties:
                   autoscaling:
-                    description: Autoscaling configuration (requires KEDA installed
-                      in the cluster)
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
                     properties:
-                      activationCpuValue:
-                        description: CPU average value below which the trigger is
-                          inactive. Required if targetCpuValue is set.
-                        type: string
-                      cooldownSeconds:
-                        default: 600
-                        description: Cooldown period in seconds after all KEDA triggers
-                          are inactive before scaling from 1 to 0 (scale-to-zero delay)
-                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -589,43 +529,35 @@ spec:
                         type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10
-                        description: Prometheus scrape interval in seconds for this
-                          component's metrics. Lower values make autoscaling react
-                          faster but increase Prometheus load.
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
                         type: integer
                       minReplicas:
                         default: 0
-                        description: Minimum number of replicas (floor for scale-down).
-                          Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on
-                          for wake-from-zero)
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
                         type: integer
                       scaleDownStabilizationSeconds:
-                        default: 300
+                        default: 600
                         description: Stabilization window in seconds for scale-down
-                          decisions. HPA picks the highest recommendation within this
-                          window to prevent premature scale-down.
-                        type: integer
-                      scaleDownThreshold:
-                        default: 20
-                        description: Threshold that triggers scale-down for Prometheus-based
-                          metrics
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
                         type: integer
                       scaleUpStabilizationSeconds:
                         default: 60
                         description: Stabilization window in seconds for scale-up
-                          decisions. HPA picks the highest recommendation within this
+                          decisions. Picks the highest recommendation within this
                           window to prevent flapping.
                         type: integer
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions for HS2, connections for HMS, queue depth for\
-                          \ LLAP, pending tasks for TezAM)"
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
                         type: integer
-                      targetCpuValue:
-                        description: "Target CPU average value for scaling (e.g.,\
-                          \ '1500m' or '1'). If omitted, CPU scaling is disabled."
-                        type: string
                     type: object
                   configOverrides:
                     additionalProperties:
@@ -732,7 +664,22 @@ spec:
                 type: array
               hiveServer2:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string
@@ -741,7 +688,22 @@ spec:
                 type: object
               llap:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string
@@ -750,7 +712,22 @@ spec:
                 type: object
               metastore:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string
@@ -761,7 +738,22 @@ spec:
                 type: integer
               tezAm:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string
