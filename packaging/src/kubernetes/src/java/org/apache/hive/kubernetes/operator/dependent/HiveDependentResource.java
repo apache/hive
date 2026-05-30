@@ -45,6 +45,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
+import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
@@ -162,32 +163,55 @@ public abstract class HiveDependentResource<R extends HasMetadata,
 
   /**
    * Resolves the replica count to set in the desired workload spec.
-   * When autoscaling is enabled and the workload already exists, the current
-   * replica count is preserved (KEDA/HPA manages it). On initial creation
-   * the provided fallback is used.
-   *
-   * @param primary         the HiveCluster primary resource
-   * @param context         the reconciliation context
-   * @param autoscaling     autoscaling spec for this component (may be null)
-   * @param staticReplicas  replica count from the spec (used when autoscaling is off)
-   * @param initialReplicas replica count on first creation when autoscaling is on
+   * <p>
+   * Always returns an explicit value — never null. Returning null would cause
+   * JOSDK/SSA to omit spec.replicas, and Kubernetes would default it to 1.
+   * <p>
+   * When autoscaling is enabled:
+   * - On CREATE: returns initialReplicas (minReplicas for the component)
+   * - On UPDATE: returns the autoscaler's managed value, or falls back to
+   *   the current actual replicas from the informer cache.
+   * <p>
+   * When autoscaling is disabled: returns staticReplicas (the spec value).
    */
-  @SuppressWarnings("unchecked")
   protected Integer resolveReplicaCount(P primary, Context<P> context,
       AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
     if (autoscaling == null || !autoscaling.isEnabled()) {
       return staticReplicas;
     }
-    return getSecondaryResource(primary, context)
-        .map(existing -> {
-          if (existing instanceof io.fabric8.kubernetes.api.model.apps.Deployment d) {
-            return d.getSpec().getReplicas();
-          } else if (existing instanceof io.fabric8.kubernetes.api.model.apps.StatefulSet s) {
-            return s.getSpec().getReplicas();
-          }
-          return initialReplicas;
-        })
-        .orElse(initialReplicas);
+    Optional<R> existing = getSecondaryResource(primary, context);
+    if (existing.isPresent()) {
+      // Check if the autoscaler has made a decision during this operator's lifecycle
+      Integer managed = HiveClusterAutoscaler.getManagedReplicas(
+          primary.getMetadata().getNamespace(),
+          primary.getMetadata().getName(),
+          getComponentName());
+      if (managed != null) {
+        return managed;
+      }
+      // Fallback: operator restarted and MANAGED_REPLICAS is empty — read current value
+      R resource = existing.get();
+      if (resource instanceof io.fabric8.kubernetes.api.model.apps.Deployment d) {
+        return d.getSpec() != null && d.getSpec().getReplicas() != null
+            ? d.getSpec().getReplicas() : initialReplicas;
+      }
+      if (resource instanceof io.fabric8.kubernetes.api.model.apps.StatefulSet s) {
+        return s.getSpec() != null && s.getSpec().getReplicas() != null
+            ? s.getSpec().getReplicas() : initialReplicas;
+      }
+      return initialReplicas;
+    }
+    // First creation: start at minReplicas.
+    return initialReplicas;
+  }
+
+
+  /**
+   * Returns the component name for this dependent (used for autoscaler replica lookup).
+   * Subclasses should override if they manage a workload with autoscaling.
+   */
+  protected String getComponentName() {
+    return null;
   }
 
   /**
@@ -803,7 +827,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("  type: GAUGE\n");
         break;
       case "llap":
-        // Only export the executor metrics KEDA and the drain script need.
+        // Only export the executor metrics the autoscaler and drain script need.
         // A wildcard '.*' pattern serializes 600+ metrics every scrape interval,
         // causing CPU spikes and GC pressure on the LLAP JVM.
         // Internal format: Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics-<pod>><>Attribute

@@ -21,40 +21,28 @@ package org.apache.hive.kubernetes.operator.model.spec;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.generator.annotation.Default;
 
-/** Autoscaling configuration for a Hive component. Uses KEDA ScaledObjects for metric-based scaling. */
+/** Autoscaling configuration for a Hive component. The operator scrapes JMX metrics directly from pods. */
 public record AutoscalingSpec(
     @JsonPropertyDescription("Whether autoscaling is enabled for this component")
     @Default("false")
     Boolean enabled,
     @JsonPropertyDescription("Minimum number of replicas (floor for scale-down). "
-        + "Set to 0 for scale-to-zero (HS2 requires KEDA HTTP Add-on for wake-from-zero)")
+        + "Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum is 1)")
     @Default("0")
     Integer minReplicas,
     @JsonPropertyDescription("Threshold that triggers scale-up (component-specific: "
-        + "sessions for HS2, connections for HMS, queue depth for LLAP, "
-        + "pending tasks for TezAM)")
+        + "sessions per pod for HS2, request rate for HMS, busy slots per daemon for LLAP). "
+        + "Not used by TezAM (demand-based: 1 TezAM per session).")
     @Default("80")
     Integer scaleUpThreshold,
-    @JsonPropertyDescription("Threshold that triggers scale-down for Prometheus-based metrics")
-    @Default("20")
-    Integer scaleDownThreshold,
-    @JsonPropertyDescription("Target CPU average value for scaling (e.g., '1500m' or '1'). "
-        + "If omitted, CPU scaling is disabled.")
-    String targetCpuValue,
-    @JsonPropertyDescription("CPU average value below which the trigger is inactive. "
-        + "Required if targetCpuValue is set.")
-    String activationCpuValue,
-    @JsonPropertyDescription("Cooldown period in seconds after all KEDA triggers are inactive "
-        + "before scaling from 1 to 0 (scale-to-zero delay)")
-    @Default("600")
-    Integer cooldownSeconds,
     @JsonPropertyDescription("Stabilization window in seconds for scale-up decisions. "
-        + "HPA picks the highest recommendation within this window to prevent flapping.")
+        + "Picks the highest recommendation within this window to prevent flapping.")
     @Default("60")
     Integer scaleUpStabilizationSeconds,
     @JsonPropertyDescription("Stabilization window in seconds for scale-down decisions. "
-        + "HPA picks the highest recommendation within this window to prevent premature scale-down.")
-    @Default("300")
+        + "How long metrics must consistently indicate fewer replicas before "
+        + "scale-down occurs. Also acts as the cooldown between consecutive scale-downs.")
+    @Default("600")
     Integer scaleDownStabilizationSeconds,
     @JsonPropertyDescription("Maximum time in seconds to wait for graceful drain "
         + "during scale-down before the pod is forcibly terminated. "
@@ -62,8 +50,8 @@ public record AutoscalingSpec(
         + "this value is only the upper safety cap.")
     @Default("3600")
     Integer gracePeriodSeconds,
-    @JsonPropertyDescription("Prometheus scrape interval in seconds for this component's metrics. "
-        + "Lower values make autoscaling react faster but increase Prometheus load.")
+    @JsonPropertyDescription("How often (seconds) the operator scrapes JMX metrics from pods. "
+        + "Lower values make autoscaling react faster.")
     @Default("10")
     Integer metricsScrapeIntervalSeconds) {
 
@@ -71,10 +59,8 @@ public record AutoscalingSpec(
     enabled = enabled != null ? enabled : false;
     minReplicas = minReplicas != null ? minReplicas : 0;
     scaleUpThreshold = scaleUpThreshold != null ? scaleUpThreshold : 80;
-    scaleDownThreshold = scaleDownThreshold != null ? scaleDownThreshold : 20;
-    cooldownSeconds = cooldownSeconds != null ? cooldownSeconds : 600;
     scaleUpStabilizationSeconds = scaleUpStabilizationSeconds != null ? scaleUpStabilizationSeconds : 60;
-    scaleDownStabilizationSeconds = scaleDownStabilizationSeconds != null ? scaleDownStabilizationSeconds : 300;
+    scaleDownStabilizationSeconds = scaleDownStabilizationSeconds != null ? scaleDownStabilizationSeconds : 600;
     gracePeriodSeconds = gracePeriodSeconds != null ? gracePeriodSeconds : 3600;
     metricsScrapeIntervalSeconds = metricsScrapeIntervalSeconds != null ? metricsScrapeIntervalSeconds : 10;
   }

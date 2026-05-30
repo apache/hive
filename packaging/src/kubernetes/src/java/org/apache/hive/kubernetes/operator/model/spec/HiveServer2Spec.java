@@ -52,7 +52,7 @@ public record HiveServer2Spec(
     ProbeSpec readinessProbe,
     @JsonPropertyDescription("Liveness probe configuration")
     ProbeSpec livenessProbe,
-    @JsonPropertyDescription("Autoscaling configuration (requires KEDA installed in the cluster)")
+    @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
     AutoscalingSpec autoscaling) {
 
   public HiveServer2Spec {
@@ -62,6 +62,6 @@ public record HiveServer2Spec(
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     externalJars = externalJars != null ? externalJars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 0, 80, 20, null, null, 600, 60, 300, 300, 10);
+        false, 1, 80, 60, 600, 300, 10);
   }
 }

@@ -112,19 +112,17 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
-    # Autoscaling (requires KEDA + Prometheus in the cluster)
-    # When enabled, 'replicas' above acts as the max replica ceiling
+    # Autoscaling (operator-driven, no external dependencies)
+    # The operator scrapes JMX Exporter metrics from pods directly.
+    # When enabled, 'replicas' above acts as the max replica ceiling.
     autoscaling:
-      enabled: false
+      enabled: true
       minReplicas: 1
-      scaleUpThreshold: 75
-      scaleDownThreshold: 30
-      # targetCpuValue: "750m"      # Uncomment to enable CPU-based scaling (AverageValue)
-      # activationCpuValue: "200m"  # CPU trigger inactive below this value
-      cooldownSeconds: 300
+      scaleUpThreshold: 2
       scaleUpStabilizationSeconds: 60
       scaleDownStabilizationSeconds: 300
       gracePeriodSeconds: 60
+      metricsScrapeIntervalSeconds: 10
     # Set to use an external Metastore instead of deploying one:
     # enabled: false
     # externalUri: "thrift://external-metastore:9083"
@@ -140,20 +138,16 @@ cluster:
     externalJars: []
     extraVolumes: []
     extraVolumeMounts: []
-    # Autoscaling (requires KEDA + Prometheus + KEDA HTTP Add-on in the cluster)
-    # minReplicas: 0 enables scale-to-zero — beeline HTTP connects wake HS2 via KEDA HTTP interceptor
+    # Autoscaling (operator-driven, no external dependencies)
     # When enabled, 'replicas' above acts as the max replica ceiling
     autoscaling:
-      enabled: false
-      minReplicas: 0
-      scaleUpThreshold: 80
-      scaleDownThreshold: 20
-      # targetCpuValue: "1600m"     # Uncomment to enable CPU-based scaling (AverageValue)
-      # activationCpuValue: "400m"  # CPU trigger inactive below this value
-      cooldownSeconds: 600
+      enabled: true
+      minReplicas: 1
+      scaleUpThreshold: 1
       scaleUpStabilizationSeconds: 60
-      scaleDownStabilizationSeconds: 300
+      scaleDownStabilizationSeconds: 600
       gracePeriodSeconds: 300
+      metricsScrapeIntervalSeconds: 10
 
   # ---------------------------------------------------------------------------
   # LLAP — enabled by default for full-HA
@@ -168,18 +162,17 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
-    # Autoscaling (requires KEDA + Prometheus in the cluster)
-    # minReplicas: 0 enables scale-to-zero — scales up immediately when queries need LLAP
+    # Autoscaling (operator-driven, no external dependencies)
+    # minReplicas: 0 enables scale-to-zero — scales up when HS2 has active sessions
     # When enabled, 'replicas' above acts as the max replica ceiling
     autoscaling:
-      enabled: false
+      enabled: true
       minReplicas: 0
       scaleUpThreshold: 1
-      scaleDownThreshold: 0
-      cooldownSeconds: 900
       scaleUpStabilizationSeconds: 60
-      scaleDownStabilizationSeconds: 300
+      scaleDownStabilizationSeconds: 900
       gracePeriodSeconds: 600
+      metricsScrapeIntervalSeconds: 10
 
   # ---------------------------------------------------------------------------
   # TEZ AM — enabled by default for full-HA
@@ -193,18 +186,15 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
-    # Autoscaling (requires KEDA + Prometheus in the cluster)
+    # Autoscaling (operator-driven, no external dependencies)
     # minReplicas: 0 enables scale-to-zero — wakes when HS2 receives queries
     # When enabled, 'replicas' above acts as the max replica ceiling
-    # scaleUpThreshold: pending tasks per AM (e.g., 5 = scale when 5+ tasks waiting)
+    # TezAM scales demand-based: max(totalSessions, hs2Pods * sessionsPerQueue)
+    # No scaleUpThreshold needed — scaling is 1:1 with session demand
     autoscaling:
-      enabled: false
+      enabled: true
       minReplicas: 0
-      scaleUpThreshold: 5
-      scaleDownThreshold: 10
-      # targetCpuValue: "600m"      # Uncomment to enable CPU-based scaling (AverageValue)
-      # activationCpuValue: "100m"  # CPU trigger inactive below this value
-      cooldownSeconds: 600
       scaleUpStabilizationSeconds: 60
-      scaleDownStabilizationSeconds: 300
+      scaleDownStabilizationSeconds: 600
       gracePeriodSeconds: 120
+      metricsScrapeIntervalSeconds: 10

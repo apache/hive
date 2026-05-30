@@ -53,7 +53,7 @@ public record TezAmSpec(
     @JsonPropertyDescription("StorageClass for the shared scratch PVC. "
         + "Must support ReadWriteMany access. If null, uses cluster default.")
     String scratchStorageClassName,
-    @JsonPropertyDescription("Autoscaling configuration (requires KEDA installed in the cluster)")
+    @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
     AutoscalingSpec autoscaling) {
 
   public TezAmSpec {
@@ -63,7 +63,7 @@ public record TezAmSpec(
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 0, 5, 10, null, null, 600, 60, 300, 120, 10);
+        false, 0, 0, 60, 600, 120, 10);
   }
 
   public boolean isEnabled() {

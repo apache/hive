@@ -30,6 +30,10 @@ rules:
   - apiGroups: ["apps"]
     resources: ["deployments", "statefulsets"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Scale subresource for operator-driven autoscaling
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale", "statefulsets/scale"]
+    verbs: ["get", "update", "patch"]
   # Jobs for schema initialization
   - apiGroups: ["batch"]
     resources: ["jobs"]
@@ -53,12 +57,4 @@ rules:
   # PodDisruptionBudgets for graceful autoscaling
   - apiGroups: ["policy"]
     resources: ["poddisruptionbudgets"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  # KEDA ScaledObjects for autoscaling
-  - apiGroups: ["keda.sh"]
-    resources: ["scaledobjects", "triggerauthentications"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  # KEDA HTTP Add-on for scale-to-zero (wake-from-zero on HTTP request)
-  - apiGroups: ["http.keda.sh"]
-    resources: ["httpscaledobjects", "interceptorroutes"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

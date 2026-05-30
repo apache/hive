@@ -64,6 +64,11 @@ public class MetastoreDeploymentDependent
   }
 
   @Override
+  protected String getComponentName() {
+    return COMPONENT;
+  }
+
+  @Override
   protected Deployment desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
@@ -128,9 +133,8 @@ public class MetastoreDeploymentDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getMetastoreSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    // When autoscaling is enabled, preserve current replica count (KEDA/HPA manages it).
     AutoscalingSpec msAutoscaling = spec.metastore().autoscaling();
-    int initialReplicas = msAutoscaling != null
+    int initialReplicas = msAutoscaling != null && msAutoscaling.isEnabled()
         ? Math.max(1, msAutoscaling.minReplicas()) : spec.metastore().replicas();
     Integer replicas = resolveReplicaCount(
         hiveCluster, context, msAutoscaling, spec.metastore().replicas(), initialReplicas);
@@ -194,6 +198,7 @@ public class MetastoreDeploymentDependent
     appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         spec.metastore().extraVolumes(), spec.metastore().extraVolumeMounts());
+
     return deployment;
   }
 
