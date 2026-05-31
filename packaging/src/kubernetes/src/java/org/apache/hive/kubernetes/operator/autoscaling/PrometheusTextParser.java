@@ -18,6 +18,9 @@
 
 package org.apache.hive.kubernetes.operator.autoscaling;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,42 +44,43 @@ public final class PrometheusTextParser {
     if (body == null || body.isEmpty()) {
       return result;
     }
-    for (String line : body.split("\n")) {
-      if (line.isEmpty() || line.charAt(0) == '#') {
-        continue;
-      }
-      // Format: metric_name[{labels}] value [timestamp]
-      // We extract metric_name (without labels) and value.
-      String metricKey;
-      String valuePart;
-      int braceStart = line.indexOf('{');
-      if (braceStart >= 0) {
-        int braceEnd = line.indexOf('}', braceStart);
-        if (braceEnd < 0) {
+    try (BufferedReader reader = new BufferedReader(new StringReader(body))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        if (line.isEmpty() || line.charAt(0) == '#') {
           continue;
         }
-        metricKey = line.substring(0, braceStart);
-        valuePart = line.substring(braceEnd + 1).trim();
-      } else {
-        int spaceIdx = line.indexOf(' ');
-        if (spaceIdx < 0) {
-          continue;
+        String metricKey;
+        String valuePart;
+        int braceStart = line.indexOf('{');
+        if (braceStart >= 0) {
+          int braceEnd = line.indexOf('}', braceStart);
+          if (braceEnd < 0) {
+            continue;
+          }
+          metricKey = line.substring(0, braceStart);
+          valuePart = line.substring(braceEnd + 1).trim();
+        } else {
+          int spaceIdx = line.indexOf(' ');
+          if (spaceIdx < 0) {
+            continue;
+          }
+          metricKey = line.substring(0, spaceIdx);
+          valuePart = line.substring(spaceIdx + 1).trim();
         }
-        metricKey = line.substring(0, spaceIdx);
-        valuePart = line.substring(spaceIdx + 1).trim();
+        int spaceInValue = valuePart.indexOf(' ');
+        if (spaceInValue > 0) {
+          valuePart = valuePart.substring(0, spaceInValue);
+        }
+        try {
+          double value = Double.parseDouble(valuePart);
+          result.merge(metricKey, value, Double::sum);
+        } catch (NumberFormatException e) {
+          // Skip NaN, +Inf, -Inf, or malformed values
+        }
       }
-      // valuePart may contain "value timestamp" — take only value
-      int spaceInValue = valuePart.indexOf(' ');
-      if (spaceInValue > 0) {
-        valuePart = valuePart.substring(0, spaceInValue);
-      }
-      try {
-        double value = Double.parseDouble(valuePart);
-        // Sum duplicates (multiple label sets for same metric name)
-        result.merge(metricKey, value, Double::sum);
-      } catch (NumberFormatException e) {
-        // Skip NaN, +Inf, -Inf, or malformed values
-      }
+    } catch (IOException e) {
+      // StringReader does not throw IOException
     }
     return result;
   }
@@ -90,38 +94,43 @@ public final class PrometheusTextParser {
     if (body == null || body.isEmpty()) {
       return result;
     }
-    for (String line : body.split("\n")) {
-      if (line.isEmpty() || line.charAt(0) == '#') {
-        continue;
-      }
-      String metricKey;
-      String valuePart;
-      int braceStart = line.indexOf('{');
-      if (braceStart >= 0) {
-        int braceEnd = line.indexOf('}', braceStart);
-        if (braceEnd < 0) {
+    try (BufferedReader reader = new BufferedReader(new StringReader(body))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        if (line.isEmpty() || line.charAt(0) == '#') {
           continue;
         }
-        metricKey = line.substring(0, braceEnd + 1);
-        valuePart = line.substring(braceEnd + 1).trim();
-      } else {
-        int spaceIdx = line.indexOf(' ');
-        if (spaceIdx < 0) {
-          continue;
+        String metricKey;
+        String valuePart;
+        int braceStart = line.indexOf('{');
+        if (braceStart >= 0) {
+          int braceEnd = line.indexOf('}', braceStart);
+          if (braceEnd < 0) {
+            continue;
+          }
+          metricKey = line.substring(0, braceEnd + 1);
+          valuePart = line.substring(braceEnd + 1).trim();
+        } else {
+          int spaceIdx = line.indexOf(' ');
+          if (spaceIdx < 0) {
+            continue;
+          }
+          metricKey = line.substring(0, spaceIdx);
+          valuePart = line.substring(spaceIdx + 1).trim();
         }
-        metricKey = line.substring(0, spaceIdx);
-        valuePart = line.substring(spaceIdx + 1).trim();
+        int spaceInValue = valuePart.indexOf(' ');
+        if (spaceInValue > 0) {
+          valuePart = valuePart.substring(0, spaceInValue);
+        }
+        try {
+          double value = Double.parseDouble(valuePart);
+          result.put(metricKey, value);
+        } catch (NumberFormatException e) {
+          // Skip
+        }
       }
-      int spaceInValue = valuePart.indexOf(' ');
-      if (spaceInValue > 0) {
-        valuePart = valuePart.substring(0, spaceInValue);
-      }
-      try {
-        double value = Double.parseDouble(valuePart);
-        result.put(metricKey, value);
-      } catch (NumberFormatException e) {
-        // Skip
-      }
+    } catch (IOException e) {
+      // StringReader does not throw IOException
     }
     return result;
   }

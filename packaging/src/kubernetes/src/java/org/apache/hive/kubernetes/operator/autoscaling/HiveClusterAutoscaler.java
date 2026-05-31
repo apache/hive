@@ -89,9 +89,12 @@ public class HiveClusterAutoscaler {
 
     // HiveServer2
     if (spec.hiveServer2().autoscaling().isEnabled()) {
+      Map<String, String> hs2Selector = Labels.selectorForComponent(cluster, "hiveserver2");
+      List<PodMetrics> hs2Metrics = scraper.scrape(namespace, hs2Selector);
+      updatePodDeletionCost(client, namespace, hs2Metrics, "hs2_open_sessions");
       evaluateComponent(cluster, client, namespace, clusterName,
           "hiveserver2", spec.hiveServer2().autoscaling(),
-          spec.hiveServer2().replicas(), patches, statuses);
+          spec.hiveServer2().replicas(), patches, statuses, hs2Metrics);
     }
 
     // Metastore
@@ -131,13 +134,27 @@ public class HiveClusterAutoscaler {
       String namespace, String clusterName, String component,
       AutoscalingSpec autoscaling, int maxReplicas,
       Map<String, Integer> patches, Map<String, AutoscalingStatus> statuses) {
+    evaluateComponent(cluster, client, namespace, clusterName, component,
+        autoscaling, maxReplicas, patches, statuses, null);
+  }
+
+  private void evaluateComponent(HiveCluster cluster, KubernetesClient client,
+      String namespace, String clusterName, String component,
+      AutoscalingSpec autoscaling, int maxReplicas,
+      Map<String, Integer> patches, Map<String, AutoscalingStatus> statuses,
+      List<PodMetrics> preScrapedMetrics) {
 
     int currentReplicas = getCurrentReplicas(client, namespace, clusterName, component);
 
     String key = namespace + "/" + clusterName + "/" + component;
 
-    Map<String, String> selector = Labels.selectorForComponent(cluster, component);
-    List<PodMetrics> metrics = scraper.scrape(namespace, selector);
+    List<PodMetrics> metrics;
+    if (preScrapedMetrics != null) {
+      metrics = preScrapedMetrics;
+    } else {
+      Map<String, String> selector = Labels.selectorForComponent(cluster, component);
+      metrics = scraper.scrape(namespace, selector);
+    }
 
     // For LLAP and TezAM, scaling decisions are based on HS2 metrics (activation gate),
     // not their own pod metrics. Allow evaluation even with 0 own pods.
@@ -201,6 +218,27 @@ public class HiveClusterAutoscaler {
           .inNamespace(namespace).withName(workloadName).get();
       return deploy != null && deploy.getSpec().getReplicas() != null
           ? deploy.getSpec().getReplicas() : 0;
+    }
+  }
+
+  /**
+   * Patches each pod's deletion cost annotation based on its active session count.
+   * Kubernetes uses this during scale-down to kill idle pods first (lower cost = killed first).
+   */
+  private void updatePodDeletionCost(KubernetesClient client, String namespace,
+      List<PodMetrics> metrics, String metricName) {
+    for (PodMetrics pm : metrics) {
+      int sessions = pm.metrics().getOrDefault(metricName, 0.0).intValue();
+      try {
+        client.pods().inNamespace(namespace).withName(pm.podName())
+            .edit(pod -> {
+              pod.getMetadata().getAnnotations()
+                  .put("controller.kubernetes.io/pod-deletion-cost", String.valueOf(sessions));
+              return pod;
+            });
+      } catch (Exception e) {
+        LOG.debug("Failed to update deletion cost for pod {}: {}", pm.podName(), e.getMessage());
+      }
     }
   }
 

@@ -375,11 +375,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
   private HiveClusterAutoscaler getOrCreateAutoscaler(KubernetesClient client) {
     if (autoscaler == null) {
-      synchronized (this) {
-        if (autoscaler == null) {
-          autoscaler = new HiveClusterAutoscaler(new MetricsScraper(client));
-        }
-      }
+      autoscaler = new HiveClusterAutoscaler(new MetricsScraper(client));
     }
     return autoscaler;
   }
