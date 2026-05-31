@@ -148,7 +148,7 @@ public class TestHttpServer {
         super.cancel();
       }
     };
-    setField(server, "configurationChangeMonitor", Optional.of(installed));
+    server.setKeystoreChangeMonitor(Optional.of(installed));
 
     // stop() also calls webServer.stop(); webServer is null on a mock, so we expect
     // a NullPointerException after the cancel path runs.
@@ -168,9 +168,9 @@ public class TestHttpServer {
   @Test
   public void testStopWithoutMonitorDoesNotThrowFromCancelPath() throws Exception {
     HttpServer server = mock(HttpServer.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
-    setField(server, "configurationChangeMonitor", Optional.empty());
+    server.setKeystoreChangeMonitor(Optional.empty());
 
-    Optional<Timer> current = getField(server, "configurationChangeMonitor");
+    Optional<Timer> current = server.keystoreChangeMonitor;
     assertFalse("configurationChangeMonitor should be empty for this case", current.isPresent());
 
     try {
@@ -185,22 +185,6 @@ public class TestHttpServer {
   private static Timer invokeMakeMonitor(long intervalMs, String keystorePath,
                                          SslContextFactory sslContextFactory) throws Exception {
     HttpServer server = mock(HttpServer.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
-    Method m = HttpServer.class.getDeclaredMethod(
-        "makeConfigurationChangeMonitor", long.class, String.class, SslContextFactory.class);
-    m.setAccessible(true);
-    return (Timer) m.invoke(server, intervalMs, keystorePath, sslContextFactory);
-  }
-
-  private static void setField(Object target, String name, Object value) throws Exception {
-    Field f = HttpServer.class.getDeclaredField(name);
-    f.setAccessible(true);
-    f.set(target, value);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <T> T getField(Object target, String name) throws Exception {
-    Field f = HttpServer.class.getDeclaredField(name);
-    f.setAccessible(true);
-    return (T) f.get(target);
+    return server.makeKeystoreChangeMonitor(intervalMs, keystorePath, sslContextFactory);
   }
 }
