@@ -908,7 +908,7 @@ public class DDLPlanUtils {
   }
 
   private String getColumns(Table table) {
-    Map<Integer, String> indexColDescsMap = new TreeMap<>();
+    List<String> columnDescs = new ArrayList<>();
     List<FieldSchema> colsToLookUp = table.hasNonNativePartitionSupport() ? table.getAllCols() : table.getCols();
     for (FieldSchema column : colsToLookUp) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
@@ -916,9 +916,8 @@ public class DDLPlanUtils {
       if (column.getComment() != null) {
         columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(column.getComment()) + "'";
       }
-      indexColDescsMap.put(table.getColumnIndexByName(column.getName()), columnDesc);
+      columnDescs.add(columnDesc);
     }
-    List<String> columnDescs = indexColDescsMap.values().stream().toList();
     return StringUtils.join(columnDescs, ", \n");
   }
 
