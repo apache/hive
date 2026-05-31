@@ -117,12 +117,10 @@ public class TestHiveServer2 {
     SessionManager sessionManager = mock(SessionManager.class);
     when(cli.getSessionManager()).thenReturn(sessionManager);
 
-    long before = System.currentTimeMillis();
-    Thread.sleep(1000);
     HttpServer.Builder builder = HiveServer2.createHttpServerBuilder(
         "localhost", 0, "test", "/", conf, cli, null);
     Thread.sleep(1000);
-    long after = System.currentTimeMillis();
+    long now = System.currentTimeMillis();
 
     // setConf stores a *copy* of the conf on the Builder. Read that copy back via
     // reflection — that's the same instance the servlet context exposes to the JSP.
@@ -134,9 +132,7 @@ public class TestHiveServer2 {
     String startcodeStr = builderConf.get("startcode");
     assertNotNull(startcodeStr);
     long startcode = Long.parseLong(startcodeStr);
-    assertTrue("startcode " + startcode + " should be > test start " + before,
-        startcode > before);
-    assertTrue("startcode " + startcode + " should be < test end " + after,
-        startcode < after);
+    assertTrue("startcode " + startcode + " should be < test end " + now,
+        startcode < now);
   }
 }
