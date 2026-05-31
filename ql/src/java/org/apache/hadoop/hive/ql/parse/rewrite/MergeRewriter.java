@@ -240,17 +240,34 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                              List<String> values) {
       UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias,
           HiveUtils.unparseIdentifier(name, conf));
+      List<String> valuesToBeAdded = new ArrayList<>();
+      for (int i = 0; i < targetTable.getAllCols().size(); i++) {
+        valuesToBeAdded.add(null);
+      }
       for (FieldSchema fieldSchema : targetTable.getCols()) {
+        int index = targetTable.getColumnIndexByName(fieldSchema.getName());
         if (newValues.containsKey(fieldSchema.getName())) {
           String rhsExp = newValues.get(fieldSchema.getName());
-          values.add(getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
+          valuesToBeAdded.set(index, getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
         } else {
-          values.add(formatter.apply(fieldSchema.getName()));
+          valuesToBeAdded.set(index, formatter.apply(fieldSchema.getName()));
         }
       }
 
-      targetTable.getPartCols().forEach(fieldSchema -> values.add(
-          formatter.apply(fieldSchema.getName())));
+      for (FieldSchema partCol : targetTable.getPartCols()) {
+        int index = targetTable.getColumnIndexByName(partCol.getName());
+        if (targetTable.hasNonNativePartitionSupport()) {
+          if (newValues.containsKey(partCol.getName())) {
+            String rhsExp = newValues.get(partCol.getName());
+            valuesToBeAdded.set(index, getRhsExpValue(rhsExp, formatter.apply(partCol.getName())));
+          } else {
+            valuesToBeAdded.set(index, formatter.apply(partCol.getName()));
+          }
+        } else {
+          valuesToBeAdded.set(index, formatter.apply(partCol.getName()));
+        }
+      }
+      values.addAll(valuesToBeAdded);
     }
     
     protected String getRhsExpValue(String newValue, String alias) {

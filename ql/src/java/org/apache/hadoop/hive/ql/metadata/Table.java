@@ -762,7 +762,7 @@ public class Table implements Serializable {
   private void fillColumnIndexByName() {
     inputColnameToIndFsMap = new HashMap<>();
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
-    if (!isNonNative()) {
+    if (!hasNonNativePartitionSupport()) {
       fsList.addAll(getPartitionKeys());
     }
     for (int i = 0; i < fsList.size(); i++) {
@@ -837,7 +837,7 @@ public class Table implements Serializable {
    */
   public List<FieldSchema> getAllCols() {
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
-    if (!isNonNative()) {
+    if (!hasNonNativePartitionSupport()) {
       fsList.addAll(getPartitionKeys());
     }
     return fsList;
