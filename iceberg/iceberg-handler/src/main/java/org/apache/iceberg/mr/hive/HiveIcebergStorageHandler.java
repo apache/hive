@@ -1550,10 +1550,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       case DELETE ->
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getStorageSchemaCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case UPDATE -> shouldOverwrite(table, operation) ?
           ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getStorageSchemaCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default -> ImmutableList.of();
     };
