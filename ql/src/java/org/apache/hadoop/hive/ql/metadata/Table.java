@@ -787,10 +787,6 @@ public class Table implements Serializable {
     return indFsPair == null ? null : indFsPair.getRight();
   }
 
-  public List<FieldSchema> getStorageSchemaCols() {
-    return getColsInternal(false);
-  }
-
   public List<FieldSchema> getCols() {
     if (!isNonNative()) {
       return getColsInternal(false);

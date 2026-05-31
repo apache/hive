@@ -245,29 +245,26 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         valuesToBeAdded.add(null);
       }
       for (FieldSchema fieldSchema : targetTable.getCols()) {
-        int index = targetTable.getColumnIndexByName(fieldSchema.getName());
-        if (newValues.containsKey(fieldSchema.getName())) {
-          String rhsExp = newValues.get(fieldSchema.getName());
-          valuesToBeAdded.set(index, getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
-        } else {
-          valuesToBeAdded.set(index, formatter.apply(fieldSchema.getName()));
-        }
+        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, fieldSchema.getName(), true);
       }
 
       for (FieldSchema partCol : targetTable.getPartCols()) {
-        int index = targetTable.getColumnIndexByName(partCol.getName());
-        if (targetTable.hasNonNativePartitionSupport()) {
-          if (newValues.containsKey(partCol.getName())) {
-            String rhsExp = newValues.get(partCol.getName());
-            valuesToBeAdded.set(index, getRhsExpValue(rhsExp, formatter.apply(partCol.getName())));
-          } else {
-            valuesToBeAdded.set(index, formatter.apply(partCol.getName()));
-          }
-        } else {
-          valuesToBeAdded.set(index, formatter.apply(partCol.getName()));
-        }
+        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, partCol.getName(),
+            targetTable.hasNonNativePartitionSupport());
       }
       values.addAll(valuesToBeAdded);
+    }
+
+    protected void setColumnValue(Table targetTable, List<String> valuesToBeAdded,
+        Map<String, String> newValues, UnaryOperator<String> formatter, String columnName,
+        boolean applyNewValues) {
+      int index = targetTable.getColumnIndexByName(columnName);
+      String formattedColumn = formatter.apply(columnName);
+      if (applyNewValues && newValues.containsKey(columnName)) {
+        valuesToBeAdded.set(index, getRhsExpValue(newValues.get(columnName), formattedColumn));
+      } else {
+        valuesToBeAdded.set(index, formattedColumn);
+      }
     }
     
     protected String getRhsExpValue(String newValue, String alias) {
