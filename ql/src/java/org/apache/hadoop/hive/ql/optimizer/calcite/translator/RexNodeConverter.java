@@ -600,7 +600,7 @@ public class RexNodeConverter {
     RexNode arg = childRexNodeLst.get(0);
     List<RexNode> ranges = childRexNodeLst.subList(1, childRexNodeLst.size());
     // Avoid SEARCH on rows for the moment (it can lead to issues in Calcite), and check all types are SEARCH-compatible
-    if (!arg.getType().isStruct() && ranges.stream().allMatch(range -> range.getKind() == SqlKind.LITERAL
+    if (ranges.stream().allMatch(range -> range.getKind() == SqlKind.LITERAL
         && !RexLiteral.isNullLiteral(range)
         && SqlTypeUtil.inSameFamily(arg.getType(), range.getType()))) {
       RexNode search = rexBuilder.makeIn(arg, ranges);
