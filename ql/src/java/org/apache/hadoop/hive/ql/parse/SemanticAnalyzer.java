@@ -12044,8 +12044,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (FieldSchema partCol : tab.getPartCols()) {
         LOG.trace("Adding partition col: " + partCol);
         ColumnInfo colInfo = new ColumnInfo(partCol.getName(),
-            TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, !tab.hasNonNativePartitionSupport());
-        colInfo.setHiddenPartitionCol(tab.hasNonNativePartitionSupport());
+            TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true);
         Integer index = tab.getColumnIndexByName(partCol.getName());
         if (index != null) {
           colInfoList.set(index, colInfo);
