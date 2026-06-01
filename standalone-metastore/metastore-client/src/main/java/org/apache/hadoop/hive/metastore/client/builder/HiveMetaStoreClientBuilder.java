@@ -23,7 +23,6 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -31,6 +30,7 @@ import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,18 +49,23 @@ public class HiveMetaStoreClientBuilder {
   private IMetaStoreClient client;
 
   public HiveMetaStoreClientBuilder(Configuration configuration, boolean allowEmbedded) throws MetaException {
-    this.conf = new Configuration(Objects.requireNonNull(configuration));
-    boolean isHiveClient = HiveMetaStoreClient.class.getName().equals(
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL));
-    if (isHiveClient) {
-      // Prevent stack overflow as HiveMetaStoreClient calls HiveMetaStoreClientBuilder to build the underlying client
-      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, ThriftHiveMetaStoreClient.class.getName());
-    }
-    this.client = createClient(conf, allowEmbedded);
+    this.conf = Objects.requireNonNull(configuration);
+    Class<? extends IMetaStoreClient> mscClass = MetastoreConf.getClass(
+        conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
+        ThriftHiveMetaStoreClient.class, IMetaStoreClient.class);
+    this.client = createClient(conf, mscClass, allowEmbedded);
   }
 
-  public HiveMetaStoreClientBuilder(Configuration conf, IMetaStoreClient client) {
-    this.conf =  Objects.requireNonNull(conf);
+  public HiveMetaStoreClientBuilder(Configuration configuration, String clientImpl,
+      boolean allowEmbedded) throws MetaException {
+    this.conf =  Objects.requireNonNull(configuration);
+    Class<? extends IMetaStoreClient> baseClass =
+        JavaUtils.getClass(clientImpl, IMetaStoreClient.class);
+    this.client = createClient(configuration, baseClass, allowEmbedded);
+  }
+
+  public HiveMetaStoreClientBuilder(Configuration configuration, IMetaStoreClient client) {
+    this.conf =  Objects.requireNonNull(configuration);
     this.client = Objects.requireNonNull(client);
   }
 
@@ -70,7 +75,9 @@ public class HiveMetaStoreClientBuilder {
   }
 
   public HiveMetaStoreClientBuilder withHooks(HiveMetaHookLoader hookLoader) {
-    this.client = HookEnabledMetaStoreClient.newClient(conf, hookLoader, client);
+    if (hookLoader != null) {
+      this.client = HookEnabledMetaStoreClient.newClient(conf, hookLoader, client);
+    }
     return this;
   }
 
@@ -88,11 +95,9 @@ public class HiveMetaStoreClientBuilder {
     return Objects.requireNonNull(client);
   }
 
-  private static IMetaStoreClient createClient(Configuration conf, boolean allowEmbedded) throws MetaException {
+  private static IMetaStoreClient createClient(Configuration conf,
+      Class<? extends IMetaStoreClient> mscClass, boolean allowEmbedded) throws MetaException {
     try {
-      Class<? extends IMetaStoreClient> mscClass = MetastoreConf.getClass(
-          conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
-          ThriftHiveMetaStoreClient.class, IMetaStoreClient.class);
       LOG.info("Using {} as a base MetaStoreClient", mscClass.getName());
       MetaStoreClientFactory factory = CLIENT_FACTORIES.get(mscClass);
       if (factory == null) {
@@ -110,7 +115,7 @@ public class HiveMetaStoreClientBuilder {
     }
   }
 
-   private static class MetaStoreClientFactory {
+  private static class MetaStoreClientFactory {
     private Constructor<? extends IMetaStoreClient> bestMatchingCtr;
     private Function<Pair<Configuration, Boolean>, Object[]> argsTransformer;
 

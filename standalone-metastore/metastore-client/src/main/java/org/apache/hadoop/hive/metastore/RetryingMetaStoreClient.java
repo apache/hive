@@ -114,14 +114,10 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   public static IMetaStoreClient getProxy(Configuration hiveConf, HiveMetaHookLoader hookLoader,
       Map<String, Long> metaCallTimeMap, String mscClassName, boolean allowEmbedded)
           throws MetaException {
-    String origClientImpl = MetastoreConf.getVar(hiveConf, ConfVars.METASTORE_CLIENT_IMPL);
-    try {
-      MetastoreConf.setVar(hiveConf, ConfVars.METASTORE_CLIENT_IMPL, mscClassName);
-      return new HiveMetaStoreClientBuilder(hiveConf, allowEmbedded)
-          .withHooks(hookLoader).withRetry(metaCallTimeMap).build();
-    } finally {
-      MetastoreConf.setVar(hiveConf, ConfVars.METASTORE_CLIENT_IMPL, origClientImpl);
-    }
+    return
+        new HiveMetaStoreClientBuilder(hiveConf, mscClassName, allowEmbedded)
+        .withHooks(hookLoader)
+        .withRetry(metaCallTimeMap).build();
   }
 
   /**
