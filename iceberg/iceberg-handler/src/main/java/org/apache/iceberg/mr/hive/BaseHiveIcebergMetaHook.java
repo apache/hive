@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
@@ -65,6 +66,7 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
 import org.apache.iceberg.hive.IcebergTableProperties;
+import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -533,6 +535,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable != null) {
       try {
         if (isNativeIcebergLogicalView(hmsTable)) {
+          if (!usesRestMetastoreClient(conf)) {
+            IcebergNativeLogicalViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
+          }
           return;
         }
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
@@ -561,5 +566,10 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Error checking storage handler class", e);
     }
+  }
+
+  private static boolean usesRestMetastoreClient(Configuration conf) {
+    String clientImpl = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL);
+    return HiveRESTCatalogClient.class.getName().equals(clientImpl);
   }
 }

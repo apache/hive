@@ -240,7 +240,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
       EnvironmentContext envContext, String validWriteIdList) throws TException {
     validateCurrentCatalog(catName);
     if (hasIcebergNativeViewTableType(newTable) && restCatalog instanceof ViewCatalog) {
-      createOrReplaceLogicalView(newTable, dbName, tblName, true);
+      createOrReplaceLogicalView(newTable, dbName, tblName);
     }
   }
 
@@ -248,8 +248,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   public void createTable(CreateTableRequest request) throws TException {
     Table table = request.getTable();
     if (hasIcebergNativeViewTableType(table) && restCatalog instanceof ViewCatalog) {
-      createOrReplaceLogicalView(
-          table, table.getDbName(), table.getTableName(), false);
+      createOrReplaceLogicalView(table, table.getDbName(), table.getTableName());
     } else {
       List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
       if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
@@ -273,8 +272,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     }
   }
 
-  private void createOrReplaceLogicalView(
-      Table table, String dbName, String tableName, boolean replace) {
+  private void createOrReplaceLogicalView(Table table, String dbName, String tableName) {
 
     List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
     if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
@@ -286,7 +284,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
     String comment = tblProps.get("comment");
     IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment, replace);
+        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment);
   }
 
   @Override

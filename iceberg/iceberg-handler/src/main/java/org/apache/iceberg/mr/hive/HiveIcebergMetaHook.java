@@ -181,20 +181,17 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (isNativeIcebergLogicalView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
-      if (Catalogs.hiveCatalog(conf, tableProperties)) {
-        Map<String, String> tblProps =
-            hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
-        String comment = tblProps.get("comment");
-        IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-            conf,
-            hmsTable.getDbName(),
-            hmsTable.getTableName(),
-            hmsTable.getSd().getCols(),
-            hmsTable.getViewExpandedText(),
-            tblProps,
-            comment,
-            false);
-      }
+      Map<String, String> tblProps =
+          hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
+      String comment = tblProps.get("comment");
+      IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+          conf,
+          hmsTable.getDbName(),
+          hmsTable.getTableName(),
+          hmsTable.getSd().getCols(),
+          hmsTable.getViewExpandedText(),
+          tblProps,
+          comment);
       return;
     }
     if (icebergTable == null) {
@@ -519,8 +516,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           hmsTable.getSd().getCols(),
           hmsTable.getViewExpandedText(),
           tblProps,
-          comment,
-          true);
+          comment);
       return;
     }
     if (isTableMigration) {

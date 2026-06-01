@@ -171,13 +171,9 @@ public class MetastoreUtil {
     result.setTableName(tableName.getTable());
     result.setTableType(TableType.VIRTUAL_VIEW.toString());
 
-    ViewMetadata metadata = ((BaseView) view).operations().current();
-    String sqlText = viewSqlText(view, metadata);
-    result.setViewOriginalText(sqlText);
-    result.setViewExpandedText(sqlText);
-
     long nowMillis = System.currentTimeMillis();
     int nowSec = (int) (nowMillis / 1000);
+    ViewMetadata metadata = ((BaseView) view).operations().current();
     String owner =
         PropertyUtil.propertyAsString(
             metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, System.getProperty("user.name"));
@@ -186,9 +182,20 @@ public class MetastoreUtil {
     result.setLastAccessTime(nowSec);
     result.setRetention(Integer.MAX_VALUE);
 
+    applyIcebergViewToHmsTable(result, view, conf);
+    return result;
+  }
+
+  /**
+   * Applies Iceberg view metadata (SQL, schema, params) onto an existing HMS {@link Table}.
+   */
+  public static void applyIcebergViewToHmsTable(Table hmsTable, View view, Configuration conf) {
+    ViewMetadata metadata = ((BaseView) view).operations().current();
+    String sqlText = viewSqlText(view, metadata);
+
     boolean hiveEngineEnabled = false;
-    result.setSd(HiveOperationsBase.storageDescriptor(metadata.schema(), metadata.location(), hiveEngineEnabled));
-    StorageDescriptor sd = result.getSd();
+    hmsTable.setSd(HiveOperationsBase.storageDescriptor(metadata.schema(), metadata.location(), hiveEngineEnabled));
+    StorageDescriptor sd = hmsTable.getSd();
 
     if (sd.getBucketCols() == null) {
       sd.setBucketCols(Lists.newArrayList());
@@ -204,17 +211,20 @@ public class MetastoreUtil {
             HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
     HMSTablePropertyHelper.updateHmsTableForIcebergView(
         metadata.metadataFileLocation(),
-        result,
+        hmsTable,
         metadata,
         Collections.emptySet(),
         maxHiveTablePropertySize,
         null);
 
+    // In-memory overlay for compile/describe: authoritative SQL comes from Iceberg metadata.
+    hmsTable.setViewOriginalText(sqlText);
+    hmsTable.setViewExpandedText(sqlText);
+
     String catalogType = IcebergCatalogProperties.getCatalogType(conf);
     if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {
-      result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, IcebergCatalogProperties.getCatalogType(conf));
+      hmsTable.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, IcebergCatalogProperties.getCatalogType(conf));
     }
-    return result;
   }
 
   private static String viewSqlText(View view, ViewMetadata metadata) {

@@ -228,8 +228,7 @@ public class TestHiveRESTCatalogClient {
                   any(),
                   eq("select 1"),
                   any(),
-                  eq(null),
-                  eq(true)));
+                  eq(null)));
     }
   }
 

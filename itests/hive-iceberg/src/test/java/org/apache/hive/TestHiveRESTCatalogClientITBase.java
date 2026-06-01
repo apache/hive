@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -47,7 +48,6 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -115,6 +115,20 @@ public abstract class TestHiveRESTCatalogClientITBase {
     msClient = new HiveMetaStoreClient(conf, hookLoader);
     hiveConf = new HiveConf(conf, HiveConf.class);
     hive = Hive.get(hiveConf);
+    dropDatabaseIfExists(VIEW_DB_NAME);
+  }
+
+  private void dropDatabaseIfExists(String dbName) {
+    try {
+      msClient.dropTable(CATALOG_NAME, dbName, NATIVE_VIEW_NAME);
+    } catch (Exception ignored) {
+      // view may not exist
+    }
+    try {
+      msClient.dropDatabase(dbName);
+    } catch (Exception ignored) {
+      // database may not exist
+    }
   }
 
   @AfterEach
@@ -219,27 +233,21 @@ public abstract class TestHiveRESTCatalogClientITBase {
     hive.createDatabase(db, true);
 
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("x", "int", ""));
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-        hiveConf,
-        VIEW_DB_NAME,
-        NATIVE_VIEW_NAME,
-        cols,
-        "select 1 as x",
-        null,
-        "rest-native-view",
-        false);
+    createNativeIcebergLogicalView(VIEW_DB_NAME, NATIVE_VIEW_NAME, cols, "select 1 as x", "rest-native-view");
 
+    Assertions.assertTrue(msClient.tableExists(CATALOG_NAME, VIEW_DB_NAME, NATIVE_VIEW_NAME));
+    
     GetTableRequest getTableRequest = new GetTableRequest();
     getTableRequest.setCatName(CATALOG_NAME);
     getTableRequest.setDbName(VIEW_DB_NAME);
     getTableRequest.setTblName(NATIVE_VIEW_NAME);
     Table view = msClient.getTable(getTableRequest);
+    
+    Assertions.assertNotNull(view);
     Assertions.assertEquals(TableType.VIRTUAL_VIEW.name(), view.getTableType());
     String tableTypeProp = view.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     Assertions.assertNotNull(tableTypeProp);
     Assertions.assertEquals(ICEBERG_VIEW_TYPE_VALUE, tableTypeProp.toLowerCase());
-
-    Assertions.assertTrue(msClient.tableExists(CATALOG_NAME, VIEW_DB_NAME, NATIVE_VIEW_NAME));
 
     List<String> names = msClient.getTables(CATALOG_NAME, VIEW_DB_NAME, "*");
     Assertions.assertTrue(names.contains(NATIVE_VIEW_NAME));
@@ -250,7 +258,33 @@ public abstract class TestHiveRESTCatalogClientITBase {
     msClient.dropDatabase(VIEW_DB_NAME);
   }
 
-  private static Table createPartitionedTable(IMetaStoreClient db, String catName, String dbName, String tableName, 
+  private void createNativeIcebergLogicalView(
+      String dbName, String viewName, List<FieldSchema> cols, String viewSql, String comment) throws Exception {
+    Table view = new Table();
+    view.setCatName(CATALOG_NAME);
+    view.setDbName(dbName);
+    view.setTableName(viewName);
+    view.setTableType(TableType.VIRTUAL_VIEW.toString());
+    view.setViewOriginalText(viewSql);
+    view.setViewExpandedText(viewSql);
+
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setCols(cols);
+    sd.setSerdeInfo(new SerDeInfo());
+    sd.getSerdeInfo().setParameters(new java.util.HashMap<>());
+    view.setSd(sd);
+
+    view.setParameters(new java.util.HashMap<>());
+    view.getParameters().put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
+    view.getParameters().put("view-format", "iceberg");
+    if (comment != null) {
+      view.getParameters().put("comment", comment);
+    }
+
+    msClient.createTable(view);
+  }
+
+  private static Table createPartitionedTable(IMetaStoreClient db, String catName, String dbName, String tableName,
       Map<String, String> tableParameters) throws Exception {
     db.dropTable(catName, dbName, tableName);
     Table table = new Table();

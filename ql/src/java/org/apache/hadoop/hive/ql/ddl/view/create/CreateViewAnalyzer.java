@@ -224,7 +224,6 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
       return null;
     }
 
-    boolean explicitViewFormat = storageHandlerClassFromTableProps != null;
     try {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
 
@@ -232,10 +231,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
         return storageHandlerClass;
       }
     } catch (HiveException e) {
-
-      if (explicitViewFormat) {
-        throw new SemanticException(ErrorMsg.VIEW_STORAGE_HANDLER_UNSUPPORTED.format(storageHandlerClass), e);
-      }
+      throw new SemanticException(e);
     }
 
     return null;

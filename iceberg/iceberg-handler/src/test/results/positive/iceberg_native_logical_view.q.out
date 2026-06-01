@@ -124,8 +124,9 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
+	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	hdfs://### HDFS PATH ###
+	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
@@ -140,7 +141,7 @@ Compressed:         	No
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-Original Query:     	select first_name || '-' || dept_id from src_ice where dept_id = 1	 
+Original Query:     	select `src_ice`.`first_name` || '-' || `src_ice`.`dept_id` from `ice_native_view_db`.`src_ice` where `src_ice`.`dept_id` = 1	 
 Expanded Query:     	select `src_ice`.`first_name` || '-' || `src_ice`.`dept_id` from `ice_native_view_db`.`src_ice` where `src_ice`.`dept_id` = 1	 
 PREHOOK: query: create view if not exists v_def 
 as select first_name, last_name, dept_id from src_ice where dept_id = 2
@@ -213,19 +214,22 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
+	metadata_location   	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	 	 
 # Storage Information	 	 
-SerDe Library:      	null                	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.FileInputFormat	 
+OutputFormat:       	org.apache.hadoop.mapred.FileOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-Original Query:     	select first_name, last_name, dept_id from src_ice where dept_id = 2	 
+Original Query:     	select `src_ice`.`first_name`, `src_ice`.`last_name`, `src_ice`.`dept_id` from `ice_native_view_db`.`src_ice` where `src_ice`.`dept_id` = 2	 
 Expanded Query:     	select `src_ice`.`first_name`, `src_ice`.`last_name`, `src_ice`.`dept_id` from `ice_native_view_db`.`src_ice` where `src_ice`.`dept_id` = 2	 
 PREHOOK: query: drop view v_def
 PREHOOK: type: DROPVIEW
@@ -346,8 +350,9 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
+	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	hdfs://### HDFS PATH ###
+	previous_metadata_location	hdfs://### HDFS PATH ###
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
 	uuid                	#Masked#
