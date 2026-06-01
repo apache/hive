@@ -21,7 +21,6 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
@@ -93,7 +92,8 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
 
     Map<Integer, ASTNode> setColExprs = new HashMap<>(updateBlock.getSetCols().size());
     Table targetTable = updateBlock.getTargetTable();
-    List<FieldSchema> colsToLookUp = targetTable.hasNonNativePartitionSupport() ? targetTable.getAllCols() : targetTable.getCols();
+    List<FieldSchema> colsToLookUp = targetTable.hasNonNativePartitionSupport() ? targetTable.getAllCols() :
+        targetTable.getCols();
     for (int i = 0; i < colsToLookUp.size(); i++) {
       if (columnOffset > 0 || i > 0) {
         sqlGenerator.append(',');

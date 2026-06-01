@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
@@ -100,10 +98,11 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
           Table table;
           try {
             table = getDb().getTable(tableName);
-            List<FieldSchema> colsToLookUp = table.hasNonNativePartitionSupport() ? table.getAllCols() : table.getCols();
+            List<FieldSchema> colsToLookUp = table.hasNonNativePartitionSupport() ? table.getAllCols() :
+                table.getCols();
             for (FieldSchema fs : colsToLookUp) {
               TypeInfo columnType = TypeInfoUtils.getTypeInfoFromTypeString(fs.getType());
-              rwsch.put(tableName.getTable(), fs.getName(), 
+              rwsch.put(tableName.getTable(), fs.getName(),
                   new ColumnInfo(fs.getName(), columnType, null, true));
             }
           } catch (HiveException e) {

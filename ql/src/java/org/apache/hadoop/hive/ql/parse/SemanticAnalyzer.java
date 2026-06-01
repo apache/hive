@@ -285,7 +285,6 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
@@ -5171,7 +5170,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     List<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
     colListPos = 0;
-    List<FieldSchema> targetTableCols = target != null ? (target.hasNonNativePartitionSupport() ? target.getAllCols() : target.getCols()) : partition.getCols();
+    List<FieldSchema> targetTableCols;
+    if (target != null) {
+      targetTableCols = target.hasNonNativePartitionSupport() ? target.getAllCols() : target.getCols();
+    } else {
+      targetTableCols = partition.getCols();
+    }
     List<String> targetTableColNames = new ArrayList<String>();
     List<TypeInfo> targetTableColTypes = new ArrayList<TypeInfo>();
     for(FieldSchema fs : targetTableCols) {
@@ -12017,25 +12021,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           tab.setSerdeParam(prop.getKey(), prop.getValue());
         }
       }
-      // Obtain inspector for schema
       final Deserializer deserializer = tab.getDeserializer();
 
       deserializer.handleJobLevelConfiguration(conf);
 
-      List<FieldSchema> fields = tab.getCols();
-      List<ColumnInfo> colInfoList = new ArrayList<>();
-      List<String> colNameList = new ArrayList<>();
-      for (int i = 0; i < tab.getAllCols().size(); i++) {
-        colInfoList.add(null);
-        colNameList.add(null);
-      }
+      int colCount = tab.getAllCols().size();
+      List<ColumnInfo> colInfoList = new ArrayList<>(Collections.nCopies(colCount, null));
+      List<String> colNameList = new ArrayList<>(Collections.nCopies(colCount, null));
 
-
-      for (int i = 0; i < fields.size(); i++) {
-        /**
-         * if the column is a skewed column, use ColumnInfo accordingly
-         */
-        FieldSchema field = fields.get(i);
+      for (FieldSchema field : tab.getCols()) {
         ColumnInfo colInfo = new ColumnInfo(field.getName(),
             TypeInfoUtils.getTypeInfoFromObjectInspector(tab.getField(field.getName())
                 .getFieldObjectInspector()), alias, false);
@@ -12044,10 +12038,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         colInfoList.set(index, colInfo);
         colNameList.set(index, field.getName());
       }
-      // Hack!! - refactor once the metadata APIs with types are ready
-      // Finally add the partitioning columns
       for (FieldSchema partCol : tab.getPartCols()) {
-        LOG.trace("Adding partition col: " + partCol);
+        LOG.trace("Adding partition col: {} ", partCol);
         ColumnInfo colInfo = new ColumnInfo(partCol.getName(),
             TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true);
         Integer index = tab.getColumnIndexByName(partCol.getName());
