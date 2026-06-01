@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -189,13 +188,8 @@ final class CommandAuthorizerV2 {
    * @return boolean value
    */
   private static boolean isDeferredAuthView(Table t){
-    String tableType = t.getTTable().getTableType();
     String authorizedKeyword = "Authorized";
-    boolean isView = false;
-    if (TableType.MATERIALIZED_VIEW.name().equals(tableType) || TableType.VIRTUAL_VIEW.name().equals(tableType)) {
-      isView = true;
-    }
-    if (isView) {
+    if (t.isView() || t.isMaterializedView()) {
       Map<String, String> params = t.getParameters();
       if (params != null && params.containsKey(authorizedKeyword)) {
         String authorizedValue = params.get(authorizedKeyword);
@@ -252,17 +246,12 @@ final class CommandAuthorizerV2 {
     }
     for (ReadEntity parent : parents) {
       if (parent.getTyp() == Type.TABLE && parent.getTable() != null
-          && isView(parent.getTable()) && !isDeferredAuthView(parent.getTable())) {
+          && (parent.getTable().isView() || parent.getTable().isMaterializedView())
+          && !isDeferredAuthView(parent.getTable())) {
         return true;
       }
     }
     return false;
-  }
-
-  private static boolean isView(Table t) {
-    String tableType = t.getTTable().getTableType();
-    return TableType.MATERIALIZED_VIEW.name().equals(tableType)
-        || TableType.VIRTUAL_VIEW.name().equals(tableType);
   }
 
   private static void addHivePrivObject(Entity privObject, Map<String, List<String>> tableName2Cols,
