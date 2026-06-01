@@ -813,14 +813,21 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       }
       TJobExecutionStatus executionStatus =
           mapper.forStatus(progressUpdate.status);
-      resp.setProgressUpdateResponse(new TProgressUpdateResp(
+      TProgressUpdateResp tProgressUpdateResp = new TProgressUpdateResp(
           progressUpdate.headers(),
           progressUpdate.rows(),
           progressUpdate.progressedPercentage,
           executionStatus,
           progressUpdate.footerSummary,
           progressUpdate.startTimeMillis
-      ));
+      );
+      // HIVE-27126: Thrift regeneration omitted setStartTimeIsSet(true) from the constructor.
+      // Explicitly call setStartTime() to set the isset flag required for Thrift validation.
+      tProgressUpdateResp.setStartTime(progressUpdate.startTimeMillis);
+      if (progressUpdate.queueMetrics() != null && !progressUpdate.queueMetrics().isEmpty()) {
+        tProgressUpdateResp.setQueueMetrics(progressUpdate.queueMetrics());
+      }
+      resp.setProgressUpdateResponse(tProgressUpdateResp);
       if (opException != null) {
         resp.setSqlState(opException.getSQLState());
         resp.setErrorCode(opException.getErrorCode());

@@ -3982,6 +3982,12 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK("hive.server2.tez.queue.access.check", false,
         "Whether to check user access to explicitly specified YARN queues. " +
           "yarn.resourcemanager.webapp.address must be configured to use this."),
+    HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL("hive.tez.queue.metrics.refresh.interval", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Interval for refreshing YARN queue resource metrics during Tez query execution. " +
+        "When set to a positive value (e.g. 10s), displays real-time memory, vCore, capacity " +
+        "and application metrics for the YARN queue being used. " +
+        "Set to 0 or negative to disable. Minimum effective value is 1 second."),
     HIVE_SERVER2_TEZ_SESSION_LIFETIME("hive.server2.tez.session.lifetime", "162h",
         new TimeValidator(TimeUnit.HOURS),
         "The lifetime of the Tez sessions launched by HS2 when default sessions are enabled.\n" +
