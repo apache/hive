@@ -95,7 +95,7 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
-import org.apache.hadoop.hive.metastore.client.FilterMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
@@ -155,7 +155,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTa
  * so the readers of the objects in these maps should have the most recent view of the object.
  * But again, could be fragile.
  */
-public class SessionHiveMetaStoreClient extends FilterMetaStoreClient {
+public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   private static final Logger LOG = LoggerFactory.getLogger(SessionHiveMetaStoreClient.class);
 
   private volatile Warehouse wh = null;
