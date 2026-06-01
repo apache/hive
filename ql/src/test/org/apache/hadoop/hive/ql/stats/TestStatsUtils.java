@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -607,6 +606,27 @@ class TestStatsUtils {
     assertEquals(allColumnStats.get(1), colStatNotNeededButExists);
     assertTrue(allColumnStats.get(2).isEstimated());
     assertEquals(allColumnStats.get(2).getColumnName(), colNeededButNotExists.getInternalName());
+  }
+
+  @Test
+  void testEstimateStatsForMissingColsReturnOnlyColumnsWithExistingStatsWhenNoNeededColumn() {
+    HiveConf conf = new HiveConf();
+
+    ColumnInfo colNotNeededButExists = new ColumnInfo("notNeededButExists", TypeInfoFactory.intTypeInfo, "t", false);
+    ColumnInfo colNotNeededNotExists = new ColumnInfo("notNeededNotExists", TypeInfoFactory.intTypeInfo, "t", false);
+
+    ColStatistics colStatNotNeededButExists = new ColStatistics();
+    colStatNotNeededButExists.setColumnName(colNotNeededButExists.getInternalName());
+
+    List<ColStatistics> allColumnStats = StatsUtils.estimateStatsForMissingCols(
+        Collections.emptyList(),
+        List.of(colStatNotNeededButExists),
+        conf,
+        0,
+        List.of(colNotNeededButExists, colNotNeededNotExists));
+
+    assertEquals(1, allColumnStats.size());
+    assertEquals(allColumnStats.getFirst(), colStatNotNeededButExists);
   }
 
 }
