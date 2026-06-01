@@ -176,6 +176,12 @@ public class HttpServer {
     private boolean useSPNEGO;
     private boolean useSSL;
     private boolean usePAM;
+    @VisibleForTesting
+    public boolean useCustomAuthFilter;
+    @VisibleForTesting
+    public String customAuthFilter;
+    @VisibleForTesting
+    public Map<String, String> customAuthFilterParams;
     private boolean enableCORS;
     private String allowedOrigins;
     private String allowedMethods;
@@ -280,6 +286,21 @@ public class HttpServer {
 
     public Builder setUseSPNEGO(boolean useSPNEGO) {
       this.useSPNEGO = useSPNEGO;
+      return this;
+    }
+
+    public Builder setUseCustomAuthFilter(boolean useCustomAuthFilter) {
+      this.useCustomAuthFilter = useCustomAuthFilter;
+      return this;
+    }
+
+    public Builder setCustomAuthFilter(String customAuthFilter) {
+      this.customAuthFilter = customAuthFilter;
+      return this;
+    }
+
+    public Builder setCustomAuthFilterParams(Map<String, String> customAuthFilterParams) {
+      this.customAuthFilterParams = customAuthFilterParams;
       return this;
     }
 
@@ -542,6 +563,19 @@ public class HttpServer {
   }
 
   /**
+   * Secure the web server with a custom {@link javax.servlet.Filter}.
+   * The filter class name and its init parameters come from the {@link Builder}.
+   */
+  void setupCustomAuthFilter(Builder b, ServletContextHandler ctx) {
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(b.customAuthFilter);
+    holder.setInitParameters(b.customAuthFilterParams);
+    ServletHandler handler = ctx.getServletHandler();
+    handler.addFilterWithMapping(
+        holder, "/*", FilterMapping.ALL);
+  }
+
+  /**
    * Setup cross-origin requests (CORS) filter.
    * @param b - builder
    * @param webAppContext - webAppContext
@@ -615,6 +649,10 @@ public class HttpServer {
     if (builder.useSPNEGO) {
       // Secure the web server with kerberos
       setupSpnegoFilter(builder, webAppContext);
+    }
+
+    if (builder.useCustomAuthFilter) {
+      setupCustomAuthFilter(builder, webAppContext);
     }
 
     if (builder.enableCORS) {
@@ -840,6 +878,9 @@ public class HttpServer {
       setContextAttributes(logCtx.getServletContext(), b.contextAttrs);
       if(b.useSPNEGO) {
         setupSpnegoFilter(b,logCtx);
+      }
+      if (b.useCustomAuthFilter) {
+        setupCustomAuthFilter(b, logCtx);
       }
       logCtx.addServlet(AdminAuthorizedServlet.class, "/*");
       logCtx.setResourceBase(logDir);

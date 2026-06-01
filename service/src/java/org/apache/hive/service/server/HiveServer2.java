@@ -543,6 +543,20 @@ public class HiveServer2 extends CompositeService {
         throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL.varname + " has false value. It is recommended to set to true when PAM is used.");
       }
     }
+    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_CUSTOM_AUTH_FILTER)) {
+      String authFilter = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER);
+      if (authFilter == null || authFilter.isEmpty()) {
+        throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname
+            + " is not configured. It is required when Custom Auth Filter is used.");
+      }
+      String paramPrefix = ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.";
+      Map<String, String> params = hiveConf.getPropsWithPrefix(paramPrefix);
+
+      builder.setUseCustomAuthFilter(true);
+      builder.setCustomAuthFilter(authFilter);
+      builder.setCustomAuthFilterParams(params);
+      LOG.info("WebUI will use Custom Auth Filter: {}  params: {}", authFilter, params);
+    }
     
     return builder;
   }

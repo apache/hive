@@ -3869,6 +3869,12 @@ public class HiveConf extends Configuration {
         + " for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.webui.keymanagerfactory.algorithm",
         "","SSL certificate key manager factory algorithm for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_USE_CUSTOM_AUTH_FILTER("hive.server2.webui.use.custom.auth.filter", false,
+        "If true, the HiveServer2 WebUI will be secured with custom auth filter"),
+    HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER("hive.server2.webui.custom.auth.filter", "",
+        "Filter class name to apply to the Web UI. The filter should be a standard javax servlet Filter. "
+        + "Filter parameters can also be specified in the configuration, by setting config entries of the form "
+        + "hive.server2.webui.custom.auth.filter.param.<param name>=<value>"),
     HIVE_SERVER2_WEBUI_USE_SPNEGO("hive.server2.webui.use.spnego", false,
         "If true, the HiveServer2 WebUI will be secured with SPNEGO. Clients must authenticate with Kerberos."),
     HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB("hive.server2.webui.spnego.keytab", "",

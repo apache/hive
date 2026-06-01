@@ -20,6 +20,7 @@ package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.http.HttpServer;
 import org.apache.hive.service.cli.CLIService;
@@ -32,6 +33,8 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -127,5 +130,73 @@ public class TestHiveServer2 {
     HiveConf builderConf = (HiveConf) confField.get(builder);
     assertNotNull("Builder.conf must be set after createHttpServerBuilder", builderConf);
     assertNotNull("startcode must be exists", builderConf.get("startcode"));
+  }
+
+  // ---- WebUI custom auth filter wiring (createHttpServerBuilder) ----------
+
+  /**
+   * Default config: custom auth filter is off, builder must not carry any
+   * filter wiring.
+   */
+  @Test
+  public void testCustomAuthFilterDisabledByDefault() throws Exception {
+    HiveConf conf = new HiveConf();
+    HttpServer.Builder builder = invokeCreateHttpServerBuilder(conf);
+
+    assertFalse("useCustomAuthFilter should default to false",
+        builder.useCustomAuthFilter);
+  }
+
+  /**
+   * When the ConfVars are set, createHttpServerBuilder must thread the filter
+   * class name and every {@code ...custom.auth.filter.param.<name>} key into
+   * the Builder (the param key is stored without the prefix).
+   */
+  @Test
+  public void testCustomAuthFilterWiredFromConfig() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_CUSTOM_AUTH_FILTER, true);
+    conf.setVar(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER, "com.example.MyAuthFilter");
+    conf.set(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.realm", "hive");
+    conf.set(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.ttl", "600");
+
+    HttpServer.Builder builder = invokeCreateHttpServerBuilder(conf);
+
+    assertTrue("useCustomAuthFilter should be true",
+        builder.useCustomAuthFilter);
+    assertEquals("com.example.MyAuthFilter",
+        builder.customAuthFilter);
+
+    @SuppressWarnings("unchecked")
+    Map<String, String> params = builder.customAuthFilterParams;
+    assertNotNull("customAuthFilterParams must be populated", params);
+    assertEquals("hive", params.get("realm"));
+    assertEquals("600", params.get("ttl"));
+  }
+
+  /**
+   * Enabling the filter without providing a class name is a configuration
+   * error and must fail fast at builder construction.
+   */
+  @Test
+  public void testCustomAuthFilterRejectsEmptyClassName() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_CUSTOM_AUTH_FILTER, true);
+    conf.setVar(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER, "");
+
+    try {
+      invokeCreateHttpServerBuilder(conf);
+      fail("Expected IllegalArgumentException when custom auth filter class name is empty");
+    } catch (IllegalArgumentException expected) {
+      assertTrue("Exception message should reference the custom auth filter ConfVar",
+          expected.getMessage().contains(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname));
+    }
+  }
+
+  private static HttpServer.Builder invokeCreateHttpServerBuilder(HiveConf conf) throws Exception {
+    CLIService cli = mock(CLIService.class);
+    SessionManager sm = mock(SessionManager.class);
+    when(cli.getSessionManager()).thenReturn(sm);
+    return HiveServer2.createHttpServerBuilder("localhost", 0, "test", "/", conf, cli, null);
   }
 }
