@@ -127,13 +127,6 @@ public class TezAmStatefulSetDependent
     replaceConfMountWithSubPaths(volumeMounts, "hive-config",
         "hive-site.xml", "tez-site.xml", "core-site.xml");
 
-    // Add Prometheus JMX Exporter when autoscaling is enabled
-    AutoscalingSpec autoscaling = tezAm.autoscaling();
-    if (autoscaling.isEnabled()) {
-      addJmxExporter(spec.image(), COMPONENT,
-          initContainers, volumeMounts, volumes, envVars, ports);
-    }
-
     // Pre-compute config hash for the pod template annotation.
     // TezAM uses the same ConfigMaps as HS2 (hive-site.xml + tez-site.xml + core-site.xml).
     String configHash = sha256(
@@ -184,20 +177,6 @@ public class TezAmStatefulSetDependent
 
     applySpreadAffinityIfAbsent(
         statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
-
-    // Graceful scale-down: poll JMX Exporter (port 9404) for DAGsRunning to reach 0.
-    if (autoscaling.isEnabled()) {
-      String preStopScript = buildDrainScript(
-          "Waiting for active DAGs to complete",
-          "tez_am_dagsrunning", "DAGS",
-          "No active DAGs. Safe to terminate Tez AM.",
-          10, 6, null);
-      applyAutoscalingLifecycle(
-          statefulSet.getSpec().getTemplate().getSpec(),
-          statefulSet.getSpec().getTemplate().getMetadata(),
-          preStopScript, autoscaling.gracePeriodSeconds(),
-          autoscaling.metricsScrapeIntervalSeconds());
-    }
 
     appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),

@@ -540,7 +540,7 @@ When `autoscaling.enabled: true` is set for a component, the operator:
     - HS2: deregisters from ZK, drains open sessions, kills JVM    
     - HMS: kills JVM (stateless HTTP — no drain needed)             
     - LLAP: waits until all executors become idle, kills JVM        
-    - TezAM: waits for current DAG completion, kills JVM            
+    - TezAM: no drain (DAGAppMaster does not expose JMX metrics)            
  5. terminationGracePeriodSeconds = gracePeriodSeconds (safety cap) 
  6. Pod terminates immediately once drain completes (does NOT wait  
     the full grace period — it's only the upper safety bound)
@@ -957,7 +957,7 @@ setup is needed — simply connect to HS2 and the operator wakes LLAP/TezAM as n
 |-------|---------|-------------|
 | `cluster.<component>.autoscaling.enabled` | `false` | Enable operator-driven autoscaling for this component |
 | `cluster.<component>.autoscaling.minReplicas` | `0` | Floor replica count. 0 enables scale-to-zero (LLAP, TezAM only; HS2 minimum is 1) |
-| `cluster.<component>.autoscaling.scaleUpThreshold` | `80` | Metric threshold triggering scale-up (total sessions for HS2, request rate for HMS, busy slots for LLAP, demand per HS2 pod for TezAM) |
+| `cluster.<component>.autoscaling.scaleUpThreshold` | `100` (HS2/HMS), `10` (LLAP) | Metric threshold per pod triggering scale-up (sessions for HS2, connections for HMS, busy slots for LLAP). TezAM scales 1:1 with demand (no threshold). |
 | `cluster.<component>.autoscaling.scaleUpStabilizationSeconds` | `60` | Stabilization window for scale-up decisions (prevents flapping) |
 | `cluster.<component>.autoscaling.scaleDownStabilizationSeconds` | `300-900` | Stabilization window for scale-down decisions (also acts as cooldown between consecutive scale-downs) |
 | `cluster.<component>.autoscaling.gracePeriodSeconds` | `3600` | Safety cap (seconds) — pod terminates immediately once drain completes, this is only the upper bound |
