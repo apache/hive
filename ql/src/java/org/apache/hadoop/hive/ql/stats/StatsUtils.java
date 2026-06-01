@@ -251,7 +251,7 @@ public class StatsUtils {
       List<ColumnInfo> schema) {
 
     Set<String> neededCols = new HashSet<>(neededColumnNames);
-    Set<String> columnNamesWithStats = new HashSet<>(existingColStats.size());
+    Set<String> columnNamesWithStats = HashSet.newHashSet(existingColStats.size());
 
     for (ColStatistics cstats : existingColStats) {
       columnNamesWithStats.add(cstats.getColumnName());

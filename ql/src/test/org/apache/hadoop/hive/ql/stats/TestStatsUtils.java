@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -603,9 +604,11 @@ class TestStatsUtils {
 
     assertEquals(3, allColumnStats.size());
     assertEquals(allColumnStats.get(0), colStatNeededAndExists);
+    assertFalse(allColumnStats.get(0).isEstimated());
     assertEquals(allColumnStats.get(1), colStatNotNeededButExists);
-    assertTrue(allColumnStats.get(2).isEstimated());
+    assertFalse(allColumnStats.get(1).isEstimated());
     assertEquals(allColumnStats.get(2).getColumnName(), colNeededButNotExists.getInternalName());
+    assertTrue(allColumnStats.get(2).isEstimated());
   }
 
   @Test
