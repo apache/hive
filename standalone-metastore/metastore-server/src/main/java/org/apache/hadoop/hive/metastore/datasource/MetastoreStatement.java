@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.datasource.MetastoreStatement.JdbcProfilerUtils.logSlowExecution;
+import static org.apache.hadoop.hive.metastore.datasource.MetastoreStatement.JdbcProfilerUtils.logExecution;
 import static org.apache.hadoop.hive.metastore.datasource.MetastoreStatement.JdbcProfilerUtils.isSlowExecution;
 
 @SuppressWarnings("unchecked")
@@ -84,7 +84,7 @@ public final class MetastoreStatement implements InvocationHandler {
         ClassUtils.getAllInterfaces(delegate.getClass()).toArray(new Class[0]), handler);
   }
 
-  private void logSummary(boolean monitor) {
+  private void logThriftCallSummary(boolean monitor) {
     Optional<HMSHandlerContext.CallCtx> ctxCall = HMSHandlerContext.getCallCtx();
     HMSHandlerContext.CallCtx previousCall = CALL_CTX.get();
     if (ctxCall.isPresent()) {
@@ -113,7 +113,7 @@ public final class MetastoreStatement implements InvocationHandler {
     Timer.Context ctx = null;
     try {
       boolean monitor = hook.profile(rawSql, method, args);
-      logSummary(monitor);
+      logThriftCallSummary(monitor);
       if (Metrics.getRegistry() != null && monitor) {
         String metricName = hook.getMetricName(method, args);
         Timer timer = Metrics.getOrCreateTimer(metricName);
@@ -133,10 +133,10 @@ public final class MetastoreStatement implements InvocationHandler {
           CALL_CTX.get().totalTime().addAndGet(timeSpent);
         }
       }
-      logSlowExecution(timeSpent, configuration, rawSql, method, args);
+      logExecution(timeSpent, configuration, rawSql, method, args);
       return result;
     } catch (InvocationTargetException | UndeclaredThrowableException e) {
-      throw e.getCause();
+      throw e.getCause() != null ? e.getCause() : e;
     } finally {
       if (ctx != null) {
         ctx.stop();
@@ -163,7 +163,6 @@ public final class MetastoreStatement implements InvocationHandler {
      * @param args The method input
      */
     default void preRun(Method method, Object[] args) {
-
     }
 
     /**
@@ -173,7 +172,6 @@ public final class MetastoreStatement implements InvocationHandler {
      * @param result The execution result from the call
      */
     default void postRun(Method method, Object[] args, Object result) {
-
     }
   }
 
@@ -215,7 +213,7 @@ public final class MetastoreStatement implements InvocationHandler {
       }
     }
 
-    public static void logSlowExecution(long timeSpent, Configuration configuration,
+    public static void logExecution(long timeSpent, Configuration configuration,
         String sql, Method method, Object[] args) {
       if (isSlowExecution(configuration, timeSpent)) {
         Object[] printableArgs = args;
@@ -244,7 +242,7 @@ public final class MetastoreStatement implements InvocationHandler {
     @Override
     public boolean profile(String sql, Method method, Object[] args) {
       if (PROFILED_APIS.isEmpty() || !QUERY_EXECUTION.contains(method.getName())) {
-        // no api configured to profile
+        // No api to profile
         return false;
       }
       Optional<HMSHandlerContext.CallCtx> ctxCall = HMSHandlerContext.getCallCtx();
