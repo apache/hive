@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.google.common.collect.Sets;
@@ -367,6 +368,46 @@ class TestStatsUtils {
 
     assertNotNull(cs);
     assertEquals(0, cs.getCountDistint(), "Boolean NDV should be 0 for all-NULL column");
+    assertEquals(true, cs.isConst(), "all-NULL boolean column must be marked isConst");
+  }
+
+  @ParameterizedTest(name = "isConst=true for verified single-value boolean (numTrues={0}, numFalses={1}, numNulls=0)")
+  @org.junit.jupiter.params.provider.CsvSource({"100, 0", "0, 100"})
+  void testGetColStatisticsBooleanIsConstForVerifiedSingleValue(long numTrues, long numFalses) {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(numTrues);
+    boolStats.setNumFalses(numFalses);
+    boolStats.setNumNulls(0);
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertEquals(true, cs.isConst());
+  }
+
+  @ParameterizedTest(name = "isConst stays false for boolean (numTrues={0}, numFalses={1})")
+  @org.junit.jupiter.params.provider.CsvSource({
+      "100, 0", "0, 100", "-1, 100", "100, -1", "50, 50"})
+  void testGetColStatisticsBooleanIsConstNotSetForNonAllNullCases(long numTrues, long numFalses) {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(numTrues);
+    boolStats.setNumFalses(numFalses);
+    boolStats.setNumNulls(10);
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertEquals(false, cs.isConst());
   }
 
   @Test
@@ -563,6 +604,50 @@ class TestStatsUtils {
     assertNotNull(range, "Range should be created for TIMESTAMP");
     assertEquals(1600000000L, range.minValue.longValue(), "minValue mismatch for TIMESTAMP");
     assertEquals(1700000000L, range.maxValue.longValue(), "maxValue mismatch for TIMESTAMP");
+  }
+
+  @Test
+  void testColStatisticsIsConstDefaultsFalse() {
+    ColStatistics cs = new ColStatistics("c", "int");
+    assertEquals(false, cs.isConst(), "isConst should default to false");
+  }
+
+  @Test
+  void testColStatisticsIsConstSetterAndClone() {
+    ColStatistics cs = new ColStatistics("c", "int");
+    cs.setConst(true);
+    assertEquals(true, cs.isConst(), "setConst(true) should be observable via isConst()");
+
+    ColStatistics clone = cs.clone();
+    assertEquals(true, clone.isConst(), "clone() must propagate isConst");
+
+    cs.setConst(false);
+    assertEquals(false, cs.isConst(), "setConst(false) should clear the flag");
+    assertEquals(true, clone.isConst(), "Clone should be independent of source after mutation");
+  }
+
+  @ParameterizedTest(name = "isConst=true => NDV contribution = 1 (countDistint={0}, numNulls={1})")
+  @CsvSource({"1, 0", "0, 10", "1, 10", "0, 0"})
+  void testComputeNDVGroupingColumnsConstColumnContributesOne(long countDistint, long numNulls) {
+    ColStatistics cs = new ColStatistics("c", "int");
+    cs.setCountDistint(countDistint);
+    cs.setNumNulls(numNulls);
+    cs.setConst(true);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Collections.singletonList(cs), new Statistics(), false);
+
+    assertEquals(1L, ndv);
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsNonConstWithNullsAddsOne() {
+    ColStatistics cs = new ColStatistics("c", "int");
+    cs.setCountDistint(7);
+    cs.setNumNulls(3);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(Collections.singletonList(cs), new Statistics(), false);
+
+    assertEquals(8L, ndv);
   }
 
 }
