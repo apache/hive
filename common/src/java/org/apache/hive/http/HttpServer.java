@@ -145,7 +145,7 @@ public class HttpServer {
   private QueuedThreadPool threadPool;
   private PortHandlerWrapper portHandlerWrapper;
   @VisibleForTesting
-  public Optional<Timer> keystoreChangeMonitor = Optional.empty();
+  Timer keystoreChangeMonitor;
 
   /**
    * Create a status server on the given port.
@@ -366,8 +366,8 @@ public class HttpServer {
   }
 
   public void stop() throws Exception {
-    if (this.keystoreChangeMonitor.isPresent()) {
-      this.keystoreChangeMonitor.get().cancel();
+    if (this.keystoreChangeMonitor != null) {
+      this.keystoreChangeMonitor.cancel();
     }
     webServer.stop();
   }
@@ -705,10 +705,9 @@ public class HttpServer {
       sslContextFactory.setKeyStorePassword(b.keyStorePassword);
       connector = new ServerConnector(webServer, sslContextFactory, http);
 
-      long storesReloadInterval = b.conf.getTimeVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL, TimeUnit.MILLISECONDS);
-      if (storesReloadInterval > 0) {
-        this.keystoreChangeMonitor = Optional.of(
-            this.makeKeystoreChangeMonitor(storesReloadInterval, b.keyStorePath, sslContextFactory));
+      long reloadInterval = b.conf.getTimeVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL, TimeUnit.MILLISECONDS);
+      if (reloadInterval > 0) {
+        this.keystoreChangeMonitor = createKeystoreChangeMonitor(reloadInterval, b.keyStorePath, sslContextFactory);
       }
     }
 
@@ -722,13 +721,13 @@ public class HttpServer {
   }
 
   @VisibleForTesting
-  public void setKeystoreChangeMonitor(Optional<Timer> monitor) {
+  void setKeystoreChangeMonitor(Timer monitor) {
     keystoreChangeMonitor = monitor;
   }
 
   @VisibleForTesting
-  public Timer makeKeystoreChangeMonitor(long reloadInterval, String keyStorePath,
-                                          SslContextFactory sslContextFactory) {
+  Timer createKeystoreChangeMonitor(long reloadInterval, String keyStorePath,
+                                    SslContextFactory sslContextFactory) {
     LOG.info("Starting SSL Certificates Store Monitor. reload interval: {}ms,  keyStorePath: {}", reloadInterval, keyStorePath);
     Timer timer = new Timer("SSL Certificates Store Monitor", true);
     //

@@ -24,18 +24,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.Optional;
 import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -148,7 +146,7 @@ public class TestHttpServer {
         super.cancel();
       }
     };
-    server.setKeystoreChangeMonitor(Optional.of(installed));
+    server.setKeystoreChangeMonitor(installed);
 
     // stop() also calls webServer.stop(); webServer is null on a mock, so we expect
     // a NullPointerException after the cancel path runs.
@@ -168,10 +166,8 @@ public class TestHttpServer {
   @Test
   public void testStopWithoutMonitorDoesNotThrowFromCancelPath() throws Exception {
     HttpServer server = mock(HttpServer.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
-    server.setKeystoreChangeMonitor(Optional.empty());
-
-    Optional<Timer> current = server.keystoreChangeMonitor;
-    assertFalse("configurationChangeMonitor should be empty for this case", current.isPresent());
+    server.setKeystoreChangeMonitor(null);
+    assertNull("keystoreChangeMonitor should be empty for this case", server.keystoreChangeMonitor);
 
     try {
       server.stop();
@@ -185,6 +181,6 @@ public class TestHttpServer {
   private static Timer invokeMakeMonitor(long intervalMs, String keystorePath,
                                          SslContextFactory sslContextFactory) throws Exception {
     HttpServer server = mock(HttpServer.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
-    return server.makeKeystoreChangeMonitor(intervalMs, keystorePath, sslContextFactory);
+    return server.createKeystoreChangeMonitor(intervalMs, keystorePath, sslContextFactory);
   }
 }
