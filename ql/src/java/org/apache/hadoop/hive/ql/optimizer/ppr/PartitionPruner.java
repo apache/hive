@@ -174,6 +174,9 @@ public class PartitionPruner extends Transform {
       HiveConf conf, String alias, Map<String, PrunedPartitionList> prunedPartitionsMap)
           throws SemanticException {
 
+    // Homogenize the expression to maximize cache hits.
+    prunerExpr = ExprNodeDescUtils.flattenAndOr(prunerExpr);
+
     if (LOG.isTraceEnabled()) {
       LOG.trace("Started pruning partition");
       LOG.trace("dbname = " + tab.getDbName());

@@ -93,14 +93,11 @@ public class SearchTransformer<C extends Comparable<C>> {
             rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true));
         orList.add(notEq);
       } else {
-        // Generate NOT (ref IN (value1, value2,... valueN)); which is better for partition pruning and CNF distribution
-        List<RexNode> notInLiterals = rangeSet.stream().map(
-            range -> rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))
-            .toList();
-        List<RexNode> operands = new ArrayList<>(rangeSet.size() + 1);
-        operands.add(ref);
-        operands.addAll(notInLiterals);
-        orList.add(rexBuilder.makeCall(SqlStdOperatorTable.NOT, rexBuilder.makeCall(HiveIn.INSTANCE, operands)));
+        // Generate 'ref <> value1 AND ... AND ref <> valueN'
+        List<RexNode> list = sarg.rangeSet.complement().asRanges().stream().map(
+            range -> rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref,
+                rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))).toList();
+        orList.add(RexUtil.composeConjunction(rexBuilder, list));
       }
     } else {
       RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);
