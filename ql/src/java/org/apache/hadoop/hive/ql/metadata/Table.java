@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -118,6 +117,7 @@ public class Table implements Serializable {
    */
   private List<FieldSchema> tablePartCols;
   private transient Map<String, Pair<Integer, FieldSchema>> inputColnameToIndFsMap;
+  private transient List<FieldSchema> tableNonPartCols;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
@@ -788,8 +788,11 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
+    if (tableNonPartCols != null) {
+      return tableNonPartCols;
+    }
     if (!isNonNative()) {
-      return getColsInternal(false);
+      tableNonPartCols = getColsInternal(false);
     } else {
       List<FieldSchema> nonPartFields = new ArrayList<>();
       Set<String> partFieldsName = getPartCols().stream().map(FieldSchema::getName).collect(Collectors.toSet());
@@ -798,8 +801,9 @@ public class Table implements Serializable {
           nonPartFields.add(field);
         }
       }
-      return nonPartFields;
+      tableNonPartCols = nonPartFields;
     }
+    return tableNonPartCols;
   }
 
   public List<FieldSchema> getColsForMetastore() {
@@ -891,6 +895,9 @@ public class Table implements Serializable {
 
   public void setFields(List<FieldSchema> fields) {
     tTable.getSd().setCols(fields);
+    tableNonPartCols = null;
+    tablePartCols = null;
+    inputColnameToIndFsMap = null;
   }
 
   public void setNumBuckets(int nb) {
