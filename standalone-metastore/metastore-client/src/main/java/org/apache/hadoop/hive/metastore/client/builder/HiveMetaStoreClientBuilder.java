@@ -75,9 +75,7 @@ public class HiveMetaStoreClientBuilder {
   }
 
   public HiveMetaStoreClientBuilder withHooks(HiveMetaHookLoader hookLoader) {
-    if (hookLoader != null) {
-      this.client = HookEnabledMetaStoreClient.newClient(conf, hookLoader, client);
-    }
+    this.client = HookEnabledMetaStoreClient.newClient(conf, hookLoader, client);
     return this;
   }
 
