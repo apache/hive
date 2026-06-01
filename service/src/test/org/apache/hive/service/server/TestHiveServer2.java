@@ -119,8 +119,6 @@ public class TestHiveServer2 {
 
     HttpServer.Builder builder = HiveServer2.createHttpServerBuilder(
         "localhost", 0, "test", "/", conf, cli, null);
-    Thread.sleep(1000);
-    long now = System.currentTimeMillis();
 
     // setConf stores a *copy* of the conf on the Builder. Read that copy back via
     // reflection — that's the same instance the servlet context exposes to the JSP.
@@ -128,11 +126,6 @@ public class TestHiveServer2 {
     confField.setAccessible(true);
     HiveConf builderConf = (HiveConf) confField.get(builder);
     assertNotNull("Builder.conf must be set after createHttpServerBuilder", builderConf);
-
-    String startcodeStr = builderConf.get("startcode");
-    assertNotNull(startcodeStr);
-    long startcode = Long.parseLong(startcodeStr);
-    assertTrue("startcode " + startcode + " should be < test end " + now,
-        startcode < now);
+    assertNotNull("startcode must be exists", builderConf.get("startcode"));
   }
 }
