@@ -529,8 +529,9 @@ public class TestPartitionManagement {
       assertTrue(deleted);
       assertEquals(4, fs.listStatus(tablePath).length);
 
-      // 3 tasks are submitted at the same time, only one will eventually lock the table and only one get to run at a time
-      // This is to simulate, skipping partition discovery task attempt when previous attempt is still incomplete
+      // 3 tasks are submitted at the same time, only one will eventually lock the table and only one
+      // get to run at a time. This is to simulate, skipping partition discovery task attempt when
+      // previous attempt is still incomplete
       PartitionManagementTask partitionDiscoveryTask1 = new PartitionManagementTask();
       partitionDiscoveryTask1.setConf(conf);
       PartitionManagementTask partitionDiscoveryTask2 = new PartitionManagementTask();
