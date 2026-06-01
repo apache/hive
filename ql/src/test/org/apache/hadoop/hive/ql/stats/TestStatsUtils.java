@@ -603,11 +603,11 @@ class TestStatsUtils {
         List.of(colNeededButNotExists, colNeededAndExists, colNotNeededButExists, colNotNeededNotExists));
 
     assertEquals(3, allColumnStats.size());
-    assertEquals(allColumnStats.get(0), colStatNeededAndExists);
+    assertEquals(colStatNeededAndExists, allColumnStats.get(0));
     assertFalse(allColumnStats.get(0).isEstimated());
-    assertEquals(allColumnStats.get(1), colStatNotNeededButExists);
+    assertEquals(colStatNotNeededButExists, allColumnStats.get(1));
     assertFalse(allColumnStats.get(1).isEstimated());
-    assertEquals(allColumnStats.get(2).getColumnName(), colNeededButNotExists.getInternalName());
+    assertEquals(colNeededButNotExists.getInternalName(), allColumnStats.get(2).getColumnName());
     assertTrue(allColumnStats.get(2).isEstimated());
   }
 
