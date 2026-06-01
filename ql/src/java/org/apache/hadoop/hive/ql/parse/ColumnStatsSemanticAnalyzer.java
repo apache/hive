@@ -231,7 +231,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
 
-    List<FieldSchema> colsToLookUp = tbl.hasNonNativePartitionSupport()?tbl.getAllCols():tbl.getCols();
+    List<FieldSchema> colsToLookUp = tbl.hasNonNativePartitionSupport() ? tbl.getAllCols() : tbl.getCols();
     for (FieldSchema col : colsToLookUp) {
       specifiedColsMap.computeIfPresent(col.getName().toLowerCase(), (key, value) -> col);
     }

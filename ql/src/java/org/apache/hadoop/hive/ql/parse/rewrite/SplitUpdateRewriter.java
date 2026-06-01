@@ -72,14 +72,14 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
     List<FieldSchema> nonPartCols = targetTable.getCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
-      appendUpdateColumn(targetTable, updateBlock, sqlGenerator, insertValues, setColExprs,
+      appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
           nonPartCols.get(i).getName(), i, columnOffset, true, !first);
       first = false;
     }
     List<FieldSchema> partCols = targetTable.getPartCols();
     for (int i = 0; i < partCols.size(); i++) {
       boolean appendToSelect = targetTable.hasNonNativePartitionSupport();
-      appendUpdateColumn(targetTable, updateBlock, sqlGenerator, insertValues, setColExprs,
+      appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
           partCols.get(i).getName(), nonPartCols.size() + i, columnOffset, appendToSelect, appendToSelect);
     }
     addRowLineageColumnsForUpdate(targetTable, sqlGenerator, insertValues, conf);
@@ -115,14 +115,15 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     return rr;
   }
 
-  private void appendUpdateColumn(Table targetTable, UpdateStatement updateBlock,
-      MultiInsertSqlGenerator sqlGenerator, List<String> insertValues,
-      Map<Integer, ASTNode> setColExprs, String columnName, int setColExprIndex, int columnOffset,
-      boolean appendToSelect, boolean prependComma) {
+  private void appendUpdateColumn(UpdateStatement updateBlock,
+               MultiInsertSqlGenerator sqlGenerator, List<String> insertValues,
+               Map<Integer, ASTNode> setColExprs, String columnName, int setColExprIndex, int columnOffset,
+               boolean appendToSelect, boolean prependComma) {
     if (appendToSelect && prependComma) {
       sqlGenerator.append(",");
     }
 
+    Table targetTable = updateBlock.getTargetTable();
     ASTNode setCol = updateBlock.getSetCols().get(columnName);
     String identifier = HiveUtils.unparseIdentifier(columnName, conf);
 

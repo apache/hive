@@ -297,7 +297,7 @@ public class ColumnStatsAutoGatherContext {
 
       // 2. deal with static partition columns
       if (partSpec != null && partSpec.containsKey(partColName)
-          && partSpec.get(partColName) != null ) {
+          && partSpec.get(partColName) != null) {
         if (dynamicPartBegin > 0) {
           throw new SemanticException(
               "Dynamic partition columns should not come before static partition columns.");

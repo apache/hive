@@ -67,7 +67,7 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
 
   private List<FieldSchema> getCols() throws HiveException {
     Table table = context.getDb().getTable(desc.getTableName());
-    return new ArrayList<>(table.getAllCols());
+    return table.getAllCols();
   }
 
   private Matcher getMatcher() {
