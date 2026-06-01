@@ -116,9 +116,9 @@ cluster:
     # The operator scrapes JMX Exporter metrics from pods directly.
     # When enabled, 'replicas' above acts as the max replica ceiling.
     autoscaling:
-      enabled: true
+      enabled: false
       minReplicas: 1
-      scaleUpThreshold: 2
+      scaleUpThreshold: 100
       scaleUpStabilizationSeconds: 60
       scaleDownStabilizationSeconds: 300
       gracePeriodSeconds: 60
@@ -141,9 +141,9 @@ cluster:
     # Autoscaling (operator-driven, no external dependencies)
     # When enabled, 'replicas' above acts as the max replica ceiling
     autoscaling:
-      enabled: true
+      enabled: false
       minReplicas: 1
-      scaleUpThreshold: 1
+      scaleUpThreshold: 100
       scaleUpStabilizationSeconds: 60
       scaleDownStabilizationSeconds: 600
       gracePeriodSeconds: 300
@@ -166,9 +166,9 @@ cluster:
     # minReplicas: 0 enables scale-to-zero — scales up when HS2 has active sessions
     # When enabled, 'replicas' above acts as the max replica ceiling
     autoscaling:
-      enabled: true
+      enabled: false
       minReplicas: 0
-      scaleUpThreshold: 1
+      scaleUpThreshold: 10
       scaleUpStabilizationSeconds: 60
       scaleDownStabilizationSeconds: 900
       gracePeriodSeconds: 600
@@ -192,7 +192,7 @@ cluster:
     # TezAM scales demand-based: max(totalSessions, hs2Pods * sessionsPerQueue)
     # No scaleUpThreshold needed — scaling is 1:1 with session demand
     autoscaling:
-      enabled: true
+      enabled: false
       minReplicas: 0
       scaleUpStabilizationSeconds: 60
       scaleDownStabilizationSeconds: 600
