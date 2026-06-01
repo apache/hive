@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import java.util.List;
+
 /**
  * Analyzer for function dropping commands.
  */
@@ -48,10 +50,6 @@ public class DropFunctionAnalyzer extends AbstractFunctionAnalyzer {
     super(queryState, db);
   }
 
-  protected FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
-    return FunctionRegistry.getFunctionInfo(functionName);
-  }
-
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
     String functionName = root.getChild(0).getText();
@@ -59,7 +57,7 @@ public class DropFunctionAnalyzer extends AbstractFunctionAnalyzer {
     boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
     boolean isTemporary = (root.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
 
-    FunctionInfo info = getFunctionInfo(functionName);
+    FunctionInfo info = FunctionRegistry.getFunctionInfo(functionName);
     if (info == null) {
       // getFunctionInfo returns null when the function's JAR resource cannot be loaded (e.g. the
       // HDFS file was deleted). For permanent functions fall back to a direct metastore lookup so
@@ -86,8 +84,8 @@ public class DropFunctionAnalyzer extends AbstractFunctionAnalyzer {
   private boolean functionExistsInMetastore(String functionName) {
     try {
       String[] parts = FunctionUtils.getQualifiedFunctionNameParts(functionName.toLowerCase());
-      db.getFunction(parts[0], parts[1]);
-      return true;
+      List<String> functions = db.getFunctions(parts[0], parts[1]);
+      return functions != null && functions.contains(parts[1]);
     } catch (HiveException e) {
       return false;
     }
