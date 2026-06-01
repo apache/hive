@@ -239,7 +239,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
     //insert into target (p1) select current_date(), 5, c3, p1 where ....
     //since we take the RHS of set exactly as it was in Input, we don't need to deal with quoting/escaping column/table
     //names
-    List<FieldSchema> nonPartCols = targetTable.hasNonNativePartitionSupport() ? targetTable.getAllCols() : targetTable.getCols();
+    List<FieldSchema> nonPartCols = targetTable.hasNonNativePartitionSupport() ? targetTable.getAllCols() :
+        targetTable.getCols();
     Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(targetTable);
     for (FieldSchema fs : nonPartCols) {
       String name = fs.getName();
