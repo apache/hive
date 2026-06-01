@@ -651,7 +651,7 @@ public class MetastoreConf {
     METASTORE_JDBC_SLOW_QUERIES("metastore.jdbc.execution.logSlowQueriesThreshold", "metastore.jdbc.execution.logSlowQueriesThreshold",
         3000, "Log the slow jdbc query that Metastore has been waiting for the result beyond the threshold(ms), " +
         "should enable the metastore.profile.jdbc.execution first"),
-    METASTORE_PROFILE_JDBC_EXECUTION("metastore.profile.jdbc.execution", "metastore.profile.jdbc.execution", true,
+    METASTORE_PROFILE_JDBC_EXECUTION("metastore.profile.jdbc.execution", "metastore.profile.jdbc.execution", false,
         "Profile the jdbc executions, will give the histogram about the jdbc read and write if check the metrics"),
     METASTORE_PROFILE_JDBC_THRIFT_APIS("metastore.jdbc.profile.thrift.apis", "metastore.jdbc.profile.thrift.apis",
         "get_table_req,get_database_req", "List of thrift methods that want to monitor the underlying jdbc executions"),
