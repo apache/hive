@@ -820,7 +820,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("nls")
-  private MDatabase getMDatabase(String catName, String name) throws NoSuchObjectException {
+  @Override
+  public MDatabase ensureGetMDatabase(String catName, String name) throws NoSuchObjectException {
     MDatabase mdb = null;
     boolean commited = false;
     Query query = null;
@@ -885,7 +886,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     try {
       openTransaction();
-      mdb = getMDatabase(catName, name);
+      mdb = ensureGetMDatabase(catName, name);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, null);
@@ -925,7 +926,7 @@ public class ObjectStore implements RawStore, Configurable {
     MDatabase mdb = null;
     boolean committed = false;
     try {
-      mdb = getMDatabase(catName, dbName);
+      mdb = ensureGetMDatabase(catName, dbName);
       mdb.setParameters(db.getParameters());
       mdb.setOwnerName(db.getOwnerName());
       if (db.getOwnerType() != null) {
@@ -960,7 +961,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
 
       // then drop the database
-      MDatabase db = getMDatabase(catName, dbname);
+      MDatabase db = ensureGetMDatabase(catName, dbname);
       pm.retrieve(db);
       List<MDBPrivilege> dbGrants = unwrap(PrivilegeStore.class).listDatabaseGrants(catName, dbname, null);
       if (CollectionUtils.isNotEmpty(dbGrants)) {
@@ -2421,12 +2422,6 @@ public class ObjectStore implements RawStore, Configurable {
   private Table ensureGetTable(String catName, String dbName, String tblName)
       throws NoSuchObjectException, MetaException {
     return convertToTable(ensureGetMTable(catName, dbName, tblName), conf);
-  }
-
-  @Override
-  public MDatabase ensureGetMDatabase(String catName, String dbName)
-      throws NoSuchObjectException {
-    return getMDatabase(catName, dbName);
   }
 
   /**
@@ -4815,7 +4810,7 @@ public class ObjectStore implements RawStore, Configurable {
     MDatabase mdb = null;
     String catName = func.isSetCatName() ? func.getCatName() : getDefaultCatalog(conf);
     try {
-      mdb = getMDatabase(catName, func.getDbName());
+      mdb = ensureGetMDatabase(catName, func.getDbName());
     } catch (NoSuchObjectException e) {
       LOG.error("Database does not exist", e);
       throw new InvalidObjectException("Database " + func.getDbName() + " doesn't exist.");
@@ -5052,7 +5047,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     String catName = normalizeIdentifier(proc.getCatName());
     String dbName = normalizeIdentifier(proc.getDbName());
-    MDatabase db = getMDatabase(catName, dbName);
+    MDatabase db = ensureGetMDatabase(catName, dbName);
     try {
       openTransaction();
       query = storedProcQuery();
@@ -5172,7 +5167,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     String catName = normalizeIdentifier(request.getCatName());
     String dbName = normalizeIdentifier(request.getDbName());
-    MDatabase db = getMDatabase(catName, dbName);
+    MDatabase db = ensureGetMDatabase(catName, dbName);
     try {
       openTransaction();
       query = findPackageQuery();
@@ -6209,7 +6204,7 @@ public class ObjectStore implements RawStore, Configurable {
   private MISchema convertToMISchema(ISchema schema) throws NoSuchObjectException {
     return new MISchema(schema.getSchemaType().getValue(),
                         normalizeIdentifier(schema.getName()),
-                        getMDatabase(schema.getCatName(), schema.getDbName()),
+                        ensureGetMDatabase(schema.getCatName(), schema.getDbName()),
                         schema.getCompatibility().getValue(),
                         schema.getValidationLevel().getValue(),
                         schema.isCanEvolve(),

@@ -2878,7 +2878,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
   @Override
   public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
       throws MetaException, NoSuchObjectException {
-    return new GetHelper<TableName, Long>(this, new TableName(table.getCatName(), table.getDbName(), table.getCatName())) {
+    return new GetHelper<TableName, Long>(this, new TableName(table.getCatName(), table.getDbName(), table.getTableName())) {
       @Override
       protected String describeResult() {
         return "Affected rows";

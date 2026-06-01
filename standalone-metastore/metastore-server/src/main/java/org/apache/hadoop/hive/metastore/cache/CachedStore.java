@@ -1570,7 +1570,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public List<String> listPartitionNames(String catName, String dbName, String tblName, short maxParts)
-      throws MetaException  {
+      throws MetaException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);

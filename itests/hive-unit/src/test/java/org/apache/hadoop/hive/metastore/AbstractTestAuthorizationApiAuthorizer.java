@@ -86,7 +86,7 @@ public abstract class AbstractTestAuthorizationApiAuthorizer {
       } catch (RuntimeException e) {
         // A hack to verify that authorization check passed. Exception can be thrown be cause
         // the functions are not being called with valid params.
-        // verify that exception has come from ObjectStore code, which means that the
+        // verify that exception has come from RawStore code, which means that the
         // authorization checks passed.
         String exStackString = ExceptionUtils.getStackTrace(e);
         assertTrue("Verifying this exception came after authorization check",

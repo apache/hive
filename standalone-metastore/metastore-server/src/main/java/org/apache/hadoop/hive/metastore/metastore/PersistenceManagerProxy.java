@@ -32,7 +32,7 @@ import java.util.Objects;
 
 import org.datanucleus.ExecutionContext;
 
-public class PersistenceManagerProxy implements InvocationHandler  {
+public class PersistenceManagerProxy implements InvocationHandler {
   private final PersistenceManager target;
   private final MethodHandle getExecutionContext;
   private final List<Query> openedQueries;

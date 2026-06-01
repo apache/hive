@@ -1158,7 +1158,6 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidOperationException.class)
-  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testRenamePartitionChangeTblName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
@@ -1170,7 +1169,6 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test(expected = InvalidOperationException.class)
-  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testRenamePartitionChangeDbName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);

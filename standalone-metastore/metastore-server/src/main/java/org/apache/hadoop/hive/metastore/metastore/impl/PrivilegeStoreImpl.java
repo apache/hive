@@ -2130,6 +2130,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
       query = pm.newQuery(MTablePrivilege.class);
       mSecurityTabPartList = (List<MTablePrivilege>) query.execute();
     }
+    pm.retrieveAll(mSecurityTabPartList);
     List<HiveObjectPrivilege> result = convertTable(mSecurityTabPartList);
     return result;
   }
