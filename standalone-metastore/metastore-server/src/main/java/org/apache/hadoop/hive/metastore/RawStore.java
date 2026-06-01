@@ -129,6 +129,11 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWi
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 
+/**
+ * NOTE: Please don't add new methods into this class if we have the corresponding iface in metastore package,
+ * use "rawstore.unwrap(iface).newMethod(...)" to call the new method instead.
+ * In the future, this RawStore will only act as a bridge over different ifaces defined in metastore package.
+ */
 public interface RawStore extends Configurable {
   /***
    * Annotation to skip retries
@@ -485,7 +490,7 @@ public interface RawStore extends Configurable {
   default boolean doesPartitionExist(String catName, String dbName, String tableName,
       List<FieldSchema> partKeys, List<String> part_vals)
       throws MetaException, NoSuchObjectException {
-    return unwrap(TableStore.class).getPartition(new TableName(catName, dbName, tableName), part_vals, null) != null;
+    throw new UnsupportedOperationException();
   }
 
   /**

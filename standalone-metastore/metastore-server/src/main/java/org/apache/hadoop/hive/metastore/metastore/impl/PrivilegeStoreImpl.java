@@ -486,7 +486,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
     if (principalName != null) {
       // get all data connector granted privilege
       List<MDCPrivilege> userNameDcPriv = this.listPrincipalMDCGrants(
-          principalName, principalType, catName, connectorName);
+          principalName, principalType, connectorName);
 
       // populate and return grantInfos
       if (CollectionUtils.isNotEmpty(userNameDcPriv)) {
@@ -1046,7 +1046,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
           String dc = hiveObject.getObjectName();
           boolean found = false;
           List<MDCPrivilege> dcGrants = this.listPrincipalMDCGrants(
-              userName, principalType, catName, dc);
+              userName, principalType, dc);
           for (String privilege : privs) {
             for (MDCPrivilege dcGrant : dcGrants) {
               String dcGrantPriv = dcGrant.getPrivilege();
@@ -2066,7 +2066,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
     Query query =
         pm.newQuery(MPartitionColumnPrivilege.class,
             "partition.table.tableName == t3 && partition.table.database.name == t4 && "
-                + "partition.table.database.name == t5 && "
+                + "partition.table.database.catalogName == t5 && "
                 + "partition.partitionName == t6 && columnName == t7");
     query.declareParameters("java.lang.String t3, java.lang.String t4, java.lang.String t5," +
         "java.lang.String t6, java.lang.String t7");

@@ -1427,22 +1427,6 @@ public class CachedStore implements RawStore, Configurable {
     return part;
   }
 
-  @Override public boolean doesPartitionExist(String catName, String dbName, String tblName, List<FieldSchema> partKeys,
-      List<String> partVals) throws MetaException, NoSuchObjectException {
-    catName = normalizeIdentifier(catName);
-    dbName = StringUtils.normalizeIdentifier(dbName);
-    tblName = StringUtils.normalizeIdentifier(tblName);
-    if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
-      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, partVals);
-    }
-    Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
-    if (tbl == null) {
-      // The table containing the partition is not yet loaded in cache
-      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, partVals);
-    }
-    return sharedCache.existPartitionFromCache(catName, dbName, tblName, partVals);
-  }
-
   @Override public boolean dropPartition(String catName, String dbName, String tblName, String partName)
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean succ = rawStore.dropPartition(catName, dbName, tblName, partName);
