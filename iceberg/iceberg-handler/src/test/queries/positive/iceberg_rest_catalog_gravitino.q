@@ -80,11 +80,21 @@ select * from ice_orc2;
 --! Native Iceberg logical view with TBLPROPERTIES ('view-format'='iceberg') on a REST catalog table
 -----------------------------------------------------------------------------------------------------
 
-create view if not exists ice_v1 tblproperties ('view-format'='iceberg')
+create view ice_v1 tblproperties ('view-format'='iceberg')
 as select first_name, last_name from ice_orc2 where dept_id in (1, 3);
 
 select * from ice_v1;
 desc formatted ice_v1;
+
+------- if-not-exists view test - view should not change -------------------------
+
+create view if not exists ice_v1 tblproperties ('view-format'='iceberg')
+as select * from ice_orc2 where dept_id = 10000;
+
+select * from ice_v1;
+desc formatted ice_v1;
+
+------- replace view test - view should be replaced ------------------------------
 
 create or replace view ice_v1 tblproperties ('view-format'='iceberg')
 as select first_name || '-' || dept_id from ice_orc2 where dept_id = 2;

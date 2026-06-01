@@ -50,19 +50,47 @@ public final class IcebergNativeLogicalViewSupport {
   }
 
   /**
-   * Creates or replaces a view in the Iceberg catalog.
-   *
-   * @return {@code false} if skipped because the view already exists and {@code replace} is false
+   * Loads the native Iceberg logical view definition and applies SQL, schema, and Iceberg params to {@code hmsTable}
    */
-  public static boolean createOrReplaceNativeView(
+  public static void enrichHmsTableFromIcebergView(
+      org.apache.hadoop.hive.metastore.api.Table hmsTable, Configuration conf) {
+    TableIdentifier identifier = TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName());
+    String catalogName = IcebergCatalogProperties.getCatalogName(conf);
+    Map<String, String> catalogProps = IcebergCatalogProperties.getCatalogProperties(conf, catalogName);
+    Catalog catalog = CatalogUtil.buildIcebergCatalog(catalogName, catalogProps, conf);
+
+    try {
+      if (catalog instanceof Closeable closeable) {
+        try (Closeable ignored = closeable) {
+          loadAndApplyView(hmsTable, conf, catalog, catalogName, identifier);
+        }
+      } else {
+        loadAndApplyView(hmsTable, conf, catalog, catalogName, identifier);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException("Failed to close Iceberg catalog", e);
+    }
+  }
+
+  private static void loadAndApplyView(
+      org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      Configuration conf,
+      Catalog catalog,
+      String catalogName,
+      TableIdentifier identifier) {
+    ViewCatalog viewCatalog = asViewCatalog(catalog, catalogName);
+    MetastoreUtil.applyIcebergViewToHmsTable(hmsTable, viewCatalog.loadView(identifier), conf);
+  }
+
+  /** Creates or replaces a view in the Iceberg catalog. */
+  public static void createOrReplaceNativeView(
       Configuration conf,
       String databaseName,
       String viewName,
       List<FieldSchema> fieldSchemas,
       String viewSql,
       Map<String, String> tblProperties,
-      String comment,
-      boolean replace) {
+      String comment) {
 
     TableIdentifier identifier = TableIdentifier.of(databaseName, viewName);
     String catalogName = IcebergCatalogProperties.getCatalogName(conf);
@@ -71,30 +99,24 @@ public final class IcebergNativeLogicalViewSupport {
 
     if (catalog instanceof Closeable closeable) {
       try (Closeable ignored = closeable) {
-        return commitNativeView(
-            catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment, replace);
+        commitNativeView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
       } catch (IOException e) {
         throw new UncheckedIOException("Failed to close Iceberg catalog", e);
       }
+    } else {
+      commitNativeView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
     }
-
-    return commitNativeView(
-        catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment, replace);
   }
 
-  private static boolean commitNativeView(
+  private static void commitNativeView(
       Catalog catalog,
       String catalogName,
       TableIdentifier identifier,
       List<FieldSchema> fieldSchemas,
       String viewSql,
       Map<String, String> tblProperties,
-      String comment,
-      boolean replace) {
+      String comment) {
     ViewCatalog viewCatalog = asViewCatalog(catalog, catalogName);
-    if (!replace && viewCatalog.viewExists(identifier)) {
-      return false;
-    }
 
     ViewBuilder builder =
         viewCatalog
@@ -116,12 +138,7 @@ public final class IcebergNativeLogicalViewSupport {
       }
     }
 
-    if (replace) {
-      builder.createOrReplace();
-    } else {
-      builder.create();
-    }
-    return true;
+    builder.createOrReplace();
   }
 
   private static ViewCatalog asViewCatalog(Catalog catalog, String catalogName) {

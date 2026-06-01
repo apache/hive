@@ -533,6 +533,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable != null) {
       try {
         if (isNativeIcebergLogicalView(hmsTable)) {
+          IcebergNativeLogicalViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
           return;
         }
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
@@ -562,4 +563,5 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
       throw new RuntimeException("Error checking storage handler class", e);
     }
   }
+
 }

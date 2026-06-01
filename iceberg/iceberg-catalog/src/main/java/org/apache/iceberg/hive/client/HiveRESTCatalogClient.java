@@ -49,7 +49,6 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NoSuchTableException;
-import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
@@ -61,7 +60,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.RESTCatalog;
-import org.apache.iceberg.view.View;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,12 +210,11 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
       return MetastoreUtil.toHiveTable(icebergTable, conf);
     } catch (NoSuchTableException tableMissing) {
       if (restCatalog instanceof ViewCatalog viewCatalog) {
-        try {
-          View icebergView = viewCatalog.loadView(id);
-          return MetastoreUtil.toHiveView(icebergView, conf);
-        } catch (NoSuchViewException viewMissing) {
+        if (!viewCatalog.viewExists(id)) {
           throw new NoSuchObjectException();
         }
+        return MetastoreUtil.buildMinimalHMSView(
+            tableRequest.getCatName(), tableRequest.getDbName(), tableRequest.getTblName(), conf);
       }
       throw new NoSuchObjectException();
     }
@@ -240,7 +237,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
       EnvironmentContext envContext, String validWriteIdList) throws TException {
     validateCurrentCatalog(catName);
     if (hasIcebergNativeViewTableType(newTable) && restCatalog instanceof ViewCatalog) {
-      createOrReplaceLogicalView(newTable, dbName, tblName, true);
+      createOrReplaceLogicalView(newTable, dbName, tblName);
     }
   }
 
@@ -248,8 +245,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   public void createTable(CreateTableRequest request) throws TException {
     Table table = request.getTable();
     if (hasIcebergNativeViewTableType(table) && restCatalog instanceof ViewCatalog) {
-      createOrReplaceLogicalView(
-          table, table.getDbName(), table.getTableName(), false);
+      createOrReplaceLogicalView(table, table.getDbName(), table.getTableName());
     } else {
       List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
       if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
@@ -273,8 +269,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     }
   }
 
-  private void createOrReplaceLogicalView(
-      Table table, String dbName, String tableName, boolean replace) {
+  private void createOrReplaceLogicalView(Table table, String dbName, String tableName) {
 
     List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
     if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
@@ -286,7 +281,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
     String comment = tblProps.get("comment");
     IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment, replace);
+        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment);
   }
 
   @Override
