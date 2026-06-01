@@ -53,6 +53,11 @@ public interface ProgressMonitor {
     public double progressedPercentage() {
       return 0;
     }
+
+    @Override
+    public String queueMetrics() {
+      return "";
+    }
   };
 
   List<String> headers();
@@ -66,4 +71,6 @@ public interface ProgressMonitor {
   String executionStatus();
 
   double progressedPercentage();
+
+  String queueMetrics();
 }
