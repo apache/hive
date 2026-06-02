@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -48,12 +47,6 @@ import static org.mockito.Mockito.verify;
  * for view queries over partitioned base tables.
  */
 public class TestViewPartitionPrivilegeObjects {
-
-  static final String DATA_DB = "datadb";
-  static final String VIEW_DB = "viewdb";
-  static final String BASE_TABLE = "t1";
-  static final String VIEW_NAME = "v1";
-  static final String TARGET_TABLE = "insert_target";
 
   protected static HiveConf conf;
   protected static Driver driver;
@@ -77,7 +70,6 @@ public class TestViewPartitionPrivilegeObjects {
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
-    conf.setVar(ConfVars.HIVE_MAPRED_MODE, "nonstrict");
     conf.setVar(ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     conf.setVar(ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     conf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "mr");
@@ -86,16 +78,13 @@ public class TestViewPartitionPrivilegeObjects {
     SessionState.start(conf);
     driver = new Driver(conf);
 
-    runCmd("CREATE DATABASE IF NOT EXISTS " + DATA_DB);
-    runCmd("CREATE TABLE IF NOT EXISTS " + DATA_DB + "." + BASE_TABLE
-        + " (i INT) PARTITIONED BY (dept STRING)");
-    runCmd("ALTER TABLE " + DATA_DB + "." + BASE_TABLE + " ADD IF NOT EXISTS PARTITION (dept='a')");
-    runCmd("CREATE DATABASE IF NOT EXISTS " + VIEW_DB);
-    runCmd("CREATE VIEW IF NOT EXISTS " + VIEW_DB + "." + VIEW_NAME
-        + " AS SELECT * FROM " + DATA_DB + "." + BASE_TABLE);
+    runCmd("CREATE DATABASE IF NOT EXISTS datadb");
+    runCmd("CREATE TABLE IF NOT EXISTS datadb.t1 (i INT) PARTITIONED BY (dept STRING)");
+    runCmd("ALTER TABLE datadb.t1 ADD IF NOT EXISTS PARTITION (dept='a')");
+    runCmd("CREATE DATABASE IF NOT EXISTS viewdb");
+    runCmd("CREATE VIEW IF NOT EXISTS viewdb.v1 AS SELECT * FROM datadb.t1");
     // Target table used by INSERT OVERWRITE tests — non-partitioned to keep DML simple
-    runCmd("CREATE TABLE IF NOT EXISTS " + DATA_DB + "." + TARGET_TABLE
-        + " (i INT, dept STRING)");
+    runCmd("CREATE TABLE IF NOT EXISTS datadb.insert_target (i INT, dept STRING)");
   }
 
   @Before
@@ -107,16 +96,16 @@ public class TestViewPartitionPrivilegeObjects {
 
   @AfterClass
   public static void afterClass() throws Exception {
-    runCmd("DROP VIEW IF EXISTS " + VIEW_DB + "." + VIEW_NAME);
-    runCmd("DROP TABLE IF EXISTS " + DATA_DB + "." + BASE_TABLE);
-    runCmd("DROP TABLE IF EXISTS " + DATA_DB + "." + TARGET_TABLE);
-    runCmd("DROP DATABASE IF EXISTS " + VIEW_DB);
-    runCmd("DROP DATABASE IF EXISTS " + DATA_DB);
+    runCmd("DROP VIEW IF EXISTS viewdb.v1");
+    runCmd("DROP TABLE IF EXISTS datadb.t1");
+    runCmd("DROP TABLE IF EXISTS datadb.insert_target");
+    runCmd("DROP DATABASE IF EXISTS viewdb");
+    runCmd("DROP DATABASE IF EXISTS datadb");
     driver.close();
   }
 
   @Test
-  public void testViewSelectNoBaseTablePartitionPrivObj() throws Exception {
+  public void testViewSelectNoPartitionPrivObj() throws Exception {
     conf.setVar(ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     SessionState.get().setConf(conf);
 
@@ -124,27 +113,27 @@ public class TestViewPartitionPrivilegeObjects {
     Mockito.when(user1Auth.getUserName()).thenReturn("user1");
     SessionState.get().setAuthenticator(user1Auth);
 
-    driver.compile("SELECT * FROM " + VIEW_DB + "." + VIEW_NAME, true);
+    driver.compile("SELECT * FROM viewdb.v1", true);
 
     List<HivePrivilegeObject> inputs = getInputPrivObjects();
 
     Assert.assertTrue("Expected a TABLE_OR_VIEW object for the view",
         inputs.stream().anyMatch(h ->
             h.getType() == HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW
-                && VIEW_NAME.equalsIgnoreCase(h.getObjectName())
-                && VIEW_DB.equalsIgnoreCase(h.getDbname())));
+                && "v1".equalsIgnoreCase(h.getObjectName())
+                && "viewdb".equalsIgnoreCase(h.getDbname())));
 
     Assert.assertFalse("HIVE-29628: view query must not send a PARTITION object on the base table",
         inputs.stream().anyMatch(h ->
             h.getType() == HivePrivilegeObject.HivePrivilegeObjectType.PARTITION
-                && BASE_TABLE.equalsIgnoreCase(h.getObjectName())
-                && DATA_DB.equalsIgnoreCase(h.getDbname())));
+                && "t1".equalsIgnoreCase(h.getObjectName())
+                && "datadb".equalsIgnoreCase(h.getDbname())));
 
     Assert.assertFalse("HIVE-29628: view query must not send a base-table TABLE_OR_VIEW object",
         inputs.stream().anyMatch(h ->
             h.getType() == HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW
-                && BASE_TABLE.equalsIgnoreCase(h.getObjectName())
-                && DATA_DB.equalsIgnoreCase(h.getDbname())));
+                && "t1".equalsIgnoreCase(h.getObjectName())
+                && "datadb".equalsIgnoreCase(h.getDbname())));
   }
 
   /**
@@ -152,49 +141,46 @@ public class TestViewPartitionPrivilegeObjects {
    * so table/partition policies (e.g. Ranger) can be enforced.
    */
   @Test
-  public void testDirectTableSelectHasPartitionPrivObj() throws Exception {
+  public void testDirectTableSelect() throws Exception {
     conf.setVar(ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     SessionState.get().setConf(conf);
 
-    driver.compile("SELECT * FROM " + DATA_DB + "." + BASE_TABLE, true);
+    driver.compile("SELECT * FROM datadb.t1", true);
 
     List<HivePrivilegeObject> inputs = getInputPrivObjects();
 
     Assert.assertTrue("Expected a PARTITION privilege object for direct table access",
         inputs.stream().anyMatch(h ->
             h.getType() == HivePrivilegeObject.HivePrivilegeObjectType.PARTITION
-                && BASE_TABLE.equalsIgnoreCase(h.getObjectName())
-                && DATA_DB.equalsIgnoreCase(h.getDbname())));
+                && "t1".equalsIgnoreCase(h.getObjectName())
+                && "datadb".equalsIgnoreCase(h.getDbname())));
   }
 
   /**
    * When a view over a partitioned table is the READ SOURCE of an INSERT OVERWRITE statement,
-   * {@code checkPrivileges} inputs must contain only {@code TABLE_OR_VIEW viewdb/v1}
+   * {@code checkPrivileges} inputs must contain only {@code TABLE_OR_VIEW viewdb/v1}.
    */
   @Test
-  public void testInsertOverwriteFromView_noBaseTablePartitionInInputs() throws Exception {
+  public void testInsertOverwriteFromView() throws Exception {
     conf.setVar(ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     SessionState.get().setConf(conf);
 
-    driver.compile(
-        "INSERT OVERWRITE TABLE " + DATA_DB + "." + TARGET_TABLE
-            + " SELECT * FROM " + VIEW_DB + "." + VIEW_NAME,
-        true);
+    driver.compile("INSERT OVERWRITE TABLE datadb.insert_target SELECT * FROM viewdb.v1", true);
 
     List<HivePrivilegeObject> inputs = getInputPrivObjects();
 
     Assert.assertTrue("Expected TABLE_OR_VIEW privilege object for view source in INSERT",
         inputs.stream().anyMatch(h ->
             h.getType() == HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW
-                && VIEW_NAME.equalsIgnoreCase(h.getObjectName())
-                && VIEW_DB.equalsIgnoreCase(h.getDbname())));
+                && "v1".equalsIgnoreCase(h.getObjectName())
+                && "viewdb".equalsIgnoreCase(h.getDbname())));
 
     Assert.assertFalse(
         "INSERT from view must not send a PARTITION privilege object on the base table",
         inputs.stream().anyMatch(h ->
             h.getType() == HivePrivilegeObject.HivePrivilegeObjectType.PARTITION
-                && BASE_TABLE.equalsIgnoreCase(h.getObjectName())
-                && DATA_DB.equalsIgnoreCase(h.getDbname())));
+                && "t1".equalsIgnoreCase(h.getObjectName())
+                && "datadb".equalsIgnoreCase(h.getDbname())));
   }
 
   @SuppressWarnings("unchecked")
