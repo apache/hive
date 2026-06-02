@@ -48,6 +48,17 @@ spec:
                     description: "Autoscaling configuration (operator-driven, no external\
                       \ dependencies)"
                     properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -203,6 +214,17 @@ spec:
                     description: "Autoscaling configuration (operator-driven, no external\
                       \ dependencies)"
                     properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -333,6 +355,17 @@ spec:
                     description: "Autoscaling configuration (operator-driven, no external\
                       \ dependencies)"
                     properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -516,6 +549,17 @@ spec:
                     description: "Autoscaling configuration (operator-driven, no external\
                       \ dependencies)"
                     properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
                       enabled:
                         default: false
                         description: Whether autoscaling is enabled for this component
@@ -666,6 +710,12 @@ spec:
                 properties:
                   autoscaling:
                     properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
                       currentMetricValue:
                         type: integer
                       lastScaleTime:
@@ -690,6 +740,12 @@ spec:
                 properties:
                   autoscaling:
                     properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
                       currentMetricValue:
                         type: integer
                       lastScaleTime:
@@ -714,6 +770,12 @@ spec:
                 properties:
                   autoscaling:
                     properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
                       currentMetricValue:
                         type: integer
                       lastScaleTime:
@@ -740,6 +802,12 @@ spec:
                 properties:
                   autoscaling:
                     properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
                       currentMetricValue:
                         type: integer
                       lastScaleTime:

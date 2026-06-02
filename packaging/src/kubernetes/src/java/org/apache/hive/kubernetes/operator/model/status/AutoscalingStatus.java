@@ -31,6 +31,9 @@ public class AutoscalingStatus {
 
   private int currentMetricValue;
   private Integer scaleUpThreshold;
+  private Double currentCpuPercent;
+  private Integer cpuScaleUpThreshold;
+  private Integer cpuProposedReplicas;
   private int proposedReplicas;
   private String lastScaleTime;
 
@@ -48,6 +51,30 @@ public class AutoscalingStatus {
 
   public void setScaleUpThreshold(Integer scaleUpThreshold) {
     this.scaleUpThreshold = scaleUpThreshold;
+  }
+
+  public Double getCurrentCpuPercent() {
+    return currentCpuPercent;
+  }
+
+  public void setCurrentCpuPercent(Double currentCpuPercent) {
+    this.currentCpuPercent = currentCpuPercent;
+  }
+
+  public Integer getCpuScaleUpThreshold() {
+    return cpuScaleUpThreshold;
+  }
+
+  public void setCpuScaleUpThreshold(Integer cpuScaleUpThreshold) {
+    this.cpuScaleUpThreshold = cpuScaleUpThreshold;
+  }
+
+  public Integer getCpuProposedReplicas() {
+    return cpuProposedReplicas;
+  }
+
+  public void setCpuProposedReplicas(Integer cpuProposedReplicas) {
+    this.cpuProposedReplicas = cpuProposedReplicas;
   }
 
   public int getProposedReplicas() {
@@ -77,6 +104,9 @@ public class AutoscalingStatus {
     AutoscalingStatus that = (AutoscalingStatus) o;
     return currentMetricValue == that.currentMetricValue
         && Objects.equals(scaleUpThreshold, that.scaleUpThreshold)
+        && Objects.equals(currentCpuPercent, that.currentCpuPercent)
+        && Objects.equals(cpuScaleUpThreshold, that.cpuScaleUpThreshold)
+        && Objects.equals(cpuProposedReplicas, that.cpuProposedReplicas)
         && proposedReplicas == that.proposedReplicas
         && Objects.equals(lastScaleTime, that.lastScaleTime);
   }
@@ -84,6 +114,7 @@ public class AutoscalingStatus {
   @Override
   public int hashCode() {
     return Objects.hash(currentMetricValue, scaleUpThreshold,
+        currentCpuPercent, cpuScaleUpThreshold, cpuProposedReplicas,
         proposedReplicas, lastScaleTime);
   }
 }

@@ -53,7 +53,15 @@ public record AutoscalingSpec(
     @JsonPropertyDescription("How often (seconds) the operator scrapes JMX metrics from pods. "
         + "Lower values make autoscaling react faster.")
     @Default("10")
-    Integer metricsScrapeIntervalSeconds) {
+    Integer metricsScrapeIntervalSeconds,
+    @JsonPropertyDescription("CPU percentage (0-100) that triggers scale-up. "
+        + "Only applies to HS2 and HMS. Set to 0 to disable CPU-based scaling.")
+    @Default("90")
+    Integer cpuScaleUpThreshold,
+    @JsonPropertyDescription("CPU percentage (0-100) below which scale-down is considered. "
+        + "Only applies to HS2 and HMS.")
+    @Default("30")
+    Integer cpuScaleDownThreshold) {
 
   public AutoscalingSpec {
     enabled = enabled != null ? enabled : false;
@@ -63,6 +71,8 @@ public record AutoscalingSpec(
     scaleDownStabilizationSeconds = scaleDownStabilizationSeconds != null ? scaleDownStabilizationSeconds : 600;
     gracePeriodSeconds = gracePeriodSeconds != null ? gracePeriodSeconds : 3600;
     metricsScrapeIntervalSeconds = metricsScrapeIntervalSeconds != null ? metricsScrapeIntervalSeconds : 10;
+    cpuScaleUpThreshold = cpuScaleUpThreshold != null ? cpuScaleUpThreshold : 90;
+    cpuScaleDownThreshold = cpuScaleDownThreshold != null ? cpuScaleDownThreshold : 30;
   }
 
   public boolean isEnabled() {

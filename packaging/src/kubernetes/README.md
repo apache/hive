@@ -571,8 +571,8 @@ The autoscaling system uses three independent timing controls:
 
 | Component | Scale-Up Formula | Scale-Down | JMX Metric |
 |-----------|-----------------|------------|------------|
-| **HiveServer2** | `ceil(sum(hs2_open_sessions) / scaleUpThreshold)` | Sessions drop to 0 → scale to minReplicas | `hs2_open_sessions` |
-| **Metastore** | `ceil(api_request_rate / scaleUpThreshold)` | Rate drops to 0 → scale to minReplicas | `api_*_total` (operator computes delta/time) |
+| **HiveServer2** | `max(ceil(sessions / threshold), cpu_desired)` | Sessions drop to 0 AND CPU below threshold → scale to minReplicas | `hs2_open_sessions`, `jvm_process_cpu_load` |
+| **Metastore** | `max(ceil(api_rate / threshold), cpu_desired)` | Rate drops to 0 AND CPU below threshold → scale to minReplicas | `api_*_total`, `jvm_process_cpu_load` |
 | **LLAP** | `ceil(avg(queued + configured - available) / scaleUpThreshold)` | All executors idle + no HS2 sessions | `hadoop_llapdaemon_executor*` |
 | **Tez AM** | `max(sum(hs2_open_sessions), count(HS2_pods) * sessions_per_queue)` | All HS2 sessions closed | `hs2_open_sessions` (from HS2 pods) |
 
@@ -636,6 +636,99 @@ terminates immediately once sessions drain, not after the full grace period.
 | **HMS** | 1 | Never (always running) | N/A |
 | **LLAP** | 0 | No HS2 sessions (activation gate fails) | HS2 has open sessions (next scrape) |
 | **TezAM** | 0 | No HS2 sessions (activation gate fails) | HS2 has open sessions (next scrape) |
+
+### CPU-Based Scaling (HS2 and HMS)
+
+In addition to the primary metrics (sessions for HS2, API request rate for HMS),
+the operator supports a secondary **CPU-based scaling signal** for HiveServer2 and
+Metastore. The final desired replica count is:
+
+```
+final_desired = max(metric_desired, cpu_desired)
+```
+
+Either signal can trigger scale-up; neither can force scale-down below what the
+other recommends. CPU-based scaling uses the same stabilization windows as metric-based
+scaling (no separate CPU stabilization).
+
+**How it works:**
+
+1. The operator scrapes `ProcessCpuLoad` from `java.lang:type=OperatingSystem` via JMX
+   Exporter (exported as `jvm_process_cpu_load`, a 0.0–1.0 fraction)
+2. Averages across all pods, converts to percentage (0–100)
+3. If avg CPU >= `cpuScaleUpThreshold`: scales up proportionally
+   (`ceil(avgCpu * currentReplicas / cpuScaleUpThreshold)`)
+4. If avg CPU < `cpuScaleDownThreshold`: scales down
+   (`ceil(avgCpu * currentReplicas / cpuScaleUpThreshold)`, floored at `minReplicas`)
+5. Between thresholds: holds current replica count
+
+**Configuration:**
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.<component>.autoscaling.cpuScaleUpThreshold` | `90` | CPU percentage (0-100) that triggers scale-up. Set to `0` to disable CPU-based scaling. |
+| `cluster.<component>.autoscaling.cpuScaleDownThreshold` | `30` | CPU percentage (0-100) below which scale-down is considered. |
+
+**Example:**
+
+```yaml
+cluster:
+  hiveServer2:
+    replicas: 10
+    resources:
+      limitsCpu: "2"        # Recommended: set CPU limits so ProcessCpuLoad is relative to pod allocation
+    autoscaling:
+      enabled: true
+      cpuScaleUpThreshold: 90
+      cpuScaleDownThreshold: 30
+
+  metastore:
+    replicas: 6
+    resources:
+      limitsCpu: "2"
+    autoscaling:
+      enabled: true
+      cpuScaleUpThreshold: 90
+      cpuScaleDownThreshold: 30
+```
+
+**Important: CPU limits and metric accuracy**
+
+`ProcessCpuLoad` reports CPU usage as a fraction of **available processors**. Without
+CPU limits, the JVM sees all node cores (e.g., 8 cores), so even heavy single-pod
+load only shows ~12.5%. With `limitsCpu: "2"`, the JVM sees 2 processors and the
+metric becomes "% of allocated CPU" — making thresholds meaningful.
+
+| Pod CPU Limit | JVM sees | 90% threshold means |
+|---------------|----------|---------------------|
+| None (no limit) | All node cores (e.g., 8) | Using 7.2 of 8 cores — very hard to reach |
+| `2` | 2 cores | Using 1.8 of 2 allocated cores |
+| `4` | 4 cores | Using 3.6 of 4 allocated cores |
+
+**Recommendation:** Always set `resources.limitsCpu` when using CPU-based autoscaling.
+
+**Status output:**
+
+The operator reports CPU metrics in the HiveCluster status:
+
+```yaml
+status:
+  hiveServer2:
+    autoscaling:
+      currentMetricValue: 5           # total sessions
+      scaleUpThreshold: 100
+      currentCpuPercent: 72.45        # avg ProcessCpuLoad * 100
+      cpuScaleUpThreshold: 90
+      cpuProposedReplicas: 2          # what CPU alone would recommend
+      proposedReplicas: 2
+      lastScaleTime: "2026-05-31T04:23:07Z"
+```
+
+**Applicability:** CPU-based scaling only applies to HS2 and HMS. LLAP and TezAM
+do not use CPU as a scaling signal (LLAP scales on busy executor slots which already
+correlates with CPU; TezAM is demand-based from HS2 session count).
+
+---
 
 ### Enabling Autoscaling
 
@@ -761,8 +854,8 @@ When autoscaling is enabled, the operator automatically:
 
 | Component | Key Metrics | Purpose |
 |-----------|---------|---------|
-| **HiveServer2** | `hs2_open_sessions` | Session count — used for HS2 scaling and as activation gate for LLAP/TezAM |
-| **Metastore** | `api_*_total` | API call counters (operator computes request rate from deltas) |
+| **HiveServer2** | `hs2_open_sessions`, `jvm_process_cpu_load` | Session count for primary scaling + CPU for secondary scaling signal |
+| **Metastore** | `api_*_total`, `jvm_process_cpu_load` | API call counters (operator computes request rate from deltas) + CPU for secondary scaling signal |
 | **LLAP** | `hadoop_llapdaemon_executornumqueuedrequests`, `hadoop_llapdaemon_executornumexecutorsconfigured`, `hadoop_llapdaemon_executornumexecutorsavailable` | Total busy slots = queued + configured - available |
 | **Tez AM** | N/A (scales on HS2 metrics) | TezAM scaling is demand-driven from `hs2_open_sessions` — no TezAM-specific metrics needed |
 
@@ -803,6 +896,8 @@ cluster:
 | `cluster.<component>.autoscaling.scaleDownStabilizationSeconds` | `300-900` | Stabilization window for scale-down (picks most conservative recommendation in window). Also acts as cooldown between consecutive scale-downs. |
 | `cluster.<component>.autoscaling.gracePeriodSeconds` | `3600` | Safety cap: max drain time before forced termination. Pod exits immediately once drain completes. |
 | `cluster.<component>.autoscaling.metricsScrapeIntervalSeconds` | `10` | How often the operator scrapes JMX metrics from pods. Lower = faster reaction. |
+| `cluster.<component>.autoscaling.cpuScaleUpThreshold` | `90` | CPU percentage (0-100) triggering scale-up. Only HS2/HMS. Set to 0 to disable. |
+| `cluster.<component>.autoscaling.cpuScaleDownThreshold` | `30` | CPU percentage (0-100) below which scale-down is considered. Only HS2/HMS. |
 
 ---
 
@@ -962,6 +1057,8 @@ setup is needed — simply connect to HS2 and the operator wakes LLAP/TezAM as n
 | `cluster.<component>.autoscaling.scaleDownStabilizationSeconds` | `300-900` | Stabilization window for scale-down decisions (also acts as cooldown between consecutive scale-downs) |
 | `cluster.<component>.autoscaling.gracePeriodSeconds` | `3600` | Safety cap (seconds) — pod terminates immediately once drain completes, this is only the upper bound |
 | `cluster.<component>.autoscaling.metricsScrapeIntervalSeconds` | `10` | How often the operator polls JMX metrics from pods. Lower = faster reaction time. |
+| `cluster.<component>.autoscaling.cpuScaleUpThreshold` | `90` | CPU percentage (0-100) triggering scale-up. Only HS2/HMS. Set to 0 to disable. |
+| `cluster.<component>.autoscaling.cpuScaleDownThreshold` | `30` | CPU percentage (0-100) below which scale-down is considered. Only HS2/HMS. |
 
 ---
 

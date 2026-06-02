@@ -69,7 +69,7 @@ public record MetastoreSpec(
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 1, 75, 60, 300, 60, 10);
+        false, 1, 75, 60, 300, 60, 10, 90, 30);
   }
 
   public boolean isEnabled() {

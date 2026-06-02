@@ -32,22 +32,28 @@ import org.slf4j.LoggerFactory;
 public class ComponentAutoscaler {
 
   /** Result of an autoscaling evaluation. */
-  public record EvaluationResult(int rawMetricValue, int proposedReplicas, Integer patchTo) {}
+  public record EvaluationResult(int rawMetricValue, double cpuPercent,
+      int cpuProposedReplicas, int proposedReplicas, Integer patchTo) {}
 
 
   private static final Logger LOG = LoggerFactory.getLogger(ComponentAutoscaler.class);
 
+  private static final String METRIC_CPU_LOAD = "jvm_process_cpu_load";
+
   private final String component;
   private final ScalingStrategy strategy;
+  private final boolean cpuScalingApplicable;
   private StabilizationWindow scaleUpWindow;
   private StabilizationWindow scaleDownWindow;
   private int lastScaleUpStabilization = -1;
   private int lastScaleDownStabilization = -1;
   private boolean initialized;
+  private double lastCpuPercent;
 
   public ComponentAutoscaler(String component, ScalingStrategy strategy) {
     this.component = component;
     this.strategy = strategy;
+    this.cpuScalingApplicable = "hiveserver2".equals(component) || "metastore".equals(component);
   }
 
   /** Whether the underlying strategy uses scaleUpThreshold for scaling decisions. */
@@ -74,7 +80,11 @@ public class ComponentAutoscaler {
 
     int rawDesired = strategy.computeDesiredReplicas(metrics, spec, maxReplicas);
     int metricValue = strategy.lastMetricValue();
-    int clamped = Math.max(spec.minReplicas(), Math.min(rawDesired, maxReplicas));
+
+    // CPU-based scaling: combine with metric-based desired via max()
+    int cpuDesired = computeCpuDesired(metrics, spec, currentReplicas);
+    int combined = Math.max(rawDesired, cpuDesired);
+    int clamped = Math.max(spec.minReplicas(), Math.min(combined, maxReplicas));
 
     scaleUpWindow.record(clamped);
     scaleDownWindow.record(clamped);
@@ -96,7 +106,7 @@ public class ComponentAutoscaler {
     target = Math.max(spec.minReplicas(), Math.min(target, maxReplicas));
 
     if (target == currentReplicas) {
-      return new EvaluationResult(metricValue, clamped, null);
+      return new EvaluationResult(metricValue, lastCpuPercent, cpuDesired, clamped, null);
     }
 
     if (target < currentReplicas) {
@@ -104,7 +114,46 @@ public class ComponentAutoscaler {
     } else {
       LOG.info("[{}] Scaling up: {} -> {}", component, currentReplicas, target);
     }
-    return new EvaluationResult(metricValue, clamped, target);
+    return new EvaluationResult(metricValue, lastCpuPercent, cpuDesired, clamped, target);
+  }
+
+  /**
+   * Compute desired replicas based on CPU utilization.
+   * Returns 0 if CPU scaling is not applicable or no CPU data is available.
+   */
+  private int computeCpuDesired(List<PodMetrics> metrics, AutoscalingSpec spec, int currentReplicas) {
+    if (!cpuScalingApplicable || spec.cpuScaleUpThreshold() <= 0 || metrics.isEmpty()) {
+      lastCpuPercent = 0;
+      return 0;
+    }
+
+    double totalCpu = 0;
+    int count = 0;
+    for (PodMetrics pm : metrics) {
+      Double cpu = pm.metrics().get(METRIC_CPU_LOAD);
+      if (cpu != null) {
+        totalCpu += cpu * 100.0;
+        count++;
+      }
+    }
+    if (count == 0) {
+      lastCpuPercent = 0;
+      return 0;
+    }
+    double avgCpuPercent = totalCpu / count;
+    lastCpuPercent = avgCpuPercent;
+    LOG.debug("[{}] CPU raw: totalCpu={}, count={}, avg={}%", component, totalCpu, count, avgCpuPercent);
+
+    if (avgCpuPercent >= spec.cpuScaleUpThreshold()) {
+      // Scale up proportionally: how many pods to bring avg below threshold
+      return (int) Math.ceil(avgCpuPercent * currentReplicas / spec.cpuScaleUpThreshold());
+    } else if (avgCpuPercent < spec.cpuScaleDownThreshold()) {
+      // Scale down: current load could fit in fewer pods
+      int desired = (int) Math.ceil(avgCpuPercent * currentReplicas / spec.cpuScaleUpThreshold());
+      return Math.max(desired, spec.minReplicas());
+    }
+    // Between thresholds: hold current
+    return currentReplicas;
   }
 
   private void ensureWindows(AutoscalingSpec spec) {

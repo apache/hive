@@ -189,6 +189,7 @@
                   <executable>docker</executable>
                   <arguments>
                     <argument>build</argument>
+                    <argument>--no-cache</argument>
                     <argument>-t</argument>
                     <argument>apache/hive:operator-${project.version}</argument>
                     <argument>.</argument>

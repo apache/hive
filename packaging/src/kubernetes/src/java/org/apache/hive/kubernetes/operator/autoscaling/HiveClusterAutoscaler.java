@@ -182,6 +182,13 @@ public class HiveClusterAutoscaler {
     if (autoscaler.usesScaleUpThreshold()) {
       as.setScaleUpThreshold(autoscaling.scaleUpThreshold());
     }
+    // CPU metrics (only for HS2 and HMS — LLAP/TezAM don't use CPU-based scaling)
+    if (("hiveserver2".equals(component) || "metastore".equals(component))
+        && autoscaling.cpuScaleUpThreshold() > 0) {
+      as.setCurrentCpuPercent(result.cpuPercent());
+      as.setCpuScaleUpThreshold(autoscaling.cpuScaleUpThreshold());
+      as.setCpuProposedReplicas(result.cpuProposedReplicas());
+    }
     as.setProposedReplicas(result.proposedReplicas());
     as.setLastScaleTime(lastScaleTimes.get(key));
     statuses.put(component, as);
