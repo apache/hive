@@ -218,6 +218,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     } else if (call.isA(SqlKind.AND)) {
       // Make sure AND is flattened (we may have nested ANDs due to SearchTransformer conversion above)
       return ExprNodeDescUtils.and(args);
+    }  else if (call.isA(SqlKind.OR)) {
+      // Make sure OR is flattened (we may have nested ORs due to SearchTransformer conversion above)
+      return ExprNodeDescUtils.or(args);
     } else {
       GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(),
           args.size());

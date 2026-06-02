@@ -72,6 +72,11 @@ public class SearchTransformer<C extends Comparable<C>> {
     this.unknownContext = unknownContext;
   }
 
+  /**
+   * Transforms the SEARCH expression into an equivalent RexNode expression.
+   * Warning: when called from a shuttle, callers of this method should consider flattening AND/OR expressions
+   * afterward, to get the same result as applying {@link SearchTransformer.Shuttle}.
+   */
   public RexNode transform() {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
