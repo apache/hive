@@ -35,4 +35,9 @@ STORED BY iceberg;
 INSERT INTO ice01 PARTITION (str_col, tinyint_col)
   SELECT index, date_col, timestamp_col, string_col, double_col, float_col, decimal_col, smallint_col, int_col, bigint_col, boolean_col, str_col, tinyint_col FROM sample01;
 
+INSERT INTO ice01 PARTITION (str_col='null', tinyint_col=1)
+  VALUES (1004,"1970-01-01","1993-05-17 07:39:58.375409","some string",0.0,0.0,0.000,0,0,0,true);
+
 SELECT * FROM ice01 WHERE str_col is NULL;
+SELECT * FROM ice01 WHERE str_col = 'null';
+SELECT * FROM ice01 WHERE str_col is NOT NULL;

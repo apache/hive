@@ -101,6 +101,16 @@ POSTHOOK: query: INSERT INTO ice01 PARTITION (str_col, tinyint_col)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sample01
 POSTHOOK: Output: default@ice01
+PREHOOK: query: INSERT INTO ice01 PARTITION (str_col='null', tinyint_col=1)
+  VALUES (1004,"1970-01-01","1993-05-17 07:39:58.375409","some string",0.0,0.0,0.000,0,0,0,true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01@tinyint_col=1/str_col=null
+POSTHOOK: query: INSERT INTO ice01 PARTITION (str_col='null', tinyint_col=1)
+  VALUES (1004,"1970-01-01","1993-05-17 07:39:58.375409","some string",0.0,0.0,0.000,0,0,0,true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01@tinyint_col=1/str_col=null
 PREHOOK: query: SELECT * FROM ice01 WHERE str_col is NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice01
@@ -110,3 +120,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1003	1969-10-27	1993-05-17 07:39:58.375409	sloppy bronze hare	-181.01933598375618	-181.01933	-999999.999	-32768	-2147483648	-9223372036854775808	false	NULL	-128
+PREHOOK: query: SELECT * FROM ice01 WHERE str_col = 'null'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM ice01 WHERE str_col = 'null'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1004	1970-01-01	1993-05-17 07:39:58.375409	some string	0.0	0.0	0.000	0	0	0	true	null	1
+PREHOOK: query: SELECT * FROM ice01 WHERE str_col is NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM ice01 WHERE str_col is NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1004	1970-01-01	1993-05-17 07:39:58.375409	some string	0.0	0.0	0.000	0	0	0	true	null	1
