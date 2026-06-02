@@ -33,13 +33,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import com.google.common.collect.Range;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * A class that transforms a call to the internal {@link SqlStdOperatorTable#SEARCH} operator into an equivalent
