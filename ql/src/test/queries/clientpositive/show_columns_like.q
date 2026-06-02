@@ -4,6 +4,7 @@ USE col_test_db;
 CREATE TABLE wildcard_table (
   id_primary INT,
   id_secondary INT,
+  idxprimary INT,
   name_first STRING,
   name_last STRING,
   MixedCaseColumn INT,
@@ -23,5 +24,6 @@ SHOW COLUMNS FROM wildcard_table LIKE 'id_secondar_';
 SHOW COLUMNS FROM wildcard_table LIKE 'id__rimary';
 SHOW COLUMNS FROM wildcard_table LIKE 'abc%';
 SHOW COLUMNS FROM wildcard_table LIKE 'id__';
+SHOW COLUMNS FROM wildcard_table LIKE 'id\_primary';
 
 DROP DATABASE col_test_db CASCADE;

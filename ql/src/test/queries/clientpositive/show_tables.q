@@ -53,3 +53,7 @@ USE `database`;
 CREATE TABLE foo_n4(a INT);
 USE default;
 SHOW TABLES FROM `database` LIKE "foo_n4";
+
+-- SHOW TABLES with legacy glob and regex
+SHOW TABLES LIKE 'shtb_*';
+SHOW TABLES LIKE 'shtb_test1_n0|shtb_test2_n0';

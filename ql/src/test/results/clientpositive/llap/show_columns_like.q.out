@@ -13,6 +13,7 @@ POSTHOOK: Input: database:col_test_db
 PREHOOK: query: CREATE TABLE wildcard_table (
   id_primary INT,
   id_secondary INT,
+  idxprimary INT,
   name_first STRING,
   name_last STRING,
   MixedCaseColumn INT,
@@ -24,6 +25,7 @@ PREHOOK: Output: database:col_test_db
 POSTHOOK: query: CREATE TABLE wildcard_table (
   id_primary INT,
   id_secondary INT,
+  idxprimary INT,
   name_first STRING,
   name_last STRING,
   MixedCaseColumn INT,
@@ -40,6 +42,7 @@ POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: col_test_db@wildcard_table
 id_primary          
 id_secondary        
+idxprimary          
 PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'name_%'
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: col_test_db@wildcard_table
@@ -70,6 +73,7 @@ POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: col_test_db@wildcard_table
 id_primary          
 id_secondary        
+idxprimary          
 PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id_primary|name_first'
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: col_test_db@wildcard_table
@@ -77,6 +81,7 @@ POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id_primary|name_first'
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: col_test_db@wildcard_table
 id_primary          
+idxprimary          
 name_first          
 PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id_secondar_'
 PREHOOK: type: SHOWCOLUMNS
@@ -92,6 +97,7 @@ POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id__rimary'
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: col_test_db@wildcard_table
 id_primary          
+idxprimary          
 PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'abc%'
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: col_test_db@wildcard_table
@@ -104,6 +110,13 @@ PREHOOK: Input: col_test_db@wildcard_table
 POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id__'
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: col_test_db@wildcard_table
+PREHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id\_primary'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: col_test_db@wildcard_table
+POSTHOOK: query: SHOW COLUMNS FROM wildcard_table LIKE 'id\_primary'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: col_test_db@wildcard_table
+id_primary          
 PREHOOK: query: DROP DATABASE col_test_db CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:col_test_db
