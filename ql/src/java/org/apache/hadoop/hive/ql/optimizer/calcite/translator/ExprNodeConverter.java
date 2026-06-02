@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -214,6 +215,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         && SqlTypeUtil.equalSansNullability(dTFactory, call.getType(),
             call.operands.get(0).getType())) {
       return args.get(0);
+    } else if (call.isA(SqlKind.AND)) {
+      // Make sure AND is flattened (we may have nested ANDs due to SearchTransformer conversion above)
+      return ExprNodeDescUtils.and(args);
     } else {
       GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(),
           args.size());
