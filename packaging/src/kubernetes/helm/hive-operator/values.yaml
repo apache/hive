@@ -123,6 +123,8 @@ cluster:
       scaleDownStabilizationSeconds: 300
       gracePeriodSeconds: 60
       metricsScrapeIntervalSeconds: 10
+      cpuScaleUpThreshold: 90
+      cpuScaleDownThreshold: 30
     # Set to use an external Metastore instead of deploying one:
     # enabled: false
     # externalUri: "thrift://external-metastore:9083"
@@ -148,6 +150,8 @@ cluster:
       scaleDownStabilizationSeconds: 600
       gracePeriodSeconds: 300
       metricsScrapeIntervalSeconds: 10
+      cpuScaleUpThreshold: 90
+      cpuScaleDownThreshold: 30
 
   # ---------------------------------------------------------------------------
   # LLAP — enabled by default for full-HA

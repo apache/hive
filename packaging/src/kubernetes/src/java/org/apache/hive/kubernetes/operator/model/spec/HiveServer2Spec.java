@@ -62,6 +62,6 @@ public record HiveServer2Spec(
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     externalJars = externalJars != null ? externalJars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 1, 80, 60, 600, 300, 10);
+        false, 1, 80, 60, 600, 300, 10, 90, 30);
   }
 }

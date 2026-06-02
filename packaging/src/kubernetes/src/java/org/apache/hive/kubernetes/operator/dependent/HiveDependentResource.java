@@ -816,6 +816,10 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("- pattern: 'metrics<name=tez_session_(.+)><>Value'\n");
         sb.append("  name: tez_session_$1\n");
         sb.append("  type: GAUGE\n");
+        // JVM CPU usage for CPU-based autoscaling
+        sb.append("- pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'\n");
+        sb.append("  name: jvm_process_cpu_load\n");
+        sb.append("  type: GAUGE\n");
         break;
       case "metastore":
         // HMS API call metrics
@@ -824,6 +828,10 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("  type: COUNTER\n");
         sb.append("- pattern: 'metrics<name=open_connections><>Count'\n");
         sb.append("  name: hive_metastore_open_connections\n");
+        sb.append("  type: GAUGE\n");
+        // JVM CPU usage for CPU-based autoscaling
+        sb.append("- pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'\n");
+        sb.append("  name: jvm_process_cpu_load\n");
         sb.append("  type: GAUGE\n");
         break;
       case "llap":
