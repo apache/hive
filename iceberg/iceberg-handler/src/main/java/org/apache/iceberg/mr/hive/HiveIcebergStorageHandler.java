@@ -2306,6 +2306,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
 
     Set<Partition> partitions = Sets.newHashSet();
+    String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
 
     try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
       FluentIterable.from(tasks)
@@ -2317,7 +2318,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             String partName = spec.partitionToPath(partitionData);
 
             Map<String, String> partSpecMap =
-                IcebergTableUtil.makeSpecFromName(partName, spec, partitionData);
+                IcebergTableUtil.makeSpecFromName(partName, spec, partitionData, defaultPartitionName);
 
             DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
             partitions.add(partition);

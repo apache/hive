@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -73,6 +75,9 @@ public class PartExprEvalUtils {
       throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
           " doesn't match partition key definition size, " + partKeyTypes.length);
     }
+    String defaultPartitionName = HiveConf.getVar(SessionState.getSessionConf(),
+        HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+
     // Create the row object
     List<String> partNames = new ArrayList<>();
     List<Object> partValues = new ArrayList<>();
@@ -82,9 +87,15 @@ public class PartExprEvalUtils {
       partNames.add(entry.getKey());
       ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector
           (TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i++]));
-      partValues.add(ObjectInspectorConverters.getConverter(
-          PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi)
-          .convert(entry.getValue()));
+
+      String partitionValue = entry.getValue();
+      if (partitionValue.equals(defaultPartitionName)) {
+        partValues.add(null); // Null for default partition.
+      } else {
+        partValues.add(ObjectInspectorConverters.getConverter(
+            PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi)
+            .convert(partitionValue));
+      }
       partObjectInspectors.add(oi);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
@@ -104,7 +115,7 @@ public class PartExprEvalUtils {
       ExprNodeDesc expr, List<String> partColumnNames,
       List<PrimitiveTypeInfo> partColumnTypeInfos) throws HiveException {
     // Create the row object
-    List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
+    List<ObjectInspector> partObjectInspectors = new ArrayList<>();
     for (int i = 0; i < partColumnNames.size(); i++) {
       partObjectInspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
         partColumnTypeInfos.get(i)));
