@@ -268,7 +268,7 @@ public interface TxnStore extends Configurable {
   @SqlRetry(lockInternally = true)
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent("No-op if already replicated the writeid state")
-  void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
+  boolean replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
 
   @Transactional(POOL_TX)
   void updateTransactionStatistics(UpdateTransactionalStatsRequest req) throws MetaException;
