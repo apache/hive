@@ -5078,31 +5078,48 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   /**
    * Reorders partitionColumnMap, partitionColumnVectorTypes, and partitionExpressions in-place
-   * so that partition columns whose batch slot appears in keyInputColumnMap come first, in the
-   * same order as keyInputColumnMap. Any partition columns not found in keyInputColumnMap are
-   * appended at the end in their original plan order.
+   * so that projected partition-only columns come first in SELECT output order. Any partition
+   * columns not found in the output are appended at the end in their original plan order.
    */
-  private static void reorderPartitionColumnsToMatchKeyInputOrder(int[] partitionColumnMap,
-      Type[] partitionColumnVectorTypes, VectorExpression[] partitionExpressions,
-      int[] keyInputColumnMap) {
+  private static void reorderPartitionColumnsToMatchOutputOrder(List<ColumnInfo> outputSignature,
+      int evaluatorCount, int[] outputColumnProjectionMap, int[] orderColumnMap,
+      ExprNodeDesc[] partitionExprNodeDescs, int[] partitionColumnMap,
+      Type[] partitionColumnVectorTypes, VectorExpression[] partitionExpressions) {
     final int count = partitionColumnMap.length;
-    final int[] orderedMap = Arrays.copyOf(partitionColumnMap, count);
-    final Type[] orderedTypes = Arrays.copyOf(partitionColumnVectorTypes, count);
-    final VectorExpression[] orderedExprs = Arrays.copyOf(partitionExpressions, count);
+    final int[] orderedMap = new int[count];
+    final Type[] orderedTypes = new Type[count];
+    final VectorExpression[] orderedExprs = new VectorExpression[count];
     final boolean[] placed = new boolean[count];
+
     int idx = 0;
-    for (int keyCol : keyInputColumnMap) {
-      for (int p = 0; p < count; p++) {
-        if (!placed[p] && partitionColumnMap[p] == keyCol) {
-          orderedMap[idx] = partitionColumnMap[p];
-          orderedTypes[idx] = partitionColumnVectorTypes[p];
-          orderedExprs[idx] = partitionExpressions[p];
-          placed[p] = true;
-          idx++;
-          break;
+    final int outputSize = outputSignature.size();
+    
+    for (int outputIdx = evaluatorCount; outputIdx < outputSize && idx < count; outputIdx++) {
+      final int outputColumn = outputColumnProjectionMap[outputIdx];
+      final String colName = outputSignature.get(outputIdx).getInternalName();
+      int matchedPartitionIdx = -1;
+      for (int partitionIdx = 0; partitionIdx < count; partitionIdx++) {
+        if (!placed[partitionIdx]) {
+          if (partitionExprNodeDescs[partitionIdx] instanceof ExprNodeColumnDesc &&
+              ((ExprNodeColumnDesc) partitionExprNodeDescs[partitionIdx]).getColumn().equals(colName)) {
+            matchedPartitionIdx = partitionIdx;
+            break;
+          }
+          if (matchedPartitionIdx == -1 && partitionColumnMap[partitionIdx] == outputColumn) {
+            matchedPartitionIdx = partitionIdx;
+          }
         }
       }
+      
+      if (matchedPartitionIdx != -1 && !ArrayUtils.contains(orderColumnMap, outputColumn)) {
+        orderedMap[idx] = outputColumn;
+        orderedTypes[idx] = partitionColumnVectorTypes[matchedPartitionIdx];
+        orderedExprs[idx] = partitionExpressions[matchedPartitionIdx];
+        placed[matchedPartitionIdx] = true;
+        idx++;
+      }
     }
+
     for (int p = 0; p < count; p++) {
       if (!placed[p]) {
         orderedMap[idx] = partitionColumnMap[p];
@@ -5231,8 +5248,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     int[] nonKeyInputColumnMap = ArrayUtils.toPrimitive(nonKeyInputColumns.toArray(new Integer[0]));
 
     if (isPartitionOrderBy && partitionKeyCount > 1) {
-      reorderPartitionColumnsToMatchKeyInputOrder(partitionColumnMap, partitionColumnVectorTypes,
-          partitionExpressions, keyInputColumnMap);
+      reorderPartitionColumnsToMatchOutputOrder(outputSignature, evaluatorCount, outputColumnProjectionMap,
+          orderColumnMap, partitionExprNodeDescs, partitionColumnMap,
+          partitionColumnVectorTypes, partitionExpressions);
     }
 
     VectorExpression[][] evaluatorInputExpressions = new VectorExpression[evaluatorCount][];
