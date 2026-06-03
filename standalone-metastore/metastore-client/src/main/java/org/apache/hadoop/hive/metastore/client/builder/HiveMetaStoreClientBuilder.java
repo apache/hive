@@ -48,6 +48,10 @@ public class HiveMetaStoreClientBuilder {
   private final Configuration conf;
   private IMetaStoreClient client;
 
+  public HiveMetaStoreClientBuilder(Configuration configuration) throws MetaException {
+    this(configuration, true);
+  }
+
   public HiveMetaStoreClientBuilder(Configuration configuration, boolean allowEmbedded) throws MetaException {
     this.conf = Objects.requireNonNull(configuration);
     Class<? extends IMetaStoreClient> mscClass = MetastoreConf.getClass(
