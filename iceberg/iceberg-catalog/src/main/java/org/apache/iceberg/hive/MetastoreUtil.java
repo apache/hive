@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
@@ -46,7 +48,6 @@ import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.view.BaseView;
 import org.apache.iceberg.view.SQLViewRepresentation;
 import org.apache.iceberg.view.View;
@@ -158,31 +159,32 @@ public class MetastoreUtil {
   }
 
   /**
-   * Builds a Hive metastore {@link Table} representation for an Iceberg {@link View}, for clients
-   * (e.g. {@code HiveRESTCatalogClient}) that bridge Iceberg catalog metadata into the HMS API.
+   * Builds a minimal HMS {@link Table} shell for a native Iceberg logical view (identity, view type,
+   * and Iceberg storage-handler markers only). The storage handler {@code postGetTable} hook enriches
+   * this object via {@link IcebergNativeLogicalViewSupport#enrichHmsTableFromIcebergView} (view SQL,
+   * schema, and Iceberg parameters).
    */
-  public static Table toHiveView(View view, Configuration conf) {
+  public static Table buildMinimalHMSView(String catName, String dbName, String tableName, Configuration conf) {
     Table result = new Table();
-    TableName tableName =
-        TableName.fromString(
-            view.name(), MetaStoreUtils.getDefaultCatalog(conf), Warehouse.DEFAULT_DATABASE_NAME);
-    result.setCatName(tableName.getCat());
-    result.setDbName(tableName.getDb());
-    result.setTableName(tableName.getTable());
+    result.setCatName(
+        catName != null ? catName : MetaStoreUtils.getDefaultCatalog(conf));
+    result.setDbName(dbName);
+    result.setTableName(tableName);
     result.setTableType(TableType.VIRTUAL_VIEW.toString());
 
-    long nowMillis = System.currentTimeMillis();
-    int nowSec = (int) (nowMillis / 1000);
-    ViewMetadata metadata = ((BaseView) view).operations().current();
-    String owner =
-        PropertyUtil.propertyAsString(
-            metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, System.getProperty("user.name"));
-    result.setOwner(owner);
+    int nowSec = (int) (System.currentTimeMillis() / 1000);
+    result.setOwner(System.getProperty("user.name"));
     result.setCreateTime(nowSec);
     result.setLastAccessTime(nowSec);
     result.setRetention(Integer.MAX_VALUE);
 
-    applyIcebergViewToHmsTable(result, view, conf);
+    Map<String, String> parameters = Maps.newHashMap();
+    parameters.put(
+        BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+        IcebergNativeLogicalViewSupport.ICEBERG_VIEW_HMS_TABLE_TYPE_VALUE);
+    parameters.put(
+        hive_metastoreConstants.META_TABLE_STORAGE, HMSTablePropertyHelper.HIVE_ICEBERG_STORAGE_HANDLER);
+    result.setParameters(parameters);
     return result;
   }
 

@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
@@ -60,13 +59,13 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
 import org.apache.iceberg.hive.IcebergTableProperties;
-import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -535,8 +534,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable != null) {
       try {
         if (isNativeIcebergLogicalView(hmsTable)) {
-          if (!usesRestMetastoreClient(conf)) {
+          try {
             IcebergNativeLogicalViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
+          } catch (NoSuchViewException ex) {
+            // Iceberg metadata not committed yet; keep HMS view text for compile.
+            LOG.debug("Iceberg view metadata missing for {}.{}, using HMS view text",
+                hmsTable.getDbName(), hmsTable.getTableName());
           }
           return;
         }
@@ -568,8 +571,4 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
-  private static boolean usesRestMetastoreClient(Configuration conf) {
-    String clientImpl = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL);
-    return HiveRESTCatalogClient.class.getName().equals(clientImpl);
-  }
 }
