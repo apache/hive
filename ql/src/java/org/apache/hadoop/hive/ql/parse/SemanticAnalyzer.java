@@ -3065,14 +3065,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             && condn.getToken().getType() == HiveParser.DOT) {
           // get the semijoin rhs table name and field name
           fields1 = new ArrayList<String>();
-          int rhssize = rightAliases.size();
-          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
-              leftAliases, rightAliases, null, aliasToOpInfo);
-          String rhsAlias = null;
+          List<String> scopedLeftAliases = new ArrayList<>();
+          List<String> scopedRightAliases = new ArrayList<>();
 
-          if (rightAliases.size() > rhssize) { // the new table is rhs table
-            rhsAlias = rightAliases.get(rightAliases.size() - 1);
-          }
+          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
+              scopedLeftAliases, scopedRightAliases, null, aliasToOpInfo);
+
+          String rhsAlias = scopedRightAliases.isEmpty() ? null : scopedRightAliases.get(0);
+          scopedLeftAliases.forEach(alias -> {
+            if (!leftAliases.contains(alias)) {
+              leftAliases.add(alias);
+            }
+          });
+          scopedRightAliases.forEach(alias -> {
+            if (!rightAliases.contains(alias)) {
+              rightAliases.add(alias);
+            }
+          });
 
           parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
               leftAliases, rightAliases, fields1, aliasToOpInfo);
