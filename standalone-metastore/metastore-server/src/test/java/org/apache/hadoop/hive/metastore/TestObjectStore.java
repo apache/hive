@@ -149,6 +149,9 @@ public class TestObjectStore {
   private static final String USER1 = "testobjectstoreuser1";
   private static final String ROLE1 = "testobjectstorerole1";
   private static final String ROLE2 = "testobjectstorerole2";
+  private static final String SQLI_PART_NAME = "test_part_col=missing') OR 1=1 -- ";
+  private static final List<String> ALL_PART_NAMES =
+      Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2");
   private static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
 
   private static final class LongSupplier implements Supplier<Long> {
@@ -802,6 +805,21 @@ public class TestObjectStore {
     Assert.assertEquals(1, partitions.size());
   }
 
+  @Test
+  public void testDirectSQLDropPartitionsRejectsSqlInjectionInPartName()
+      throws Exception {
+    createPartitionedTable(false, false, new HashSet<>());
+
+    objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        Collections.singletonList(SQLI_PART_NAME), true, false);
+
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitionsByNames(DEFAULT_CATALOG_NAME, DB1, TABLE1, ALL_PART_NAMES);
+    }
+    Assert.assertEquals(3, partitions.size());
+  }
+
   /**
    * Checks if the JDO cache is able to handle directSQL partition drops cross sessions.
    */
@@ -1022,6 +1040,63 @@ public class TestObjectStore {
     createPartitionedTable(true, true, new HashSet<>());
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
             List.of("test_part_col=a2"), null, "special '");
+  }
+
+  @Test
+  public void testGetPartitionsByNamesRejectsSqlInjectionInPartName() throws Exception {
+    createPartitionedTable(true, true, new HashSet<>());
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitionsByNames(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Collections.singletonList(SQLI_PART_NAME));
+    }
+    Assert.assertEquals(0, partitions.size());
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitionsByNames(DEFAULT_CATALOG_NAME, DB1, TABLE1, ALL_PART_NAMES);
+    }
+    Assert.assertEquals(3, partitions.size());
+  }
+
+  @Test
+  public void testUpdatePartitionColumnStatisticsInBatchRejectsSqlInjectionInPartName()
+      throws Exception {
+    createPartitionedTable(true, true, new HashSet<>());
+    Table tbl = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+
+    List<List<ColumnStatistics>> baseline;
+    try (AutoCloseable c = deadline()) {
+      baseline = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          ALL_PART_NAMES, Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(1, baseline.size());
+    Assert.assertEquals(3, baseline.get(0).size());
+    long baselineNumNulls = baseline.get(0).get(0).getStatsObj().get(0).getStatsData()
+        .getLongStats().getNumNulls();
+
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(false, DB1, TABLE1);
+    statsDesc.setCatName(DEFAULT_CATALOG_NAME);
+    statsDesc.setPartName(SQLI_PART_NAME);
+    ColumnStatisticsData injectedData = new ColStatsBuilder<>(long.class).numNulls(999).numDVs(2)
+        .low(3L).high(4L).build();
+    ColumnStatisticsObj statsObj = new ColumnStatisticsObj("test_part_col", "int", injectedData);
+    ColumnStatistics maliciousStats = new ColumnStatistics(statsDesc,
+        Collections.singletonList(statsObj));
+    maliciousStats.setEngine(ENGINE);
+
+    Map<String, ColumnStatistics> statsMap = new HashMap<>();
+    statsMap.put(SQLI_PART_NAME, maliciousStats);
+    objectStore.updatePartitionColumnStatisticsInBatch(statsMap, tbl, null, null, -1);
+
+    List<List<ColumnStatistics>> after;
+    try (AutoCloseable c = deadline()) {
+      after = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          ALL_PART_NAMES, Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(3, after.get(0).size());
+    for (ColumnStatistics cs : after.get(0)) {
+      Assert.assertEquals(baselineNumNulls,
+          cs.getStatsObj().get(0).getStatsData().getLongStats().getNumNulls());
+    }
   }
 
   private void setAggrConf(boolean enableBitVector, boolean enableKll, int batchSize) {
