@@ -120,6 +120,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
           false,
           false,
           false,
+          ImmutableList.of(),
           ImmutableList.of(ordinal),
           -1,
           aggregateCall.distinctKeys,
