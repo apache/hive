@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** All the HMS operations like table,view,materialized_view should implement this. */
-interface HiveOperationsBase {
+public interface HiveOperationsBase {
 
   Logger LOG = LoggerFactory.getLogger(HiveOperationsBase.class);
   // The max size is based on HMS backend database. For Hive versions below 2.3, the max table

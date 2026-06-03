@@ -48,6 +48,7 @@ import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.view.BaseView;
 import org.apache.iceberg.view.SQLViewRepresentation;
 import org.apache.iceberg.view.View;
@@ -161,26 +162,19 @@ public class MetastoreUtil {
   /**
    * Builds a minimal HMS {@link Table} shell for a native Iceberg logical view (identity, view type,
    * and Iceberg storage-handler markers only). The storage handler {@code postGetTable} hook enriches
-   * this object via {@link IcebergNativeLogicalViewSupport#enrichHmsTableFromIcebergView} (view SQL,
+   * this object via {@link IcebergLogicalViewSupport#enrichHmsTableFromIcebergView} (view SQL,
    * schema, and Iceberg parameters).
    */
-  public static Table buildMinimalHMSView(String catName, String dbName, String tableName, Configuration conf) {
+  public static Table buildMinimalHMSView(String catName, String dbName, String tableName) {
     Table result = new Table();
     result.setCatName(catName);
     result.setDbName(dbName);
     result.setTableName(tableName);
     result.setTableType(TableType.VIRTUAL_VIEW.toString());
 
-    int nowSec = (int) (System.currentTimeMillis() / 1000);
-    result.setOwner(System.getProperty("user.name"));
-    result.setCreateTime(nowSec);
-    result.setLastAccessTime(nowSec);
-    result.setRetention(Integer.MAX_VALUE);
-
     Map<String, String> parameters = Maps.newHashMap();
     parameters.put(
-        BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-        IcebergNativeLogicalViewSupport.ICEBERG_VIEW_HMS_TABLE_TYPE_VALUE);
+        BaseMetastoreTableOperations.TABLE_TYPE_PROP, HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE);
     parameters.put(
         hive_metastoreConstants.META_TABLE_STORAGE, HMSTablePropertyHelper.HIVE_ICEBERG_STORAGE_HANDLER);
     result.setParameters(parameters);
@@ -217,6 +211,12 @@ public class MetastoreUtil {
         Collections.emptySet(),
         maxHiveTablePropertySize,
         null);
+
+    hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
+    hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));
+    hmsTable.setOwner(
+        PropertyUtil.propertyAsString(
+            metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
 
     // In-memory overlay for compile/describe: authoritative SQL comes from Iceberg metadata.
     hmsTable.setViewOriginalText(sqlText);

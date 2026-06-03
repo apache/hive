@@ -50,9 +50,10 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
+import org.apache.iceberg.hive.IcebergLogicalViewSupport;
 import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.hive.RuntimeMetaException;
@@ -214,13 +215,13 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
           throw new NoSuchObjectException();
         }
         return MetastoreUtil.buildMinimalHMSView(
-            tableRequest.getCatName(), tableRequest.getDbName(), tableRequest.getTblName(), conf);
+            tableRequest.getCatName(), tableRequest.getDbName(), tableRequest.getTblName());
       }
       throw new NoSuchObjectException();
     }
   }
 
-  private static boolean hasIcebergNativeViewTableType(Table table) {
+  private static boolean hasIcebergViewTableType(Table table) {
     if (!TableType.VIRTUAL_VIEW.toString().equals(table.getTableType())) {
       return false;
     }
@@ -228,60 +229,63 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     if (params == null) {
       return false;
     }
-    return IcebergNativeLogicalViewSupport.ICEBERG_VIEW_HMS_TABLE_TYPE_VALUE.equals(
+    return HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(
         params.get(BaseMetastoreTableOperations.TABLE_TYPE_PROP));
   }
 
   @Override
   public void alter_table(String catName, String dbName, String tblName, Table newTable,
-      EnvironmentContext envContext, String validWriteIdList) throws TException {
+      EnvironmentContext envContext, String validWriteIdList) {
     validateCurrentCatalog(catName);
-    if (hasIcebergNativeViewTableType(newTable) && restCatalog instanceof ViewCatalog) {
-      createOrReplaceLogicalView(newTable, dbName, tblName);
+    if (hasIcebergViewTableType(newTable) && restCatalog instanceof ViewCatalog) {
+      createOrReplaceIcebergView(newTable, dbName, tblName);
     }
   }
 
   @Override
   public void createTable(CreateTableRequest request) throws TException {
     Table table = request.getTable();
-    if (hasIcebergNativeViewTableType(table) && restCatalog instanceof ViewCatalog) {
-      createOrReplaceLogicalView(table, table.getDbName(), table.getTableName());
+    if (hasIcebergViewTableType(table) && restCatalog instanceof ViewCatalog) {
+      createOrReplaceIcebergView(table, table.getDbName(), table.getTableName());
     } else {
-      List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
-      if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
-        cols.addAll(table.getPartitionKeys());
-      }
-      Properties tableProperties = IcebergTableProperties.getTableProperties(table, conf);
-      Schema schema = HiveSchemaUtil.convert(cols, Collections.emptyMap(), true);
-      Map<String, String> envCtxProps = Optional.ofNullable(request.getEnvContext())
-          .map(EnvironmentContext::getProperties)
-          .orElse(Collections.emptyMap());
-      org.apache.iceberg.PartitionSpec partitionSpec =
-          HMSTablePropertyHelper.getPartitionSpec(envCtxProps, schema);
-      SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(tableProperties, schema);
-
-      restCatalog.buildTable(TableIdentifier.of(table.getDbName(), table.getTableName()), schema)
-          .withPartitionSpec(partitionSpec)
-          .withLocation(tableProperties.getProperty(IcebergTableProperties.LOCATION))
-          .withSortOrder(sortOrder)
-          .withProperties(Maps.fromProperties(tableProperties))
-          .create();
+      createIcebergTable(request);
     }
   }
 
-  private void createOrReplaceLogicalView(Table table, String dbName, String tableName) {
+  private void createIcebergTable(CreateTableRequest request) {
+    Table table = request.getTable();
+    Properties tableProperties = IcebergTableProperties.getTableProperties(table, conf);
+    Schema schema = HiveSchemaUtil.convert(hmsTableColumns(table), Collections.emptyMap(), true);
+    Map<String, String> envCtxProps = Optional.ofNullable(request.getEnvContext())
+        .map(EnvironmentContext::getProperties)
+        .orElse(Collections.emptyMap());
+    org.apache.iceberg.PartitionSpec partitionSpec =
+        HMSTablePropertyHelper.getPartitionSpec(envCtxProps, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(tableProperties, schema);
 
+    restCatalog
+        .buildTable(TableIdentifier.of(table.getDbName(), table.getTableName()), schema)
+        .withPartitionSpec(partitionSpec)
+        .withLocation(tableProperties.getProperty(IcebergTableProperties.LOCATION))
+        .withSortOrder(sortOrder)
+        .withProperties(Maps.fromProperties(tableProperties))
+        .create();
+  }
+
+  private void createOrReplaceIcebergView(Table table, String dbName, String tableName) {
+    Map<String, String> tblProps =
+        table.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(table.getParameters());
+    String comment = tblProps.get("comment");
+    IcebergLogicalViewSupport.createOrReplaceView(
+        conf, dbName, tableName, hmsTableColumns(table), table.getViewExpandedText(), tblProps, comment);
+  }
+
+  private static List<FieldSchema> hmsTableColumns(Table table) {
     List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
     if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
       cols.addAll(table.getPartitionKeys());
     }
-
-    Map<String, String> tblProps =
-        table.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(table.getParameters());
-
-    String comment = tblProps.get("comment");
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
-        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment);
+    return cols;
   }
 
   @Override

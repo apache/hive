@@ -46,6 +46,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
@@ -77,7 +78,6 @@ public abstract class TestHiveRESTCatalogClientITBase {
   static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
   static final String REST_CATALOG_PREFIX = String.format("%s%s.", IcebergCatalogProperties.CATALOG_CONFIG_PREFIX, 
       CATALOG_NAME);
-  static final String ICEBERG_VIEW_TYPE_VALUE = "iceberg-view";
 
   HiveConf hiveConf;
   Configuration conf;
@@ -222,7 +222,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
   }
 
   @Test
-  public void testNativeIcebergLogicalView() throws Exception {
+  public void testIcebergLogicalView() throws Exception {
     Database db = new Database();
     db.setCatalogName(CATALOG_NAME);
     db.setName(VIEW_DB_NAME);
@@ -233,7 +233,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
     hive.createDatabase(db, true);
 
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("x", "int", ""));
-    createNativeIcebergLogicalView(VIEW_DB_NAME, NATIVE_VIEW_NAME, cols, "select 1 as x", "rest-native-view");
+    createIcebergLogicalView(VIEW_DB_NAME, NATIVE_VIEW_NAME, cols, "select 1 as x", "rest-native-view");
 
     Assertions.assertTrue(msClient.tableExists(CATALOG_NAME, VIEW_DB_NAME, NATIVE_VIEW_NAME));
     
@@ -243,11 +243,10 @@ public abstract class TestHiveRESTCatalogClientITBase {
     getTableRequest.setTblName(NATIVE_VIEW_NAME);
     Table view = msClient.getTable(getTableRequest);
     
-    Assertions.assertNotNull(view);
     Assertions.assertEquals(TableType.VIRTUAL_VIEW.name(), view.getTableType());
     String tableTypeProp = view.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     Assertions.assertNotNull(tableTypeProp);
-    Assertions.assertEquals(ICEBERG_VIEW_TYPE_VALUE, tableTypeProp.toLowerCase());
+    Assertions.assertEquals(HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE, tableTypeProp.toLowerCase());
 
     List<String> names = msClient.getTables(CATALOG_NAME, VIEW_DB_NAME, "*");
     Assertions.assertTrue(names.contains(NATIVE_VIEW_NAME));
@@ -258,7 +257,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
     msClient.dropDatabase(VIEW_DB_NAME);
   }
 
-  private void createNativeIcebergLogicalView(
+  private void createIcebergLogicalView(
       String dbName, String viewName, List<FieldSchema> cols, String viewSql, String comment) throws Exception {
     Table view = new Table();
     view.setCatName(CATALOG_NAME);

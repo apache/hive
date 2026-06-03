@@ -217,7 +217,7 @@ last_name           	string
 # Detailed Table Information	 	 
 Database:           	ice_rest            	 
 #### A masked pattern was here ####
-Retention:          	2147483647          	 
+Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
@@ -276,7 +276,7 @@ last_name           	string
 # Detailed Table Information	 	 
 Database:           	ice_rest            	 
 #### A masked pattern was here ####
-Retention:          	2147483647          	 
+Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
@@ -333,7 +333,7 @@ _c0                 	string
 # Detailed Table Information	 	 
 Database:           	ice_rest            	 
 #### A masked pattern was here ####
-Retention:          	2147483647          	 
+Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
@@ -402,7 +402,7 @@ _c1                 	string
 # Detailed Table Information	 	 
 Database:           	ice_rest            	 
 #### A masked pattern was here ####
-Retention:          	2147483647          	 
+Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   

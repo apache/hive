@@ -33,6 +33,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.view.BaseView;
 import org.apache.iceberg.view.View;
+import org.apache.iceberg.view.ViewMetadata;
 import org.apache.thrift.TException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ import static org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE;
 import static org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TestIcebergNativeLogicalViewSupport {
+class TestIcebergLogicalViewSupport {
 
   private static final String DB = "native_vw_db";
   private static final String VIEW = "native_vw";
@@ -86,7 +87,7 @@ class TestIcebergNativeLogicalViewSupport {
     String sql = String.format("select id, name from %s.src_tbl", DB);
     Map<String, String> props = Collections.singletonMap("k1", "v1");
 
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+    IcebergLogicalViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, sql, props, "hello-view");
 
     HiveCatalog cat = loadCatalog();
@@ -102,17 +103,17 @@ class TestIcebergNativeLogicalViewSupport {
   }
 
   @Test
-  void testCreateOrReplaceNativeViewReplacesExisting() {
+  void testCreateOrReplaceViewReplacesExisting() {
     HiveConf conf = nativeViewConf();
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
     TableIdentifier id = TableIdentifier.of(DB, VIEW);
 
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+    IcebergLogicalViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, "select 1 as id", null, null);
     View afterCreate = loadCatalog().loadView(id);
     assertThat(afterCreate.sqlFor("hive").sql().trim()).isEqualTo("select 1 as id");
 
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+    IcebergLogicalViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, "select 2 as id", null, null);
 
     assertThat(loadCatalog().viewExists(id)).isTrue();
@@ -126,7 +127,7 @@ class TestIcebergNativeLogicalViewSupport {
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
     String sql = "select 42 as id";
 
-    IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+    IcebergLogicalViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, sql, null, null);
 
     org.apache.hadoop.hive.metastore.api.Table hmsTable =
@@ -134,8 +135,11 @@ class TestIcebergNativeLogicalViewSupport {
     hmsTable.setViewOriginalText("select 0");
     hmsTable.setViewExpandedText("select 0");
 
-    IcebergNativeLogicalViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
+    IcebergLogicalViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
     assertThat(hmsTable.getViewExpandedText()).isEqualTo(sql);
     assertThat(hmsTable.getViewOriginalText()).isEqualTo(sql);
+
+    ViewMetadata metadata = ((BaseView) loadCatalog().loadView(TableIdentifier.of(DB, VIEW))).operations().current();
+    assertThat(hmsTable.getCreateTime()).isEqualTo((int) (metadata.version(1).timestampMillis() / 1000));
   }
 }

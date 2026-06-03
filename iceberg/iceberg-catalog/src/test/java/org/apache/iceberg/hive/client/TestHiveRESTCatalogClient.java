@@ -46,8 +46,9 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.hive.IcebergNativeLogicalViewSupport;
+import org.apache.iceberg.hive.IcebergLogicalViewSupport;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -65,7 +66,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-public class TestHiveRESTCatalogClient {
+class TestHiveRESTCatalogClient {
 
   private static HiveRESTCatalogClient spyHiveRESTCatalogClient;
   private static RESTCatalog mockRestCatalog;
@@ -142,13 +143,13 @@ public class TestHiveRESTCatalogClient {
   }
 
   @Test
-  public void testGetTable() throws TException {
+  void testGetTable() throws TException {
     spyHiveRESTCatalogClient.getTable("default", "tableName");
     Mockito.verify(mockRestCatalog).loadTable(TableIdentifier.of("default", "tableName"));
   }
 
   @Test
-  public void testCreateTable() throws TException {
+  void testCreateTable() throws TException {
     Table table = new Table();
     table.setTableName("tableName");
     table.setDbName("default");
@@ -160,7 +161,7 @@ public class TestHiveRESTCatalogClient {
   }
 
   @Test
-  public void testCreatePartitionedTable() throws TException {
+  void testCreatePartitionedTable() throws TException {
     Table table = new Table();
     table.setTableName("tableName");
     table.setDbName("default");
@@ -197,14 +198,14 @@ public class TestHiveRESTCatalogClient {
   }
 
   @Test
-  public void testGetDatabase() throws TException {
+  void testGetDatabase() throws TException {
     Database aDefault = spyHiveRESTCatalogClient.getDatabase("default");
     assertThat(aDefault.getName()).isEqualTo("default");
     Mockito.verify(mockRestCatalog).listNamespaces(Namespace.empty());
   }
 
   @Test
-  public void testAlterNativeIcebergView() throws TException {
+  void testAlterIcebergLogicalView() {
     RESTCatalog viewCapableCatalog =
         Mockito.mock(RESTCatalog.class, Mockito.withSettings().extraInterfaces(ViewCatalog.class));
     Mockito.doReturn("hive").when(viewCapableCatalog).name();
@@ -216,12 +217,12 @@ public class TestHiveRESTCatalogClient {
     configuration.set("iceberg.catalog.ice01.uri", "http://localhost");
     HiveRESTCatalogClient client = new HiveRESTCatalogClient(configuration);
 
-    try (MockedStatic<IcebergNativeLogicalViewSupport> viewSupport =
-        Mockito.mockStatic(IcebergNativeLogicalViewSupport.class)) {
+    try (MockedStatic<IcebergLogicalViewSupport> viewSupport =
+        Mockito.mockStatic(IcebergLogicalViewSupport.class)) {
       client.alter_table("hive", "ice_db", "ice_v1", createLogicalView(), null, null);
       viewSupport.verify(
           () ->
-              IcebergNativeLogicalViewSupport.createOrReplaceNativeView(
+              IcebergLogicalViewSupport.createOrReplaceView(
                   any(),
                   eq("ice_db"),
                   eq("ice_v1"),
@@ -244,7 +245,7 @@ public class TestHiveRESTCatalogClient {
         Maps.newHashMap(
             Map.of(
                 BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-                IcebergNativeLogicalViewSupport.ICEBERG_VIEW_HMS_TABLE_TYPE_VALUE)));
+                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE)));
     return view;
   }
 }

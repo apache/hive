@@ -40,13 +40,9 @@ import org.apache.iceberg.view.ViewBuilder;
  * Commits a native Iceberg view through the configured default Iceberg catalog (HiveCatalog or REST
  * catalog, etc.) when {@code Catalog} also implements {@link ViewCatalog}.
  */
-public final class IcebergNativeLogicalViewSupport {
+public final class IcebergLogicalViewSupport {
 
-  /** Value for HMS {@code table_type} on native Iceberg logical views (uppercase, HMS convention). */
-  public static final String ICEBERG_VIEW_HMS_TABLE_TYPE_VALUE =
-      HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase(java.util.Locale.ENGLISH);
-
-  private IcebergNativeLogicalViewSupport() {
+  private IcebergLogicalViewSupport() {
   }
 
   /**
@@ -83,7 +79,7 @@ public final class IcebergNativeLogicalViewSupport {
   }
 
   /** Creates or replaces a view in the Iceberg catalog. */
-  public static void createOrReplaceNativeView(
+  public static void createOrReplaceView(
       Configuration conf,
       String databaseName,
       String viewName,
@@ -99,16 +95,16 @@ public final class IcebergNativeLogicalViewSupport {
 
     if (catalog instanceof Closeable closeable) {
       try (Closeable ignored = closeable) {
-        commitNativeView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
+        commitView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
       } catch (IOException e) {
         throw new UncheckedIOException("Failed to close Iceberg catalog", e);
       }
     } else {
-      commitNativeView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
+      commitView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
     }
   }
 
-  private static void commitNativeView(
+  private static void commitView(
       Catalog catalog,
       String catalogName,
       TableIdentifier identifier,
@@ -132,11 +128,7 @@ public final class IcebergNativeLogicalViewSupport {
     Map<String, String> tblProps =
         tblProperties == null ? Maps.newHashMap() : Maps.newHashMap(tblProperties);
 
-    for (Map.Entry<String, String> e : tblProps.entrySet()) {
-      if (e.getKey() != null && e.getValue() != null) {
-        builder = builder.withProperty(e.getKey(), e.getValue());
-      }
-    }
+    builder.withProperties(tblProps);
 
     builder.createOrReplace();
   }
@@ -149,6 +141,6 @@ public final class IcebergNativeLogicalViewSupport {
         String.format(
                 "Iceberg catalog '%s' does not implement ViewCatalog.",
                 catalogName) +
-            " Native views require a catalog that implements ViewCatalog (e.g. HiveCatalog or REST).");
+            " Iceberg views require a catalog that implements ViewCatalog (e.g. HiveCatalog or REST).");
   }
 }

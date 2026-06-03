@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 /**
- * Parameters for {@link HiveStorageHandler#createOrReplaceExternalLogicalView}
+ * Parameters for {@link HiveStorageHandler#createOrReplaceExternalLogicalView}.
  */
 public final class CreateExternalLogicalViewRequest implements Serializable {
   private static final long serialVersionUID = 1L;

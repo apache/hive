@@ -217,7 +217,7 @@ last_name           	string
 # Detailed Table Information	 	 
 Database:           	ice_rest            	 
 #### A masked pattern was here ####
-Retention:          	2147483647          	 
+Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
@@ -287,7 +287,7 @@ team_id             	bigint
 # Detailed Table Information	 	 
 Database:           	ice_rest            	 
 #### A masked pattern was here ####
-Retention:          	2147483647          	 
+Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
