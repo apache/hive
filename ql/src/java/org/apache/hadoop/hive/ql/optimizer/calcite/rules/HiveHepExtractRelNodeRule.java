@@ -19,12 +19,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
-
+import org.apache.calcite.rel.RelShuttleImpl;
 
 /**
  * The goal of this rule is to extract the RelNode from the
@@ -35,9 +34,23 @@ import org.apache.calcite.rel.RelNode;
 public class HiveHepExtractRelNodeRule extends RelOptRule {
 
   public static RelNode execute(RelNode node) {
-    final HepPlanner tmpPlanner = new HepPlanner(PROGRAM);
+    /* final HepPlanner tmpPlanner = new HepPlanner(PROGRAM);
     tmpPlanner.setRoot(node);
-    return tmpPlanner.findBestExp();
+    return tmpPlanner.findBestExp(); */
+
+    // TODO cleanup
+    RelNode res = node.accept(new RelShuttleImpl() {
+      @Override
+      public RelNode visit(RelNode other) {
+        if (other instanceof HepRelVertex) {
+          HepRelVertex vertex = (HepRelVertex) other;
+          RelNode innerNode = vertex.getCurrentRel();
+          return innerNode.accept(this);
+        }
+        return super.visit(other);
+      }
+    });
+    return res;
   }
 
   private static final HepProgram PROGRAM = new HepProgramBuilder()
