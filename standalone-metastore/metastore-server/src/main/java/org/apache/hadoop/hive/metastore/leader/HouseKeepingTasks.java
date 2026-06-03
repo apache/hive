@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.leader;
 
 import com.cronutils.utils.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
@@ -107,20 +106,19 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     } else {
       tasks = new ArrayList<>(getRemoteOnlyTasks());
     }
-    int poolSize = Math.min(MetastoreConf.getIntVar(configuration,
-        MetastoreConf.ConfVars.THREAD_POOL_SIZE), tasks.size());
-    metastoreTaskThreadPool = Executors.newScheduledThreadPool(poolSize, threadFactory);
-    for (MetastoreTaskThread task : tasks) {
+    tasks.forEach(task -> {
       task.setConf(configuration);
       task.enforceMutex(election.enforceMutex());
-      long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-      if (freq > 0) {
+      if (task.runFrequency(TimeUnit.MILLISECONDS) > 0) {
         runningTasks.add(task);
-        metastoreTaskThreadPool.scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
       }
-    }
-
+    });
+    int poolSize = Math.min(MetastoreConf.getIntVar(configuration,
+        MetastoreConf.ConfVars.THREAD_POOL_SIZE), runningTasks.size());
+    metastoreTaskThreadPool = Executors.newScheduledThreadPool(poolSize, threadFactory);
     runningTasks.forEach(task -> {
+      long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+      metastoreTaskThreadPool.scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
       HiveMetaStore.LOG.info("Scheduling for " + task.getClass().getCanonicalName() + " service.");
     });
   }

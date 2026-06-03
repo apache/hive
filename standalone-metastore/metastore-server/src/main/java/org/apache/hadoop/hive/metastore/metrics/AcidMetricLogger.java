@@ -50,8 +50,8 @@ public class AcidMetricLogger implements MetastoreTaskThread {
 
   @Override
   public long runFrequency(TimeUnit timeUnit) {
-    return MetastoreConf
-        .getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY, timeUnit);
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID) ?
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY, timeUnit) : 0;
   }
 
   @Override
