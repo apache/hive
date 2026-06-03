@@ -75,8 +75,8 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
         SqlTypeUtil.projectTypes(rowType, aggCall.getArgList()),
         aggCall.getType());
     return AggregateCall.create(aggFunction, aggCall.isDistinct(), aggCall.isApproximate(), aggCall.ignoreNulls(),
-        aggCall.getArgList(), aggCall.filterArg, aggCall.distinctKeys, aggCall.getCollation(), aggCall.getType(),
-        aggCall.getName());
+        aggCall.rexList, aggCall.getArgList(), aggCall.filterArg, aggCall.distinctKeys, aggCall.getCollation(),
+        aggCall.getType(), aggCall.getName());
   }
 
   @Override
