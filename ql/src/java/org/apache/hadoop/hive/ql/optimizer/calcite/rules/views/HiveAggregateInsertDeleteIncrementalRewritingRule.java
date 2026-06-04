@@ -31,9 +31,8 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild.AlterMaterializedViewRebuildAnalyzer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRule;
 
 /**
  * This rule will perform a rewriting to prepare the plan for incremental
@@ -118,7 +117,7 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
     RelNode aggInput = aggregate.getInput();
 
     // Propagate rowIsDeleted column
-    aggInput = HiveHepExtractRelNodeRule.execute(aggInput);
+    aggInput = HiveCalciteUtil.stripHepVertices(aggInput);
     aggInput = new HiveRowIsDeletedPropagator(relBuilder).propagate(aggInput);
 
     // The row schema has two additional columns after propagation:
