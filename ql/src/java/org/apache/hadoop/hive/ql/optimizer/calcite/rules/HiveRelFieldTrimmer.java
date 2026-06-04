@@ -549,9 +549,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
    */
   private Aggregate rewriteGBConstantKeys(Aggregate aggregate, ImmutableBitSet fieldsUsed,
       ImmutableBitSet aggCallFields) {
-    if ((aggregate.getIndicatorCount() > 0)
-        || (aggregate.getGroupSet().isEmpty())
-        || fieldsUsed.contains(aggregate.getGroupSet())) {
+    if (aggregate.getGroupSet().isEmpty()
+        || fieldsUsed.intersects(aggregate.getGroupSet())) {
       return aggregate;
     }
 
