@@ -1983,6 +1983,15 @@ public class StatsUtils {
   }
 
   /**
+   * Whether a table's statistics may be used for plan-shape optimizations such as semijoin
+   * reduction or map-join conversion, where relying on stale stats only affects performance,
+   * never correctness.
+   */
+  public static boolean checkCanProvideStatsForOpt(Table table) {
+    return checkCanProvideStats(table) || StatsSetupConst.areBasicStatsUptoDate(table.getParameters());
+  }
+
+  /**
    * Are the basic stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
    */

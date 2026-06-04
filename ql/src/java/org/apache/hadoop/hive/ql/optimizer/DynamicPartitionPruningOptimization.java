@@ -302,7 +302,9 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     boolean disableSemiJoin = false;
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS)) {
       // We already have the TableScan for one side of the join. Check this now.
-      if (!StatsUtils.checkCanProvideStats(new Table(ts.getConf().getTableMetadata().getTTable()))) {
+      // Semijoin reduction is a runtime filter, so relying on (possibly stale) stats only costs
+      // performance, not correctness - the relaxed check also accepts analyzed external tables.
+      if (!StatsUtils.checkCanProvideStatsForOpt(new Table(ts.getConf().getTableMetadata().getTTable()))) {
         LOG.debug("Disabling semijoin optimzation on {} since it is an external table and also could not provide statistics.",
             ts.getConf().getTableMetadata().getFullyQualifiedName());
         disableSemiJoin = true;
@@ -318,7 +320,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
           if (columnOrigin != null && columnOrigin.op instanceof TableScanOperator) {
             // Join key origin has been traced to a table column. Check if the table is external.
             TableScanOperator joinKeyTs = (TableScanOperator) columnOrigin.op;
-            if (!StatsUtils.checkCanProvideStats(new Table(joinKeyTs.getConf().getTableMetadata().getTTable()))) {
+            if (!StatsUtils.checkCanProvideStatsForOpt(new Table(joinKeyTs.getConf().getTableMetadata().getTTable()))) {
               LOG.debug("Join key {} is from {} which is an external table and also could not provide statistics. " +
                       "Disabling semijoin optimization.",
                   columnOrigin.col,

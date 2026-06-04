@@ -1777,7 +1777,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     Operator ancestor = OperatorUtils.findSingleOperatorUpstream(op, TableScanOperator.class);
     if (ancestor != null) {
       TableScanOperator ts = (TableScanOperator) ancestor;
-      Boolean canUseStats = StatsUtils.checkCanProvideStats(new Table(ts.getConf().getTableMetadata().getTTable()));
+      Boolean canUseStats = StatsUtils.checkCanProvideStatsForOpt(new Table(ts.getConf().getTableMetadata().getTTable()));
       if (!canUseStats) {
         sb.append(ts.getConf().getTableMetadata().getFullyQualifiedName());
         return false;
