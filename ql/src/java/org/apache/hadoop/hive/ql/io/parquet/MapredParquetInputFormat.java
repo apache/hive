@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -60,6 +61,8 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
 
   private static final Logger LOG = LoggerFactory.getLogger(MapredParquetInputFormat.class);
 
+  private static ExecutorService threadPool;
+
   private final ParquetInputFormat<ArrayWritable> realInput;
 
   private final transient VectorizedParquetInputFormat vectorizedSelf;
@@ -94,35 +97,35 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
     UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
 
     int numThreads = Math.max(2, HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_COMPUTE_SPLITS_NUM_THREADS));
-    ExecutorService pool = newWorkerPool(numThreads);
+    ExecutorService pool = getThreadPool(numThreads);
     CompletionService<List<FileStatus>> completionService = new ExecutorCompletionService<>(pool);
 
+    List<Future<List<FileStatus>>> pathFutures = new ArrayList<>(dirs.length);
     List<FileStatus> files = new ArrayList<>();
     try {
       for (Path dir : dirs) {
-        completionService.submit(() -> ugi.doAs(
-            (PrivilegedExceptionAction<List<FileStatus>>) () -> {
-              FileSystem dirFs = dir.getFileSystem(job);
-              List<FileStatus> dirFiles = new ArrayList<>();
-              FileUtils.listStatusRecursively(dirFs, new FileStatus(0, true, 0, 0, 0, dir), dirFiles);
-              return dirFiles;
-            }));
+        pathFutures.add(completionService.submit(() -> listDirectory(job, dir, ugi)));
       }
       for (int resultsLeft = dirs.length; resultsLeft > 0; resultsLeft--) {
         files.addAll(completionService.take().get());
       }
     } catch (InterruptedException e) {
+      cancelFutures(pathFutures);
       Thread.currentThread().interrupt();
       throw new IOException("Interrupted while listing input directories", e);
 
     } catch (ExecutionException e) {
+      cancelFutures(pathFutures);
       Throwable cause = e.getCause();
+
+      if (cause instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+        throw new IOException("Interrupted while listing input directories", cause);
+      }
       if (cause instanceof IOException) {
         throw (IOException) cause;
       }
       throw new IOException("Failed to list input directories", cause);
-    } finally {
-      pool.shutdownNow();
     }
 
     LOG.info("Parquet parallel listStatus: {} files from {} dirs in {} ms ({} threads)",
@@ -130,12 +133,31 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
     return files.toArray(new FileStatus[0]);
   }
 
-  private static ExecutorService newWorkerPool(int numThreads) {
-    return Executors.newFixedThreadPool(numThreads,
-        new ThreadFactoryBuilder()
-            .setDaemon(true)
-            .setNameFormat("PARQUET_GET_SPLITS #%d")
-            .build());
+  private static List<FileStatus> listDirectory(JobConf job, Path dir, UserGroupInformation ugi)
+      throws IOException, InterruptedException {
+    return ugi.doAs((PrivilegedExceptionAction<List<FileStatus>>) () -> {
+      FileSystem dirFs = dir.getFileSystem(job);
+      List<FileStatus> dirFiles = new ArrayList<>();
+      FileUtils.listStatusRecursively(dirFs, new FileStatus(0, true, 0, 0, 0, dir), dirFiles);
+      return dirFiles;
+    });
+  }
+
+  private static synchronized ExecutorService getThreadPool(int numThreads) {
+    if (threadPool == null) {
+      threadPool = Executors.newFixedThreadPool(numThreads,
+          new ThreadFactoryBuilder()
+              .setDaemon(true)
+              .setNameFormat("PARQUET_GET_SPLITS #%d")
+              .build());
+    }
+    return threadPool;
+  }
+
+  private static <T> void cancelFutures(List<Future<T>> futures) {
+    for (Future<T> future : futures) {
+      future.cancel(true);
+    }
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
