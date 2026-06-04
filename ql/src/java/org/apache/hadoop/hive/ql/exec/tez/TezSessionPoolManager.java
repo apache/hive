@@ -353,6 +353,20 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
             + " belongs to the pool. Put it back in");
         defaultSessionPool.returnSession((TezSessionPoolSession)tezSessionState);
       }
+
+      if (useExternalSessions) {
+        if (tezSessionState.getTezClient() != null
+            && tezSessionState.getTezClient().getAppMasterApplicationId() != null) {
+          try {
+            tezSessionState.close(false);
+          } catch (Exception ex) {
+            LOG.warn("Failed to return external Tez session {}", tezSessionState.getSessionId(), ex);
+          }
+        } else {
+          LOG.warn("Not returning session '{}' as tez client or app id is null", tezSessionState.getSessionId());
+        }
+      }
+
       // non default session nothing changes. The user can continue to use the existing
       // session in the SessionState
     } finally {

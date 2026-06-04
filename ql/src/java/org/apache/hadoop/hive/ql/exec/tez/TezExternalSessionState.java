@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -133,6 +134,11 @@ public class TezExternalSessionState extends TezSessionState {
     // We never close external sessions that don't have errors.
     try {
       if (externalAppId != null) {
+        LOG.info("Returning external session with appID: {}", externalAppId);
+        SessionState sessionState = SessionState.get();
+        if (sessionState != null) {
+          sessionState.setTezSession(null);
+        }
         registry.returnSession(externalAppId);
       }
     } catch (Exception e) {
