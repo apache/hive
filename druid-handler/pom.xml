@@ -308,6 +308,14 @@
       <version>${log4j2.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-commons</artifactId>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -405,12 +413,12 @@
               <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>9.7</version>
+                <version>${asm.version}</version>
               </dependency>
               <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm-commons</artifactId>
-                <version>9.7</version>
+                <version>${asm.version}</version>
               </dependency>
             </dependencies>
           </plugin>
