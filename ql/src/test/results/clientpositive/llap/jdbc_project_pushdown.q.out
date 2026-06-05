@@ -83,7 +83,7 @@ HiveProject(id=[$0])
   HiveProject(id=[$0])
     HiveJdbcConverter(convention=[JDBC.POSTGRES])
       JdbcProject(id=[$0])
-        JdbcFilter(condition=[=(SUBSTRING($1, 0, 4), _UTF-16LE'Les')])
+        JdbcFilter(condition=[=(SUBSTRING($1, 0, 4), 'Les')])
           JdbcProject(id=[$0], title=[$1])
             JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
 
@@ -137,7 +137,7 @@ POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(id=[$0])
-  HiveFilter(condition=[=(CAST(ucase($1)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
+  HiveFilter(condition=[=(CAST(ucase($1)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'LES MISERABLES')])
     HiveProject(id=[$0], title=[$1])
       HiveJdbcConverter(convention=[JDBC.POSTGRES])
         JdbcProject(id=[$0], title=[$1])
@@ -281,7 +281,7 @@ CBO PLAN:
 HiveProject(book.title=[$0], author.fname=[$3])
   HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(title=[$0], author=[$1])
-      HiveFilter(condition=[=(CAST(ucase($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
+      HiveFilter(condition=[=(CAST(ucase($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'LES MISERABLES')])
         HiveProject(title=[$0], author=[$1])
           HiveJdbcConverter(convention=[JDBC.POSTGRES])
             JdbcFilter(condition=[IS NOT NULL($1)])
@@ -290,7 +290,7 @@ HiveProject(book.title=[$0], author.fname=[$3])
     HiveProject(id=[$0], fname=[$1])
       HiveJdbcConverter(convention=[JDBC.POSTGRES])
         JdbcProject(id=[$0], fname=[$1])
-          JdbcFilter(condition=[AND(=(SUBSTRING($2, 0, 4), _UTF-16LE'Hug'), IS NOT NULL($0))])
+          JdbcFilter(condition=[AND(=(SUBSTRING($2, 0, 4), 'Hug'), IS NOT NULL($0))])
             JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
 
 PREHOOK: query: explain select book.title, author.fname from book join author
