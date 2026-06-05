@@ -817,8 +817,10 @@ public class TestObjectStore {
       throws Exception {
     createPartitionedTable(false, false, new HashSet<>());
 
-    objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        Collections.singletonList(SQLI_PART_NAME), true, false);
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, true)) {
+      objectStore.unwrap(TableStore.class).dropPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
+          Collections.singletonList(SQLI_PART_NAME));
+    }
 
     List<Partition> partitions;
     try (AutoCloseable c = deadline()) {
