@@ -141,7 +141,7 @@ HiveProject(c0=[$0], c1=[$1], c2=[$2])
   HiveSortLimit(sort0=[$3], dir0=[ASC])
     HiveProject(c0=[$0], c1=[$1], c2=[$2], (tok_function when (= (tok_table_or_col store_name) 'HQ') tok_null (tok_table_or_col store_name))=[$1])
       HiveAggregate(group=[{0, 1, 2}])
-        HiveProject($f0=[$0], $f1=[CASE(=($0, _UTF-16LE'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
+        HiveProject($f0=[$0], $f1=[CASE(=($0, 'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
           HiveTableScan(table=[[default, store]], table:alias=[store])
 
 PREHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
@@ -183,9 +183,9 @@ POSTHOOK: Input: default@store
 CBO PLAN:
 HiveProject(c0=[$0], c1=[$1], c2=[$2])
   HiveSortLimit(sort0=[$3], dir0=[ASC])
-    HiveProject(c0=[$0], c1=[$1], c2=[$2], (tok_function when (= (tok_table_or_col store_name) 'hq') tok_null (tok_table_or_col store_name))0=[CASE(=($0, _UTF-16LE'hq'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)])
+    HiveProject(c0=[$0], c1=[$1], c2=[$2], (tok_function when (= (tok_table_or_col store_name) 'hq') tok_null (tok_table_or_col store_name))0=[CASE(=($0, 'hq'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)])
       HiveAggregate(group=[{0, 1, 2}])
-        HiveProject($f0=[$0], $f1=[CASE(=($0, _UTF-16LE'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
+        HiveProject($f0=[$0], $f1=[CASE(=($0, 'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
           HiveTableScan(table=[[default, store]], table:alias=[store])
 
 PREHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
@@ -228,7 +228,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$1], dir0=[ASC])
   HiveProject(c0=[$0], c1=[$1], c2=[$2])
     HiveAggregate(group=[{0, 1, 2}])
-      HiveProject($f0=[$0], $f1=[CASE(=($0, _UTF-16LE'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
+      HiveProject($f0=[$0], $f1=[CASE(=($0, 'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
         HiveTableScan(table=[[default, store]], table:alias=[store])
 
 PREHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,

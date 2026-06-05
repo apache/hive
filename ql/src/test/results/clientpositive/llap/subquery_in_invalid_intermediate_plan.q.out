@@ -16,10 +16,10 @@ CBO PLAN:
 HiveProject(b.key=[$0], b.value=[$1])
   HiveSemiJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[semi])
     HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[AND(>($0, _UTF-16LE'9'), IS NOT NULL($1))])
+      HiveFilter(condition=[AND(>($0, '9'), IS NOT NULL($1))])
         HiveTableScan(table=[[default, src]], table:alias=[b])
     HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[AND(>($0, _UTF-16LE'9'), IS NOT NULL($1))])
+      HiveFilter(condition=[AND(>($0, '9'), IS NOT NULL($1))])
         HiveTableScan(table=[[default, src]], table:alias=[a])
 
 PREHOOK: query: explain cbo
@@ -179,7 +179,7 @@ HiveProject(b.key=[$0], b.value=[$1])
         HiveTableScan(table=[[default, src]], table:alias=[b])
     HiveProject(key=[$0], key0=[$0])
       HiveAggregate(group=[{0}])
-        HiveFilter(condition=[>($0, _UTF-16LE'9')])
+        HiveFilter(condition=[>($0, '9')])
           HiveTableScan(table=[[default, src]], table:alias=[a])
 
 PREHOOK: query: select *
