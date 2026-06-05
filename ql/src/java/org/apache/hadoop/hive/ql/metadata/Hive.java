@@ -6094,8 +6094,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    HiveMetaStoreClientBuilder msClientBuilder = new HiveMetaStoreClientBuilder(conf)
-        .newClient(allowEmbedded)
+    HiveMetaStoreClientBuilder msClientBuilder = new HiveMetaStoreClientBuilder(conf, allowEmbedded)
         .enhanceWith(client ->
             HiveMetaStoreClientWithLocalCache.newClient(conf, client))
         .enhanceWith(client ->

@@ -68,10 +68,6 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
   private RESTCatalog restCatalog;
 
-  public HiveRESTCatalogClient(Configuration conf, boolean allowEmbedded) {
-    this(conf);
-  }
-
   public HiveRESTCatalogClient(Configuration conf) {
     super(conf);
     reconnect();
