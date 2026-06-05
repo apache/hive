@@ -311,8 +311,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       // If so, we will create the iceberg table in commitAlterTable and go ahead with the migration
       assertTableCanBeMigrated(hmsTable);
       isTableMigration = true;
-      // Set whether the format is ORC, to be used during vectorization.
-      setOrcOnlyFilesParam(hmsTable);
 
       StorageDescriptor sd = hmsTable.getSd();
       preAlterTableProperties = new PreAlterTableProperties();
@@ -373,13 +371,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     } else {
       setWriteModeDefaults(icebergTable, hmsTable.getParameters(), context);
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
-    }
-
-    // Migration case is already handled above, in case of migration we don't have all the properties set till this
-    // point.
-    if (!isTableMigration) {
-      // Set whether the format is ORC, to be used during vectorization.
-      setOrcOnlyFilesParam(hmsTable);
     }
 
   }

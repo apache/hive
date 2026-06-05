@@ -25,8 +25,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -258,12 +260,18 @@ public class VectorizedColumnReaderTestBase {
 
   public static VectorizedParquetRecordReader createTestParquetReader(String schemaString, Configuration conf)
       throws IOException, InterruptedException, HiveException {
+    return createTestParquetReader(schemaString, conf, null);
+  }
+
+  public static VectorizedParquetRecordReader createTestParquetReader(String schemaString, Configuration conf,
+      DataTypePhysicalVariation[] rowDataTypePhysicalVariations)
+      throws IOException, InterruptedException, HiveException {
     conf.set(PARQUET_READ_SCHEMA, schemaString);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
     Job vectorJob = new Job(conf, "read vector");
     ParquetInputFormat.setInputPaths(vectorJob, file);
-    initialVectorizedRowBatchCtx(conf);
+    initialVectorizedRowBatchCtx(conf, rowDataTypePhysicalVariations);
     return new VectorizedParquetRecordReader(getFileSplit(vectorJob), new JobConf(conf));
   }
 
@@ -344,12 +352,61 @@ public class VectorizedColumnReaderTestBase {
   }
 
   protected static void initialVectorizedRowBatchCtx(Configuration conf) throws HiveException {
+    initialVectorizedRowBatchCtx(conf, null);
+  }
+
+  protected static void initialVectorizedRowBatchCtx(Configuration conf,
+      DataTypePhysicalVariation[] rowDataTypePhysicalVariations) throws HiveException {
     MapWork mapWork = new MapWork();
     VectorizedRowBatchCtx rbCtx = new VectorizedRowBatchCtx();
     rbCtx.init(createStructObjectInspector(conf), new String[0]);
+    if (rowDataTypePhysicalVariations != null) {
+      rbCtx.setRowDataTypePhysicalVariations(rowDataTypePhysicalVariations);
+    }
     mapWork.setVectorMode(true);
     mapWork.setVectorizedRowBatchCtx(rbCtx);
     Utilities.setMapWork(conf, mapWork);
+  }
+
+  /**
+   * Verifies the Decimal64 read path: when the decimal column is tagged DECIMAL_64 (as the
+   * vectorizer does once {@code MapredParquetInputFormat} advertises it), the reader must fill a
+   * {@link Decimal64ColumnVector} (long-backed) with the correct unscaled values.
+   */
+  protected void decimal64Read(boolean isDictionaryEncoding) throws Exception {
+    Configuration readerConf = new Configuration();
+    readerConf.set(IOConstants.COLUMNS, "value");
+    readerConf.set(IOConstants.COLUMNS_TYPES, "decimal(5,2)");
+    readerConf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    readerConf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        "message hive_schema { required value (DECIMAL(5,2));}", readerConf,
+        new DataTypePhysicalVariation[] { DataTypePhysicalVariation.DECIMAL_64 });
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      int c = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        assertTrue("expected Decimal64ColumnVector but got " + previous.cols[0].getClass().getSimpleName(),
+            previous.cols[0] instanceof Decimal64ColumnVector);
+        Decimal64ColumnVector vector = (Decimal64ColumnVector) previous.cols[0];
+        assertTrue(vector.noNulls);
+        assertEquals((short) 5, vector.precision);
+        assertEquals((short) 2, vector.scale);
+        for (int i = 0; i < vector.vector.length; i++) {
+          if (c == nElements) {
+            break;
+          }
+          long expected =
+              new HiveDecimalWritable(getDecimal(isDictionaryEncoding, c).setScale(2)).serialize64(2);
+          assertEquals("Check failed at pos " + c, expected, vector.vector[i]);
+          assertFalse(vector.isNull[i]);
+          c++;
+        }
+      }
+      assertEquals(nElements, c);
+    } finally {
+      reader.close();
+    }
   }
 
   private static StructObjectInspector createStructObjectInspector(Configuration conf) {

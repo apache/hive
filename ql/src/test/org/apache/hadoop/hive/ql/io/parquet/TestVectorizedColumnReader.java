@@ -120,6 +120,11 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   }
 
   @Test
+  public void testDecimal64Read() throws Exception {
+    decimal64Read(isDictionaryEncoding);
+  }
+
+  @Test
   public void verifyBatchOffsets() throws Exception {
     super.verifyBatchOffsets();
   }

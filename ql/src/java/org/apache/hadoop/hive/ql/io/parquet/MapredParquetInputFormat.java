@@ -115,6 +115,6 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
 
   @Override
   public VectorizedSupport.Support[] getSupportedFeatures() {
-    return null;
+    return new VectorizedSupport.Support[] { VectorizedSupport.Support.DECIMAL_64 };
   }
 }
