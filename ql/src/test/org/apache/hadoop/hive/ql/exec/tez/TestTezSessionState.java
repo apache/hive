@@ -117,7 +117,7 @@ public class TestTezSessionState {
    */
   @Test
   public void testCommonLocalResourcesPopulatedOnSessionOpen() throws Exception {
-    Path jarPath = Files.createTempFile("test-jar", ".jar");
+    java.nio.file.Path = Files.createTempFile("test-jar", ".jar");
     Files.write(jarPath, "testCommonLocalResourcesPopulated".getBytes(), StandardOpenOption.APPEND);
 
     SessionState ss = createSessionState();
