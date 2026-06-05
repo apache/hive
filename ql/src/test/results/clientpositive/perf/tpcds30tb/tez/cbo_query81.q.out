@@ -1,5 +1,5 @@
 CBO PLAN:
-HiveProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_name=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_street_type=[$6], ca_suite_number=[$7], ca_city=[$8], ca_county=[$9], ca_state=[CAST(_UTF-16LE'IL'):CHAR(2) CHARACTER SET "UTF-16LE"], ca_zip=[$10], ca_country=[$11], ca_gmt_offset=[$12], ca_location_type=[$13], ctr_total_return=[$14])
+HiveProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_name=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_street_type=[$6], ca_suite_number=[$7], ca_city=[$8], ca_county=[$9], ca_state=[CAST('IL'):CHAR(2) CHARACTER SET "UTF-16LE"], ca_zip=[$10], ca_country=[$11], ca_gmt_offset=[$12], ca_location_type=[$13], ctr_total_return=[$14])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], sort10=[$10], sort11=[$11], sort12=[$12], sort13=[$13], sort14=[$14], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], dir10=[ASC], dir11=[ASC], dir12=[ASC], dir13=[ASC], dir14=[ASC], fetch=[100])
     HiveProject(c_customer_id=[$1], c_salutation=[$3], c_first_name=[$4], c_last_name=[$5], ca_street_number=[$7], ca_street_name=[$8], ca_street_type=[$9], ca_suite_number=[$10], ca_city=[$11], ca_county=[$12], ca_zip=[$13], ca_country=[$14], ca_gmt_offset=[$15], ca_location_type=[$16], ctr_total_return=[$19])
       HiveJoin(condition=[AND(=($18, $21), >($19, $20))], joinType=[inner], algorithm=[none], cost=[not available])
@@ -9,7 +9,7 @@ HiveProject(c_customer_id=[$0], c_salutation=[$1], c_first_name=[$2], c_last_nam
               HiveFilter(condition=[IS NOT NULL($4)])
                 HiveTableScan(table=[[default, customer]], table:alias=[customer])
             HiveProject(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_street_type=[$4], ca_suite_number=[$5], ca_city=[$6], ca_county=[$7], ca_zip=[$9], ca_country=[$10], ca_gmt_offset=[$11], ca_location_type=[$12])
-              HiveFilter(condition=[=($8, _UTF-16LE'IL')])
+              HiveFilter(condition=[=($8, 'IL')])
                 HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
           HiveProject(cr_returning_customer_sk=[$0], ca_state=[$1], $f2=[$2])
             HiveFilter(condition=[IS NOT NULL($2)])

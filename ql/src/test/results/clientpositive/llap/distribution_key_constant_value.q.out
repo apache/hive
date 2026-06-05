@@ -22,7 +22,7 @@ POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[hash[0]], collation=[[]])
-  HiveProject(col1=[$0], col2=[CAST(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
-    HiveFilter(condition=[=($1, _UTF-16LE'a')])
+  HiveProject(col1=[$0], col2=[CAST('a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+    HiveFilter(condition=[=($1, 'a')])
       HiveTableScan(table=[[default, test]], table:alias=[test])
 
