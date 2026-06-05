@@ -116,7 +116,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, 'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -187,7 +187,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, 'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -1349,7 +1349,7 @@ EXPLAIN VECTORIZED SELECT count(c_custkey) from customer_removal_n0 where c_nati
 group by c_custkey, c_nation;
 CBO PLAN:HiveProject(_c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
-    HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+    HiveFilter(condition=[IN($4, 'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
       HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:

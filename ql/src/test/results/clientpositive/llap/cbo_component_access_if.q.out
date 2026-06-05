@@ -23,6 +23,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_component_access_if_tbl
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(codes=[CASE(=(concat_ws(_UTF-16LE',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", COMPONENT_ACCESS($0).code), _UTF-16LE''), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", COMPONENT_ACCESS($0).code))])
+HiveProject(codes=[CASE(=(concat_ws(',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", COMPONENT_ACCESS($0).code), ''), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", COMPONENT_ACCESS($0).code))])
   HiveTableScan(table=[[default, cbo_component_access_if_tbl]], table:alias=[cbo_component_access_if_tbl])
 

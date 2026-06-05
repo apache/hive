@@ -23,6 +23,7 @@ import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.volcano.VolcanoPlanner;
+import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -57,6 +58,10 @@ class TestHiveRelJsonReader {
   @ParameterizedTest
   @MethodSource("inputJsonFiles")
   void testReadJson(Path jsonFile) throws IOException {
+    // TODO cleaner way? The current approach of setting these properties in Hive.java does not work for this test
+    System.setProperty("calcite.default.charset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
+    System.setProperty("calcite.default.nationalcharset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
+
     String jsonContent =
         Files.readAllLines(jsonFile).stream().filter(line -> !line.startsWith("Warning")).collect(Collectors.joining());
     // Use VolcanoPlanner to be able to set the ConventionTraitDef in the cluster,

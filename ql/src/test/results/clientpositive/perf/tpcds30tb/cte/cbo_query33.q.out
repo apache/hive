@@ -15,7 +15,7 @@ HiveProject(i_item_sk=[$0], i_manufact_id=[$13])
 
 CTE Suggestion:
 HiveProject(i_manufact_id=[$13])
-  HiveFilter(condition=[AND(=($12, _UTF-16LE'Books                                             '), IS NOT NULL($13))])
+  HiveFilter(condition=[AND(=($12, 'Books                                             '), IS NOT NULL($13))])
     HiveTableScan(table=[[default, item]], table:alias=[item])
 
 CBO PLAN:
@@ -47,7 +47,7 @@ HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[100])
                         HiveTableScan(table=[[default, item]], table:alias=[item])
                 HiveTableSpool(table=[[cte, cte_suggestion_3]])
                   HiveProject(i_manufact_id=[$13])
-                    HiveFilter(condition=[AND(=($12, _UTF-16LE'Books                                             '), IS NOT NULL($13))])
+                    HiveFilter(condition=[AND(=($12, 'Books                                             '), IS NOT NULL($13))])
                       HiveTableScan(table=[[default, item]], table:alias=[item])
           HiveProject(i_manufact_id=[$0], $f1=[$1])
             HiveAggregate(group=[{10}], agg#0=[sum($2)])

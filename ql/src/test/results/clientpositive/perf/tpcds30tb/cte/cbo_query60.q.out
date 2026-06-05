@@ -10,7 +10,7 @@ HiveProject(d_date_sk=[$0], d_year=[CAST(1999):INTEGER], d_moy=[CAST(9):INTEGER]
 
 CTE Suggestion:
 HiveProject(i_item_id=[$1])
-  HiveFilter(condition=[=($12, _UTF-16LE'Children                                          ')])
+  HiveFilter(condition=[=($12, 'Children                                          ')])
     HiveTableScan(table=[[default, item]], table:alias=[item])
 
 CBO PLAN:
@@ -40,7 +40,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                     HiveTableScan(table=[[default, item]], table:alias=[item])
                 HiveTableSpool(table=[[cte, cte_suggestion_2]])
                   HiveProject(i_item_id=[$1])
-                    HiveFilter(condition=[=($12, _UTF-16LE'Children                                          ')])
+                    HiveFilter(condition=[=($12, 'Children                                          ')])
                       HiveTableScan(table=[[default, item]], table:alias=[item])
           HiveProject(i_item_id=[$0], $f1=[$1])
             HiveAggregate(group=[{10}], agg#0=[sum($2)])

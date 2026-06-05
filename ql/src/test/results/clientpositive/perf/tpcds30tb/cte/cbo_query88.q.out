@@ -5,7 +5,7 @@ HiveProject(hd_demo_sk=[$0])
 
 CTE Suggestion:
 HiveProject(s_store_sk=[$0])
-  HiveFilter(condition=[=($5, _UTF-16LE'ese')])
+  HiveFilter(condition=[=($5, 'ese')])
     HiveTableScan(table=[[default, store]], table:alias=[store])
 
 CTE Suggestion:
@@ -46,7 +46,7 @@ HiveProject(s1.h8_30_to_9=[$0], s2.h9_to_9_30=[$7], s3.h9_30_to_10=[$6], s4.h10_
                             HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
                       HiveTableSpool(table=[[cte, cte_suggestion_1]])
                         HiveProject(s_store_sk=[$0])
-                          HiveFilter(condition=[=($5, _UTF-16LE'ese')])
+                          HiveFilter(condition=[=($5, 'ese')])
                             HiveTableScan(table=[[default, store]], table:alias=[store])
                 HiveProject($f0=[$0])
                   HiveAggregate(group=[{}], agg#0=[count()])
