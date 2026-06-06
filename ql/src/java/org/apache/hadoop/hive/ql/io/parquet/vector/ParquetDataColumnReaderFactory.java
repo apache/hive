@@ -382,6 +382,19 @@ public final class ParquetDataColumnReaderFactory {
       }
     }
 
+    // Validate a raw unscaled decimal64 long (already at the Hive scale) against the Hive precision.
+    // Sets isValid; returns the value unchanged when in range, else 0 (caller marks the entry NULL).
+    // Used by the Decimal64 identity fast path; bounds via HiveDecimalWritable to avoid hand-rolling.
+    long validatedDecimal64(long unscaledValue) {
+      long absMax = HiveDecimalWritable.getDecimal64AbsMax(hivePrecision);
+      if (unscaledValue >= -absMax && unscaledValue <= absMax) {
+        this.isValid = true;
+        return unscaledValue;
+      }
+      this.isValid = false;
+      return 0;
+    }
+
     /**
      * Helper function to validate double data.  Sets the isValid to true if the data is valid
      * for the type it will be read in, otherwise false.
@@ -1622,6 +1635,23 @@ public final class ParquetDataColumnReaderFactory {
       hiveDecimalWritable.set(hiveDecimal);
       return super.validatedScaledDecimal(scale);
     }
+
+    @Override
+    public boolean isFastDecimal64() {
+      // Identity fast path: the file scale equals the Hive scale, so the stored unscaled value IS the
+      // Decimal64 value -- no rescale/rounding, only a precision bounds check.
+      return scale == hiveScale;
+    }
+
+    @Override
+    public long readDecimal64() {
+      return validatedDecimal64(valuesReader.readInteger());
+    }
+
+    @Override
+    public long readDecimal64(int id) {
+      return validatedDecimal64(dict.decodeToInt(id));
+    }
   }
 
   /**
@@ -1783,6 +1813,23 @@ public final class ParquetDataColumnReaderFactory {
       HiveDecimal hiveDecimal = HiveDecimal.create(dict.decodeToLong(id), scale);
       hiveDecimalWritable.set(hiveDecimal);
       return super.validatedScaledDecimal(scale);
+    }
+
+    @Override
+    public boolean isFastDecimal64() {
+      // Identity fast path: the file scale equals the Hive scale, so the stored unscaled long IS the
+      // Decimal64 value -- no rescale/rounding, only a precision bounds check.
+      return scale == hiveScale;
+    }
+
+    @Override
+    public long readDecimal64() {
+      return validatedDecimal64(valuesReader.readLong());
+    }
+
+    @Override
+    public long readDecimal64(int id) {
+      return validatedDecimal64(dict.decodeToLong(id));
     }
   }
 

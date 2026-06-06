@@ -85,7 +85,7 @@ TBLPROPERTIES (
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"first_name","required":false,"type":"string"},{"id":2,"name":"last_name","required":false,"type":"string"},{"id":3,"name":"dept_id","required":false,"type":"long"},{"id":4,"name":"team_id","required":false,"type":"long"},{"id":5,"name":"company_id","required":false,"type":"long"}]}', 
   'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company_id","transform":"identity","source-id":5,"field-id":1000}]}', 
   'format-version'='2', 
-  'iceberg.catalog'='ice01',
+  'iceberg.catalog'='ice01', 
 #### A masked pattern was here ####
   'name'='ice_rest.ice_orc2', 
   'parquet.compression'='zstd', 
@@ -140,7 +140,7 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.catalog     	ice01
+	iceberg.catalog     	ice01               
 #### A masked pattern was here ####
 	name                	ice_rest.ice_orc2   
 	numFiles            	1                   

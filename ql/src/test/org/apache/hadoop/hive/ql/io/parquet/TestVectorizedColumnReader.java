@@ -135,6 +135,16 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   }
 
   @Test
+  public void testDecimal64ReadScaleEvolution() throws Exception {
+    decimal64ReadScaleEvolution();
+  }
+
+  @Test
+  public void testDecimal64ReadPrecisionNarrowing() throws Exception {
+    decimal64ReadPrecisionNarrowing();
+  }
+
+  @Test
   public void verifyBatchOffsets() throws Exception {
     super.verifyBatchOffsets();
   }

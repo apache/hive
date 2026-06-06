@@ -611,17 +611,30 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     case DECIMAL:
       if (column instanceof Decimal64ColumnVector dec64) {
         fillDecimal64PrecisionScale(dec64);
+        boolean fast = dictionary.isFastDecimal64();
         short valueScale = getEncodedDecimalScale();
         for (int i = rowId; i < rowId + num; ++i) {
           if (!column.isNull[i]) {
-            byte[] bytes = dictionary.readDecimal((int) dictionaryIds.vector[i]);
-            if (dictionary.isValid()) {
-              // set() enforces the column precision/scale and marks the entry NULL on overflow.
-              dec64.set(i, bytes, valueScale);
+            int id = (int) dictionaryIds.vector[i];
+            boolean stored;
+            if (fast) {
+              // Identity fast path: store the raw unscaled long directly.
+              long v = dictionary.readDecimal64(id);
+              stored = dictionary.isValid();
+              if (stored) {
+                dec64.vector[i] = v;
+              }
             } else {
-              setNullValue(column, i);
+              // set() enforces the column precision/scale and marks the entry NULL on overflow.
+              byte[] bytes = dictionary.readDecimal(id);
+              stored = dictionary.isValid();
+              if (stored) {
+                dec64.set(i, bytes, valueScale);
+                stored = !dec64.isNull[i];
+              }
             }
-            if (dec64.isNull[i]) {
+            if (!stored) {
+              setNullValue(column, i);
               dec64.vector[i] = 0;
             }
           }
@@ -716,22 +729,34 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
    */
   private void readDecimal64(int total, Decimal64ColumnVector c, int rowId) {
     fillDecimal64PrecisionScale(c);
+    boolean fast = dataColumn.isFastDecimal64();
     short valueScale = getEncodedDecimalScale();
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        byte[] bytes = dataColumn.readDecimal();
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          // set() enforces the column precision/scale and marks the entry NULL on overflow.
-          c.set(rowId, bytes, valueScale);
-          if (c.isNull[rowId]) {
-            c.vector[rowId] = 0;
-            c.isRepeating = false;
-          } else {
-            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        boolean stored;
+        if (fast) {
+          // Identity fast path: store the raw unscaled long directly (no HiveDecimal/byte[] per row).
+          long v = dataColumn.readDecimal64();
+          stored = dataColumn.isValid();
+          if (stored) {
+            c.vector[rowId] = v;
           }
+        } else {
+          // set() enforces the column precision/scale and marks the entry NULL if the value does not
+          // fit (e.g. schema-evolved data whose larger file scale can't be held at the column scale).
+          byte[] bytes = dataColumn.readDecimal();
+          stored = dataColumn.isValid();
+          if (stored) {
+            c.isNull[rowId] = false;
+            c.set(rowId, bytes, valueScale);
+            stored = !c.isNull[rowId];
+          }
+        }
+        if (stored) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
         } else {
           c.vector[rowId] = 0;
           setNullValue(c, rowId);
