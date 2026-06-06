@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -31,7 +30,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReader;
 import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 
 import java.io.IOException;
@@ -61,9 +59,6 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     super(descriptor, pageReader, skipTimestampConversion, writerTimezone, skipProlepticConversion,
         legacyConversionEnabled, type, hiveType);
   }
-
-  // Reused for the byte-array-backed Decimal64 path (serialize64), avoids per-row allocation.
-  private final HiveDecimalWritable scratchDecimal = new HiveDecimalWritable();
 
   @Override
   public void readBatch(
@@ -616,10 +611,19 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     case DECIMAL:
       if (column instanceof Decimal64ColumnVector dec64) {
         fillDecimal64PrecisionScale(dec64);
-        PrimitiveTypeName dictPhysical = type.asPrimitiveType().getPrimitiveTypeName();
+        short valueScale = getEncodedDecimalScale();
         for (int i = rowId; i < rowId + num; ++i) {
           if (!column.isNull[i]) {
-            dec64.vector[i] = readUnscaledLongFromDict(dictPhysical, (int) dictionaryIds.vector[i], dec64.scale);
+            byte[] bytes = dictionary.readDecimal((int) dictionaryIds.vector[i]);
+            if (dictionary.isValid()) {
+              // set() enforces the column precision/scale and marks the entry NULL on overflow.
+              dec64.set(i, bytes, valueScale);
+            } else {
+              setNullValue(column, i);
+            }
+            if (dec64.isNull[i]) {
+              dec64.vector[i] = 0;
+            }
           }
         }
         break;
@@ -661,10 +665,31 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     c.scale = ps[1];
   }
 
+  /**
+   * Fill a long-backed {@link Decimal64ColumnVector} at the Hive (table) scale -- the scale every
+   * consumer reads {@code c.vector} at, and the only scale at which the unscaled value fits the long.
+   * NOT the Parquet file scale from {@link #getDecimalPrecisionScale()}: under schema evolution that
+   * scale can be larger (e.g. a DECIMAL(38,37) file read as DECIMAL(16,8)) and would overflow.
+   */
   private void fillDecimal64PrecisionScale(Decimal64ColumnVector c) {
-    short[] ps = getDecimalPrecisionScale();
-    c.precision = ps[0];
-    c.scale = ps[1];
+    if (hiveType instanceof DecimalTypeInfo dti) {
+      c.precision = (short) dti.getPrecision();
+      c.scale = (short) dti.getScale();
+    } else {
+      short[] ps = getDecimalPrecisionScale();
+      c.precision = ps[0];
+      c.scale = ps[1];
+    }
+  }
+
+  /**
+   * Scale at which {@code dataColumn}/{@code dictionary}.readDecimal() encodes the unscaled bytes:
+   * the Parquet physical scale when stored as decimal, else the Hive scale. Pass this to
+   * {@link Decimal64ColumnVector#set(int, byte[], int)} so the bytes are read at the right scale
+   * before re-scaling to the column scale.
+   */
+  private short getEncodedDecimalScale() {
+    return getDecimalPrecisionScale()[1];
   }
 
   /**
@@ -686,49 +711,36 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
 
   /**
    * Decimal64 fast path: read the unscaled value straight into the long-backed vector instead of
-   * materializing a HiveDecimal per row. Only reached for decimal columns the vectorizer tagged
-   * DECIMAL_64 (precision <= 18); higher precision still uses {@link #readDecimal}.
+   * materializing a HiveDecimal per row. Only for columns the vectorizer tagged DECIMAL_64
+   * (precision <= 18); higher precision uses {@link #readDecimal}.
    */
   private void readDecimal64(int total, Decimal64ColumnVector c, int rowId) {
     fillDecimal64PrecisionScale(c);
-    PrimitiveTypeName physical = type.asPrimitiveType().getPrimitiveTypeName();
+    short valueScale = getEncodedDecimalScale();
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = readUnscaledLong(physical, c.scale);
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        byte[] bytes = dataColumn.readDecimal();
+        if (dataColumn.isValid()) {
+          c.isNull[rowId] = false;
+          // set() enforces the column precision/scale and marks the entry NULL on overflow.
+          c.set(rowId, bytes, valueScale);
+          if (c.isNull[rowId]) {
+            c.vector[rowId] = 0;
+            c.isRepeating = false;
+          } else {
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          }
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
         setNullValue(c, rowId);
       }
       rowId++;
       left--;
     }
-  }
-
-  // INT32/INT64-backed decimals already give the unscaled value via the Parquet reader; for the
-  // (rare) byte-array-backed case reuse HiveDecimalWritable.serialize64 -- the same encoding
-  // Decimal64ColumnVector.set uses -- rather than decoding the bytes by hand.
-  private long readUnscaledLong(PrimitiveTypeName physical, short scale) {
-    return switch (physical) {
-      case INT32 -> dataColumn.readInteger();
-      case INT64 -> dataColumn.readLong();
-      default -> {
-        scratchDecimal.set(dataColumn.readDecimal(), scale);
-        yield scratchDecimal.serialize64(scale);
-      }
-    };
-  }
-
-  private long readUnscaledLongFromDict(PrimitiveTypeName physical, int dictId, short scale) {
-    return switch (physical) {
-      case INT32 -> dictionary.readInteger(dictId);
-      case INT64 -> dictionary.readLong(dictId);
-      default -> {
-        scratchDecimal.set(dictionary.readDecimal(dictId), scale);
-        yield scratchDecimal.serialize64(scale);
-      }
-    };
   }
 }

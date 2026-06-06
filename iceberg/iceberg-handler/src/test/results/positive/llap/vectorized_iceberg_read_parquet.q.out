@@ -429,7 +429,7 @@ POSTHOOK: query: select max(t_float), t_double, t_boolean, t_int, t_bigint, t_bi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_parquet_all_types
 #### A masked pattern was here ####
-1.1	1.2	false	4	567890123456789	6	col7	2012-10-03 19:58:08	1234-09-02	0.00
+1.1	1.2	false	4	567890123456789	6	col7	2012-10-03 19:58:08	1234-09-02	10.01
 PREHOOK: query: create external table tbl_ice_parquet_parted (
     a int,
     b string

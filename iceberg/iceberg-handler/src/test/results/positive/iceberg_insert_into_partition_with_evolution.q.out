@@ -188,7 +188,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"b_trunc_2\",\"transform\":\"truncate[2]\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	4                   

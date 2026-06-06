@@ -663,7 +663,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_mixed_all_types
 #### A masked pattern was here ####
 1.1	1.2	false	4	567890123456789	6	col7	2012-10-03 19:58:08	1234-09-02	10.01
-5.1	6.2	true	40	567890123456780	8	col07	2012-10-03 19:58:09	1234-09-03	0.00
+5.1	6.2	true	40	567890123456780	8	col07	2012-10-03 19:58:09	1234-09-03	10.02
 PREHOOK: query: create external table t1 stored as orc as select * from tbl_ice_mixed_all_types
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tbl_ice_mixed_all_types
@@ -769,7 +769,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_mixed_all_types
 #### A masked pattern was here ####
 1.1	1.2	false	4	567890123456789	6	col7	2012-10-03 19:58:08	1234-09-02	10.01
-5.1	6.2	true	40	567890123456780	8	col07	2012-10-03 19:58:09	1234-09-03	0.00
+5.1	6.2	true	40	567890123456780	8	col07	2012-10-03 19:58:09	1234-09-03	10.02
 PREHOOK: query: create external table tbl_ice_mixed_parted (
     a int,
     b string

@@ -125,6 +125,16 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   }
 
   @Test
+  public void testDecimal64ReadInt32() throws Exception {
+    decimal64ReadInt32();
+  }
+
+  @Test
+  public void testDecimal64ReadInt64() throws Exception {
+    decimal64ReadInt64();
+  }
+
+  @Test
   public void verifyBatchOffsets() throws Exception {
     super.verifyBatchOffsets();
   }
