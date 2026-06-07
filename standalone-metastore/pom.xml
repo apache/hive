@@ -111,6 +111,7 @@
     <io.grpc.version>1.72.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
     <netty.version>4.1.127.Final</netty.version>
+    <jetbrains-annotations.version>26.0.2</jetbrains-annotations.version>
     <jline.version>3.30.16</jline.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.3.0-SNAPSHOT</storage-api.version>
@@ -377,6 +378,11 @@
             <artifactId>*</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${jetbrains-annotations.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jline</groupId>

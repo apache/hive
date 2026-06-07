@@ -169,6 +169,7 @@
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
     <jersey.version>1.19.4</jersey.version>
+    <jetbrains-annotations.version>26.0.2</jetbrains-annotations.version>
     <jline.version>3.30.16</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.13.0</joda.version>
@@ -484,6 +485,11 @@
         <groupId>javolution</groupId>
         <artifactId>javolution</artifactId>
         <version>${javolution.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${jetbrains-annotations.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jline</groupId>
