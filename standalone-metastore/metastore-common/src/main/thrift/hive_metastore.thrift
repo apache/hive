@@ -42,7 +42,8 @@ struct Version {
 struct FieldSchema {
   1: string name, // name of the field
   2: string type, // type of the field. primitive types defined above, specify list<TYPE_NAME>, map<TYPE_NAME, TYPE_NAME> for lists & maps
-  3: string comment
+  3: string comment,
+//  4: optional AnonPolicy policy
 }
 
 // Key-value store to be used with selected
@@ -2556,6 +2557,291 @@ struct ReplayedTxnsForPolicyResult {
   1: map<string, string> replTxnMapEntry
 }
 
+struct CreateAnonPolicyRequest {
+  1: required ErasurePolicy policy,
+  2: optional EnvironmentContext envContext,
+}
+
+struct ErasurePolicy {
+  1: string policyName,
+  // Optional metastore-side identity, returned from get_erasure_policy so
+  // analyzer-side per-policy privilege checks can evaluate MPolicyPriv rows
+  // keyed on policy_id (see §5.8). Absent on writes; populated on reads.
+  3: optional i64 policyId
+}
+
+enum IndexType {
+  BTREE = 1,
+  DIRECTORY = 2,
+  TABULAR = 3
+}
+
+enum ColumnInternalFormat {
+  JSON = 1,
+  MSGPACK = 2,
+  XML = 3,
+  PROTOBUF = 4,
+  AVRO = 5
+}
+
+struct Index {
+  1: string              indexName, // unique with in the whole database namespace
+  2: string              indexHandlerClass, // reserved
+  3: string              dbName,
+  4: string              origTableName,
+  5: i32                 createTime,
+  6: i32                 lastAccessTime,
+  7: string              indexTableName,
+  8: StorageDescriptor   sd,
+  9: bool                deferredRebuild,
+  10: i32                pageSize,
+  11: i32                bufferPoolSize
+  12: string             pointerType,
+  13: IndexType          indexType
+}
+
+struct PolicyInfo {
+  1: string name,
+  2: string doc
+}
+
+// ---------------------------------------------------------------------------
+// Erasure policy governance: entities supporting versioning, multi-policy
+// bindings, conflict resolution, lifecycle audit, run audit, and policy-level
+// privileges. These extend the ErasurePolicy model.
+// ---------------------------------------------------------------------------
+
+enum PolicyVersionStatus {
+  DRAFT      = 1,
+  VALIDATED  = 2,
+  ACTIVE     = 3,
+  SUPERSEDED = 4,
+  INACTIVE   = 5
+}
+
+enum PolicyLiteralKind {
+  INT    = 1,
+  LONG   = 2,
+  STRING = 3
+}
+
+enum PolicyActionKind {
+  ERASE      = 1,
+  REPLACE    = 2,
+  HASH       = 3,
+  TOKENIZE   = 4,
+  ENCRYPT    = 5,
+  GENERALIZE = 6,
+  INSPECT    = 7,
+  FLAG       = 8
+}
+
+enum PolicyResolutionMode {
+  EXPLICIT  = 1,
+  STRICTEST = 2
+}
+
+enum PolicyLifecycleEventType {
+  VALIDATED       = 1,
+  ACTIVATED       = 2,
+  DEACTIVATED     = 3,
+  SUPERSEDED      = 4,
+  BOUND           = 5,
+  UNBOUND         = 6,
+  ATTACH_REJECTED = 7,
+  LOADED          = 8,
+  INVALIDATED     = 9
+}
+
+enum PolicyConflictClass {
+  C1_ACTION      = 1,
+  C2_VALUE       = 2,
+  C3_PATH_PREFIX = 3
+}
+
+enum ErasureRunStatus {
+  SUCCEEDED       = 1,
+  FAILED          = 2,
+  INTERRUPTED     = 3,
+  // Below entries record RELEASE ERASURE LOCK commands so a compliance
+  // reviewer sees release events alongside ERASE executions in
+  // AUDIT ERASURE EXECUTIONS without having to consult a second surface.
+  RELEASED        = 4,
+  FORCE_RELEASED  = 5,
+  // §4.8 EXTRACT FROM TABLE: subject-access read (Article 15 / Article 20).
+  // Read-only, no lock acquired; one EXTRACTED row per call captures the
+  // requesting principal, resolved policy/version, and identity-value list
+  // so subject-access events sit in the same audit surface as ERASE.
+  EXTRACTED       = 6,
+  // §4.7 lifecycle start state. An ERASE FROM TABLE run records its audit row
+  // as INITIATED before the Tez DAG executes; the ErasureRunCompletionHook
+  // transitions it to SUCCEEDED (post-execution) or FAILED (on-failure). A row
+  // left at INITIATED denotes a run whose completion was never recorded, an
+  // honest outcome-unknown state rather than a falsely-reported success.
+  INITIATED       = 7
+}
+
+// §4.7 per-table ERASE FROM TABLE run-lock status.
+//   RUNNING        : acquired by a run, not yet released
+//   COMPLETED      : released by the run itself on clean exit
+//   RELEASED       : released manually via RELEASE ERASURE LOCK (soft, the
+//                    .anon.tmp safety check passed at the caller)
+//   FORCE_RELEASED : released manually via RELEASE ERASURE LOCK ... FORCE
+//                    (operator bypassed the .anon.tmp safety check)
+enum ErasureRunLockStatus {
+  RUNNING        = 1,
+  COMPLETED      = 2,
+  RELEASED       = 3,
+  FORCE_RELEASED = 4
+}
+
+// §4.7 per-table run-lock row. One row per tblId in MErasureRunLock; the
+// acquire path refuses if a row with status RUNNING already exists for
+// the table.
+struct ErasureRunLock {
+  1: i64 tblId,
+  2: i64 runId,
+  3: string principal,
+  4: i64 startedTs,
+  5: optional i64 completedTs,
+  6: optional string releasedBy,
+  7: optional i64 releasedTs,
+  8: optional string releaseReason,
+  9: ErasureRunLockStatus status
+}
+
+// One version of a named erasure policy. The policy header (just the name)
+// continues to live in the legacy ErasurePolicy struct; this struct adds the
+// versioning, validation, and activation columns.
+struct ErasurePolicyVersion {
+  1:  i64 versionId,
+  2:  string policyName,
+  3:  string versionLabel,
+  4:  PolicyVersionStatus status,
+  5:  string identityFieldName,
+  6:  PolicyLiteralKind identityFieldType,
+  7:  PolicyLiteralKind schemaType,
+  8:  optional string sourcePath,         // .erp file path at validation time
+  9:  optional string sourceChecksum,     // SHA-256 of file content
+  10: optional string validatedBy,
+  11: optional i64    validatedTs,
+  12: optional string activatedBy,
+  13: optional i64    activatedTs,
+  14: optional string deactivatedBy,
+  15: optional i64    deactivatedTs,
+  16: optional string sourceText        // raw .erp source of this version
+}
+
+// A FOR SCHEMA block inside a policy version.
+struct ErasurePolicyStatement {
+  1: i64 statementId,
+  2: i64 versionId,
+  3: string schemaValue,    // verbatim literal text of the FOR SCHEMA identifier
+  4: i32 ordinal            // preserves declaration order
+}
+
+// A single ERASE / REPLACE / HASH / ... rule inside a statement.
+struct ErasurePolicyRule {
+  1: i64 ruleId,
+  2: i64 statementId,
+  3: string fieldPath,                       // colon-delimited path text
+  4: PolicyActionKind action,
+  5: optional string literalValue,           // present for REPLACE
+  6: optional PolicyLiteralKind literalType, // present for REPLACE
+  7: optional string params,                 // JSON blob for action-specific params (key refs, vault ids, bucket specs)
+  8: i32 ordinal
+}
+
+// A binding of one column to (one or more) policies.
+struct ErasurePolicyBinding {
+  1: i64 bindingId,
+  2: i64 tblId,                              // FK to Hive's TBLS
+  3: string columnName,
+  4: string schemaField,
+  5: string rowLocator,
+  6: ColumnInternalFormat columnFormat,
+  7: PolicyResolutionMode resolutionMode,
+  8: string createdBy,
+  9: i64 createdTs
+}
+
+// Many-to-many: one row per (binding, policy) pair. Ordinal preserves the
+// declared priority order for future PRIORITY resolution modes.
+struct ErasurePolicyBindingMember {
+  1: i64 bindingId,
+  2: i64 policyId,
+  3: i32 ordinal
+}
+
+// Materialised resolved rule set produced by the §5.6 conflict resolver at
+// attach time. The anonymizer runtime reads this and never has to recompute.
+struct ErasurePolicyBindingResolved {
+  1: i64 resolvedId,
+  2: i64 bindingId,
+  3: string schemaValue,
+  4: string fieldPath,
+  5: PolicyActionKind action,
+  6: optional string literalValue,
+  7: optional PolicyLiteralKind literalType,
+  8: optional string params,
+  9: string contributingPolicies,            // JSON array of policy_ids that contributed this rule
+  10: optional string resolutionNote         // e.g., "C1: ERASE dominated REPLACE(...)"
+}
+
+// Append-only audit trail of lifecycle transitions. Drives SHOW ERASURE
+// POLICY ... HISTORY and AUDIT ERASURE POLICY / BINDING / CONFLICTS.
+struct ErasurePolicyLifecycleEvent {
+  1: i64 eventId,
+  2: i64 versionId,
+  3: PolicyLifecycleEventType eventType,
+  4: string principal,
+  5: i64 eventTs,
+  6: optional string note,                   // free-form; for ATTACH_REJECTED also carries the conflict tuples
+  7: optional PolicyConflictClass conflictClass,
+  8: optional i64 bindingId                  // populated when the event is binding-scoped
+}
+
+// Per-execution audit of ERASE FROM TABLE runs. One row per command
+// invocation. Drives AUDIT ERASURE EXECUTIONS.
+struct ErasureRunAudit {
+  1: i64 runId,
+  2: i64 tblId,
+  3: string columnName,
+  4: i64 bindingId,
+  5: string principal,
+  6: i64 startedTs,
+  7: optional i64 completedTs,
+  8: optional string identityValues,         // typically hashed; see §5.8 privacy paradox note
+  9: optional string policyVersions,         // JSON array of version_ids active at run time
+  10: optional i64 resolvedRulesSnapshotId,  // FK to a snapshot of ErasurePolicyBindingResolved at run time
+  11: optional i32 filesRewritten,
+  12: optional i64 bytesBefore,
+  13: optional i64 bytesAfter,
+  14: ErasureRunStatus status,
+  15: optional i64 matchesInspected,
+  16: optional i64 matchesRedacted,
+  17: optional i64 matchesFlagged,
+  // Populated when status is RELEASED or FORCE_RELEASED. Carries the
+  // WITH REASON '<text>' string from RELEASE ERASURE LOCK. Null for
+  // regular ERASE rows.
+  18: optional string releaseReason
+}
+
+// Privilege grants on policy objects. Parallels Hive's existing TBL_PRIVS /
+// DB_PRIVS but scoped to policies. The ERASE privilege itself slots into
+// TBL_PRIVS (existing table) using the new privilege type.
+struct PolicyPriv {
+  1: i64 policyPrivId,
+  2: i64 policyId,                           // policy this grant applies to (or 0 for wildcard *)
+  3: string principalName,                   // user or role name
+  4: string principalType,                   // USER or ROLE
+  5: string privilege,                       // POLICY_VALIDATE / POLICY_ACTIVATE / POLICY_MANAGE
+  6: i64 createTime,
+  7: optional string grantor,
+  8: optional string grantorType,
+  9: bool grantOption
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -3365,6 +3651,86 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
   list<WriteEventInfo> get_all_write_event_info(1: GetAllWriteEventInfoRequest request) throws (1:MetaException o1)
   ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(1: string policyName) throws (1: MetaException o1)
+
+  /* anonymization extensions */
+  void create_erasure_policy(1: ErasurePolicy erasurePolicy) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void drop_erasure_policy(1: string policyName, 2: bool ifExists) throws (1:NoSuchObjectException o1, 2:MetaException o3)
+  void drop_anon_index(1: string indexName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  ErasurePolicy get_erasure_policy(1: string policyName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  void add_index(1: Index new_index, 2: Table index_table) throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  Index get_index_by_name(1: string db_name 2: string tbl_name, 3:string index_name) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  bool drop_index_by_name(1: string db_name, 2: string tbl_name, 3:string index_name, 4:bool deleteData, 5: bool ifExists) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  list<Index> get_indexes(1: string db_name, 2: string tbl_name, 3:i16 max_indexes=-1) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<PolicyInfo> get_all_erasure_policies() throws (1:MetaException o1)
+
+  /* erasure policy governance: versioning, multi-policy binding, lifecycle audit */
+
+  // Policy versions
+  ErasurePolicyVersion add_erasure_policy_version(1: ErasurePolicyVersion version) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  ErasurePolicyVersion get_erasure_policy_version(1: string policyName, 2: string versionLabel) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ErasurePolicyVersion> list_erasure_policy_versions(1: string policyName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  void update_erasure_policy_version_status(1: i64 versionId, 2: PolicyVersionStatus newStatus, 3: string principal) throws (1:NoSuchObjectException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  ErasurePolicyVersion get_active_erasure_policy_version(1: string policyName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  // Statements and rules (typically attached as a batch when a version is created)
+  list<ErasurePolicyStatement> get_erasure_policy_statements(1: i64 versionId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ErasurePolicyRule> get_erasure_policy_rules(1: i64 statementId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  // Bindings
+  ErasurePolicyBinding add_erasure_policy_binding(1: ErasurePolicyBinding binding) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  ErasurePolicyBinding get_erasure_policy_binding(1: i64 tblId, 2: string columnName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  void drop_erasure_policy_binding(1: i64 bindingId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  void update_erasure_policy_binding_settings(1: i64 bindingId, 2: PolicyResolutionMode resolutionMode, 3: ColumnInternalFormat columnFormat) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  // Binding membership (multi-policy attach/detach)
+  void attach_policy_to_binding(1: i64 bindingId, 2: i64 policyId, 3: i32 ordinal) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void detach_policy_from_binding(1: i64 bindingId, 2: i64 policyId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ErasurePolicyBindingMember> get_binding_members(1: i64 bindingId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  // Resolved rule set (materialised by the §5.6 detector at attach time)
+  void replace_binding_resolved_rules(1: i64 bindingId, 2: list<ErasurePolicyBindingResolved> resolved) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ErasurePolicyBindingResolved> get_binding_resolved_rules(1: i64 bindingId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  // Lifecycle event log (append-only)
+  void record_lifecycle_event(1: ErasurePolicyLifecycleEvent evt) throws (1:MetaException o1)
+  list<ErasurePolicyLifecycleEvent> get_lifecycle_events_for_policy(1: string policyName, 2: i64 fromTs, 3: i64 untilTs) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ErasurePolicyLifecycleEvent> get_lifecycle_events_for_binding(1: i64 bindingId, 2: i64 fromTs, 3: i64 untilTs) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ErasurePolicyLifecycleEvent> get_attach_rejected_events(1: i64 fromTs, 2: i64 untilTs) throws (1:MetaException o1)
+
+  // Run audit (every ERASE FROM TABLE invocation)
+  void record_erasure_run(1: ErasureRunAudit run) throws (1:MetaException o1)
+  list<ErasureRunAudit> get_erasure_runs_for_table(1: i64 tblId, 2: i64 fromTs, 3: i64 untilTs, 4: string byUser, 5: string forIdentity) throws (1:MetaException o1)
+  // Update the audit row identified by (tblId, startedTs) with its
+  // completion timestamp and final status. Called by the post-execution
+  // hook after the Tez DAG returns. Matches by the natural key so callers
+  // do not need to round-trip the run_id back from the start-time
+  // recordErasureRun call.
+  void update_erasure_run_completion(1: i64 tblId, 2: i64 startedTs, 3: i64 completedTs, 4: ErasureRunStatus status,
+                                      5: optional i64 matchesInspected, 6: optional i64 matchesRedacted, 7: optional i64 matchesFlagged) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  // §4.7 per-table ERASE FROM TABLE run-lock. acquire raises MetaException
+  // (whose message names the holder) if a row with status RUNNING already
+  // exists for the table. complete is a no-op when the runId no longer
+  // matches the holder (signalling the lock was reclaimed). manually_release
+  // raises NoSuchObjectException when no RUNNING lock exists.
+  ErasureRunLock acquire_erasure_run_lock(1: i64 tblId, 2: i64 runId, 3: string principal)
+    throws (1:MetaException o1)
+  ErasureRunLock get_erasure_run_lock(1: i64 tblId)
+    throws (1:MetaException o1)
+  bool complete_erasure_run_lock(1: i64 tblId, 2: i64 runId)
+    throws (1:MetaException o1)
+  ErasureRunLock manually_release_erasure_run_lock(1: i64 tblId, 2: string releasedBy,
+                                                    3: string releaseReason, 4: bool force)
+    throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ErasureRunLock> list_erasure_run_locks()
+    throws (1:MetaException o1)
+
+  // Policy-object privilege grants
+  void grant_policy_priv(1: PolicyPriv priv) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void revoke_policy_priv(1: i64 policyPrivId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<PolicyPriv> list_policy_privs(1: i64 policyId, 2: string principalName) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

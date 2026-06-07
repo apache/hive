@@ -1,0 +1,5 @@
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+
+FOR SCHEMA 'm'
+    ERASE   profile:*:firstName

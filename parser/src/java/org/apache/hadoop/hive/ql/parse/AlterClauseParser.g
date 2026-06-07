@@ -43,7 +43,6 @@ catch (RecognitionException e) {
 }
 }
 
-
 alterStatement
 @init { gParent.pushMsg("alter statement", state); }
 @after { gParent.popMsg(state); }
@@ -54,6 +53,14 @@ alterStatement
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
     | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
     | KW_ALTER KW_CATALOG alterCatalogStatementSuffix -> alterCatalogStatementSuffix
+    | KW_ALTER KW_IDENTITY KW_INDEX in=indexName KW_ON KW_TABLE tn=tableName KW_REBUILD -> ^(TOK_AIR $in $tn)
+    ;
+
+indexName
+@init { gParent.pushMsg("index name", state); }
+@after { gParent.popMsg(state); }
+    : (db=identifier DOT)? ix=identifier
+    -> ^(TOK_IXNAME $db? $ix)
     ;
 
 alterTableStatementSuffix
@@ -268,6 +275,16 @@ alterStatementSuffixRenameCol
 @after { gParent.popMsg(state); }
     : KW_CHANGE KW_COLUMN? oldName=identifier newName=identifier colType alterColumnConstraint[$newName.tree]? (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition? restrictOrCascade?
     ->^(TOK_ALTERTABLE_RENAMECOL $oldName $newName colType $comment? alterColumnConstraint? alterStatementChangeColPosition? restrictOrCascade?)
+    ;
+
+serFormatType
+@init { gParent.pushMsg("serialization format type", state); }
+@after { gParent.popMsg(state); }
+    : KW_JSON -> TOK_JSON
+    | KW_MSGPACK -> TOK_MSGPACK
+    | KW_XML -> TOK_XML
+    | KW_PROTOBUF -> TOK_PROTOBUF
+    | KW_AVRO -> TOK_AVRO
     ;
 
 alterStatementSuffixUpdateStatsCol[boolean partition]

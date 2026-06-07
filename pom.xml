@@ -61,6 +61,7 @@
     <module>standalone-metastore</module>
     <module>kafka-handler</module>
     <module>iceberg</module>
+      <module>dae</module>
   </modules>
   <properties>
     <standalone-metastore.version>4.3.0-SNAPSHOT</standalone-metastore.version>
@@ -1957,6 +1958,7 @@
             <exclude>**/test/**/*.xml</exclude>
             <exclude>**/dependency-reduced-pom.xml</exclude>
             <exclude>**/*json</exclude>
+            <exclude>**/*.erp</exclude>
             <exclude>**/gen/**</exclude>
             <exclude>**/target/**</exclude>
             <exclude>**/scripts/**</exclude>

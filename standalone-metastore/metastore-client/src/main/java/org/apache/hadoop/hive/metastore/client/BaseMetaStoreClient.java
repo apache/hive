@@ -776,4 +776,238 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
       throws MetaException, NoSuchObjectException, TException {
     dropConstraint(getDefaultCatalog(conf), dbName, tableName, constraintName);
   }
+
+  // ===== HiveDAE anonymization-extension methods (default: unsupported) =====
+
+  @Override
+  public void createErasurePolicy(ErasurePolicy policy) throws AlreadyExistsException, TException {
+    throw new UnsupportedOperationException("createErasurePolicy is not supported by this metastore client");
+  }
+
+  @Override
+  public void dropErasurePolicy(String policyName, boolean ifExists) throws TException {
+    throw new UnsupportedOperationException("dropErasurePolicy is not supported by this metastore client");
+  }
+
+  @Override
+  public void createIndex(Index index, Table table) throws TException {
+    throw new UnsupportedOperationException("createIndex is not supported by this metastore client");
+  }
+
+  @Override
+  public void dropAnonIndex(String indexName) throws TException {
+    throw new UnsupportedOperationException("dropAnonIndex is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasurePolicy getErasurePolicy(String policyName) throws TException {
+    throw new UnsupportedOperationException("getErasurePolicy is not supported by this metastore client");
+  }
+
+  @Override
+  public Index getIndex(String dbName, String tblName, String indexName) throws TException {
+    throw new UnsupportedOperationException("getIndex is not supported by this metastore client");
+  }
+
+  @Override
+  public boolean dropIndex(String db_name, String tbl_name, String name, boolean deleteData, boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("dropIndex is not supported by this metastore client");
+  }
+
+  @Override
+  public List<Index> listIndexes(String db_name, String tbl_name, short max) throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("listIndexes is not supported by this metastore client");
+  }
+
+  @Override
+  public List<PolicyInfo> getAllErasurePolicyNames() throws MetaException, TException {
+    throw new UnsupportedOperationException("getAllErasurePolicyNames is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasurePolicyVersion addErasurePolicyVersion(ErasurePolicyVersion version)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("addErasurePolicyVersion is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasurePolicyVersion getErasurePolicyVersion(String policyName, String versionLabel)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getErasurePolicyVersion is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyVersion> listErasurePolicyVersions(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("listErasurePolicyVersions is not supported by this metastore client");
+  }
+
+  @Override
+  public void updateErasurePolicyVersionStatus(long versionId, PolicyVersionStatus newStatus,
+      String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("updateErasurePolicyVersionStatus is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasurePolicyVersion getActiveErasurePolicyVersion(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getActiveErasurePolicyVersion is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyStatement> getErasurePolicyStatements(long versionId)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getErasurePolicyStatements is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyRule> getErasurePolicyRules(long statementId)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getErasurePolicyRules is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasurePolicyBinding addErasurePolicyBinding(ErasurePolicyBinding binding)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("addErasurePolicyBinding is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasurePolicyBinding getErasurePolicyBinding(long tblId, String columnName)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getErasurePolicyBinding is not supported by this metastore client");
+  }
+
+  @Override
+  public void dropErasurePolicyBinding(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("dropErasurePolicyBinding is not supported by this metastore client");
+  }
+
+  @Override
+  public void updateErasurePolicyBindingSettings(long bindingId, PolicyResolutionMode resolutionMode,
+      ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("updateErasurePolicyBindingSettings is not supported by this metastore client");
+  }
+
+  @Override
+  public void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("attachPolicyToBinding is not supported by this metastore client");
+  }
+
+  @Override
+  public void detachPolicyFromBinding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("detachPolicyFromBinding is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyBindingMember> getBindingMembers(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getBindingMembers is not supported by this metastore client");
+  }
+
+  @Override
+  public void replaceBindingResolvedRules(long bindingId, List<ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("replaceBindingResolvedRules is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyBindingResolved> getBindingResolvedRules(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getBindingResolvedRules is not supported by this metastore client");
+  }
+
+  @Override
+  public void recordLifecycleEvent(ErasurePolicyLifecycleEvent evt) throws MetaException, TException {
+    throw new UnsupportedOperationException("recordLifecycleEvent is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(String policyName, long fromTs,
+      long untilTs) throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getLifecycleEventsForPolicy is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(long bindingId, long fromTs,
+      long untilTs) throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("getLifecycleEventsForBinding is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getAttachRejectedEvents(long fromTs, long untilTs)
+      throws MetaException, TException {
+    throw new UnsupportedOperationException("getAttachRejectedEvents is not supported by this metastore client");
+  }
+
+  @Override
+  public void recordErasureRun(ErasureRunAudit run) throws MetaException, TException {
+    throw new UnsupportedOperationException("recordErasureRun is not supported by this metastore client");
+  }
+
+  @Override
+  public List<ErasureRunAudit> getErasureRunsForTable(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws MetaException, TException {
+    throw new UnsupportedOperationException("getErasureRunsForTable is not supported by this metastore client");
+  }
+
+  @Override
+  public void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("updateErasureRunCompletion is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasureRunLock acquireErasureRunLock(long tblId, long runId, String principal)
+      throws MetaException, TException {
+    throw new UnsupportedOperationException("acquireErasureRunLock is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasureRunLock getErasureRunLock(long tblId)
+      throws MetaException, TException {
+    throw new UnsupportedOperationException("getErasureRunLock is not supported by this metastore client");
+  }
+
+  @Override
+  public boolean completeErasureRunLock(long tblId, long runId)
+      throws MetaException, TException {
+    throw new UnsupportedOperationException("completeErasureRunLock is not supported by this metastore client");
+  }
+
+  @Override
+  public ErasureRunLock manuallyReleaseErasureRunLock(long tblId, String releasedBy,
+      String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("manuallyReleaseErasureRunLock is not supported by this metastore client");
+  }
+
+  @Override
+  public java.util.List<ErasureRunLock> listErasureRunLocks()
+      throws MetaException, TException {
+    throw new UnsupportedOperationException("listErasureRunLocks is not supported by this metastore client");
+  }
+
+  @Override
+  public void grantPolicyPriv(PolicyPriv priv)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("grantPolicyPriv is not supported by this metastore client");
+  }
+
+  @Override
+  public void revokePolicyPriv(long policyPrivId) throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("revokePolicyPriv is not supported by this metastore client");
+  }
+
+  @Override
+  public List<PolicyPriv> listPolicyPrivs(long policyId, String principalName)
+      throws MetaException, TException {
+    throw new UnsupportedOperationException("listPolicyPrivs is not supported by this metastore client");
+  }
 }

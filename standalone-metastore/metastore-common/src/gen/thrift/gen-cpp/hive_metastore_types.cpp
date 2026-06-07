@@ -934,6 +934,354 @@ std::string to_string(const PartitionFilterMode::type& val) {
   }
 }
 
+int _kIndexTypeValues[] = {
+  IndexType::BTREE,
+  IndexType::DIRECTORY,
+  IndexType::TABULAR
+};
+const char* _kIndexTypeNames[] = {
+  "BTREE",
+  "DIRECTORY",
+  "TABULAR"
+};
+const std::map<int, const char*> _IndexType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kIndexTypeValues, _kIndexTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const IndexType::type& val) {
+  std::map<int, const char*>::const_iterator it = _IndexType_VALUES_TO_NAMES.find(val);
+  if (it != _IndexType_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const IndexType::type& val) {
+  std::map<int, const char*>::const_iterator it = _IndexType_VALUES_TO_NAMES.find(val);
+  if (it != _IndexType_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kColumnInternalFormatValues[] = {
+  ColumnInternalFormat::JSON,
+  ColumnInternalFormat::MSGPACK,
+  ColumnInternalFormat::XML,
+  ColumnInternalFormat::PROTOBUF,
+  ColumnInternalFormat::AVRO
+};
+const char* _kColumnInternalFormatNames[] = {
+  "JSON",
+  "MSGPACK",
+  "XML",
+  "PROTOBUF",
+  "AVRO"
+};
+const std::map<int, const char*> _ColumnInternalFormat_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kColumnInternalFormatValues, _kColumnInternalFormatNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const ColumnInternalFormat::type& val) {
+  std::map<int, const char*>::const_iterator it = _ColumnInternalFormat_VALUES_TO_NAMES.find(val);
+  if (it != _ColumnInternalFormat_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const ColumnInternalFormat::type& val) {
+  std::map<int, const char*>::const_iterator it = _ColumnInternalFormat_VALUES_TO_NAMES.find(val);
+  if (it != _ColumnInternalFormat_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kPolicyVersionStatusValues[] = {
+  PolicyVersionStatus::DRAFT,
+  PolicyVersionStatus::VALIDATED,
+  PolicyVersionStatus::ACTIVE,
+  PolicyVersionStatus::SUPERSEDED,
+  PolicyVersionStatus::INACTIVE
+};
+const char* _kPolicyVersionStatusNames[] = {
+  "DRAFT",
+  "VALIDATED",
+  "ACTIVE",
+  "SUPERSEDED",
+  "INACTIVE"
+};
+const std::map<int, const char*> _PolicyVersionStatus_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kPolicyVersionStatusValues, _kPolicyVersionStatusNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const PolicyVersionStatus::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyVersionStatus_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyVersionStatus_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const PolicyVersionStatus::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyVersionStatus_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyVersionStatus_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kPolicyLiteralKindValues[] = {
+  PolicyLiteralKind::INT,
+  PolicyLiteralKind::LONG,
+  PolicyLiteralKind::STRING
+};
+const char* _kPolicyLiteralKindNames[] = {
+  "INT",
+  "LONG",
+  "STRING"
+};
+const std::map<int, const char*> _PolicyLiteralKind_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kPolicyLiteralKindValues, _kPolicyLiteralKindNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const PolicyLiteralKind::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyLiteralKind_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyLiteralKind_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const PolicyLiteralKind::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyLiteralKind_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyLiteralKind_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kPolicyActionKindValues[] = {
+  PolicyActionKind::ERASE,
+  PolicyActionKind::REPLACE,
+  PolicyActionKind::HASH,
+  PolicyActionKind::TOKENIZE,
+  PolicyActionKind::ENCRYPT,
+  PolicyActionKind::GENERALIZE,
+  PolicyActionKind::INSPECT,
+  PolicyActionKind::FLAG
+};
+const char* _kPolicyActionKindNames[] = {
+  "ERASE",
+  "REPLACE",
+  "HASH",
+  "TOKENIZE",
+  "ENCRYPT",
+  "GENERALIZE",
+  "INSPECT",
+  "FLAG"
+};
+const std::map<int, const char*> _PolicyActionKind_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(8, _kPolicyActionKindValues, _kPolicyActionKindNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const PolicyActionKind::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyActionKind_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyActionKind_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const PolicyActionKind::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyActionKind_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyActionKind_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kPolicyResolutionModeValues[] = {
+  PolicyResolutionMode::EXPLICIT,
+  PolicyResolutionMode::STRICTEST
+};
+const char* _kPolicyResolutionModeNames[] = {
+  "EXPLICIT",
+  "STRICTEST"
+};
+const std::map<int, const char*> _PolicyResolutionMode_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kPolicyResolutionModeValues, _kPolicyResolutionModeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const PolicyResolutionMode::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyResolutionMode_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyResolutionMode_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const PolicyResolutionMode::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyResolutionMode_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyResolutionMode_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kPolicyLifecycleEventTypeValues[] = {
+  PolicyLifecycleEventType::VALIDATED,
+  PolicyLifecycleEventType::ACTIVATED,
+  PolicyLifecycleEventType::DEACTIVATED,
+  PolicyLifecycleEventType::SUPERSEDED,
+  PolicyLifecycleEventType::BOUND,
+  PolicyLifecycleEventType::UNBOUND,
+  PolicyLifecycleEventType::ATTACH_REJECTED,
+  PolicyLifecycleEventType::LOADED,
+  PolicyLifecycleEventType::INVALIDATED
+};
+const char* _kPolicyLifecycleEventTypeNames[] = {
+  "VALIDATED",
+  "ACTIVATED",
+  "DEACTIVATED",
+  "SUPERSEDED",
+  "BOUND",
+  "UNBOUND",
+  "ATTACH_REJECTED",
+  "LOADED",
+  "INVALIDATED"
+};
+const std::map<int, const char*> _PolicyLifecycleEventType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(9, _kPolicyLifecycleEventTypeValues, _kPolicyLifecycleEventTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const PolicyLifecycleEventType::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyLifecycleEventType_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyLifecycleEventType_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const PolicyLifecycleEventType::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyLifecycleEventType_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyLifecycleEventType_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kPolicyConflictClassValues[] = {
+  PolicyConflictClass::C1_ACTION,
+  PolicyConflictClass::C2_VALUE,
+  PolicyConflictClass::C3_PATH_PREFIX
+};
+const char* _kPolicyConflictClassNames[] = {
+  "C1_ACTION",
+  "C2_VALUE",
+  "C3_PATH_PREFIX"
+};
+const std::map<int, const char*> _PolicyConflictClass_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kPolicyConflictClassValues, _kPolicyConflictClassNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const PolicyConflictClass::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyConflictClass_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyConflictClass_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const PolicyConflictClass::type& val) {
+  std::map<int, const char*>::const_iterator it = _PolicyConflictClass_VALUES_TO_NAMES.find(val);
+  if (it != _PolicyConflictClass_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kErasureRunStatusValues[] = {
+  ErasureRunStatus::SUCCEEDED,
+  ErasureRunStatus::FAILED,
+  ErasureRunStatus::INTERRUPTED,
+  ErasureRunStatus::RELEASED,
+  ErasureRunStatus::FORCE_RELEASED,
+  ErasureRunStatus::EXTRACTED,
+  ErasureRunStatus::INITIATED
+};
+const char* _kErasureRunStatusNames[] = {
+  "SUCCEEDED",
+  "FAILED",
+  "INTERRUPTED",
+  "RELEASED",
+  "FORCE_RELEASED",
+  "EXTRACTED",
+  "INITIATED"
+};
+const std::map<int, const char*> _ErasureRunStatus_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(7, _kErasureRunStatusValues, _kErasureRunStatusNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const ErasureRunStatus::type& val) {
+  std::map<int, const char*>::const_iterator it = _ErasureRunStatus_VALUES_TO_NAMES.find(val);
+  if (it != _ErasureRunStatus_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const ErasureRunStatus::type& val) {
+  std::map<int, const char*>::const_iterator it = _ErasureRunStatus_VALUES_TO_NAMES.find(val);
+  if (it != _ErasureRunStatus_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
+int _kErasureRunLockStatusValues[] = {
+  ErasureRunLockStatus::RUNNING,
+  ErasureRunLockStatus::COMPLETED,
+  ErasureRunLockStatus::RELEASED,
+  ErasureRunLockStatus::FORCE_RELEASED
+};
+const char* _kErasureRunLockStatusNames[] = {
+  "RUNNING",
+  "COMPLETED",
+  "RELEASED",
+  "FORCE_RELEASED"
+};
+const std::map<int, const char*> _ErasureRunLockStatus_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kErasureRunLockStatusValues, _kErasureRunLockStatusNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+
+std::ostream& operator<<(std::ostream& out, const ErasureRunLockStatus::type& val) {
+  std::map<int, const char*>::const_iterator it = _ErasureRunLockStatus_VALUES_TO_NAMES.find(val);
+  if (it != _ErasureRunLockStatus_VALUES_TO_NAMES.end()) {
+    out << it->second;
+  } else {
+    out << static_cast<int>(val);
+  }
+  return out;
+}
+
+std::string to_string(const ErasureRunLockStatus::type& val) {
+  std::map<int, const char*>::const_iterator it = _ErasureRunLockStatus_VALUES_TO_NAMES.find(val);
+  if (it != _ErasureRunLockStatus_VALUES_TO_NAMES.end()) {
+    return std::string(it->second);
+  } else {
+    return std::to_string(static_cast<int>(val));
+  }
+}
+
 
 Version::~Version() noexcept {
 }
@@ -55158,6 +55506,3381 @@ void ReplayedTxnsForPolicyResult::printTo(std::ostream& out) const {
 }
 
 
+CreateAnonPolicyRequest::~CreateAnonPolicyRequest() noexcept {
+}
+
+
+void CreateAnonPolicyRequest::__set_policy(const ErasurePolicy& val) {
+  this->policy = val;
+}
+
+void CreateAnonPolicyRequest::__set_envContext(const EnvironmentContext& val) {
+  this->envContext = val;
+__isset.envContext = true;
+}
+std::ostream& operator<<(std::ostream& out, const CreateAnonPolicyRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t CreateAnonPolicyRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_policy = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->policy.read(iprot);
+          isset_policy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->envContext.read(iprot);
+          this->__isset.envContext = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_policy)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t CreateAnonPolicyRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("CreateAnonPolicyRequest");
+
+  xfer += oprot->writeFieldBegin("policy", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->policy.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.envContext) {
+    xfer += oprot->writeFieldBegin("envContext", ::apache::thrift::protocol::T_STRUCT, 2);
+    xfer += this->envContext.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(CreateAnonPolicyRequest &a, CreateAnonPolicyRequest &b) {
+  using ::std::swap;
+  swap(a.policy, b.policy);
+  swap(a.envContext, b.envContext);
+  swap(a.__isset, b.__isset);
+}
+
+CreateAnonPolicyRequest::CreateAnonPolicyRequest(const CreateAnonPolicyRequest& other1943) {
+  policy = other1943.policy;
+  envContext = other1943.envContext;
+  __isset = other1943.__isset;
+}
+CreateAnonPolicyRequest& CreateAnonPolicyRequest::operator=(const CreateAnonPolicyRequest& other1944) {
+  policy = other1944.policy;
+  envContext = other1944.envContext;
+  __isset = other1944.__isset;
+  return *this;
+}
+void CreateAnonPolicyRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "CreateAnonPolicyRequest(";
+  out << "policy=" << to_string(policy);
+  out << ", " << "envContext="; (__isset.envContext ? (out << to_string(envContext)) : (out << "<null>"));
+  out << ")";
+}
+
+
+ErasurePolicy::~ErasurePolicy() noexcept {
+}
+
+
+void ErasurePolicy::__set_policyName(const std::string& val) {
+  this->policyName = val;
+}
+
+void ErasurePolicy::__set_policyId(const int64_t val) {
+  this->policyId = val;
+__isset.policyId = true;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicy& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicy::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->policyName);
+          this->__isset.policyName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->policyId);
+          this->__isset.policyId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicy::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicy");
+
+  xfer += oprot->writeFieldBegin("policyName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->policyName);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.policyId) {
+    xfer += oprot->writeFieldBegin("policyId", ::apache::thrift::protocol::T_I64, 3);
+    xfer += oprot->writeI64(this->policyId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicy &a, ErasurePolicy &b) {
+  using ::std::swap;
+  swap(a.policyName, b.policyName);
+  swap(a.policyId, b.policyId);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicy::ErasurePolicy(const ErasurePolicy& other1945) {
+  policyName = other1945.policyName;
+  policyId = other1945.policyId;
+  __isset = other1945.__isset;
+}
+ErasurePolicy& ErasurePolicy::operator=(const ErasurePolicy& other1946) {
+  policyName = other1946.policyName;
+  policyId = other1946.policyId;
+  __isset = other1946.__isset;
+  return *this;
+}
+void ErasurePolicy::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicy(";
+  out << "policyName=" << to_string(policyName);
+  out << ", " << "policyId="; (__isset.policyId ? (out << to_string(policyId)) : (out << "<null>"));
+  out << ")";
+}
+
+
+Index::~Index() noexcept {
+}
+
+
+void Index::__set_indexName(const std::string& val) {
+  this->indexName = val;
+}
+
+void Index::__set_indexHandlerClass(const std::string& val) {
+  this->indexHandlerClass = val;
+}
+
+void Index::__set_dbName(const std::string& val) {
+  this->dbName = val;
+}
+
+void Index::__set_origTableName(const std::string& val) {
+  this->origTableName = val;
+}
+
+void Index::__set_createTime(const int32_t val) {
+  this->createTime = val;
+}
+
+void Index::__set_lastAccessTime(const int32_t val) {
+  this->lastAccessTime = val;
+}
+
+void Index::__set_indexTableName(const std::string& val) {
+  this->indexTableName = val;
+}
+
+void Index::__set_sd(const StorageDescriptor& val) {
+  this->sd = val;
+}
+
+void Index::__set_deferredRebuild(const bool val) {
+  this->deferredRebuild = val;
+}
+
+void Index::__set_pageSize(const int32_t val) {
+  this->pageSize = val;
+}
+
+void Index::__set_bufferPoolSize(const int32_t val) {
+  this->bufferPoolSize = val;
+}
+
+void Index::__set_pointerType(const std::string& val) {
+  this->pointerType = val;
+}
+
+void Index::__set_indexType(const IndexType::type val) {
+  this->indexType = val;
+}
+std::ostream& operator<<(std::ostream& out, const Index& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t Index::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->indexName);
+          this->__isset.indexName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->indexHandlerClass);
+          this->__isset.indexHandlerClass = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->origTableName);
+          this->__isset.origTableName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->createTime);
+          this->__isset.createTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->lastAccessTime);
+          this->__isset.lastAccessTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->indexTableName);
+          this->__isset.indexTableName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->sd.read(iprot);
+          this->__isset.sd = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->deferredRebuild);
+          this->__isset.deferredRebuild = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->pageSize);
+          this->__isset.pageSize = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->bufferPoolSize);
+          this->__isset.bufferPoolSize = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->pointerType);
+          this->__isset.pointerType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1947;
+          xfer += iprot->readI32(ecast1947);
+          this->indexType = static_cast<IndexType::type>(ecast1947);
+          this->__isset.indexType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Index::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Index");
+
+  xfer += oprot->writeFieldBegin("indexName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->indexName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("indexHandlerClass", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->indexHandlerClass);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("origTableName", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->origTableName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeI32(this->createTime);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("lastAccessTime", ::apache::thrift::protocol::T_I32, 6);
+  xfer += oprot->writeI32(this->lastAccessTime);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("indexTableName", ::apache::thrift::protocol::T_STRING, 7);
+  xfer += oprot->writeString(this->indexTableName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("sd", ::apache::thrift::protocol::T_STRUCT, 8);
+  xfer += this->sd.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("deferredRebuild", ::apache::thrift::protocol::T_BOOL, 9);
+  xfer += oprot->writeBool(this->deferredRebuild);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("pageSize", ::apache::thrift::protocol::T_I32, 10);
+  xfer += oprot->writeI32(this->pageSize);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("bufferPoolSize", ::apache::thrift::protocol::T_I32, 11);
+  xfer += oprot->writeI32(this->bufferPoolSize);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("pointerType", ::apache::thrift::protocol::T_STRING, 12);
+  xfer += oprot->writeString(this->pointerType);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("indexType", ::apache::thrift::protocol::T_I32, 13);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->indexType));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(Index &a, Index &b) {
+  using ::std::swap;
+  swap(a.indexName, b.indexName);
+  swap(a.indexHandlerClass, b.indexHandlerClass);
+  swap(a.dbName, b.dbName);
+  swap(a.origTableName, b.origTableName);
+  swap(a.createTime, b.createTime);
+  swap(a.lastAccessTime, b.lastAccessTime);
+  swap(a.indexTableName, b.indexTableName);
+  swap(a.sd, b.sd);
+  swap(a.deferredRebuild, b.deferredRebuild);
+  swap(a.pageSize, b.pageSize);
+  swap(a.bufferPoolSize, b.bufferPoolSize);
+  swap(a.pointerType, b.pointerType);
+  swap(a.indexType, b.indexType);
+  swap(a.__isset, b.__isset);
+}
+
+Index::Index(const Index& other1948) {
+  indexName = other1948.indexName;
+  indexHandlerClass = other1948.indexHandlerClass;
+  dbName = other1948.dbName;
+  origTableName = other1948.origTableName;
+  createTime = other1948.createTime;
+  lastAccessTime = other1948.lastAccessTime;
+  indexTableName = other1948.indexTableName;
+  sd = other1948.sd;
+  deferredRebuild = other1948.deferredRebuild;
+  pageSize = other1948.pageSize;
+  bufferPoolSize = other1948.bufferPoolSize;
+  pointerType = other1948.pointerType;
+  indexType = other1948.indexType;
+  __isset = other1948.__isset;
+}
+Index& Index::operator=(const Index& other1949) {
+  indexName = other1949.indexName;
+  indexHandlerClass = other1949.indexHandlerClass;
+  dbName = other1949.dbName;
+  origTableName = other1949.origTableName;
+  createTime = other1949.createTime;
+  lastAccessTime = other1949.lastAccessTime;
+  indexTableName = other1949.indexTableName;
+  sd = other1949.sd;
+  deferredRebuild = other1949.deferredRebuild;
+  pageSize = other1949.pageSize;
+  bufferPoolSize = other1949.bufferPoolSize;
+  pointerType = other1949.pointerType;
+  indexType = other1949.indexType;
+  __isset = other1949.__isset;
+  return *this;
+}
+void Index::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "Index(";
+  out << "indexName=" << to_string(indexName);
+  out << ", " << "indexHandlerClass=" << to_string(indexHandlerClass);
+  out << ", " << "dbName=" << to_string(dbName);
+  out << ", " << "origTableName=" << to_string(origTableName);
+  out << ", " << "createTime=" << to_string(createTime);
+  out << ", " << "lastAccessTime=" << to_string(lastAccessTime);
+  out << ", " << "indexTableName=" << to_string(indexTableName);
+  out << ", " << "sd=" << to_string(sd);
+  out << ", " << "deferredRebuild=" << to_string(deferredRebuild);
+  out << ", " << "pageSize=" << to_string(pageSize);
+  out << ", " << "bufferPoolSize=" << to_string(bufferPoolSize);
+  out << ", " << "pointerType=" << to_string(pointerType);
+  out << ", " << "indexType=" << to_string(indexType);
+  out << ")";
+}
+
+
+PolicyInfo::~PolicyInfo() noexcept {
+}
+
+
+void PolicyInfo::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void PolicyInfo::__set_doc(const std::string& val) {
+  this->doc = val;
+}
+std::ostream& operator<<(std::ostream& out, const PolicyInfo& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t PolicyInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->doc);
+          this->__isset.doc = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t PolicyInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("PolicyInfo");
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("doc", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->doc);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(PolicyInfo &a, PolicyInfo &b) {
+  using ::std::swap;
+  swap(a.name, b.name);
+  swap(a.doc, b.doc);
+  swap(a.__isset, b.__isset);
+}
+
+PolicyInfo::PolicyInfo(const PolicyInfo& other1950) {
+  name = other1950.name;
+  doc = other1950.doc;
+  __isset = other1950.__isset;
+}
+PolicyInfo& PolicyInfo::operator=(const PolicyInfo& other1951) {
+  name = other1951.name;
+  doc = other1951.doc;
+  __isset = other1951.__isset;
+  return *this;
+}
+void PolicyInfo::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "PolicyInfo(";
+  out << "name=" << to_string(name);
+  out << ", " << "doc=" << to_string(doc);
+  out << ")";
+}
+
+
+ErasureRunLock::~ErasureRunLock() noexcept {
+}
+
+
+void ErasureRunLock::__set_tblId(const int64_t val) {
+  this->tblId = val;
+}
+
+void ErasureRunLock::__set_runId(const int64_t val) {
+  this->runId = val;
+}
+
+void ErasureRunLock::__set_principal(const std::string& val) {
+  this->principal = val;
+}
+
+void ErasureRunLock::__set_startedTs(const int64_t val) {
+  this->startedTs = val;
+}
+
+void ErasureRunLock::__set_completedTs(const int64_t val) {
+  this->completedTs = val;
+__isset.completedTs = true;
+}
+
+void ErasureRunLock::__set_releasedBy(const std::string& val) {
+  this->releasedBy = val;
+__isset.releasedBy = true;
+}
+
+void ErasureRunLock::__set_releasedTs(const int64_t val) {
+  this->releasedTs = val;
+__isset.releasedTs = true;
+}
+
+void ErasureRunLock::__set_releaseReason(const std::string& val) {
+  this->releaseReason = val;
+__isset.releaseReason = true;
+}
+
+void ErasureRunLock::__set_status(const ErasureRunLockStatus::type val) {
+  this->status = val;
+}
+std::ostream& operator<<(std::ostream& out, const ErasureRunLock& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasureRunLock::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->tblId);
+          this->__isset.tblId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->runId);
+          this->__isset.runId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principal);
+          this->__isset.principal = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->startedTs);
+          this->__isset.startedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->completedTs);
+          this->__isset.completedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->releasedBy);
+          this->__isset.releasedBy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->releasedTs);
+          this->__isset.releasedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->releaseReason);
+          this->__isset.releaseReason = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1952;
+          xfer += iprot->readI32(ecast1952);
+          this->status = static_cast<ErasureRunLockStatus::type>(ecast1952);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasureRunLock::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasureRunLock");
+
+  xfer += oprot->writeFieldBegin("tblId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->tblId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("runId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->runId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("principal", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->principal);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("startedTs", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->startedTs);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.completedTs) {
+    xfer += oprot->writeFieldBegin("completedTs", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeI64(this->completedTs);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.releasedBy) {
+    xfer += oprot->writeFieldBegin("releasedBy", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->releasedBy);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.releasedTs) {
+    xfer += oprot->writeFieldBegin("releasedTs", ::apache::thrift::protocol::T_I64, 7);
+    xfer += oprot->writeI64(this->releasedTs);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.releaseReason) {
+    xfer += oprot->writeFieldBegin("releaseReason", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->releaseReason);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_I32, 9);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->status));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasureRunLock &a, ErasureRunLock &b) {
+  using ::std::swap;
+  swap(a.tblId, b.tblId);
+  swap(a.runId, b.runId);
+  swap(a.principal, b.principal);
+  swap(a.startedTs, b.startedTs);
+  swap(a.completedTs, b.completedTs);
+  swap(a.releasedBy, b.releasedBy);
+  swap(a.releasedTs, b.releasedTs);
+  swap(a.releaseReason, b.releaseReason);
+  swap(a.status, b.status);
+  swap(a.__isset, b.__isset);
+}
+
+ErasureRunLock::ErasureRunLock(const ErasureRunLock& other1953) {
+  tblId = other1953.tblId;
+  runId = other1953.runId;
+  principal = other1953.principal;
+  startedTs = other1953.startedTs;
+  completedTs = other1953.completedTs;
+  releasedBy = other1953.releasedBy;
+  releasedTs = other1953.releasedTs;
+  releaseReason = other1953.releaseReason;
+  status = other1953.status;
+  __isset = other1953.__isset;
+}
+ErasureRunLock& ErasureRunLock::operator=(const ErasureRunLock& other1954) {
+  tblId = other1954.tblId;
+  runId = other1954.runId;
+  principal = other1954.principal;
+  startedTs = other1954.startedTs;
+  completedTs = other1954.completedTs;
+  releasedBy = other1954.releasedBy;
+  releasedTs = other1954.releasedTs;
+  releaseReason = other1954.releaseReason;
+  status = other1954.status;
+  __isset = other1954.__isset;
+  return *this;
+}
+void ErasureRunLock::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasureRunLock(";
+  out << "tblId=" << to_string(tblId);
+  out << ", " << "runId=" << to_string(runId);
+  out << ", " << "principal=" << to_string(principal);
+  out << ", " << "startedTs=" << to_string(startedTs);
+  out << ", " << "completedTs="; (__isset.completedTs ? (out << to_string(completedTs)) : (out << "<null>"));
+  out << ", " << "releasedBy="; (__isset.releasedBy ? (out << to_string(releasedBy)) : (out << "<null>"));
+  out << ", " << "releasedTs="; (__isset.releasedTs ? (out << to_string(releasedTs)) : (out << "<null>"));
+  out << ", " << "releaseReason="; (__isset.releaseReason ? (out << to_string(releaseReason)) : (out << "<null>"));
+  out << ", " << "status=" << to_string(status);
+  out << ")";
+}
+
+
+ErasurePolicyVersion::~ErasurePolicyVersion() noexcept {
+}
+
+
+void ErasurePolicyVersion::__set_versionId(const int64_t val) {
+  this->versionId = val;
+}
+
+void ErasurePolicyVersion::__set_policyName(const std::string& val) {
+  this->policyName = val;
+}
+
+void ErasurePolicyVersion::__set_versionLabel(const std::string& val) {
+  this->versionLabel = val;
+}
+
+void ErasurePolicyVersion::__set_status(const PolicyVersionStatus::type val) {
+  this->status = val;
+}
+
+void ErasurePolicyVersion::__set_identityFieldName(const std::string& val) {
+  this->identityFieldName = val;
+}
+
+void ErasurePolicyVersion::__set_identityFieldType(const PolicyLiteralKind::type val) {
+  this->identityFieldType = val;
+}
+
+void ErasurePolicyVersion::__set_schemaType(const PolicyLiteralKind::type val) {
+  this->schemaType = val;
+}
+
+void ErasurePolicyVersion::__set_sourcePath(const std::string& val) {
+  this->sourcePath = val;
+__isset.sourcePath = true;
+}
+
+void ErasurePolicyVersion::__set_sourceChecksum(const std::string& val) {
+  this->sourceChecksum = val;
+__isset.sourceChecksum = true;
+}
+
+void ErasurePolicyVersion::__set_validatedBy(const std::string& val) {
+  this->validatedBy = val;
+__isset.validatedBy = true;
+}
+
+void ErasurePolicyVersion::__set_validatedTs(const int64_t val) {
+  this->validatedTs = val;
+__isset.validatedTs = true;
+}
+
+void ErasurePolicyVersion::__set_activatedBy(const std::string& val) {
+  this->activatedBy = val;
+__isset.activatedBy = true;
+}
+
+void ErasurePolicyVersion::__set_activatedTs(const int64_t val) {
+  this->activatedTs = val;
+__isset.activatedTs = true;
+}
+
+void ErasurePolicyVersion::__set_deactivatedBy(const std::string& val) {
+  this->deactivatedBy = val;
+__isset.deactivatedBy = true;
+}
+
+void ErasurePolicyVersion::__set_deactivatedTs(const int64_t val) {
+  this->deactivatedTs = val;
+__isset.deactivatedTs = true;
+}
+
+void ErasurePolicyVersion::__set_sourceText(const std::string& val) {
+  this->sourceText = val;
+__isset.sourceText = true;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyVersion& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicyVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->versionId);
+          this->__isset.versionId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->policyName);
+          this->__isset.policyName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->versionLabel);
+          this->__isset.versionLabel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1955;
+          xfer += iprot->readI32(ecast1955);
+          this->status = static_cast<PolicyVersionStatus::type>(ecast1955);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->identityFieldName);
+          this->__isset.identityFieldName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1956;
+          xfer += iprot->readI32(ecast1956);
+          this->identityFieldType = static_cast<PolicyLiteralKind::type>(ecast1956);
+          this->__isset.identityFieldType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1957;
+          xfer += iprot->readI32(ecast1957);
+          this->schemaType = static_cast<PolicyLiteralKind::type>(ecast1957);
+          this->__isset.schemaType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sourcePath);
+          this->__isset.sourcePath = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sourceChecksum);
+          this->__isset.sourceChecksum = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->validatedBy);
+          this->__isset.validatedBy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->validatedTs);
+          this->__isset.validatedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->activatedBy);
+          this->__isset.activatedBy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->activatedTs);
+          this->__isset.activatedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->deactivatedBy);
+          this->__isset.deactivatedBy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->deactivatedTs);
+          this->__isset.deactivatedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sourceText);
+          this->__isset.sourceText = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicyVersion::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicyVersion");
+
+  xfer += oprot->writeFieldBegin("versionId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->versionId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("policyName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->policyName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("versionLabel", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->versionLabel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->status));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("identityFieldName", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->identityFieldName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("identityFieldType", ::apache::thrift::protocol::T_I32, 6);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->identityFieldType));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("schemaType", ::apache::thrift::protocol::T_I32, 7);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->schemaType));
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.sourcePath) {
+    xfer += oprot->writeFieldBegin("sourcePath", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->sourcePath);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.sourceChecksum) {
+    xfer += oprot->writeFieldBegin("sourceChecksum", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->sourceChecksum);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.validatedBy) {
+    xfer += oprot->writeFieldBegin("validatedBy", ::apache::thrift::protocol::T_STRING, 10);
+    xfer += oprot->writeString(this->validatedBy);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.validatedTs) {
+    xfer += oprot->writeFieldBegin("validatedTs", ::apache::thrift::protocol::T_I64, 11);
+    xfer += oprot->writeI64(this->validatedTs);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.activatedBy) {
+    xfer += oprot->writeFieldBegin("activatedBy", ::apache::thrift::protocol::T_STRING, 12);
+    xfer += oprot->writeString(this->activatedBy);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.activatedTs) {
+    xfer += oprot->writeFieldBegin("activatedTs", ::apache::thrift::protocol::T_I64, 13);
+    xfer += oprot->writeI64(this->activatedTs);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.deactivatedBy) {
+    xfer += oprot->writeFieldBegin("deactivatedBy", ::apache::thrift::protocol::T_STRING, 14);
+    xfer += oprot->writeString(this->deactivatedBy);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.deactivatedTs) {
+    xfer += oprot->writeFieldBegin("deactivatedTs", ::apache::thrift::protocol::T_I64, 15);
+    xfer += oprot->writeI64(this->deactivatedTs);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.sourceText) {
+    xfer += oprot->writeFieldBegin("sourceText", ::apache::thrift::protocol::T_STRING, 16);
+    xfer += oprot->writeString(this->sourceText);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicyVersion &a, ErasurePolicyVersion &b) {
+  using ::std::swap;
+  swap(a.versionId, b.versionId);
+  swap(a.policyName, b.policyName);
+  swap(a.versionLabel, b.versionLabel);
+  swap(a.status, b.status);
+  swap(a.identityFieldName, b.identityFieldName);
+  swap(a.identityFieldType, b.identityFieldType);
+  swap(a.schemaType, b.schemaType);
+  swap(a.sourcePath, b.sourcePath);
+  swap(a.sourceChecksum, b.sourceChecksum);
+  swap(a.validatedBy, b.validatedBy);
+  swap(a.validatedTs, b.validatedTs);
+  swap(a.activatedBy, b.activatedBy);
+  swap(a.activatedTs, b.activatedTs);
+  swap(a.deactivatedBy, b.deactivatedBy);
+  swap(a.deactivatedTs, b.deactivatedTs);
+  swap(a.sourceText, b.sourceText);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicyVersion::ErasurePolicyVersion(const ErasurePolicyVersion& other1958) {
+  versionId = other1958.versionId;
+  policyName = other1958.policyName;
+  versionLabel = other1958.versionLabel;
+  status = other1958.status;
+  identityFieldName = other1958.identityFieldName;
+  identityFieldType = other1958.identityFieldType;
+  schemaType = other1958.schemaType;
+  sourcePath = other1958.sourcePath;
+  sourceChecksum = other1958.sourceChecksum;
+  validatedBy = other1958.validatedBy;
+  validatedTs = other1958.validatedTs;
+  activatedBy = other1958.activatedBy;
+  activatedTs = other1958.activatedTs;
+  deactivatedBy = other1958.deactivatedBy;
+  deactivatedTs = other1958.deactivatedTs;
+  sourceText = other1958.sourceText;
+  __isset = other1958.__isset;
+}
+ErasurePolicyVersion& ErasurePolicyVersion::operator=(const ErasurePolicyVersion& other1959) {
+  versionId = other1959.versionId;
+  policyName = other1959.policyName;
+  versionLabel = other1959.versionLabel;
+  status = other1959.status;
+  identityFieldName = other1959.identityFieldName;
+  identityFieldType = other1959.identityFieldType;
+  schemaType = other1959.schemaType;
+  sourcePath = other1959.sourcePath;
+  sourceChecksum = other1959.sourceChecksum;
+  validatedBy = other1959.validatedBy;
+  validatedTs = other1959.validatedTs;
+  activatedBy = other1959.activatedBy;
+  activatedTs = other1959.activatedTs;
+  deactivatedBy = other1959.deactivatedBy;
+  deactivatedTs = other1959.deactivatedTs;
+  sourceText = other1959.sourceText;
+  __isset = other1959.__isset;
+  return *this;
+}
+void ErasurePolicyVersion::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicyVersion(";
+  out << "versionId=" << to_string(versionId);
+  out << ", " << "policyName=" << to_string(policyName);
+  out << ", " << "versionLabel=" << to_string(versionLabel);
+  out << ", " << "status=" << to_string(status);
+  out << ", " << "identityFieldName=" << to_string(identityFieldName);
+  out << ", " << "identityFieldType=" << to_string(identityFieldType);
+  out << ", " << "schemaType=" << to_string(schemaType);
+  out << ", " << "sourcePath="; (__isset.sourcePath ? (out << to_string(sourcePath)) : (out << "<null>"));
+  out << ", " << "sourceChecksum="; (__isset.sourceChecksum ? (out << to_string(sourceChecksum)) : (out << "<null>"));
+  out << ", " << "validatedBy="; (__isset.validatedBy ? (out << to_string(validatedBy)) : (out << "<null>"));
+  out << ", " << "validatedTs="; (__isset.validatedTs ? (out << to_string(validatedTs)) : (out << "<null>"));
+  out << ", " << "activatedBy="; (__isset.activatedBy ? (out << to_string(activatedBy)) : (out << "<null>"));
+  out << ", " << "activatedTs="; (__isset.activatedTs ? (out << to_string(activatedTs)) : (out << "<null>"));
+  out << ", " << "deactivatedBy="; (__isset.deactivatedBy ? (out << to_string(deactivatedBy)) : (out << "<null>"));
+  out << ", " << "deactivatedTs="; (__isset.deactivatedTs ? (out << to_string(deactivatedTs)) : (out << "<null>"));
+  out << ", " << "sourceText="; (__isset.sourceText ? (out << to_string(sourceText)) : (out << "<null>"));
+  out << ")";
+}
+
+
+ErasurePolicyStatement::~ErasurePolicyStatement() noexcept {
+}
+
+
+void ErasurePolicyStatement::__set_statementId(const int64_t val) {
+  this->statementId = val;
+}
+
+void ErasurePolicyStatement::__set_versionId(const int64_t val) {
+  this->versionId = val;
+}
+
+void ErasurePolicyStatement::__set_schemaValue(const std::string& val) {
+  this->schemaValue = val;
+}
+
+void ErasurePolicyStatement::__set_ordinal(const int32_t val) {
+  this->ordinal = val;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyStatement& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicyStatement::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->statementId);
+          this->__isset.statementId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->versionId);
+          this->__isset.versionId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->schemaValue);
+          this->__isset.schemaValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->ordinal);
+          this->__isset.ordinal = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicyStatement::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicyStatement");
+
+  xfer += oprot->writeFieldBegin("statementId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->statementId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("versionId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->versionId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("schemaValue", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->schemaValue);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("ordinal", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->ordinal);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicyStatement &a, ErasurePolicyStatement &b) {
+  using ::std::swap;
+  swap(a.statementId, b.statementId);
+  swap(a.versionId, b.versionId);
+  swap(a.schemaValue, b.schemaValue);
+  swap(a.ordinal, b.ordinal);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicyStatement::ErasurePolicyStatement(const ErasurePolicyStatement& other1960) {
+  statementId = other1960.statementId;
+  versionId = other1960.versionId;
+  schemaValue = other1960.schemaValue;
+  ordinal = other1960.ordinal;
+  __isset = other1960.__isset;
+}
+ErasurePolicyStatement& ErasurePolicyStatement::operator=(const ErasurePolicyStatement& other1961) {
+  statementId = other1961.statementId;
+  versionId = other1961.versionId;
+  schemaValue = other1961.schemaValue;
+  ordinal = other1961.ordinal;
+  __isset = other1961.__isset;
+  return *this;
+}
+void ErasurePolicyStatement::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicyStatement(";
+  out << "statementId=" << to_string(statementId);
+  out << ", " << "versionId=" << to_string(versionId);
+  out << ", " << "schemaValue=" << to_string(schemaValue);
+  out << ", " << "ordinal=" << to_string(ordinal);
+  out << ")";
+}
+
+
+ErasurePolicyRule::~ErasurePolicyRule() noexcept {
+}
+
+
+void ErasurePolicyRule::__set_ruleId(const int64_t val) {
+  this->ruleId = val;
+}
+
+void ErasurePolicyRule::__set_statementId(const int64_t val) {
+  this->statementId = val;
+}
+
+void ErasurePolicyRule::__set_fieldPath(const std::string& val) {
+  this->fieldPath = val;
+}
+
+void ErasurePolicyRule::__set_action(const PolicyActionKind::type val) {
+  this->action = val;
+}
+
+void ErasurePolicyRule::__set_literalValue(const std::string& val) {
+  this->literalValue = val;
+__isset.literalValue = true;
+}
+
+void ErasurePolicyRule::__set_literalType(const PolicyLiteralKind::type val) {
+  this->literalType = val;
+__isset.literalType = true;
+}
+
+void ErasurePolicyRule::__set_params(const std::string& val) {
+  this->params = val;
+__isset.params = true;
+}
+
+void ErasurePolicyRule::__set_ordinal(const int32_t val) {
+  this->ordinal = val;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyRule& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicyRule::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->ruleId);
+          this->__isset.ruleId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->statementId);
+          this->__isset.statementId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->fieldPath);
+          this->__isset.fieldPath = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1962;
+          xfer += iprot->readI32(ecast1962);
+          this->action = static_cast<PolicyActionKind::type>(ecast1962);
+          this->__isset.action = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->literalValue);
+          this->__isset.literalValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1963;
+          xfer += iprot->readI32(ecast1963);
+          this->literalType = static_cast<PolicyLiteralKind::type>(ecast1963);
+          this->__isset.literalType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->params);
+          this->__isset.params = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->ordinal);
+          this->__isset.ordinal = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicyRule::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicyRule");
+
+  xfer += oprot->writeFieldBegin("ruleId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->ruleId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("statementId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->statementId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("fieldPath", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->fieldPath);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("action", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->action));
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.literalValue) {
+    xfer += oprot->writeFieldBegin("literalValue", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->literalValue);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.literalType) {
+    xfer += oprot->writeFieldBegin("literalType", ::apache::thrift::protocol::T_I32, 6);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->literalType));
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.params) {
+    xfer += oprot->writeFieldBegin("params", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->params);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("ordinal", ::apache::thrift::protocol::T_I32, 8);
+  xfer += oprot->writeI32(this->ordinal);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicyRule &a, ErasurePolicyRule &b) {
+  using ::std::swap;
+  swap(a.ruleId, b.ruleId);
+  swap(a.statementId, b.statementId);
+  swap(a.fieldPath, b.fieldPath);
+  swap(a.action, b.action);
+  swap(a.literalValue, b.literalValue);
+  swap(a.literalType, b.literalType);
+  swap(a.params, b.params);
+  swap(a.ordinal, b.ordinal);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicyRule::ErasurePolicyRule(const ErasurePolicyRule& other1964) {
+  ruleId = other1964.ruleId;
+  statementId = other1964.statementId;
+  fieldPath = other1964.fieldPath;
+  action = other1964.action;
+  literalValue = other1964.literalValue;
+  literalType = other1964.literalType;
+  params = other1964.params;
+  ordinal = other1964.ordinal;
+  __isset = other1964.__isset;
+}
+ErasurePolicyRule& ErasurePolicyRule::operator=(const ErasurePolicyRule& other1965) {
+  ruleId = other1965.ruleId;
+  statementId = other1965.statementId;
+  fieldPath = other1965.fieldPath;
+  action = other1965.action;
+  literalValue = other1965.literalValue;
+  literalType = other1965.literalType;
+  params = other1965.params;
+  ordinal = other1965.ordinal;
+  __isset = other1965.__isset;
+  return *this;
+}
+void ErasurePolicyRule::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicyRule(";
+  out << "ruleId=" << to_string(ruleId);
+  out << ", " << "statementId=" << to_string(statementId);
+  out << ", " << "fieldPath=" << to_string(fieldPath);
+  out << ", " << "action=" << to_string(action);
+  out << ", " << "literalValue="; (__isset.literalValue ? (out << to_string(literalValue)) : (out << "<null>"));
+  out << ", " << "literalType="; (__isset.literalType ? (out << to_string(literalType)) : (out << "<null>"));
+  out << ", " << "params="; (__isset.params ? (out << to_string(params)) : (out << "<null>"));
+  out << ", " << "ordinal=" << to_string(ordinal);
+  out << ")";
+}
+
+
+ErasurePolicyBinding::~ErasurePolicyBinding() noexcept {
+}
+
+
+void ErasurePolicyBinding::__set_bindingId(const int64_t val) {
+  this->bindingId = val;
+}
+
+void ErasurePolicyBinding::__set_tblId(const int64_t val) {
+  this->tblId = val;
+}
+
+void ErasurePolicyBinding::__set_columnName(const std::string& val) {
+  this->columnName = val;
+}
+
+void ErasurePolicyBinding::__set_schemaField(const std::string& val) {
+  this->schemaField = val;
+}
+
+void ErasurePolicyBinding::__set_rowLocator(const std::string& val) {
+  this->rowLocator = val;
+}
+
+void ErasurePolicyBinding::__set_columnFormat(const ColumnInternalFormat::type val) {
+  this->columnFormat = val;
+}
+
+void ErasurePolicyBinding::__set_resolutionMode(const PolicyResolutionMode::type val) {
+  this->resolutionMode = val;
+}
+
+void ErasurePolicyBinding::__set_createdBy(const std::string& val) {
+  this->createdBy = val;
+}
+
+void ErasurePolicyBinding::__set_createdTs(const int64_t val) {
+  this->createdTs = val;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyBinding& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicyBinding::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->bindingId);
+          this->__isset.bindingId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->tblId);
+          this->__isset.tblId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->columnName);
+          this->__isset.columnName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->schemaField);
+          this->__isset.schemaField = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->rowLocator);
+          this->__isset.rowLocator = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1966;
+          xfer += iprot->readI32(ecast1966);
+          this->columnFormat = static_cast<ColumnInternalFormat::type>(ecast1966);
+          this->__isset.columnFormat = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1967;
+          xfer += iprot->readI32(ecast1967);
+          this->resolutionMode = static_cast<PolicyResolutionMode::type>(ecast1967);
+          this->__isset.resolutionMode = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->createdBy);
+          this->__isset.createdBy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->createdTs);
+          this->__isset.createdTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicyBinding::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicyBinding");
+
+  xfer += oprot->writeFieldBegin("bindingId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->bindingId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tblId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->tblId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("columnName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->columnName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("schemaField", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->schemaField);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("rowLocator", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->rowLocator);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("columnFormat", ::apache::thrift::protocol::T_I32, 6);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->columnFormat));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("resolutionMode", ::apache::thrift::protocol::T_I32, 7);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->resolutionMode));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("createdBy", ::apache::thrift::protocol::T_STRING, 8);
+  xfer += oprot->writeString(this->createdBy);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("createdTs", ::apache::thrift::protocol::T_I64, 9);
+  xfer += oprot->writeI64(this->createdTs);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicyBinding &a, ErasurePolicyBinding &b) {
+  using ::std::swap;
+  swap(a.bindingId, b.bindingId);
+  swap(a.tblId, b.tblId);
+  swap(a.columnName, b.columnName);
+  swap(a.schemaField, b.schemaField);
+  swap(a.rowLocator, b.rowLocator);
+  swap(a.columnFormat, b.columnFormat);
+  swap(a.resolutionMode, b.resolutionMode);
+  swap(a.createdBy, b.createdBy);
+  swap(a.createdTs, b.createdTs);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicyBinding::ErasurePolicyBinding(const ErasurePolicyBinding& other1968) {
+  bindingId = other1968.bindingId;
+  tblId = other1968.tblId;
+  columnName = other1968.columnName;
+  schemaField = other1968.schemaField;
+  rowLocator = other1968.rowLocator;
+  columnFormat = other1968.columnFormat;
+  resolutionMode = other1968.resolutionMode;
+  createdBy = other1968.createdBy;
+  createdTs = other1968.createdTs;
+  __isset = other1968.__isset;
+}
+ErasurePolicyBinding& ErasurePolicyBinding::operator=(const ErasurePolicyBinding& other1969) {
+  bindingId = other1969.bindingId;
+  tblId = other1969.tblId;
+  columnName = other1969.columnName;
+  schemaField = other1969.schemaField;
+  rowLocator = other1969.rowLocator;
+  columnFormat = other1969.columnFormat;
+  resolutionMode = other1969.resolutionMode;
+  createdBy = other1969.createdBy;
+  createdTs = other1969.createdTs;
+  __isset = other1969.__isset;
+  return *this;
+}
+void ErasurePolicyBinding::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicyBinding(";
+  out << "bindingId=" << to_string(bindingId);
+  out << ", " << "tblId=" << to_string(tblId);
+  out << ", " << "columnName=" << to_string(columnName);
+  out << ", " << "schemaField=" << to_string(schemaField);
+  out << ", " << "rowLocator=" << to_string(rowLocator);
+  out << ", " << "columnFormat=" << to_string(columnFormat);
+  out << ", " << "resolutionMode=" << to_string(resolutionMode);
+  out << ", " << "createdBy=" << to_string(createdBy);
+  out << ", " << "createdTs=" << to_string(createdTs);
+  out << ")";
+}
+
+
+ErasurePolicyBindingMember::~ErasurePolicyBindingMember() noexcept {
+}
+
+
+void ErasurePolicyBindingMember::__set_bindingId(const int64_t val) {
+  this->bindingId = val;
+}
+
+void ErasurePolicyBindingMember::__set_policyId(const int64_t val) {
+  this->policyId = val;
+}
+
+void ErasurePolicyBindingMember::__set_ordinal(const int32_t val) {
+  this->ordinal = val;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyBindingMember& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicyBindingMember::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->bindingId);
+          this->__isset.bindingId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->policyId);
+          this->__isset.policyId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->ordinal);
+          this->__isset.ordinal = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicyBindingMember::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicyBindingMember");
+
+  xfer += oprot->writeFieldBegin("bindingId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->bindingId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("policyId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->policyId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("ordinal", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->ordinal);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicyBindingMember &a, ErasurePolicyBindingMember &b) {
+  using ::std::swap;
+  swap(a.bindingId, b.bindingId);
+  swap(a.policyId, b.policyId);
+  swap(a.ordinal, b.ordinal);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicyBindingMember::ErasurePolicyBindingMember(const ErasurePolicyBindingMember& other1970) noexcept {
+  bindingId = other1970.bindingId;
+  policyId = other1970.policyId;
+  ordinal = other1970.ordinal;
+  __isset = other1970.__isset;
+}
+ErasurePolicyBindingMember& ErasurePolicyBindingMember::operator=(const ErasurePolicyBindingMember& other1971) noexcept {
+  bindingId = other1971.bindingId;
+  policyId = other1971.policyId;
+  ordinal = other1971.ordinal;
+  __isset = other1971.__isset;
+  return *this;
+}
+void ErasurePolicyBindingMember::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicyBindingMember(";
+  out << "bindingId=" << to_string(bindingId);
+  out << ", " << "policyId=" << to_string(policyId);
+  out << ", " << "ordinal=" << to_string(ordinal);
+  out << ")";
+}
+
+
+ErasurePolicyBindingResolved::~ErasurePolicyBindingResolved() noexcept {
+}
+
+
+void ErasurePolicyBindingResolved::__set_resolvedId(const int64_t val) {
+  this->resolvedId = val;
+}
+
+void ErasurePolicyBindingResolved::__set_bindingId(const int64_t val) {
+  this->bindingId = val;
+}
+
+void ErasurePolicyBindingResolved::__set_schemaValue(const std::string& val) {
+  this->schemaValue = val;
+}
+
+void ErasurePolicyBindingResolved::__set_fieldPath(const std::string& val) {
+  this->fieldPath = val;
+}
+
+void ErasurePolicyBindingResolved::__set_action(const PolicyActionKind::type val) {
+  this->action = val;
+}
+
+void ErasurePolicyBindingResolved::__set_literalValue(const std::string& val) {
+  this->literalValue = val;
+__isset.literalValue = true;
+}
+
+void ErasurePolicyBindingResolved::__set_literalType(const PolicyLiteralKind::type val) {
+  this->literalType = val;
+__isset.literalType = true;
+}
+
+void ErasurePolicyBindingResolved::__set_params(const std::string& val) {
+  this->params = val;
+__isset.params = true;
+}
+
+void ErasurePolicyBindingResolved::__set_contributingPolicies(const std::string& val) {
+  this->contributingPolicies = val;
+}
+
+void ErasurePolicyBindingResolved::__set_resolutionNote(const std::string& val) {
+  this->resolutionNote = val;
+__isset.resolutionNote = true;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyBindingResolved& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicyBindingResolved::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->resolvedId);
+          this->__isset.resolvedId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->bindingId);
+          this->__isset.bindingId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->schemaValue);
+          this->__isset.schemaValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->fieldPath);
+          this->__isset.fieldPath = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1972;
+          xfer += iprot->readI32(ecast1972);
+          this->action = static_cast<PolicyActionKind::type>(ecast1972);
+          this->__isset.action = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->literalValue);
+          this->__isset.literalValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1973;
+          xfer += iprot->readI32(ecast1973);
+          this->literalType = static_cast<PolicyLiteralKind::type>(ecast1973);
+          this->__isset.literalType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->params);
+          this->__isset.params = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->contributingPolicies);
+          this->__isset.contributingPolicies = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->resolutionNote);
+          this->__isset.resolutionNote = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicyBindingResolved::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicyBindingResolved");
+
+  xfer += oprot->writeFieldBegin("resolvedId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->resolvedId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("bindingId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->bindingId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("schemaValue", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->schemaValue);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("fieldPath", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->fieldPath);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("action", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->action));
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.literalValue) {
+    xfer += oprot->writeFieldBegin("literalValue", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->literalValue);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.literalType) {
+    xfer += oprot->writeFieldBegin("literalType", ::apache::thrift::protocol::T_I32, 7);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->literalType));
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.params) {
+    xfer += oprot->writeFieldBegin("params", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->params);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("contributingPolicies", ::apache::thrift::protocol::T_STRING, 9);
+  xfer += oprot->writeString(this->contributingPolicies);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.resolutionNote) {
+    xfer += oprot->writeFieldBegin("resolutionNote", ::apache::thrift::protocol::T_STRING, 10);
+    xfer += oprot->writeString(this->resolutionNote);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicyBindingResolved &a, ErasurePolicyBindingResolved &b) {
+  using ::std::swap;
+  swap(a.resolvedId, b.resolvedId);
+  swap(a.bindingId, b.bindingId);
+  swap(a.schemaValue, b.schemaValue);
+  swap(a.fieldPath, b.fieldPath);
+  swap(a.action, b.action);
+  swap(a.literalValue, b.literalValue);
+  swap(a.literalType, b.literalType);
+  swap(a.params, b.params);
+  swap(a.contributingPolicies, b.contributingPolicies);
+  swap(a.resolutionNote, b.resolutionNote);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicyBindingResolved::ErasurePolicyBindingResolved(const ErasurePolicyBindingResolved& other1974) {
+  resolvedId = other1974.resolvedId;
+  bindingId = other1974.bindingId;
+  schemaValue = other1974.schemaValue;
+  fieldPath = other1974.fieldPath;
+  action = other1974.action;
+  literalValue = other1974.literalValue;
+  literalType = other1974.literalType;
+  params = other1974.params;
+  contributingPolicies = other1974.contributingPolicies;
+  resolutionNote = other1974.resolutionNote;
+  __isset = other1974.__isset;
+}
+ErasurePolicyBindingResolved& ErasurePolicyBindingResolved::operator=(const ErasurePolicyBindingResolved& other1975) {
+  resolvedId = other1975.resolvedId;
+  bindingId = other1975.bindingId;
+  schemaValue = other1975.schemaValue;
+  fieldPath = other1975.fieldPath;
+  action = other1975.action;
+  literalValue = other1975.literalValue;
+  literalType = other1975.literalType;
+  params = other1975.params;
+  contributingPolicies = other1975.contributingPolicies;
+  resolutionNote = other1975.resolutionNote;
+  __isset = other1975.__isset;
+  return *this;
+}
+void ErasurePolicyBindingResolved::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicyBindingResolved(";
+  out << "resolvedId=" << to_string(resolvedId);
+  out << ", " << "bindingId=" << to_string(bindingId);
+  out << ", " << "schemaValue=" << to_string(schemaValue);
+  out << ", " << "fieldPath=" << to_string(fieldPath);
+  out << ", " << "action=" << to_string(action);
+  out << ", " << "literalValue="; (__isset.literalValue ? (out << to_string(literalValue)) : (out << "<null>"));
+  out << ", " << "literalType="; (__isset.literalType ? (out << to_string(literalType)) : (out << "<null>"));
+  out << ", " << "params="; (__isset.params ? (out << to_string(params)) : (out << "<null>"));
+  out << ", " << "contributingPolicies=" << to_string(contributingPolicies);
+  out << ", " << "resolutionNote="; (__isset.resolutionNote ? (out << to_string(resolutionNote)) : (out << "<null>"));
+  out << ")";
+}
+
+
+ErasurePolicyLifecycleEvent::~ErasurePolicyLifecycleEvent() noexcept {
+}
+
+
+void ErasurePolicyLifecycleEvent::__set_eventId(const int64_t val) {
+  this->eventId = val;
+}
+
+void ErasurePolicyLifecycleEvent::__set_versionId(const int64_t val) {
+  this->versionId = val;
+}
+
+void ErasurePolicyLifecycleEvent::__set_eventType(const PolicyLifecycleEventType::type val) {
+  this->eventType = val;
+}
+
+void ErasurePolicyLifecycleEvent::__set_principal(const std::string& val) {
+  this->principal = val;
+}
+
+void ErasurePolicyLifecycleEvent::__set_eventTs(const int64_t val) {
+  this->eventTs = val;
+}
+
+void ErasurePolicyLifecycleEvent::__set_note(const std::string& val) {
+  this->note = val;
+__isset.note = true;
+}
+
+void ErasurePolicyLifecycleEvent::__set_conflictClass(const PolicyConflictClass::type val) {
+  this->conflictClass = val;
+__isset.conflictClass = true;
+}
+
+void ErasurePolicyLifecycleEvent::__set_bindingId(const int64_t val) {
+  this->bindingId = val;
+__isset.bindingId = true;
+}
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyLifecycleEvent& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasurePolicyLifecycleEvent::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->eventId);
+          this->__isset.eventId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->versionId);
+          this->__isset.versionId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1976;
+          xfer += iprot->readI32(ecast1976);
+          this->eventType = static_cast<PolicyLifecycleEventType::type>(ecast1976);
+          this->__isset.eventType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principal);
+          this->__isset.principal = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->eventTs);
+          this->__isset.eventTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->note);
+          this->__isset.note = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1977;
+          xfer += iprot->readI32(ecast1977);
+          this->conflictClass = static_cast<PolicyConflictClass::type>(ecast1977);
+          this->__isset.conflictClass = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->bindingId);
+          this->__isset.bindingId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasurePolicyLifecycleEvent::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasurePolicyLifecycleEvent");
+
+  xfer += oprot->writeFieldBegin("eventId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->eventId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("versionId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->versionId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("eventType", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->eventType));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("principal", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->principal);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("eventTs", ::apache::thrift::protocol::T_I64, 5);
+  xfer += oprot->writeI64(this->eventTs);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.note) {
+    xfer += oprot->writeFieldBegin("note", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->note);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.conflictClass) {
+    xfer += oprot->writeFieldBegin("conflictClass", ::apache::thrift::protocol::T_I32, 7);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->conflictClass));
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.bindingId) {
+    xfer += oprot->writeFieldBegin("bindingId", ::apache::thrift::protocol::T_I64, 8);
+    xfer += oprot->writeI64(this->bindingId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasurePolicyLifecycleEvent &a, ErasurePolicyLifecycleEvent &b) {
+  using ::std::swap;
+  swap(a.eventId, b.eventId);
+  swap(a.versionId, b.versionId);
+  swap(a.eventType, b.eventType);
+  swap(a.principal, b.principal);
+  swap(a.eventTs, b.eventTs);
+  swap(a.note, b.note);
+  swap(a.conflictClass, b.conflictClass);
+  swap(a.bindingId, b.bindingId);
+  swap(a.__isset, b.__isset);
+}
+
+ErasurePolicyLifecycleEvent::ErasurePolicyLifecycleEvent(const ErasurePolicyLifecycleEvent& other1978) {
+  eventId = other1978.eventId;
+  versionId = other1978.versionId;
+  eventType = other1978.eventType;
+  principal = other1978.principal;
+  eventTs = other1978.eventTs;
+  note = other1978.note;
+  conflictClass = other1978.conflictClass;
+  bindingId = other1978.bindingId;
+  __isset = other1978.__isset;
+}
+ErasurePolicyLifecycleEvent& ErasurePolicyLifecycleEvent::operator=(const ErasurePolicyLifecycleEvent& other1979) {
+  eventId = other1979.eventId;
+  versionId = other1979.versionId;
+  eventType = other1979.eventType;
+  principal = other1979.principal;
+  eventTs = other1979.eventTs;
+  note = other1979.note;
+  conflictClass = other1979.conflictClass;
+  bindingId = other1979.bindingId;
+  __isset = other1979.__isset;
+  return *this;
+}
+void ErasurePolicyLifecycleEvent::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasurePolicyLifecycleEvent(";
+  out << "eventId=" << to_string(eventId);
+  out << ", " << "versionId=" << to_string(versionId);
+  out << ", " << "eventType=" << to_string(eventType);
+  out << ", " << "principal=" << to_string(principal);
+  out << ", " << "eventTs=" << to_string(eventTs);
+  out << ", " << "note="; (__isset.note ? (out << to_string(note)) : (out << "<null>"));
+  out << ", " << "conflictClass="; (__isset.conflictClass ? (out << to_string(conflictClass)) : (out << "<null>"));
+  out << ", " << "bindingId="; (__isset.bindingId ? (out << to_string(bindingId)) : (out << "<null>"));
+  out << ")";
+}
+
+
+ErasureRunAudit::~ErasureRunAudit() noexcept {
+}
+
+
+void ErasureRunAudit::__set_runId(const int64_t val) {
+  this->runId = val;
+}
+
+void ErasureRunAudit::__set_tblId(const int64_t val) {
+  this->tblId = val;
+}
+
+void ErasureRunAudit::__set_columnName(const std::string& val) {
+  this->columnName = val;
+}
+
+void ErasureRunAudit::__set_bindingId(const int64_t val) {
+  this->bindingId = val;
+}
+
+void ErasureRunAudit::__set_principal(const std::string& val) {
+  this->principal = val;
+}
+
+void ErasureRunAudit::__set_startedTs(const int64_t val) {
+  this->startedTs = val;
+}
+
+void ErasureRunAudit::__set_completedTs(const int64_t val) {
+  this->completedTs = val;
+__isset.completedTs = true;
+}
+
+void ErasureRunAudit::__set_identityValues(const std::string& val) {
+  this->identityValues = val;
+__isset.identityValues = true;
+}
+
+void ErasureRunAudit::__set_policyVersions(const std::string& val) {
+  this->policyVersions = val;
+__isset.policyVersions = true;
+}
+
+void ErasureRunAudit::__set_resolvedRulesSnapshotId(const int64_t val) {
+  this->resolvedRulesSnapshotId = val;
+__isset.resolvedRulesSnapshotId = true;
+}
+
+void ErasureRunAudit::__set_filesRewritten(const int32_t val) {
+  this->filesRewritten = val;
+__isset.filesRewritten = true;
+}
+
+void ErasureRunAudit::__set_bytesBefore(const int64_t val) {
+  this->bytesBefore = val;
+__isset.bytesBefore = true;
+}
+
+void ErasureRunAudit::__set_bytesAfter(const int64_t val) {
+  this->bytesAfter = val;
+__isset.bytesAfter = true;
+}
+
+void ErasureRunAudit::__set_status(const ErasureRunStatus::type val) {
+  this->status = val;
+}
+
+void ErasureRunAudit::__set_matchesInspected(const int64_t val) {
+  this->matchesInspected = val;
+__isset.matchesInspected = true;
+}
+
+void ErasureRunAudit::__set_matchesRedacted(const int64_t val) {
+  this->matchesRedacted = val;
+__isset.matchesRedacted = true;
+}
+
+void ErasureRunAudit::__set_matchesFlagged(const int64_t val) {
+  this->matchesFlagged = val;
+__isset.matchesFlagged = true;
+}
+
+void ErasureRunAudit::__set_releaseReason(const std::string& val) {
+  this->releaseReason = val;
+__isset.releaseReason = true;
+}
+std::ostream& operator<<(std::ostream& out, const ErasureRunAudit& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ErasureRunAudit::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->runId);
+          this->__isset.runId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->tblId);
+          this->__isset.tblId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->columnName);
+          this->__isset.columnName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->bindingId);
+          this->__isset.bindingId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principal);
+          this->__isset.principal = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->startedTs);
+          this->__isset.startedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->completedTs);
+          this->__isset.completedTs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->identityValues);
+          this->__isset.identityValues = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->policyVersions);
+          this->__isset.policyVersions = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->resolvedRulesSnapshotId);
+          this->__isset.resolvedRulesSnapshotId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->filesRewritten);
+          this->__isset.filesRewritten = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->bytesBefore);
+          this->__isset.bytesBefore = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->bytesAfter);
+          this->__isset.bytesAfter = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast1980;
+          xfer += iprot->readI32(ecast1980);
+          this->status = static_cast<ErasureRunStatus::type>(ecast1980);
+          this->__isset.status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->matchesInspected);
+          this->__isset.matchesInspected = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 16:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->matchesRedacted);
+          this->__isset.matchesRedacted = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 17:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->matchesFlagged);
+          this->__isset.matchesFlagged = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 18:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->releaseReason);
+          this->__isset.releaseReason = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ErasureRunAudit::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ErasureRunAudit");
+
+  xfer += oprot->writeFieldBegin("runId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->runId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tblId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->tblId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("columnName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->columnName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("bindingId", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->bindingId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("principal", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->principal);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("startedTs", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64(this->startedTs);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.completedTs) {
+    xfer += oprot->writeFieldBegin("completedTs", ::apache::thrift::protocol::T_I64, 7);
+    xfer += oprot->writeI64(this->completedTs);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.identityValues) {
+    xfer += oprot->writeFieldBegin("identityValues", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->identityValues);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.policyVersions) {
+    xfer += oprot->writeFieldBegin("policyVersions", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->policyVersions);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.resolvedRulesSnapshotId) {
+    xfer += oprot->writeFieldBegin("resolvedRulesSnapshotId", ::apache::thrift::protocol::T_I64, 10);
+    xfer += oprot->writeI64(this->resolvedRulesSnapshotId);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.filesRewritten) {
+    xfer += oprot->writeFieldBegin("filesRewritten", ::apache::thrift::protocol::T_I32, 11);
+    xfer += oprot->writeI32(this->filesRewritten);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.bytesBefore) {
+    xfer += oprot->writeFieldBegin("bytesBefore", ::apache::thrift::protocol::T_I64, 12);
+    xfer += oprot->writeI64(this->bytesBefore);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.bytesAfter) {
+    xfer += oprot->writeFieldBegin("bytesAfter", ::apache::thrift::protocol::T_I64, 13);
+    xfer += oprot->writeI64(this->bytesAfter);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_I32, 14);
+  xfer += oprot->writeI32(static_cast<int32_t>(this->status));
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.matchesInspected) {
+    xfer += oprot->writeFieldBegin("matchesInspected", ::apache::thrift::protocol::T_I64, 15);
+    xfer += oprot->writeI64(this->matchesInspected);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.matchesRedacted) {
+    xfer += oprot->writeFieldBegin("matchesRedacted", ::apache::thrift::protocol::T_I64, 16);
+    xfer += oprot->writeI64(this->matchesRedacted);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.matchesFlagged) {
+    xfer += oprot->writeFieldBegin("matchesFlagged", ::apache::thrift::protocol::T_I64, 17);
+    xfer += oprot->writeI64(this->matchesFlagged);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.releaseReason) {
+    xfer += oprot->writeFieldBegin("releaseReason", ::apache::thrift::protocol::T_STRING, 18);
+    xfer += oprot->writeString(this->releaseReason);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ErasureRunAudit &a, ErasureRunAudit &b) {
+  using ::std::swap;
+  swap(a.runId, b.runId);
+  swap(a.tblId, b.tblId);
+  swap(a.columnName, b.columnName);
+  swap(a.bindingId, b.bindingId);
+  swap(a.principal, b.principal);
+  swap(a.startedTs, b.startedTs);
+  swap(a.completedTs, b.completedTs);
+  swap(a.identityValues, b.identityValues);
+  swap(a.policyVersions, b.policyVersions);
+  swap(a.resolvedRulesSnapshotId, b.resolvedRulesSnapshotId);
+  swap(a.filesRewritten, b.filesRewritten);
+  swap(a.bytesBefore, b.bytesBefore);
+  swap(a.bytesAfter, b.bytesAfter);
+  swap(a.status, b.status);
+  swap(a.matchesInspected, b.matchesInspected);
+  swap(a.matchesRedacted, b.matchesRedacted);
+  swap(a.matchesFlagged, b.matchesFlagged);
+  swap(a.releaseReason, b.releaseReason);
+  swap(a.__isset, b.__isset);
+}
+
+ErasureRunAudit::ErasureRunAudit(const ErasureRunAudit& other1981) {
+  runId = other1981.runId;
+  tblId = other1981.tblId;
+  columnName = other1981.columnName;
+  bindingId = other1981.bindingId;
+  principal = other1981.principal;
+  startedTs = other1981.startedTs;
+  completedTs = other1981.completedTs;
+  identityValues = other1981.identityValues;
+  policyVersions = other1981.policyVersions;
+  resolvedRulesSnapshotId = other1981.resolvedRulesSnapshotId;
+  filesRewritten = other1981.filesRewritten;
+  bytesBefore = other1981.bytesBefore;
+  bytesAfter = other1981.bytesAfter;
+  status = other1981.status;
+  matchesInspected = other1981.matchesInspected;
+  matchesRedacted = other1981.matchesRedacted;
+  matchesFlagged = other1981.matchesFlagged;
+  releaseReason = other1981.releaseReason;
+  __isset = other1981.__isset;
+}
+ErasureRunAudit& ErasureRunAudit::operator=(const ErasureRunAudit& other1982) {
+  runId = other1982.runId;
+  tblId = other1982.tblId;
+  columnName = other1982.columnName;
+  bindingId = other1982.bindingId;
+  principal = other1982.principal;
+  startedTs = other1982.startedTs;
+  completedTs = other1982.completedTs;
+  identityValues = other1982.identityValues;
+  policyVersions = other1982.policyVersions;
+  resolvedRulesSnapshotId = other1982.resolvedRulesSnapshotId;
+  filesRewritten = other1982.filesRewritten;
+  bytesBefore = other1982.bytesBefore;
+  bytesAfter = other1982.bytesAfter;
+  status = other1982.status;
+  matchesInspected = other1982.matchesInspected;
+  matchesRedacted = other1982.matchesRedacted;
+  matchesFlagged = other1982.matchesFlagged;
+  releaseReason = other1982.releaseReason;
+  __isset = other1982.__isset;
+  return *this;
+}
+void ErasureRunAudit::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ErasureRunAudit(";
+  out << "runId=" << to_string(runId);
+  out << ", " << "tblId=" << to_string(tblId);
+  out << ", " << "columnName=" << to_string(columnName);
+  out << ", " << "bindingId=" << to_string(bindingId);
+  out << ", " << "principal=" << to_string(principal);
+  out << ", " << "startedTs=" << to_string(startedTs);
+  out << ", " << "completedTs="; (__isset.completedTs ? (out << to_string(completedTs)) : (out << "<null>"));
+  out << ", " << "identityValues="; (__isset.identityValues ? (out << to_string(identityValues)) : (out << "<null>"));
+  out << ", " << "policyVersions="; (__isset.policyVersions ? (out << to_string(policyVersions)) : (out << "<null>"));
+  out << ", " << "resolvedRulesSnapshotId="; (__isset.resolvedRulesSnapshotId ? (out << to_string(resolvedRulesSnapshotId)) : (out << "<null>"));
+  out << ", " << "filesRewritten="; (__isset.filesRewritten ? (out << to_string(filesRewritten)) : (out << "<null>"));
+  out << ", " << "bytesBefore="; (__isset.bytesBefore ? (out << to_string(bytesBefore)) : (out << "<null>"));
+  out << ", " << "bytesAfter="; (__isset.bytesAfter ? (out << to_string(bytesAfter)) : (out << "<null>"));
+  out << ", " << "status=" << to_string(status);
+  out << ", " << "matchesInspected="; (__isset.matchesInspected ? (out << to_string(matchesInspected)) : (out << "<null>"));
+  out << ", " << "matchesRedacted="; (__isset.matchesRedacted ? (out << to_string(matchesRedacted)) : (out << "<null>"));
+  out << ", " << "matchesFlagged="; (__isset.matchesFlagged ? (out << to_string(matchesFlagged)) : (out << "<null>"));
+  out << ", " << "releaseReason="; (__isset.releaseReason ? (out << to_string(releaseReason)) : (out << "<null>"));
+  out << ")";
+}
+
+
+PolicyPriv::~PolicyPriv() noexcept {
+}
+
+
+void PolicyPriv::__set_policyPrivId(const int64_t val) {
+  this->policyPrivId = val;
+}
+
+void PolicyPriv::__set_policyId(const int64_t val) {
+  this->policyId = val;
+}
+
+void PolicyPriv::__set_principalName(const std::string& val) {
+  this->principalName = val;
+}
+
+void PolicyPriv::__set_principalType(const std::string& val) {
+  this->principalType = val;
+}
+
+void PolicyPriv::__set_privilege(const std::string& val) {
+  this->privilege = val;
+}
+
+void PolicyPriv::__set_createTime(const int64_t val) {
+  this->createTime = val;
+}
+
+void PolicyPriv::__set_grantor(const std::string& val) {
+  this->grantor = val;
+__isset.grantor = true;
+}
+
+void PolicyPriv::__set_grantorType(const std::string& val) {
+  this->grantorType = val;
+__isset.grantorType = true;
+}
+
+void PolicyPriv::__set_grantOption(const bool val) {
+  this->grantOption = val;
+}
+std::ostream& operator<<(std::ostream& out, const PolicyPriv& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t PolicyPriv::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->policyPrivId);
+          this->__isset.policyPrivId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->policyId);
+          this->__isset.policyId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principalName);
+          this->__isset.principalName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->principalType);
+          this->__isset.principalType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->privilege);
+          this->__isset.privilege = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->createTime);
+          this->__isset.createTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->grantor);
+          this->__isset.grantor = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->grantorType);
+          this->__isset.grantorType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->grantOption);
+          this->__isset.grantOption = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t PolicyPriv::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("PolicyPriv");
+
+  xfer += oprot->writeFieldBegin("policyPrivId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->policyPrivId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("policyId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->policyId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("principalName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->principalName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("principalType", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->principalType);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("privilege", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->privilege);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("createTime", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64(this->createTime);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.grantor) {
+    xfer += oprot->writeFieldBegin("grantor", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->grantor);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.grantorType) {
+    xfer += oprot->writeFieldBegin("grantorType", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeString(this->grantorType);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("grantOption", ::apache::thrift::protocol::T_BOOL, 9);
+  xfer += oprot->writeBool(this->grantOption);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(PolicyPriv &a, PolicyPriv &b) {
+  using ::std::swap;
+  swap(a.policyPrivId, b.policyPrivId);
+  swap(a.policyId, b.policyId);
+  swap(a.principalName, b.principalName);
+  swap(a.principalType, b.principalType);
+  swap(a.privilege, b.privilege);
+  swap(a.createTime, b.createTime);
+  swap(a.grantor, b.grantor);
+  swap(a.grantorType, b.grantorType);
+  swap(a.grantOption, b.grantOption);
+  swap(a.__isset, b.__isset);
+}
+
+PolicyPriv::PolicyPriv(const PolicyPriv& other1983) {
+  policyPrivId = other1983.policyPrivId;
+  policyId = other1983.policyId;
+  principalName = other1983.principalName;
+  principalType = other1983.principalType;
+  privilege = other1983.privilege;
+  createTime = other1983.createTime;
+  grantor = other1983.grantor;
+  grantorType = other1983.grantorType;
+  grantOption = other1983.grantOption;
+  __isset = other1983.__isset;
+}
+PolicyPriv& PolicyPriv::operator=(const PolicyPriv& other1984) {
+  policyPrivId = other1984.policyPrivId;
+  policyId = other1984.policyId;
+  principalName = other1984.principalName;
+  principalType = other1984.principalType;
+  privilege = other1984.privilege;
+  createTime = other1984.createTime;
+  grantor = other1984.grantor;
+  grantorType = other1984.grantorType;
+  grantOption = other1984.grantOption;
+  __isset = other1984.__isset;
+  return *this;
+}
+void PolicyPriv::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "PolicyPriv(";
+  out << "policyPrivId=" << to_string(policyPrivId);
+  out << ", " << "policyId=" << to_string(policyId);
+  out << ", " << "principalName=" << to_string(principalName);
+  out << ", " << "principalType=" << to_string(principalType);
+  out << ", " << "privilege=" << to_string(privilege);
+  out << ", " << "createTime=" << to_string(createTime);
+  out << ", " << "grantor="; (__isset.grantor ? (out << to_string(grantor)) : (out << "<null>"));
+  out << ", " << "grantorType="; (__isset.grantorType ? (out << to_string(grantorType)) : (out << "<null>"));
+  out << ", " << "grantOption=" << to_string(grantOption);
+  out << ")";
+}
+
+
 MetaException::~MetaException() noexcept {
 }
 
@@ -55233,13 +58956,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetaException::MetaException(const MetaException& other1943) : TException() {
-  message = other1943.message;
-  __isset = other1943.__isset;
+MetaException::MetaException(const MetaException& other1985) : TException() {
+  message = other1985.message;
+  __isset = other1985.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other1944) {
-  message = other1944.message;
-  __isset = other1944.__isset;
+MetaException& MetaException::operator=(const MetaException& other1986) {
+  message = other1986.message;
+  __isset = other1986.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -55336,13 +59059,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownTableException::UnknownTableException(const UnknownTableException& other1945) : TException() {
-  message = other1945.message;
-  __isset = other1945.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other1987) : TException() {
+  message = other1987.message;
+  __isset = other1987.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1946) {
-  message = other1946.message;
-  __isset = other1946.__isset;
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1988) {
+  message = other1988.message;
+  __isset = other1988.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -55439,13 +59162,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownDBException::UnknownDBException(const UnknownDBException& other1947) : TException() {
-  message = other1947.message;
-  __isset = other1947.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other1989) : TException() {
+  message = other1989.message;
+  __isset = other1989.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1948) {
-  message = other1948.message;
-  __isset = other1948.__isset;
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1990) {
+  message = other1990.message;
+  __isset = other1990.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -55542,13 +59265,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1949) : TException() {
-  message = other1949.message;
-  __isset = other1949.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1991) : TException() {
+  message = other1991.message;
+  __isset = other1991.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1950) {
-  message = other1950.message;
-  __isset = other1950.__isset;
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1992) {
+  message = other1992.message;
+  __isset = other1992.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -55645,13 +59368,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1951) : TException() {
-  message = other1951.message;
-  __isset = other1951.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1993) : TException() {
+  message = other1993.message;
+  __isset = other1993.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1952) {
-  message = other1952.message;
-  __isset = other1952.__isset;
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1994) {
+  message = other1994.message;
+  __isset = other1994.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -55748,13 +59471,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1953) : TException() {
-  message = other1953.message;
-  __isset = other1953.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1995) : TException() {
+  message = other1995.message;
+  __isset = other1995.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1954) {
-  message = other1954.message;
-  __isset = other1954.__isset;
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1996) {
+  message = other1996.message;
+  __isset = other1996.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -55851,13 +59574,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1955) : TException() {
-  message = other1955.message;
-  __isset = other1955.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1997) : TException() {
+  message = other1997.message;
+  __isset = other1997.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1956) {
-  message = other1956.message;
-  __isset = other1956.__isset;
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1998) {
+  message = other1998.message;
+  __isset = other1998.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -55954,13 +59677,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1957) : TException() {
-  message = other1957.message;
-  __isset = other1957.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1999) : TException() {
+  message = other1999.message;
+  __isset = other1999.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1958) {
-  message = other1958.message;
-  __isset = other1958.__isset;
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other2000) {
+  message = other2000.message;
+  __isset = other2000.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -56057,13 +59780,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1959) : TException() {
-  message = other1959.message;
-  __isset = other1959.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other2001) : TException() {
+  message = other2001.message;
+  __isset = other2001.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1960) {
-  message = other1960.message;
-  __isset = other1960.__isset;
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other2002) {
+  message = other2002.message;
+  __isset = other2002.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -56160,13 +59883,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1961) : TException() {
-  message = other1961.message;
-  __isset = other1961.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other2003) : TException() {
+  message = other2003.message;
+  __isset = other2003.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1962) {
-  message = other1962.message;
-  __isset = other1962.__isset;
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other2004) {
+  message = other2004.message;
+  __isset = other2004.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -56263,13 +59986,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidInputException::InvalidInputException(const InvalidInputException& other1963) : TException() {
-  message = other1963.message;
-  __isset = other1963.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other2005) : TException() {
+  message = other2005.message;
+  __isset = other2005.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1964) {
-  message = other1964.message;
-  __isset = other1964.__isset;
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other2006) {
+  message = other2006.message;
+  __isset = other2006.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -56366,13 +60089,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1965) : TException() {
-  message = other1965.message;
-  __isset = other1965.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other2007) : TException() {
+  message = other2007.message;
+  __isset = other2007.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1966) {
-  message = other1966.message;
-  __isset = other1966.__isset;
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other2008) {
+  message = other2008.message;
+  __isset = other2008.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -56469,13 +60192,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1967) : TException() {
-  message = other1967.message;
-  __isset = other1967.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other2009) : TException() {
+  message = other2009.message;
+  __isset = other2009.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1968) {
-  message = other1968.message;
-  __isset = other1968.__isset;
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other2010) {
+  message = other2010.message;
+  __isset = other2010.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -56572,13 +60295,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnOpenException::TxnOpenException(const TxnOpenException& other1969) : TException() {
-  message = other1969.message;
-  __isset = other1969.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other2011) : TException() {
+  message = other2011.message;
+  __isset = other2011.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1970) {
-  message = other1970.message;
-  __isset = other1970.__isset;
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other2012) {
+  message = other2012.message;
+  __isset = other2012.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -56675,13 +60398,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1971) : TException() {
-  message = other1971.message;
-  __isset = other1971.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other2013) : TException() {
+  message = other2013.message;
+  __isset = other2013.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1972) {
-  message = other1972.message;
-  __isset = other1972.__isset;
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other2014) {
+  message = other2014.message;
+  __isset = other2014.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {
@@ -56778,13 +60501,13 @@ void swap(CompactionAbortedException &a, CompactionAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-CompactionAbortedException::CompactionAbortedException(const CompactionAbortedException& other1973) : TException() {
-  message = other1973.message;
-  __isset = other1973.__isset;
+CompactionAbortedException::CompactionAbortedException(const CompactionAbortedException& other2015) : TException() {
+  message = other2015.message;
+  __isset = other2015.__isset;
 }
-CompactionAbortedException& CompactionAbortedException::operator=(const CompactionAbortedException& other1974) {
-  message = other1974.message;
-  __isset = other1974.__isset;
+CompactionAbortedException& CompactionAbortedException::operator=(const CompactionAbortedException& other2016) {
+  message = other2016.message;
+  __isset = other2016.__isset;
   return *this;
 }
 void CompactionAbortedException::printTo(std::ostream& out) const {
@@ -56881,13 +60604,13 @@ void swap(NoSuchCompactionException &a, NoSuchCompactionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchCompactionException::NoSuchCompactionException(const NoSuchCompactionException& other1975) : TException() {
-  message = other1975.message;
-  __isset = other1975.__isset;
+NoSuchCompactionException::NoSuchCompactionException(const NoSuchCompactionException& other2017) : TException() {
+  message = other2017.message;
+  __isset = other2017.__isset;
 }
-NoSuchCompactionException& NoSuchCompactionException::operator=(const NoSuchCompactionException& other1976) {
-  message = other1976.message;
-  __isset = other1976.__isset;
+NoSuchCompactionException& NoSuchCompactionException::operator=(const NoSuchCompactionException& other2018) {
+  message = other2018.message;
+  __isset = other2018.__isset;
   return *this;
 }
 void NoSuchCompactionException::printTo(std::ostream& out) const {

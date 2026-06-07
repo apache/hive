@@ -1,0 +1,6 @@
+VERSION v1
+IDENTITY userId TYPE INT
+SCHEMA   TYPE INT
+
+FOR SCHEMA 3
+    ERASE country, city, telephone, ipList

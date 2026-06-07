@@ -30,6 +30,14 @@
       <artifactId>hive-standalone-metastore-client</artifactId>
       <version>${hive.version}</version>
     </dependency>
+    <!-- Erasure-policy DSL parser + cross-policy conflict detector (leaf module,
+         antlr4-runtime only). Used by ObjectStore to re-run the bind-time conflict
+         check inside the ACTIVATE transaction. -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-dae</artifactId>
+      <version>${hive.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>

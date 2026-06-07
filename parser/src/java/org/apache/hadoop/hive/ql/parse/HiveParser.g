@@ -25,7 +25,7 @@ backtrack=false;
 k=3;
 }
 
-import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser, ReplClauseParser, LockParser;
+import AlterClauseParser, SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser, CreateDDLParser, PrepareStatementParser, ReplClauseParser, LockParser, AnonParser, ShowStatementParser;
 
 tokens {
 TOK_INSERT;
@@ -241,6 +241,11 @@ TOK_SHOWTABLES;
 TOK_SHOWCOLUMNS;
 TOK_SHOWFUNCTIONS;
 TOK_SHOWPARTITIONS;
+TOK_SHOW_ERASURE_POLICIES;
+TOK_SHOW_ERASURE_GRANTS;
+TOK_SHOW_ERASURE_POLICY_HISTORY;
+TOK_GRANTS_FOR_PRINCIPAL;
+TOK_GRANTS_FOR_POLICY;
 TOK_SHOW_CREATEDATABASE;
 TOK_SHOW_CREATETABLE;
 TOK_SHOW_TABLESTATUS;
@@ -529,6 +534,13 @@ TOK_FROM_VERSION;
 TOK_AS_OF_TAG;
 TOK_WRITE_LOCALLY_ORDERED;
 TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER;
+
+TOK_AIR; // alter index rebuild
+TOK_IXNAME;
+TOK_ATTACH_POLICY; // top-level ATTACH DATA ERASURE POLICY ... ON TABLE ... COLUMN ...
+TOK_DETACH_POLICY; // top-level DETACH DATA ERASURE POLICY ON TABLE ... COLUMN ...
+
+TOK_DESC_ERASURE_POLICY;
 }
 
 
@@ -672,6 +684,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_CAST", "CAST");
     xlateMap.put("KW_ADD", "ADD");
     xlateMap.put("KW_REPLACE", "REPLACE");
+    xlateMap.put("KW_RELEASE", "RELEASE");
+    xlateMap.put("KW_REASON", "REASON");
     xlateMap.put("KW_COLUMNS", "COLUMNS");
     xlateMap.put("KW_RLIKE", "RLIKE");
     xlateMap.put("KW_REGEXP", "REGEXP");
@@ -976,6 +990,12 @@ execStatement
     | replDumpStatement
     | replLoadStatement
     | replStatusStatement
+    // Policy GRANT/REVOKE must win over the role-grammar GRANT path,
+    // so disambiguate ahead of ddlStatement (which holds grantPrivileges
+    // and grantRole) with a syntactic predicate keyed on the ERASURE
+    // POLICY suffix.
+    | (KW_GRANT  (Identifier | KW_ERASE | KW_EXPORT) KW_ON KW_ERASURE KW_POLICY) => policyGrant
+    | (KW_REVOKE (Identifier | KW_ERASE | KW_EXPORT) KW_ON KW_ERASURE KW_POLICY) => policyRevoke
     | ddlStatement
     | deleteStatement
     | updateStatement
@@ -983,7 +1003,10 @@ execStatement
     | mergeStatement
     | prepareStatement
     | executeStatement
+    | anonStatement
     ;
+
+//----------------------------------------------------------------------------
 
 loadStatement
 @init { pushMsg("load statement", state); }
@@ -1308,6 +1331,8 @@ descStatement
     (KW_FORMATTED|KW_EXTENDED) => ((descOptions=KW_FORMATTED|descOptions=KW_EXTENDED) parttype=tabPartColTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions)
     |
     parttype=tabPartColTypeExpr -> ^(TOK_DESCTABLE $parttype)
+    |
+    KW_DATA? KW_ERASURE KW_POLICY ep=identifier (KW_VERSION ver=StringLiteral)? -> ^(TOK_DESC_ERASURE_POLICY $ep $ver?)
     )
     ;
 
@@ -1324,59 +1349,9 @@ analyzeStatement
       )
     ;
 
-showStatement
-@init { pushMsg("show statement", state); }
-@after { popMsg(state); }
-    : KW_SHOW KW_CATALOGS (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWCATALOGS showStmtIdentifier?)
-    | KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
-    | KW_SHOW (isExtended=KW_EXTENDED)? KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (filter=showTablesFilterExpr)?
-    -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? $filter? $isExtended?)
-    | KW_SHOW KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
-    | KW_SHOW KW_MATERIALIZED KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWMATERIALIZEDVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
-    | KW_SHOW KW_SORTED? KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?
-    -> ^(TOK_SHOWCOLUMNS tableName (TOK_FROM $db_name)? showStmtIdentifier? KW_SORTED?)
-    | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
-    | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? whereClause? orderByClause? limitClause? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec? whereClause? orderByClause? limitClause?)
-    | KW_SHOW KW_CREATE (
-        (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=databaseName -> ^(TOK_SHOW_CREATEDATABASE $db_name)
-        |
-        KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
-      )
-    | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=identifier)? KW_LIKE showStmtIdentifier partitionSpec?
-    -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
-    | KW_SHOW KW_TBLPROPERTIES tableName (LPAREN prptyName=StringLiteral RPAREN)? -> ^(TOK_SHOW_TBLPROPERTIES tableName $prptyName?)
-    | KW_SHOW KW_LOCKS
-      (
-      (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=databaseName) (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWDBLOCKS $dbName $isExtended?)
-      |
-      (parttype=partTypeExpr)? (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype? $isExtended?)
-      )
-    | KW_SHOW KW_COMPACTIONS
-      (
-      (KW_COMPACT_ID) => compactionId -> ^(TOK_SHOW_COMPACTIONS compactionId)
-      |
-      (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=identifier) compactionPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $dbName compactionPool? compactionType? compactionStatus? orderByClause? limitClause?)
-      |
-      (parttype=partTypeExpr)? compactionPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $parttype? compactionPool? compactionType? compactionStatus? orderByClause? limitClause?)
-      )
-    | KW_SHOW KW_TRANSACTIONS -> ^(TOK_SHOW_TRANSACTIONS)
-    | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
-    | KW_SHOW KW_RESOURCE
-      (
-        (KW_PLAN rp_name=identifier -> ^(TOK_SHOW_RP $rp_name))
-        | (KW_PLANS -> ^(TOK_SHOW_RP))
-      )
-    | KW_SHOW (KW_DATACONNECTORS) -> ^(TOK_SHOWDATACONNECTORS)
-    ;
-
-showTablesFilterExpr
-@init { pushMsg("show tables filter expr", state); }
-@after { popMsg(state); }
-    : KW_WHERE identifier EQUAL StringLiteral
-    -> ^(TOK_TABLE_TYPE identifier StringLiteral)
-    | KW_LIKE showStmtIdentifier|showStmtIdentifier
-    -> showStmtIdentifier
-    ;
+// showStatement and showTablesFilterExpr now live in ShowStatementParser.g
+// so their decision DFA goes to its own generated subfile instead of
+// inflating HiveParser.java's static initializer.
 
 createRoleStatement
 @init { pushMsg("create role", state); }

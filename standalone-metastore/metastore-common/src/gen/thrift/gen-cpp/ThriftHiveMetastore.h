@@ -313,6 +313,46 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void drop_package(const DropPackageRequest& request) = 0;
   virtual void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) = 0;
   virtual void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) = 0;
+  virtual void create_erasure_policy(const ErasurePolicy& erasurePolicy) = 0;
+  virtual void drop_erasure_policy(const std::string& policyName, const bool ifExists) = 0;
+  virtual void drop_anon_index(const std::string& indexName) = 0;
+  virtual void get_erasure_policy(ErasurePolicy& _return, const std::string& policyName) = 0;
+  virtual void add_index(const Index& new_index, const Table& index_table) = 0;
+  virtual void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) = 0;
+  virtual bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData, const bool ifExists) = 0;
+  virtual void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) = 0;
+  virtual void get_all_erasure_policies(std::vector<PolicyInfo> & _return) = 0;
+  virtual void add_erasure_policy_version(ErasurePolicyVersion& _return, const ErasurePolicyVersion& version) = 0;
+  virtual void get_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName, const std::string& versionLabel) = 0;
+  virtual void list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & _return, const std::string& policyName) = 0;
+  virtual void update_erasure_policy_version_status(const int64_t versionId, const PolicyVersionStatus::type newStatus, const std::string& principal) = 0;
+  virtual void get_active_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName) = 0;
+  virtual void get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & _return, const int64_t versionId) = 0;
+  virtual void get_erasure_policy_rules(std::vector<ErasurePolicyRule> & _return, const int64_t statementId) = 0;
+  virtual void add_erasure_policy_binding(ErasurePolicyBinding& _return, const ErasurePolicyBinding& binding) = 0;
+  virtual void get_erasure_policy_binding(ErasurePolicyBinding& _return, const int64_t tblId, const std::string& columnName) = 0;
+  virtual void drop_erasure_policy_binding(const int64_t bindingId) = 0;
+  virtual void update_erasure_policy_binding_settings(const int64_t bindingId, const PolicyResolutionMode::type resolutionMode, const ColumnInternalFormat::type columnFormat) = 0;
+  virtual void attach_policy_to_binding(const int64_t bindingId, const int64_t policyId, const int32_t ordinal) = 0;
+  virtual void detach_policy_from_binding(const int64_t bindingId, const int64_t policyId) = 0;
+  virtual void get_binding_members(std::vector<ErasurePolicyBindingMember> & _return, const int64_t bindingId) = 0;
+  virtual void replace_binding_resolved_rules(const int64_t bindingId, const std::vector<ErasurePolicyBindingResolved> & resolved) = 0;
+  virtual void get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & _return, const int64_t bindingId) = 0;
+  virtual void record_lifecycle_event(const ErasurePolicyLifecycleEvent& evt) = 0;
+  virtual void get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & _return, const std::string& policyName, const int64_t fromTs, const int64_t untilTs) = 0;
+  virtual void get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t bindingId, const int64_t fromTs, const int64_t untilTs) = 0;
+  virtual void get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t fromTs, const int64_t untilTs) = 0;
+  virtual void record_erasure_run(const ErasureRunAudit& run) = 0;
+  virtual void get_erasure_runs_for_table(std::vector<ErasureRunAudit> & _return, const int64_t tblId, const int64_t fromTs, const int64_t untilTs, const std::string& byUser, const std::string& forIdentity) = 0;
+  virtual void update_erasure_run_completion(const int64_t tblId, const int64_t startedTs, const int64_t completedTs, const ErasureRunStatus::type status, const int64_t matchesInspected, const int64_t matchesRedacted, const int64_t matchesFlagged) = 0;
+  virtual void acquire_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const int64_t runId, const std::string& principal) = 0;
+  virtual void get_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId) = 0;
+  virtual bool complete_erasure_run_lock(const int64_t tblId, const int64_t runId) = 0;
+  virtual void manually_release_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const std::string& releasedBy, const std::string& releaseReason, const bool force) = 0;
+  virtual void list_erasure_run_locks(std::vector<ErasureRunLock> & _return) = 0;
+  virtual void grant_policy_priv(const PolicyPriv& priv) = 0;
+  virtual void revoke_policy_priv(const int64_t policyPrivId) = 0;
+  virtual void list_policy_privs(std::vector<PolicyPriv> & _return, const int64_t policyId, const std::string& principalName) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1236,6 +1276,128 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& /* _return */, const std::string& /* policyName */) override {
+    return;
+  }
+  void create_erasure_policy(const ErasurePolicy& /* erasurePolicy */) override {
+    return;
+  }
+  void drop_erasure_policy(const std::string& /* policyName */, const bool /* ifExists */) override {
+    return;
+  }
+  void drop_anon_index(const std::string& /* indexName */) override {
+    return;
+  }
+  void get_erasure_policy(ErasurePolicy& /* _return */, const std::string& /* policyName */) override {
+    return;
+  }
+  void add_index(const Index& /* new_index */, const Table& /* index_table */) override {
+    return;
+  }
+  void get_index_by_name(Index& /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* index_name */) override {
+    return;
+  }
+  bool drop_index_by_name(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* index_name */, const bool /* deleteData */, const bool /* ifExists */) override {
+    bool _return = false;
+    return _return;
+  }
+  void get_indexes(std::vector<Index> & /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const int16_t /* max_indexes */) override {
+    return;
+  }
+  void get_all_erasure_policies(std::vector<PolicyInfo> & /* _return */) override {
+    return;
+  }
+  void add_erasure_policy_version(ErasurePolicyVersion& /* _return */, const ErasurePolicyVersion& /* version */) override {
+    return;
+  }
+  void get_erasure_policy_version(ErasurePolicyVersion& /* _return */, const std::string& /* policyName */, const std::string& /* versionLabel */) override {
+    return;
+  }
+  void list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & /* _return */, const std::string& /* policyName */) override {
+    return;
+  }
+  void update_erasure_policy_version_status(const int64_t /* versionId */, const PolicyVersionStatus::type /* newStatus */, const std::string& /* principal */) override {
+    return;
+  }
+  void get_active_erasure_policy_version(ErasurePolicyVersion& /* _return */, const std::string& /* policyName */) override {
+    return;
+  }
+  void get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & /* _return */, const int64_t /* versionId */) override {
+    return;
+  }
+  void get_erasure_policy_rules(std::vector<ErasurePolicyRule> & /* _return */, const int64_t /* statementId */) override {
+    return;
+  }
+  void add_erasure_policy_binding(ErasurePolicyBinding& /* _return */, const ErasurePolicyBinding& /* binding */) override {
+    return;
+  }
+  void get_erasure_policy_binding(ErasurePolicyBinding& /* _return */, const int64_t /* tblId */, const std::string& /* columnName */) override {
+    return;
+  }
+  void drop_erasure_policy_binding(const int64_t /* bindingId */) override {
+    return;
+  }
+  void update_erasure_policy_binding_settings(const int64_t /* bindingId */, const PolicyResolutionMode::type /* resolutionMode */, const ColumnInternalFormat::type /* columnFormat */) override {
+    return;
+  }
+  void attach_policy_to_binding(const int64_t /* bindingId */, const int64_t /* policyId */, const int32_t /* ordinal */) override {
+    return;
+  }
+  void detach_policy_from_binding(const int64_t /* bindingId */, const int64_t /* policyId */) override {
+    return;
+  }
+  void get_binding_members(std::vector<ErasurePolicyBindingMember> & /* _return */, const int64_t /* bindingId */) override {
+    return;
+  }
+  void replace_binding_resolved_rules(const int64_t /* bindingId */, const std::vector<ErasurePolicyBindingResolved> & /* resolved */) override {
+    return;
+  }
+  void get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & /* _return */, const int64_t /* bindingId */) override {
+    return;
+  }
+  void record_lifecycle_event(const ErasurePolicyLifecycleEvent& /* evt */) override {
+    return;
+  }
+  void get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & /* _return */, const std::string& /* policyName */, const int64_t /* fromTs */, const int64_t /* untilTs */) override {
+    return;
+  }
+  void get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & /* _return */, const int64_t /* bindingId */, const int64_t /* fromTs */, const int64_t /* untilTs */) override {
+    return;
+  }
+  void get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & /* _return */, const int64_t /* fromTs */, const int64_t /* untilTs */) override {
+    return;
+  }
+  void record_erasure_run(const ErasureRunAudit& /* run */) override {
+    return;
+  }
+  void get_erasure_runs_for_table(std::vector<ErasureRunAudit> & /* _return */, const int64_t /* tblId */, const int64_t /* fromTs */, const int64_t /* untilTs */, const std::string& /* byUser */, const std::string& /* forIdentity */) override {
+    return;
+  }
+  void update_erasure_run_completion(const int64_t /* tblId */, const int64_t /* startedTs */, const int64_t /* completedTs */, const ErasureRunStatus::type /* status */, const int64_t /* matchesInspected */, const int64_t /* matchesRedacted */, const int64_t /* matchesFlagged */) override {
+    return;
+  }
+  void acquire_erasure_run_lock(ErasureRunLock& /* _return */, const int64_t /* tblId */, const int64_t /* runId */, const std::string& /* principal */) override {
+    return;
+  }
+  void get_erasure_run_lock(ErasureRunLock& /* _return */, const int64_t /* tblId */) override {
+    return;
+  }
+  bool complete_erasure_run_lock(const int64_t /* tblId */, const int64_t /* runId */) override {
+    bool _return = false;
+    return _return;
+  }
+  void manually_release_erasure_run_lock(ErasureRunLock& /* _return */, const int64_t /* tblId */, const std::string& /* releasedBy */, const std::string& /* releaseReason */, const bool /* force */) override {
+    return;
+  }
+  void list_erasure_run_locks(std::vector<ErasureRunLock> & /* _return */) override {
+    return;
+  }
+  void grant_policy_priv(const PolicyPriv& /* priv */) override {
+    return;
+  }
+  void revoke_policy_priv(const int64_t /* policyPrivId */) override {
+    return;
+  }
+  void list_policy_privs(std::vector<PolicyPriv> & /* _return */, const int64_t /* policyId */, const std::string& /* principalName */) override {
     return;
   }
 };
@@ -36006,6 +36168,5037 @@ class ThriftHiveMetastore_get_replayed_txns_for_policy_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_create_erasure_policy_args__isset {
+  _ThriftHiveMetastore_create_erasure_policy_args__isset() : erasurePolicy(false) {}
+  bool erasurePolicy :1;
+} _ThriftHiveMetastore_create_erasure_policy_args__isset;
+
+class ThriftHiveMetastore_create_erasure_policy_args {
+ public:
+
+  ThriftHiveMetastore_create_erasure_policy_args(const ThriftHiveMetastore_create_erasure_policy_args&);
+  ThriftHiveMetastore_create_erasure_policy_args& operator=(const ThriftHiveMetastore_create_erasure_policy_args&);
+  ThriftHiveMetastore_create_erasure_policy_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_create_erasure_policy_args() noexcept;
+  ErasurePolicy erasurePolicy;
+
+  _ThriftHiveMetastore_create_erasure_policy_args__isset __isset;
+
+  void __set_erasurePolicy(const ErasurePolicy& val);
+
+  bool operator == (const ThriftHiveMetastore_create_erasure_policy_args & rhs) const
+  {
+    if (!(erasurePolicy == rhs.erasurePolicy))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_erasure_policy_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_erasure_policy_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_create_erasure_policy_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_erasure_policy_pargs() noexcept;
+  const ErasurePolicy* erasurePolicy;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_erasure_policy_result__isset {
+  _ThriftHiveMetastore_create_erasure_policy_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_erasure_policy_result__isset;
+
+class ThriftHiveMetastore_create_erasure_policy_result {
+ public:
+
+  ThriftHiveMetastore_create_erasure_policy_result(const ThriftHiveMetastore_create_erasure_policy_result&);
+  ThriftHiveMetastore_create_erasure_policy_result& operator=(const ThriftHiveMetastore_create_erasure_policy_result&);
+  ThriftHiveMetastore_create_erasure_policy_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_create_erasure_policy_result() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_erasure_policy_result__isset __isset;
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_create_erasure_policy_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_erasure_policy_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_erasure_policy_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_erasure_policy_presult__isset {
+  _ThriftHiveMetastore_create_erasure_policy_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_erasure_policy_presult__isset;
+
+class ThriftHiveMetastore_create_erasure_policy_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_erasure_policy_presult() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_erasure_policy_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_erasure_policy_args__isset {
+  _ThriftHiveMetastore_drop_erasure_policy_args__isset() : policyName(false), ifExists(false) {}
+  bool policyName :1;
+  bool ifExists :1;
+} _ThriftHiveMetastore_drop_erasure_policy_args__isset;
+
+class ThriftHiveMetastore_drop_erasure_policy_args {
+ public:
+
+  ThriftHiveMetastore_drop_erasure_policy_args(const ThriftHiveMetastore_drop_erasure_policy_args&);
+  ThriftHiveMetastore_drop_erasure_policy_args& operator=(const ThriftHiveMetastore_drop_erasure_policy_args&);
+  ThriftHiveMetastore_drop_erasure_policy_args() noexcept
+                                               : policyName(),
+                                                 ifExists(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_args() noexcept;
+  std::string policyName;
+  bool ifExists;
+
+  _ThriftHiveMetastore_drop_erasure_policy_args__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  void __set_ifExists(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_drop_erasure_policy_args & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    if (!(ifExists == rhs.ifExists))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_erasure_policy_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_erasure_policy_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_erasure_policy_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_pargs() noexcept;
+  const std::string* policyName;
+  const bool* ifExists;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_erasure_policy_result__isset {
+  _ThriftHiveMetastore_drop_erasure_policy_result__isset() : o1(false), o3(false) {}
+  bool o1 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_erasure_policy_result__isset;
+
+class ThriftHiveMetastore_drop_erasure_policy_result {
+ public:
+
+  ThriftHiveMetastore_drop_erasure_policy_result(const ThriftHiveMetastore_drop_erasure_policy_result&);
+  ThriftHiveMetastore_drop_erasure_policy_result& operator=(const ThriftHiveMetastore_drop_erasure_policy_result&);
+  ThriftHiveMetastore_drop_erasure_policy_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_erasure_policy_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_erasure_policy_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_erasure_policy_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_erasure_policy_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_erasure_policy_presult__isset {
+  _ThriftHiveMetastore_drop_erasure_policy_presult__isset() : o1(false), o3(false) {}
+  bool o1 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_erasure_policy_presult__isset;
+
+class ThriftHiveMetastore_drop_erasure_policy_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_erasure_policy_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_anon_index_args__isset {
+  _ThriftHiveMetastore_drop_anon_index_args__isset() : indexName(false) {}
+  bool indexName :1;
+} _ThriftHiveMetastore_drop_anon_index_args__isset;
+
+class ThriftHiveMetastore_drop_anon_index_args {
+ public:
+
+  ThriftHiveMetastore_drop_anon_index_args(const ThriftHiveMetastore_drop_anon_index_args&);
+  ThriftHiveMetastore_drop_anon_index_args& operator=(const ThriftHiveMetastore_drop_anon_index_args&);
+  ThriftHiveMetastore_drop_anon_index_args() noexcept
+                                           : indexName() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_anon_index_args() noexcept;
+  std::string indexName;
+
+  _ThriftHiveMetastore_drop_anon_index_args__isset __isset;
+
+  void __set_indexName(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_anon_index_args & rhs) const
+  {
+    if (!(indexName == rhs.indexName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_anon_index_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_anon_index_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_anon_index_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_anon_index_pargs() noexcept;
+  const std::string* indexName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_anon_index_result__isset {
+  _ThriftHiveMetastore_drop_anon_index_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_anon_index_result__isset;
+
+class ThriftHiveMetastore_drop_anon_index_result {
+ public:
+
+  ThriftHiveMetastore_drop_anon_index_result(const ThriftHiveMetastore_drop_anon_index_result&);
+  ThriftHiveMetastore_drop_anon_index_result& operator=(const ThriftHiveMetastore_drop_anon_index_result&);
+  ThriftHiveMetastore_drop_anon_index_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_anon_index_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_anon_index_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_anon_index_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_anon_index_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_anon_index_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_anon_index_presult__isset {
+  _ThriftHiveMetastore_drop_anon_index_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_anon_index_presult__isset;
+
+class ThriftHiveMetastore_drop_anon_index_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_anon_index_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_anon_index_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_args__isset {
+  _ThriftHiveMetastore_get_erasure_policy_args__isset() : policyName(false) {}
+  bool policyName :1;
+} _ThriftHiveMetastore_get_erasure_policy_args__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_args {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_args(const ThriftHiveMetastore_get_erasure_policy_args&);
+  ThriftHiveMetastore_get_erasure_policy_args& operator=(const ThriftHiveMetastore_get_erasure_policy_args&);
+  ThriftHiveMetastore_get_erasure_policy_args() noexcept
+                                              : policyName() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_args() noexcept;
+  std::string policyName;
+
+  _ThriftHiveMetastore_get_erasure_policy_args__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_args & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_erasure_policy_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_pargs() noexcept;
+  const std::string* policyName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_result__isset {
+  _ThriftHiveMetastore_get_erasure_policy_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_result__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_result {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_result(const ThriftHiveMetastore_get_erasure_policy_result&);
+  ThriftHiveMetastore_get_erasure_policy_result& operator=(const ThriftHiveMetastore_get_erasure_policy_result&);
+  ThriftHiveMetastore_get_erasure_policy_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_result() noexcept;
+  ErasurePolicy success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_result__isset __isset;
+
+  void __set_success(const ErasurePolicy& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_presult__isset {
+  _ThriftHiveMetastore_get_erasure_policy_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_presult__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_presult() noexcept;
+  ErasurePolicy* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_index_args__isset {
+  _ThriftHiveMetastore_add_index_args__isset() : new_index(false), index_table(false) {}
+  bool new_index :1;
+  bool index_table :1;
+} _ThriftHiveMetastore_add_index_args__isset;
+
+class ThriftHiveMetastore_add_index_args {
+ public:
+
+  ThriftHiveMetastore_add_index_args(const ThriftHiveMetastore_add_index_args&);
+  ThriftHiveMetastore_add_index_args& operator=(const ThriftHiveMetastore_add_index_args&);
+  ThriftHiveMetastore_add_index_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_add_index_args() noexcept;
+  Index new_index;
+  Table index_table;
+
+  _ThriftHiveMetastore_add_index_args__isset __isset;
+
+  void __set_new_index(const Index& val);
+
+  void __set_index_table(const Table& val);
+
+  bool operator == (const ThriftHiveMetastore_add_index_args & rhs) const
+  {
+    if (!(new_index == rhs.new_index))
+      return false;
+    if (!(index_table == rhs.index_table))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_index_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_index_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_index_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_index_pargs() noexcept;
+  const Index* new_index;
+  const Table* index_table;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_index_result__isset {
+  _ThriftHiveMetastore_add_index_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_add_index_result__isset;
+
+class ThriftHiveMetastore_add_index_result {
+ public:
+
+  ThriftHiveMetastore_add_index_result(const ThriftHiveMetastore_add_index_result&);
+  ThriftHiveMetastore_add_index_result& operator=(const ThriftHiveMetastore_add_index_result&);
+  ThriftHiveMetastore_add_index_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_add_index_result() noexcept;
+  InvalidObjectException o1;
+  AlreadyExistsException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_add_index_result__isset __isset;
+
+  void __set_o1(const InvalidObjectException& val);
+
+  void __set_o2(const AlreadyExistsException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_index_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_index_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_index_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_index_presult__isset {
+  _ThriftHiveMetastore_add_index_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_add_index_presult__isset;
+
+class ThriftHiveMetastore_add_index_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_index_presult() noexcept;
+  InvalidObjectException o1;
+  AlreadyExistsException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_add_index_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_index_by_name_args__isset {
+  _ThriftHiveMetastore_get_index_by_name_args__isset() : db_name(false), tbl_name(false), index_name(false) {}
+  bool db_name :1;
+  bool tbl_name :1;
+  bool index_name :1;
+} _ThriftHiveMetastore_get_index_by_name_args__isset;
+
+class ThriftHiveMetastore_get_index_by_name_args {
+ public:
+
+  ThriftHiveMetastore_get_index_by_name_args(const ThriftHiveMetastore_get_index_by_name_args&);
+  ThriftHiveMetastore_get_index_by_name_args& operator=(const ThriftHiveMetastore_get_index_by_name_args&);
+  ThriftHiveMetastore_get_index_by_name_args() noexcept
+                                             : db_name(),
+                                               tbl_name(),
+                                               index_name() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_index_by_name_args() noexcept;
+  std::string db_name;
+  std::string tbl_name;
+  std::string index_name;
+
+  _ThriftHiveMetastore_get_index_by_name_args__isset __isset;
+
+  void __set_db_name(const std::string& val);
+
+  void __set_tbl_name(const std::string& val);
+
+  void __set_index_name(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_index_by_name_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(index_name == rhs.index_name))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_index_by_name_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_index_by_name_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_index_by_name_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_index_by_name_pargs() noexcept;
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const std::string* index_name;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_index_by_name_result__isset {
+  _ThriftHiveMetastore_get_index_by_name_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_index_by_name_result__isset;
+
+class ThriftHiveMetastore_get_index_by_name_result {
+ public:
+
+  ThriftHiveMetastore_get_index_by_name_result(const ThriftHiveMetastore_get_index_by_name_result&);
+  ThriftHiveMetastore_get_index_by_name_result& operator=(const ThriftHiveMetastore_get_index_by_name_result&);
+  ThriftHiveMetastore_get_index_by_name_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_index_by_name_result() noexcept;
+  Index success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_index_by_name_result__isset __isset;
+
+  void __set_success(const Index& val);
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_index_by_name_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_index_by_name_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_index_by_name_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_index_by_name_presult__isset {
+  _ThriftHiveMetastore_get_index_by_name_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_index_by_name_presult__isset;
+
+class ThriftHiveMetastore_get_index_by_name_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_index_by_name_presult() noexcept;
+  Index* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_index_by_name_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_index_by_name_args__isset {
+  _ThriftHiveMetastore_drop_index_by_name_args__isset() : db_name(false), tbl_name(false), index_name(false), deleteData(false), ifExists(false) {}
+  bool db_name :1;
+  bool tbl_name :1;
+  bool index_name :1;
+  bool deleteData :1;
+  bool ifExists :1;
+} _ThriftHiveMetastore_drop_index_by_name_args__isset;
+
+class ThriftHiveMetastore_drop_index_by_name_args {
+ public:
+
+  ThriftHiveMetastore_drop_index_by_name_args(const ThriftHiveMetastore_drop_index_by_name_args&);
+  ThriftHiveMetastore_drop_index_by_name_args& operator=(const ThriftHiveMetastore_drop_index_by_name_args&);
+  ThriftHiveMetastore_drop_index_by_name_args() noexcept
+                                              : db_name(),
+                                                tbl_name(),
+                                                index_name(),
+                                                deleteData(0),
+                                                ifExists(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_index_by_name_args() noexcept;
+  std::string db_name;
+  std::string tbl_name;
+  std::string index_name;
+  bool deleteData;
+  bool ifExists;
+
+  _ThriftHiveMetastore_drop_index_by_name_args__isset __isset;
+
+  void __set_db_name(const std::string& val);
+
+  void __set_tbl_name(const std::string& val);
+
+  void __set_index_name(const std::string& val);
+
+  void __set_deleteData(const bool val);
+
+  void __set_ifExists(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_drop_index_by_name_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(index_name == rhs.index_name))
+      return false;
+    if (!(deleteData == rhs.deleteData))
+      return false;
+    if (!(ifExists == rhs.ifExists))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_index_by_name_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_index_by_name_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_index_by_name_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_index_by_name_pargs() noexcept;
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const std::string* index_name;
+  const bool* deleteData;
+  const bool* ifExists;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_index_by_name_result__isset {
+  _ThriftHiveMetastore_drop_index_by_name_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_index_by_name_result__isset;
+
+class ThriftHiveMetastore_drop_index_by_name_result {
+ public:
+
+  ThriftHiveMetastore_drop_index_by_name_result(const ThriftHiveMetastore_drop_index_by_name_result&);
+  ThriftHiveMetastore_drop_index_by_name_result& operator=(const ThriftHiveMetastore_drop_index_by_name_result&);
+  ThriftHiveMetastore_drop_index_by_name_result() noexcept
+                                                : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_index_by_name_result() noexcept;
+  bool success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_index_by_name_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_index_by_name_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_index_by_name_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_index_by_name_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_index_by_name_presult__isset {
+  _ThriftHiveMetastore_drop_index_by_name_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_index_by_name_presult__isset;
+
+class ThriftHiveMetastore_drop_index_by_name_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_index_by_name_presult() noexcept;
+  bool* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_index_by_name_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_indexes_args__isset {
+  _ThriftHiveMetastore_get_indexes_args__isset() : db_name(false), tbl_name(false), max_indexes(true) {}
+  bool db_name :1;
+  bool tbl_name :1;
+  bool max_indexes :1;
+} _ThriftHiveMetastore_get_indexes_args__isset;
+
+class ThriftHiveMetastore_get_indexes_args {
+ public:
+
+  ThriftHiveMetastore_get_indexes_args(const ThriftHiveMetastore_get_indexes_args&);
+  ThriftHiveMetastore_get_indexes_args& operator=(const ThriftHiveMetastore_get_indexes_args&);
+  ThriftHiveMetastore_get_indexes_args() noexcept
+                                       : db_name(),
+                                         tbl_name(),
+                                         max_indexes(-1) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_indexes_args() noexcept;
+  std::string db_name;
+  std::string tbl_name;
+  int16_t max_indexes;
+
+  _ThriftHiveMetastore_get_indexes_args__isset __isset;
+
+  void __set_db_name(const std::string& val);
+
+  void __set_tbl_name(const std::string& val);
+
+  void __set_max_indexes(const int16_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_indexes_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(max_indexes == rhs.max_indexes))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_indexes_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_indexes_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_indexes_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_indexes_pargs() noexcept;
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const int16_t* max_indexes;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_indexes_result__isset {
+  _ThriftHiveMetastore_get_indexes_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_indexes_result__isset;
+
+class ThriftHiveMetastore_get_indexes_result {
+ public:
+
+  ThriftHiveMetastore_get_indexes_result(const ThriftHiveMetastore_get_indexes_result&);
+  ThriftHiveMetastore_get_indexes_result& operator=(const ThriftHiveMetastore_get_indexes_result&);
+  ThriftHiveMetastore_get_indexes_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_indexes_result() noexcept;
+  std::vector<Index>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_indexes_result__isset __isset;
+
+  void __set_success(const std::vector<Index> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_indexes_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_indexes_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_indexes_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_indexes_presult__isset {
+  _ThriftHiveMetastore_get_indexes_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_indexes_presult__isset;
+
+class ThriftHiveMetastore_get_indexes_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_indexes_presult() noexcept;
+  std::vector<Index> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_indexes_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_get_all_erasure_policies_args {
+ public:
+
+  ThriftHiveMetastore_get_all_erasure_policies_args(const ThriftHiveMetastore_get_all_erasure_policies_args&) noexcept;
+  ThriftHiveMetastore_get_all_erasure_policies_args& operator=(const ThriftHiveMetastore_get_all_erasure_policies_args&) noexcept;
+  ThriftHiveMetastore_get_all_erasure_policies_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_erasure_policies_args() noexcept;
+
+  bool operator == (const ThriftHiveMetastore_get_all_erasure_policies_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_erasure_policies_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_erasure_policies_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_all_erasure_policies_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_erasure_policies_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_erasure_policies_result__isset {
+  _ThriftHiveMetastore_get_all_erasure_policies_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_all_erasure_policies_result__isset;
+
+class ThriftHiveMetastore_get_all_erasure_policies_result {
+ public:
+
+  ThriftHiveMetastore_get_all_erasure_policies_result(const ThriftHiveMetastore_get_all_erasure_policies_result&);
+  ThriftHiveMetastore_get_all_erasure_policies_result& operator=(const ThriftHiveMetastore_get_all_erasure_policies_result&);
+  ThriftHiveMetastore_get_all_erasure_policies_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_erasure_policies_result() noexcept;
+  std::vector<PolicyInfo>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_all_erasure_policies_result__isset __isset;
+
+  void __set_success(const std::vector<PolicyInfo> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_erasure_policies_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_erasure_policies_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_erasure_policies_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_erasure_policies_presult__isset {
+  _ThriftHiveMetastore_get_all_erasure_policies_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_all_erasure_policies_presult__isset;
+
+class ThriftHiveMetastore_get_all_erasure_policies_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_erasure_policies_presult() noexcept;
+  std::vector<PolicyInfo> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_all_erasure_policies_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_erasure_policy_version_args__isset {
+  _ThriftHiveMetastore_add_erasure_policy_version_args__isset() : version(false) {}
+  bool version :1;
+} _ThriftHiveMetastore_add_erasure_policy_version_args__isset;
+
+class ThriftHiveMetastore_add_erasure_policy_version_args {
+ public:
+
+  ThriftHiveMetastore_add_erasure_policy_version_args(const ThriftHiveMetastore_add_erasure_policy_version_args&);
+  ThriftHiveMetastore_add_erasure_policy_version_args& operator=(const ThriftHiveMetastore_add_erasure_policy_version_args&);
+  ThriftHiveMetastore_add_erasure_policy_version_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_version_args() noexcept;
+  ErasurePolicyVersion version;
+
+  _ThriftHiveMetastore_add_erasure_policy_version_args__isset __isset;
+
+  void __set_version(const ErasurePolicyVersion& val);
+
+  bool operator == (const ThriftHiveMetastore_add_erasure_policy_version_args & rhs) const
+  {
+    if (!(version == rhs.version))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_erasure_policy_version_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_erasure_policy_version_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_erasure_policy_version_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_version_pargs() noexcept;
+  const ErasurePolicyVersion* version;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_erasure_policy_version_result__isset {
+  _ThriftHiveMetastore_add_erasure_policy_version_result__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_add_erasure_policy_version_result__isset;
+
+class ThriftHiveMetastore_add_erasure_policy_version_result {
+ public:
+
+  ThriftHiveMetastore_add_erasure_policy_version_result(const ThriftHiveMetastore_add_erasure_policy_version_result&);
+  ThriftHiveMetastore_add_erasure_policy_version_result& operator=(const ThriftHiveMetastore_add_erasure_policy_version_result&);
+  ThriftHiveMetastore_add_erasure_policy_version_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_version_result() noexcept;
+  ErasurePolicyVersion success;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_add_erasure_policy_version_result__isset __isset;
+
+  void __set_success(const ErasurePolicyVersion& val);
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_erasure_policy_version_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_erasure_policy_version_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_erasure_policy_version_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_erasure_policy_version_presult__isset {
+  _ThriftHiveMetastore_add_erasure_policy_version_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_add_erasure_policy_version_presult__isset;
+
+class ThriftHiveMetastore_add_erasure_policy_version_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_version_presult() noexcept;
+  ErasurePolicyVersion* success;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_add_erasure_policy_version_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_version_args__isset {
+  _ThriftHiveMetastore_get_erasure_policy_version_args__isset() : policyName(false), versionLabel(false) {}
+  bool policyName :1;
+  bool versionLabel :1;
+} _ThriftHiveMetastore_get_erasure_policy_version_args__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_version_args {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_version_args(const ThriftHiveMetastore_get_erasure_policy_version_args&);
+  ThriftHiveMetastore_get_erasure_policy_version_args& operator=(const ThriftHiveMetastore_get_erasure_policy_version_args&);
+  ThriftHiveMetastore_get_erasure_policy_version_args() noexcept
+                                                      : policyName(),
+                                                        versionLabel() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_version_args() noexcept;
+  std::string policyName;
+  std::string versionLabel;
+
+  _ThriftHiveMetastore_get_erasure_policy_version_args__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  void __set_versionLabel(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_version_args & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    if (!(versionLabel == rhs.versionLabel))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_version_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_version_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_erasure_policy_version_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_version_pargs() noexcept;
+  const std::string* policyName;
+  const std::string* versionLabel;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_version_result__isset {
+  _ThriftHiveMetastore_get_erasure_policy_version_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_version_result__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_version_result {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_version_result(const ThriftHiveMetastore_get_erasure_policy_version_result&);
+  ThriftHiveMetastore_get_erasure_policy_version_result& operator=(const ThriftHiveMetastore_get_erasure_policy_version_result&);
+  ThriftHiveMetastore_get_erasure_policy_version_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_version_result() noexcept;
+  ErasurePolicyVersion success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_version_result__isset __isset;
+
+  void __set_success(const ErasurePolicyVersion& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_version_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_version_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_version_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_version_presult__isset {
+  _ThriftHiveMetastore_get_erasure_policy_version_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_version_presult__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_version_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_version_presult() noexcept;
+  ErasurePolicyVersion* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_version_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_list_erasure_policy_versions_args__isset {
+  _ThriftHiveMetastore_list_erasure_policy_versions_args__isset() : policyName(false) {}
+  bool policyName :1;
+} _ThriftHiveMetastore_list_erasure_policy_versions_args__isset;
+
+class ThriftHiveMetastore_list_erasure_policy_versions_args {
+ public:
+
+  ThriftHiveMetastore_list_erasure_policy_versions_args(const ThriftHiveMetastore_list_erasure_policy_versions_args&);
+  ThriftHiveMetastore_list_erasure_policy_versions_args& operator=(const ThriftHiveMetastore_list_erasure_policy_versions_args&);
+  ThriftHiveMetastore_list_erasure_policy_versions_args() noexcept
+                                                        : policyName() {
+  }
+
+  virtual ~ThriftHiveMetastore_list_erasure_policy_versions_args() noexcept;
+  std::string policyName;
+
+  _ThriftHiveMetastore_list_erasure_policy_versions_args__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_list_erasure_policy_versions_args & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_list_erasure_policy_versions_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_list_erasure_policy_versions_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_list_erasure_policy_versions_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_list_erasure_policy_versions_pargs() noexcept;
+  const std::string* policyName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_list_erasure_policy_versions_result__isset {
+  _ThriftHiveMetastore_list_erasure_policy_versions_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_list_erasure_policy_versions_result__isset;
+
+class ThriftHiveMetastore_list_erasure_policy_versions_result {
+ public:
+
+  ThriftHiveMetastore_list_erasure_policy_versions_result(const ThriftHiveMetastore_list_erasure_policy_versions_result&);
+  ThriftHiveMetastore_list_erasure_policy_versions_result& operator=(const ThriftHiveMetastore_list_erasure_policy_versions_result&);
+  ThriftHiveMetastore_list_erasure_policy_versions_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_list_erasure_policy_versions_result() noexcept;
+  std::vector<ErasurePolicyVersion>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_list_erasure_policy_versions_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyVersion> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_list_erasure_policy_versions_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_list_erasure_policy_versions_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_list_erasure_policy_versions_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_list_erasure_policy_versions_presult__isset {
+  _ThriftHiveMetastore_list_erasure_policy_versions_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_list_erasure_policy_versions_presult__isset;
+
+class ThriftHiveMetastore_list_erasure_policy_versions_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_list_erasure_policy_versions_presult() noexcept;
+  std::vector<ErasurePolicyVersion> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_list_erasure_policy_versions_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_policy_version_status_args__isset {
+  _ThriftHiveMetastore_update_erasure_policy_version_status_args__isset() : versionId(false), newStatus(false), principal(false) {}
+  bool versionId :1;
+  bool newStatus :1;
+  bool principal :1;
+} _ThriftHiveMetastore_update_erasure_policy_version_status_args__isset;
+
+class ThriftHiveMetastore_update_erasure_policy_version_status_args {
+ public:
+
+  ThriftHiveMetastore_update_erasure_policy_version_status_args(const ThriftHiveMetastore_update_erasure_policy_version_status_args&);
+  ThriftHiveMetastore_update_erasure_policy_version_status_args& operator=(const ThriftHiveMetastore_update_erasure_policy_version_status_args&);
+  ThriftHiveMetastore_update_erasure_policy_version_status_args() noexcept
+                                                                : versionId(0),
+                                                                  newStatus(static_cast<PolicyVersionStatus::type>(0)),
+                                                                  principal() {
+  }
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_version_status_args() noexcept;
+  int64_t versionId;
+  /**
+   * 
+   * @see PolicyVersionStatus
+   */
+  PolicyVersionStatus::type newStatus;
+  std::string principal;
+
+  _ThriftHiveMetastore_update_erasure_policy_version_status_args__isset __isset;
+
+  void __set_versionId(const int64_t val);
+
+  void __set_newStatus(const PolicyVersionStatus::type val);
+
+  void __set_principal(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_update_erasure_policy_version_status_args & rhs) const
+  {
+    if (!(versionId == rhs.versionId))
+      return false;
+    if (!(newStatus == rhs.newStatus))
+      return false;
+    if (!(principal == rhs.principal))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_erasure_policy_version_status_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_erasure_policy_version_status_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_erasure_policy_version_status_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_version_status_pargs() noexcept;
+  const int64_t* versionId;
+  /**
+   * 
+   * @see PolicyVersionStatus
+   */
+  const PolicyVersionStatus::type* newStatus;
+  const std::string* principal;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_policy_version_status_result__isset {
+  _ThriftHiveMetastore_update_erasure_policy_version_status_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_update_erasure_policy_version_status_result__isset;
+
+class ThriftHiveMetastore_update_erasure_policy_version_status_result {
+ public:
+
+  ThriftHiveMetastore_update_erasure_policy_version_status_result(const ThriftHiveMetastore_update_erasure_policy_version_status_result&);
+  ThriftHiveMetastore_update_erasure_policy_version_status_result& operator=(const ThriftHiveMetastore_update_erasure_policy_version_status_result&);
+  ThriftHiveMetastore_update_erasure_policy_version_status_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_version_status_result() noexcept;
+  NoSuchObjectException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_update_erasure_policy_version_status_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_erasure_policy_version_status_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_erasure_policy_version_status_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_erasure_policy_version_status_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_policy_version_status_presult__isset {
+  _ThriftHiveMetastore_update_erasure_policy_version_status_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_update_erasure_policy_version_status_presult__isset;
+
+class ThriftHiveMetastore_update_erasure_policy_version_status_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_version_status_presult() noexcept;
+  NoSuchObjectException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_update_erasure_policy_version_status_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_active_erasure_policy_version_args__isset {
+  _ThriftHiveMetastore_get_active_erasure_policy_version_args__isset() : policyName(false) {}
+  bool policyName :1;
+} _ThriftHiveMetastore_get_active_erasure_policy_version_args__isset;
+
+class ThriftHiveMetastore_get_active_erasure_policy_version_args {
+ public:
+
+  ThriftHiveMetastore_get_active_erasure_policy_version_args(const ThriftHiveMetastore_get_active_erasure_policy_version_args&);
+  ThriftHiveMetastore_get_active_erasure_policy_version_args& operator=(const ThriftHiveMetastore_get_active_erasure_policy_version_args&);
+  ThriftHiveMetastore_get_active_erasure_policy_version_args() noexcept
+                                                             : policyName() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_active_erasure_policy_version_args() noexcept;
+  std::string policyName;
+
+  _ThriftHiveMetastore_get_active_erasure_policy_version_args__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_active_erasure_policy_version_args & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_active_erasure_policy_version_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_active_erasure_policy_version_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_active_erasure_policy_version_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_active_erasure_policy_version_pargs() noexcept;
+  const std::string* policyName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_active_erasure_policy_version_result__isset {
+  _ThriftHiveMetastore_get_active_erasure_policy_version_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_active_erasure_policy_version_result__isset;
+
+class ThriftHiveMetastore_get_active_erasure_policy_version_result {
+ public:
+
+  ThriftHiveMetastore_get_active_erasure_policy_version_result(const ThriftHiveMetastore_get_active_erasure_policy_version_result&);
+  ThriftHiveMetastore_get_active_erasure_policy_version_result& operator=(const ThriftHiveMetastore_get_active_erasure_policy_version_result&);
+  ThriftHiveMetastore_get_active_erasure_policy_version_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_active_erasure_policy_version_result() noexcept;
+  ErasurePolicyVersion success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_active_erasure_policy_version_result__isset __isset;
+
+  void __set_success(const ErasurePolicyVersion& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_active_erasure_policy_version_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_active_erasure_policy_version_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_active_erasure_policy_version_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_active_erasure_policy_version_presult__isset {
+  _ThriftHiveMetastore_get_active_erasure_policy_version_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_active_erasure_policy_version_presult__isset;
+
+class ThriftHiveMetastore_get_active_erasure_policy_version_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_active_erasure_policy_version_presult() noexcept;
+  ErasurePolicyVersion* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_active_erasure_policy_version_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_statements_args__isset {
+  _ThriftHiveMetastore_get_erasure_policy_statements_args__isset() : versionId(false) {}
+  bool versionId :1;
+} _ThriftHiveMetastore_get_erasure_policy_statements_args__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_statements_args {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_statements_args(const ThriftHiveMetastore_get_erasure_policy_statements_args&) noexcept;
+  ThriftHiveMetastore_get_erasure_policy_statements_args& operator=(const ThriftHiveMetastore_get_erasure_policy_statements_args&) noexcept;
+  ThriftHiveMetastore_get_erasure_policy_statements_args() noexcept
+                                                         : versionId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_statements_args() noexcept;
+  int64_t versionId;
+
+  _ThriftHiveMetastore_get_erasure_policy_statements_args__isset __isset;
+
+  void __set_versionId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_statements_args & rhs) const
+  {
+    if (!(versionId == rhs.versionId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_statements_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_statements_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_erasure_policy_statements_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_statements_pargs() noexcept;
+  const int64_t* versionId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_statements_result__isset {
+  _ThriftHiveMetastore_get_erasure_policy_statements_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_statements_result__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_statements_result {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_statements_result(const ThriftHiveMetastore_get_erasure_policy_statements_result&);
+  ThriftHiveMetastore_get_erasure_policy_statements_result& operator=(const ThriftHiveMetastore_get_erasure_policy_statements_result&);
+  ThriftHiveMetastore_get_erasure_policy_statements_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_statements_result() noexcept;
+  std::vector<ErasurePolicyStatement>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_statements_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyStatement> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_statements_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_statements_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_statements_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_statements_presult__isset {
+  _ThriftHiveMetastore_get_erasure_policy_statements_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_statements_presult__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_statements_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_statements_presult() noexcept;
+  std::vector<ErasurePolicyStatement> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_statements_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_rules_args__isset {
+  _ThriftHiveMetastore_get_erasure_policy_rules_args__isset() : statementId(false) {}
+  bool statementId :1;
+} _ThriftHiveMetastore_get_erasure_policy_rules_args__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_rules_args {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_rules_args(const ThriftHiveMetastore_get_erasure_policy_rules_args&) noexcept;
+  ThriftHiveMetastore_get_erasure_policy_rules_args& operator=(const ThriftHiveMetastore_get_erasure_policy_rules_args&) noexcept;
+  ThriftHiveMetastore_get_erasure_policy_rules_args() noexcept
+                                                    : statementId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_rules_args() noexcept;
+  int64_t statementId;
+
+  _ThriftHiveMetastore_get_erasure_policy_rules_args__isset __isset;
+
+  void __set_statementId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_rules_args & rhs) const
+  {
+    if (!(statementId == rhs.statementId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_rules_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_rules_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_erasure_policy_rules_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_rules_pargs() noexcept;
+  const int64_t* statementId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_rules_result__isset {
+  _ThriftHiveMetastore_get_erasure_policy_rules_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_rules_result__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_rules_result {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_rules_result(const ThriftHiveMetastore_get_erasure_policy_rules_result&);
+  ThriftHiveMetastore_get_erasure_policy_rules_result& operator=(const ThriftHiveMetastore_get_erasure_policy_rules_result&);
+  ThriftHiveMetastore_get_erasure_policy_rules_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_rules_result() noexcept;
+  std::vector<ErasurePolicyRule>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_rules_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyRule> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_rules_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_rules_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_rules_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_rules_presult__isset {
+  _ThriftHiveMetastore_get_erasure_policy_rules_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_rules_presult__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_rules_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_rules_presult() noexcept;
+  std::vector<ErasurePolicyRule> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_rules_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_erasure_policy_binding_args__isset {
+  _ThriftHiveMetastore_add_erasure_policy_binding_args__isset() : binding(false) {}
+  bool binding :1;
+} _ThriftHiveMetastore_add_erasure_policy_binding_args__isset;
+
+class ThriftHiveMetastore_add_erasure_policy_binding_args {
+ public:
+
+  ThriftHiveMetastore_add_erasure_policy_binding_args(const ThriftHiveMetastore_add_erasure_policy_binding_args&);
+  ThriftHiveMetastore_add_erasure_policy_binding_args& operator=(const ThriftHiveMetastore_add_erasure_policy_binding_args&);
+  ThriftHiveMetastore_add_erasure_policy_binding_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_binding_args() noexcept;
+  ErasurePolicyBinding binding;
+
+  _ThriftHiveMetastore_add_erasure_policy_binding_args__isset __isset;
+
+  void __set_binding(const ErasurePolicyBinding& val);
+
+  bool operator == (const ThriftHiveMetastore_add_erasure_policy_binding_args & rhs) const
+  {
+    if (!(binding == rhs.binding))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_erasure_policy_binding_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_erasure_policy_binding_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_erasure_policy_binding_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_binding_pargs() noexcept;
+  const ErasurePolicyBinding* binding;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_erasure_policy_binding_result__isset {
+  _ThriftHiveMetastore_add_erasure_policy_binding_result__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_add_erasure_policy_binding_result__isset;
+
+class ThriftHiveMetastore_add_erasure_policy_binding_result {
+ public:
+
+  ThriftHiveMetastore_add_erasure_policy_binding_result(const ThriftHiveMetastore_add_erasure_policy_binding_result&);
+  ThriftHiveMetastore_add_erasure_policy_binding_result& operator=(const ThriftHiveMetastore_add_erasure_policy_binding_result&);
+  ThriftHiveMetastore_add_erasure_policy_binding_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_binding_result() noexcept;
+  ErasurePolicyBinding success;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_add_erasure_policy_binding_result__isset __isset;
+
+  void __set_success(const ErasurePolicyBinding& val);
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_erasure_policy_binding_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_erasure_policy_binding_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_erasure_policy_binding_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_erasure_policy_binding_presult__isset {
+  _ThriftHiveMetastore_add_erasure_policy_binding_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_add_erasure_policy_binding_presult__isset;
+
+class ThriftHiveMetastore_add_erasure_policy_binding_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_erasure_policy_binding_presult() noexcept;
+  ErasurePolicyBinding* success;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_add_erasure_policy_binding_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_binding_args__isset {
+  _ThriftHiveMetastore_get_erasure_policy_binding_args__isset() : tblId(false), columnName(false) {}
+  bool tblId :1;
+  bool columnName :1;
+} _ThriftHiveMetastore_get_erasure_policy_binding_args__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_binding_args {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_binding_args(const ThriftHiveMetastore_get_erasure_policy_binding_args&);
+  ThriftHiveMetastore_get_erasure_policy_binding_args& operator=(const ThriftHiveMetastore_get_erasure_policy_binding_args&);
+  ThriftHiveMetastore_get_erasure_policy_binding_args() noexcept
+                                                      : tblId(0),
+                                                        columnName() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_binding_args() noexcept;
+  int64_t tblId;
+  std::string columnName;
+
+  _ThriftHiveMetastore_get_erasure_policy_binding_args__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  void __set_columnName(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_binding_args & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(columnName == rhs.columnName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_binding_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_binding_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_erasure_policy_binding_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_binding_pargs() noexcept;
+  const int64_t* tblId;
+  const std::string* columnName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_binding_result__isset {
+  _ThriftHiveMetastore_get_erasure_policy_binding_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_binding_result__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_binding_result {
+ public:
+
+  ThriftHiveMetastore_get_erasure_policy_binding_result(const ThriftHiveMetastore_get_erasure_policy_binding_result&);
+  ThriftHiveMetastore_get_erasure_policy_binding_result& operator=(const ThriftHiveMetastore_get_erasure_policy_binding_result&);
+  ThriftHiveMetastore_get_erasure_policy_binding_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_binding_result() noexcept;
+  ErasurePolicyBinding success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_binding_result__isset __isset;
+
+  void __set_success(const ErasurePolicyBinding& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_policy_binding_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_policy_binding_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_policy_binding_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_policy_binding_presult__isset {
+  _ThriftHiveMetastore_get_erasure_policy_binding_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_erasure_policy_binding_presult__isset;
+
+class ThriftHiveMetastore_get_erasure_policy_binding_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_policy_binding_presult() noexcept;
+  ErasurePolicyBinding* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_erasure_policy_binding_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_erasure_policy_binding_args__isset {
+  _ThriftHiveMetastore_drop_erasure_policy_binding_args__isset() : bindingId(false) {}
+  bool bindingId :1;
+} _ThriftHiveMetastore_drop_erasure_policy_binding_args__isset;
+
+class ThriftHiveMetastore_drop_erasure_policy_binding_args {
+ public:
+
+  ThriftHiveMetastore_drop_erasure_policy_binding_args(const ThriftHiveMetastore_drop_erasure_policy_binding_args&) noexcept;
+  ThriftHiveMetastore_drop_erasure_policy_binding_args& operator=(const ThriftHiveMetastore_drop_erasure_policy_binding_args&) noexcept;
+  ThriftHiveMetastore_drop_erasure_policy_binding_args() noexcept
+                                                       : bindingId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_binding_args() noexcept;
+  int64_t bindingId;
+
+  _ThriftHiveMetastore_drop_erasure_policy_binding_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_drop_erasure_policy_binding_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_erasure_policy_binding_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_erasure_policy_binding_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_erasure_policy_binding_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_binding_pargs() noexcept;
+  const int64_t* bindingId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_erasure_policy_binding_result__isset {
+  _ThriftHiveMetastore_drop_erasure_policy_binding_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_erasure_policy_binding_result__isset;
+
+class ThriftHiveMetastore_drop_erasure_policy_binding_result {
+ public:
+
+  ThriftHiveMetastore_drop_erasure_policy_binding_result(const ThriftHiveMetastore_drop_erasure_policy_binding_result&);
+  ThriftHiveMetastore_drop_erasure_policy_binding_result& operator=(const ThriftHiveMetastore_drop_erasure_policy_binding_result&);
+  ThriftHiveMetastore_drop_erasure_policy_binding_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_binding_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_erasure_policy_binding_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_erasure_policy_binding_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_erasure_policy_binding_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_erasure_policy_binding_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_erasure_policy_binding_presult__isset {
+  _ThriftHiveMetastore_drop_erasure_policy_binding_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_erasure_policy_binding_presult__isset;
+
+class ThriftHiveMetastore_drop_erasure_policy_binding_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_erasure_policy_binding_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_drop_erasure_policy_binding_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_policy_binding_settings_args__isset {
+  _ThriftHiveMetastore_update_erasure_policy_binding_settings_args__isset() : bindingId(false), resolutionMode(false), columnFormat(false) {}
+  bool bindingId :1;
+  bool resolutionMode :1;
+  bool columnFormat :1;
+} _ThriftHiveMetastore_update_erasure_policy_binding_settings_args__isset;
+
+class ThriftHiveMetastore_update_erasure_policy_binding_settings_args {
+ public:
+
+  ThriftHiveMetastore_update_erasure_policy_binding_settings_args(const ThriftHiveMetastore_update_erasure_policy_binding_settings_args&) noexcept;
+  ThriftHiveMetastore_update_erasure_policy_binding_settings_args& operator=(const ThriftHiveMetastore_update_erasure_policy_binding_settings_args&) noexcept;
+  ThriftHiveMetastore_update_erasure_policy_binding_settings_args() noexcept
+                                                                  : bindingId(0),
+                                                                    resolutionMode(static_cast<PolicyResolutionMode::type>(0)),
+                                                                    columnFormat(static_cast<ColumnInternalFormat::type>(0)) {
+  }
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_binding_settings_args() noexcept;
+  int64_t bindingId;
+  /**
+   * 
+   * @see PolicyResolutionMode
+   */
+  PolicyResolutionMode::type resolutionMode;
+  /**
+   * 
+   * @see ColumnInternalFormat
+   */
+  ColumnInternalFormat::type columnFormat;
+
+  _ThriftHiveMetastore_update_erasure_policy_binding_settings_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_resolutionMode(const PolicyResolutionMode::type val);
+
+  void __set_columnFormat(const ColumnInternalFormat::type val);
+
+  bool operator == (const ThriftHiveMetastore_update_erasure_policy_binding_settings_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(resolutionMode == rhs.resolutionMode))
+      return false;
+    if (!(columnFormat == rhs.columnFormat))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_erasure_policy_binding_settings_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_erasure_policy_binding_settings_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_erasure_policy_binding_settings_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_binding_settings_pargs() noexcept;
+  const int64_t* bindingId;
+  /**
+   * 
+   * @see PolicyResolutionMode
+   */
+  const PolicyResolutionMode::type* resolutionMode;
+  /**
+   * 
+   * @see ColumnInternalFormat
+   */
+  const ColumnInternalFormat::type* columnFormat;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_policy_binding_settings_result__isset {
+  _ThriftHiveMetastore_update_erasure_policy_binding_settings_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_update_erasure_policy_binding_settings_result__isset;
+
+class ThriftHiveMetastore_update_erasure_policy_binding_settings_result {
+ public:
+
+  ThriftHiveMetastore_update_erasure_policy_binding_settings_result(const ThriftHiveMetastore_update_erasure_policy_binding_settings_result&);
+  ThriftHiveMetastore_update_erasure_policy_binding_settings_result& operator=(const ThriftHiveMetastore_update_erasure_policy_binding_settings_result&);
+  ThriftHiveMetastore_update_erasure_policy_binding_settings_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_binding_settings_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_update_erasure_policy_binding_settings_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_erasure_policy_binding_settings_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_erasure_policy_binding_settings_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_erasure_policy_binding_settings_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_policy_binding_settings_presult__isset {
+  _ThriftHiveMetastore_update_erasure_policy_binding_settings_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_update_erasure_policy_binding_settings_presult__isset;
+
+class ThriftHiveMetastore_update_erasure_policy_binding_settings_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_erasure_policy_binding_settings_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_update_erasure_policy_binding_settings_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_attach_policy_to_binding_args__isset {
+  _ThriftHiveMetastore_attach_policy_to_binding_args__isset() : bindingId(false), policyId(false), ordinal(false) {}
+  bool bindingId :1;
+  bool policyId :1;
+  bool ordinal :1;
+} _ThriftHiveMetastore_attach_policy_to_binding_args__isset;
+
+class ThriftHiveMetastore_attach_policy_to_binding_args {
+ public:
+
+  ThriftHiveMetastore_attach_policy_to_binding_args(const ThriftHiveMetastore_attach_policy_to_binding_args&) noexcept;
+  ThriftHiveMetastore_attach_policy_to_binding_args& operator=(const ThriftHiveMetastore_attach_policy_to_binding_args&) noexcept;
+  ThriftHiveMetastore_attach_policy_to_binding_args() noexcept
+                                                    : bindingId(0),
+                                                      policyId(0),
+                                                      ordinal(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_attach_policy_to_binding_args() noexcept;
+  int64_t bindingId;
+  int64_t policyId;
+  int32_t ordinal;
+
+  _ThriftHiveMetastore_attach_policy_to_binding_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_policyId(const int64_t val);
+
+  void __set_ordinal(const int32_t val);
+
+  bool operator == (const ThriftHiveMetastore_attach_policy_to_binding_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(policyId == rhs.policyId))
+      return false;
+    if (!(ordinal == rhs.ordinal))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_attach_policy_to_binding_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_attach_policy_to_binding_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_attach_policy_to_binding_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_attach_policy_to_binding_pargs() noexcept;
+  const int64_t* bindingId;
+  const int64_t* policyId;
+  const int32_t* ordinal;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_attach_policy_to_binding_result__isset {
+  _ThriftHiveMetastore_attach_policy_to_binding_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_attach_policy_to_binding_result__isset;
+
+class ThriftHiveMetastore_attach_policy_to_binding_result {
+ public:
+
+  ThriftHiveMetastore_attach_policy_to_binding_result(const ThriftHiveMetastore_attach_policy_to_binding_result&);
+  ThriftHiveMetastore_attach_policy_to_binding_result& operator=(const ThriftHiveMetastore_attach_policy_to_binding_result&);
+  ThriftHiveMetastore_attach_policy_to_binding_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_attach_policy_to_binding_result() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_attach_policy_to_binding_result__isset __isset;
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_attach_policy_to_binding_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_attach_policy_to_binding_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_attach_policy_to_binding_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_attach_policy_to_binding_presult__isset {
+  _ThriftHiveMetastore_attach_policy_to_binding_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_attach_policy_to_binding_presult__isset;
+
+class ThriftHiveMetastore_attach_policy_to_binding_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_attach_policy_to_binding_presult() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_attach_policy_to_binding_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_detach_policy_from_binding_args__isset {
+  _ThriftHiveMetastore_detach_policy_from_binding_args__isset() : bindingId(false), policyId(false) {}
+  bool bindingId :1;
+  bool policyId :1;
+} _ThriftHiveMetastore_detach_policy_from_binding_args__isset;
+
+class ThriftHiveMetastore_detach_policy_from_binding_args {
+ public:
+
+  ThriftHiveMetastore_detach_policy_from_binding_args(const ThriftHiveMetastore_detach_policy_from_binding_args&) noexcept;
+  ThriftHiveMetastore_detach_policy_from_binding_args& operator=(const ThriftHiveMetastore_detach_policy_from_binding_args&) noexcept;
+  ThriftHiveMetastore_detach_policy_from_binding_args() noexcept
+                                                      : bindingId(0),
+                                                        policyId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_detach_policy_from_binding_args() noexcept;
+  int64_t bindingId;
+  int64_t policyId;
+
+  _ThriftHiveMetastore_detach_policy_from_binding_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_policyId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_detach_policy_from_binding_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(policyId == rhs.policyId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_detach_policy_from_binding_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_detach_policy_from_binding_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_detach_policy_from_binding_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_detach_policy_from_binding_pargs() noexcept;
+  const int64_t* bindingId;
+  const int64_t* policyId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_detach_policy_from_binding_result__isset {
+  _ThriftHiveMetastore_detach_policy_from_binding_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_detach_policy_from_binding_result__isset;
+
+class ThriftHiveMetastore_detach_policy_from_binding_result {
+ public:
+
+  ThriftHiveMetastore_detach_policy_from_binding_result(const ThriftHiveMetastore_detach_policy_from_binding_result&);
+  ThriftHiveMetastore_detach_policy_from_binding_result& operator=(const ThriftHiveMetastore_detach_policy_from_binding_result&);
+  ThriftHiveMetastore_detach_policy_from_binding_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_detach_policy_from_binding_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_detach_policy_from_binding_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_detach_policy_from_binding_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_detach_policy_from_binding_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_detach_policy_from_binding_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_detach_policy_from_binding_presult__isset {
+  _ThriftHiveMetastore_detach_policy_from_binding_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_detach_policy_from_binding_presult__isset;
+
+class ThriftHiveMetastore_detach_policy_from_binding_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_detach_policy_from_binding_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_detach_policy_from_binding_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_binding_members_args__isset {
+  _ThriftHiveMetastore_get_binding_members_args__isset() : bindingId(false) {}
+  bool bindingId :1;
+} _ThriftHiveMetastore_get_binding_members_args__isset;
+
+class ThriftHiveMetastore_get_binding_members_args {
+ public:
+
+  ThriftHiveMetastore_get_binding_members_args(const ThriftHiveMetastore_get_binding_members_args&) noexcept;
+  ThriftHiveMetastore_get_binding_members_args& operator=(const ThriftHiveMetastore_get_binding_members_args&) noexcept;
+  ThriftHiveMetastore_get_binding_members_args() noexcept
+                                               : bindingId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_binding_members_args() noexcept;
+  int64_t bindingId;
+
+  _ThriftHiveMetastore_get_binding_members_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_binding_members_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_binding_members_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_binding_members_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_binding_members_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_binding_members_pargs() noexcept;
+  const int64_t* bindingId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_binding_members_result__isset {
+  _ThriftHiveMetastore_get_binding_members_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_binding_members_result__isset;
+
+class ThriftHiveMetastore_get_binding_members_result {
+ public:
+
+  ThriftHiveMetastore_get_binding_members_result(const ThriftHiveMetastore_get_binding_members_result&);
+  ThriftHiveMetastore_get_binding_members_result& operator=(const ThriftHiveMetastore_get_binding_members_result&);
+  ThriftHiveMetastore_get_binding_members_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_binding_members_result() noexcept;
+  std::vector<ErasurePolicyBindingMember>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_binding_members_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyBindingMember> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_binding_members_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_binding_members_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_binding_members_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_binding_members_presult__isset {
+  _ThriftHiveMetastore_get_binding_members_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_binding_members_presult__isset;
+
+class ThriftHiveMetastore_get_binding_members_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_binding_members_presult() noexcept;
+  std::vector<ErasurePolicyBindingMember> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_binding_members_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_replace_binding_resolved_rules_args__isset {
+  _ThriftHiveMetastore_replace_binding_resolved_rules_args__isset() : bindingId(false), resolved(false) {}
+  bool bindingId :1;
+  bool resolved :1;
+} _ThriftHiveMetastore_replace_binding_resolved_rules_args__isset;
+
+class ThriftHiveMetastore_replace_binding_resolved_rules_args {
+ public:
+
+  ThriftHiveMetastore_replace_binding_resolved_rules_args(const ThriftHiveMetastore_replace_binding_resolved_rules_args&);
+  ThriftHiveMetastore_replace_binding_resolved_rules_args& operator=(const ThriftHiveMetastore_replace_binding_resolved_rules_args&);
+  ThriftHiveMetastore_replace_binding_resolved_rules_args() noexcept
+                                                          : bindingId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_replace_binding_resolved_rules_args() noexcept;
+  int64_t bindingId;
+  std::vector<ErasurePolicyBindingResolved>  resolved;
+
+  _ThriftHiveMetastore_replace_binding_resolved_rules_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_resolved(const std::vector<ErasurePolicyBindingResolved> & val);
+
+  bool operator == (const ThriftHiveMetastore_replace_binding_resolved_rules_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(resolved == rhs.resolved))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_replace_binding_resolved_rules_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_replace_binding_resolved_rules_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_replace_binding_resolved_rules_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_replace_binding_resolved_rules_pargs() noexcept;
+  const int64_t* bindingId;
+  const std::vector<ErasurePolicyBindingResolved> * resolved;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_replace_binding_resolved_rules_result__isset {
+  _ThriftHiveMetastore_replace_binding_resolved_rules_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_replace_binding_resolved_rules_result__isset;
+
+class ThriftHiveMetastore_replace_binding_resolved_rules_result {
+ public:
+
+  ThriftHiveMetastore_replace_binding_resolved_rules_result(const ThriftHiveMetastore_replace_binding_resolved_rules_result&);
+  ThriftHiveMetastore_replace_binding_resolved_rules_result& operator=(const ThriftHiveMetastore_replace_binding_resolved_rules_result&);
+  ThriftHiveMetastore_replace_binding_resolved_rules_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_replace_binding_resolved_rules_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_replace_binding_resolved_rules_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_replace_binding_resolved_rules_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_replace_binding_resolved_rules_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_replace_binding_resolved_rules_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_replace_binding_resolved_rules_presult__isset {
+  _ThriftHiveMetastore_replace_binding_resolved_rules_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_replace_binding_resolved_rules_presult__isset;
+
+class ThriftHiveMetastore_replace_binding_resolved_rules_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_replace_binding_resolved_rules_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_replace_binding_resolved_rules_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_binding_resolved_rules_args__isset {
+  _ThriftHiveMetastore_get_binding_resolved_rules_args__isset() : bindingId(false) {}
+  bool bindingId :1;
+} _ThriftHiveMetastore_get_binding_resolved_rules_args__isset;
+
+class ThriftHiveMetastore_get_binding_resolved_rules_args {
+ public:
+
+  ThriftHiveMetastore_get_binding_resolved_rules_args(const ThriftHiveMetastore_get_binding_resolved_rules_args&) noexcept;
+  ThriftHiveMetastore_get_binding_resolved_rules_args& operator=(const ThriftHiveMetastore_get_binding_resolved_rules_args&) noexcept;
+  ThriftHiveMetastore_get_binding_resolved_rules_args() noexcept
+                                                      : bindingId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_binding_resolved_rules_args() noexcept;
+  int64_t bindingId;
+
+  _ThriftHiveMetastore_get_binding_resolved_rules_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_binding_resolved_rules_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_binding_resolved_rules_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_binding_resolved_rules_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_binding_resolved_rules_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_binding_resolved_rules_pargs() noexcept;
+  const int64_t* bindingId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_binding_resolved_rules_result__isset {
+  _ThriftHiveMetastore_get_binding_resolved_rules_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_binding_resolved_rules_result__isset;
+
+class ThriftHiveMetastore_get_binding_resolved_rules_result {
+ public:
+
+  ThriftHiveMetastore_get_binding_resolved_rules_result(const ThriftHiveMetastore_get_binding_resolved_rules_result&);
+  ThriftHiveMetastore_get_binding_resolved_rules_result& operator=(const ThriftHiveMetastore_get_binding_resolved_rules_result&);
+  ThriftHiveMetastore_get_binding_resolved_rules_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_binding_resolved_rules_result() noexcept;
+  std::vector<ErasurePolicyBindingResolved>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_binding_resolved_rules_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyBindingResolved> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_binding_resolved_rules_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_binding_resolved_rules_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_binding_resolved_rules_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_binding_resolved_rules_presult__isset {
+  _ThriftHiveMetastore_get_binding_resolved_rules_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_binding_resolved_rules_presult__isset;
+
+class ThriftHiveMetastore_get_binding_resolved_rules_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_binding_resolved_rules_presult() noexcept;
+  std::vector<ErasurePolicyBindingResolved> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_binding_resolved_rules_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_record_lifecycle_event_args__isset {
+  _ThriftHiveMetastore_record_lifecycle_event_args__isset() : evt(false) {}
+  bool evt :1;
+} _ThriftHiveMetastore_record_lifecycle_event_args__isset;
+
+class ThriftHiveMetastore_record_lifecycle_event_args {
+ public:
+
+  ThriftHiveMetastore_record_lifecycle_event_args(const ThriftHiveMetastore_record_lifecycle_event_args&);
+  ThriftHiveMetastore_record_lifecycle_event_args& operator=(const ThriftHiveMetastore_record_lifecycle_event_args&);
+  ThriftHiveMetastore_record_lifecycle_event_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_record_lifecycle_event_args() noexcept;
+  ErasurePolicyLifecycleEvent evt;
+
+  _ThriftHiveMetastore_record_lifecycle_event_args__isset __isset;
+
+  void __set_evt(const ErasurePolicyLifecycleEvent& val);
+
+  bool operator == (const ThriftHiveMetastore_record_lifecycle_event_args & rhs) const
+  {
+    if (!(evt == rhs.evt))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_record_lifecycle_event_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_record_lifecycle_event_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_record_lifecycle_event_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_record_lifecycle_event_pargs() noexcept;
+  const ErasurePolicyLifecycleEvent* evt;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_record_lifecycle_event_result__isset {
+  _ThriftHiveMetastore_record_lifecycle_event_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_record_lifecycle_event_result__isset;
+
+class ThriftHiveMetastore_record_lifecycle_event_result {
+ public:
+
+  ThriftHiveMetastore_record_lifecycle_event_result(const ThriftHiveMetastore_record_lifecycle_event_result&);
+  ThriftHiveMetastore_record_lifecycle_event_result& operator=(const ThriftHiveMetastore_record_lifecycle_event_result&);
+  ThriftHiveMetastore_record_lifecycle_event_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_record_lifecycle_event_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_record_lifecycle_event_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_record_lifecycle_event_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_record_lifecycle_event_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_record_lifecycle_event_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_record_lifecycle_event_presult__isset {
+  _ThriftHiveMetastore_record_lifecycle_event_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_record_lifecycle_event_presult__isset;
+
+class ThriftHiveMetastore_record_lifecycle_event_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_record_lifecycle_event_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_record_lifecycle_event_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lifecycle_events_for_policy_args__isset {
+  _ThriftHiveMetastore_get_lifecycle_events_for_policy_args__isset() : policyName(false), fromTs(false), untilTs(false) {}
+  bool policyName :1;
+  bool fromTs :1;
+  bool untilTs :1;
+} _ThriftHiveMetastore_get_lifecycle_events_for_policy_args__isset;
+
+class ThriftHiveMetastore_get_lifecycle_events_for_policy_args {
+ public:
+
+  ThriftHiveMetastore_get_lifecycle_events_for_policy_args(const ThriftHiveMetastore_get_lifecycle_events_for_policy_args&);
+  ThriftHiveMetastore_get_lifecycle_events_for_policy_args& operator=(const ThriftHiveMetastore_get_lifecycle_events_for_policy_args&);
+  ThriftHiveMetastore_get_lifecycle_events_for_policy_args() noexcept
+                                                           : policyName(),
+                                                             fromTs(0),
+                                                             untilTs(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_policy_args() noexcept;
+  std::string policyName;
+  int64_t fromTs;
+  int64_t untilTs;
+
+  _ThriftHiveMetastore_get_lifecycle_events_for_policy_args__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  void __set_fromTs(const int64_t val);
+
+  void __set_untilTs(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_lifecycle_events_for_policy_args & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    if (!(fromTs == rhs.fromTs))
+      return false;
+    if (!(untilTs == rhs.untilTs))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lifecycle_events_for_policy_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lifecycle_events_for_policy_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_lifecycle_events_for_policy_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_policy_pargs() noexcept;
+  const std::string* policyName;
+  const int64_t* fromTs;
+  const int64_t* untilTs;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lifecycle_events_for_policy_result__isset {
+  _ThriftHiveMetastore_get_lifecycle_events_for_policy_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_lifecycle_events_for_policy_result__isset;
+
+class ThriftHiveMetastore_get_lifecycle_events_for_policy_result {
+ public:
+
+  ThriftHiveMetastore_get_lifecycle_events_for_policy_result(const ThriftHiveMetastore_get_lifecycle_events_for_policy_result&);
+  ThriftHiveMetastore_get_lifecycle_events_for_policy_result& operator=(const ThriftHiveMetastore_get_lifecycle_events_for_policy_result&);
+  ThriftHiveMetastore_get_lifecycle_events_for_policy_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_policy_result() noexcept;
+  std::vector<ErasurePolicyLifecycleEvent>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_lifecycle_events_for_policy_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyLifecycleEvent> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_lifecycle_events_for_policy_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lifecycle_events_for_policy_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lifecycle_events_for_policy_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lifecycle_events_for_policy_presult__isset {
+  _ThriftHiveMetastore_get_lifecycle_events_for_policy_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_lifecycle_events_for_policy_presult__isset;
+
+class ThriftHiveMetastore_get_lifecycle_events_for_policy_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_policy_presult() noexcept;
+  std::vector<ErasurePolicyLifecycleEvent> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_lifecycle_events_for_policy_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lifecycle_events_for_binding_args__isset {
+  _ThriftHiveMetastore_get_lifecycle_events_for_binding_args__isset() : bindingId(false), fromTs(false), untilTs(false) {}
+  bool bindingId :1;
+  bool fromTs :1;
+  bool untilTs :1;
+} _ThriftHiveMetastore_get_lifecycle_events_for_binding_args__isset;
+
+class ThriftHiveMetastore_get_lifecycle_events_for_binding_args {
+ public:
+
+  ThriftHiveMetastore_get_lifecycle_events_for_binding_args(const ThriftHiveMetastore_get_lifecycle_events_for_binding_args&) noexcept;
+  ThriftHiveMetastore_get_lifecycle_events_for_binding_args& operator=(const ThriftHiveMetastore_get_lifecycle_events_for_binding_args&) noexcept;
+  ThriftHiveMetastore_get_lifecycle_events_for_binding_args() noexcept
+                                                            : bindingId(0),
+                                                              fromTs(0),
+                                                              untilTs(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_binding_args() noexcept;
+  int64_t bindingId;
+  int64_t fromTs;
+  int64_t untilTs;
+
+  _ThriftHiveMetastore_get_lifecycle_events_for_binding_args__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_fromTs(const int64_t val);
+
+  void __set_untilTs(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_lifecycle_events_for_binding_args & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(fromTs == rhs.fromTs))
+      return false;
+    if (!(untilTs == rhs.untilTs))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lifecycle_events_for_binding_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lifecycle_events_for_binding_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_lifecycle_events_for_binding_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_binding_pargs() noexcept;
+  const int64_t* bindingId;
+  const int64_t* fromTs;
+  const int64_t* untilTs;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lifecycle_events_for_binding_result__isset {
+  _ThriftHiveMetastore_get_lifecycle_events_for_binding_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_lifecycle_events_for_binding_result__isset;
+
+class ThriftHiveMetastore_get_lifecycle_events_for_binding_result {
+ public:
+
+  ThriftHiveMetastore_get_lifecycle_events_for_binding_result(const ThriftHiveMetastore_get_lifecycle_events_for_binding_result&);
+  ThriftHiveMetastore_get_lifecycle_events_for_binding_result& operator=(const ThriftHiveMetastore_get_lifecycle_events_for_binding_result&);
+  ThriftHiveMetastore_get_lifecycle_events_for_binding_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_binding_result() noexcept;
+  std::vector<ErasurePolicyLifecycleEvent>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_lifecycle_events_for_binding_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyLifecycleEvent> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_lifecycle_events_for_binding_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_lifecycle_events_for_binding_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_lifecycle_events_for_binding_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_lifecycle_events_for_binding_presult__isset {
+  _ThriftHiveMetastore_get_lifecycle_events_for_binding_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_lifecycle_events_for_binding_presult__isset;
+
+class ThriftHiveMetastore_get_lifecycle_events_for_binding_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_lifecycle_events_for_binding_presult() noexcept;
+  std::vector<ErasurePolicyLifecycleEvent> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_lifecycle_events_for_binding_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_attach_rejected_events_args__isset {
+  _ThriftHiveMetastore_get_attach_rejected_events_args__isset() : fromTs(false), untilTs(false) {}
+  bool fromTs :1;
+  bool untilTs :1;
+} _ThriftHiveMetastore_get_attach_rejected_events_args__isset;
+
+class ThriftHiveMetastore_get_attach_rejected_events_args {
+ public:
+
+  ThriftHiveMetastore_get_attach_rejected_events_args(const ThriftHiveMetastore_get_attach_rejected_events_args&) noexcept;
+  ThriftHiveMetastore_get_attach_rejected_events_args& operator=(const ThriftHiveMetastore_get_attach_rejected_events_args&) noexcept;
+  ThriftHiveMetastore_get_attach_rejected_events_args() noexcept
+                                                      : fromTs(0),
+                                                        untilTs(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_attach_rejected_events_args() noexcept;
+  int64_t fromTs;
+  int64_t untilTs;
+
+  _ThriftHiveMetastore_get_attach_rejected_events_args__isset __isset;
+
+  void __set_fromTs(const int64_t val);
+
+  void __set_untilTs(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_attach_rejected_events_args & rhs) const
+  {
+    if (!(fromTs == rhs.fromTs))
+      return false;
+    if (!(untilTs == rhs.untilTs))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_attach_rejected_events_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_attach_rejected_events_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_attach_rejected_events_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_attach_rejected_events_pargs() noexcept;
+  const int64_t* fromTs;
+  const int64_t* untilTs;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_attach_rejected_events_result__isset {
+  _ThriftHiveMetastore_get_attach_rejected_events_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_attach_rejected_events_result__isset;
+
+class ThriftHiveMetastore_get_attach_rejected_events_result {
+ public:
+
+  ThriftHiveMetastore_get_attach_rejected_events_result(const ThriftHiveMetastore_get_attach_rejected_events_result&);
+  ThriftHiveMetastore_get_attach_rejected_events_result& operator=(const ThriftHiveMetastore_get_attach_rejected_events_result&);
+  ThriftHiveMetastore_get_attach_rejected_events_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_attach_rejected_events_result() noexcept;
+  std::vector<ErasurePolicyLifecycleEvent>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_attach_rejected_events_result__isset __isset;
+
+  void __set_success(const std::vector<ErasurePolicyLifecycleEvent> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_attach_rejected_events_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_attach_rejected_events_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_attach_rejected_events_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_attach_rejected_events_presult__isset {
+  _ThriftHiveMetastore_get_attach_rejected_events_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_attach_rejected_events_presult__isset;
+
+class ThriftHiveMetastore_get_attach_rejected_events_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_attach_rejected_events_presult() noexcept;
+  std::vector<ErasurePolicyLifecycleEvent> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_attach_rejected_events_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_record_erasure_run_args__isset {
+  _ThriftHiveMetastore_record_erasure_run_args__isset() : run(false) {}
+  bool run :1;
+} _ThriftHiveMetastore_record_erasure_run_args__isset;
+
+class ThriftHiveMetastore_record_erasure_run_args {
+ public:
+
+  ThriftHiveMetastore_record_erasure_run_args(const ThriftHiveMetastore_record_erasure_run_args&);
+  ThriftHiveMetastore_record_erasure_run_args& operator=(const ThriftHiveMetastore_record_erasure_run_args&);
+  ThriftHiveMetastore_record_erasure_run_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_record_erasure_run_args() noexcept;
+  ErasureRunAudit run;
+
+  _ThriftHiveMetastore_record_erasure_run_args__isset __isset;
+
+  void __set_run(const ErasureRunAudit& val);
+
+  bool operator == (const ThriftHiveMetastore_record_erasure_run_args & rhs) const
+  {
+    if (!(run == rhs.run))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_record_erasure_run_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_record_erasure_run_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_record_erasure_run_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_record_erasure_run_pargs() noexcept;
+  const ErasureRunAudit* run;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_record_erasure_run_result__isset {
+  _ThriftHiveMetastore_record_erasure_run_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_record_erasure_run_result__isset;
+
+class ThriftHiveMetastore_record_erasure_run_result {
+ public:
+
+  ThriftHiveMetastore_record_erasure_run_result(const ThriftHiveMetastore_record_erasure_run_result&);
+  ThriftHiveMetastore_record_erasure_run_result& operator=(const ThriftHiveMetastore_record_erasure_run_result&);
+  ThriftHiveMetastore_record_erasure_run_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_record_erasure_run_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_record_erasure_run_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_record_erasure_run_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_record_erasure_run_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_record_erasure_run_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_record_erasure_run_presult__isset {
+  _ThriftHiveMetastore_record_erasure_run_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_record_erasure_run_presult__isset;
+
+class ThriftHiveMetastore_record_erasure_run_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_record_erasure_run_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_record_erasure_run_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_runs_for_table_args__isset {
+  _ThriftHiveMetastore_get_erasure_runs_for_table_args__isset() : tblId(false), fromTs(false), untilTs(false), byUser(false), forIdentity(false) {}
+  bool tblId :1;
+  bool fromTs :1;
+  bool untilTs :1;
+  bool byUser :1;
+  bool forIdentity :1;
+} _ThriftHiveMetastore_get_erasure_runs_for_table_args__isset;
+
+class ThriftHiveMetastore_get_erasure_runs_for_table_args {
+ public:
+
+  ThriftHiveMetastore_get_erasure_runs_for_table_args(const ThriftHiveMetastore_get_erasure_runs_for_table_args&);
+  ThriftHiveMetastore_get_erasure_runs_for_table_args& operator=(const ThriftHiveMetastore_get_erasure_runs_for_table_args&);
+  ThriftHiveMetastore_get_erasure_runs_for_table_args() noexcept
+                                                      : tblId(0),
+                                                        fromTs(0),
+                                                        untilTs(0),
+                                                        byUser(),
+                                                        forIdentity() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_runs_for_table_args() noexcept;
+  int64_t tblId;
+  int64_t fromTs;
+  int64_t untilTs;
+  std::string byUser;
+  std::string forIdentity;
+
+  _ThriftHiveMetastore_get_erasure_runs_for_table_args__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  void __set_fromTs(const int64_t val);
+
+  void __set_untilTs(const int64_t val);
+
+  void __set_byUser(const std::string& val);
+
+  void __set_forIdentity(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_runs_for_table_args & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(fromTs == rhs.fromTs))
+      return false;
+    if (!(untilTs == rhs.untilTs))
+      return false;
+    if (!(byUser == rhs.byUser))
+      return false;
+    if (!(forIdentity == rhs.forIdentity))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_runs_for_table_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_runs_for_table_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_erasure_runs_for_table_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_runs_for_table_pargs() noexcept;
+  const int64_t* tblId;
+  const int64_t* fromTs;
+  const int64_t* untilTs;
+  const std::string* byUser;
+  const std::string* forIdentity;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_runs_for_table_result__isset {
+  _ThriftHiveMetastore_get_erasure_runs_for_table_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_erasure_runs_for_table_result__isset;
+
+class ThriftHiveMetastore_get_erasure_runs_for_table_result {
+ public:
+
+  ThriftHiveMetastore_get_erasure_runs_for_table_result(const ThriftHiveMetastore_get_erasure_runs_for_table_result&);
+  ThriftHiveMetastore_get_erasure_runs_for_table_result& operator=(const ThriftHiveMetastore_get_erasure_runs_for_table_result&);
+  ThriftHiveMetastore_get_erasure_runs_for_table_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_runs_for_table_result() noexcept;
+  std::vector<ErasureRunAudit>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_erasure_runs_for_table_result__isset __isset;
+
+  void __set_success(const std::vector<ErasureRunAudit> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_runs_for_table_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_runs_for_table_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_runs_for_table_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_runs_for_table_presult__isset {
+  _ThriftHiveMetastore_get_erasure_runs_for_table_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_erasure_runs_for_table_presult__isset;
+
+class ThriftHiveMetastore_get_erasure_runs_for_table_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_runs_for_table_presult() noexcept;
+  std::vector<ErasureRunAudit> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_erasure_runs_for_table_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_run_completion_args__isset {
+  _ThriftHiveMetastore_update_erasure_run_completion_args__isset() : tblId(false), startedTs(false), completedTs(false), status(false), matchesInspected(false), matchesRedacted(false), matchesFlagged(false) {}
+  bool tblId :1;
+  bool startedTs :1;
+  bool completedTs :1;
+  bool status :1;
+  bool matchesInspected :1;
+  bool matchesRedacted :1;
+  bool matchesFlagged :1;
+} _ThriftHiveMetastore_update_erasure_run_completion_args__isset;
+
+class ThriftHiveMetastore_update_erasure_run_completion_args {
+ public:
+
+  ThriftHiveMetastore_update_erasure_run_completion_args(const ThriftHiveMetastore_update_erasure_run_completion_args&) noexcept;
+  ThriftHiveMetastore_update_erasure_run_completion_args& operator=(const ThriftHiveMetastore_update_erasure_run_completion_args&) noexcept;
+  ThriftHiveMetastore_update_erasure_run_completion_args() noexcept
+                                                         : tblId(0),
+                                                           startedTs(0),
+                                                           completedTs(0),
+                                                           status(static_cast<ErasureRunStatus::type>(0)),
+                                                           matchesInspected(0),
+                                                           matchesRedacted(0),
+                                                           matchesFlagged(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_update_erasure_run_completion_args() noexcept;
+  int64_t tblId;
+  int64_t startedTs;
+  int64_t completedTs;
+  /**
+   * 
+   * @see ErasureRunStatus
+   */
+  ErasureRunStatus::type status;
+  int64_t matchesInspected;
+  int64_t matchesRedacted;
+  int64_t matchesFlagged;
+
+  _ThriftHiveMetastore_update_erasure_run_completion_args__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  void __set_startedTs(const int64_t val);
+
+  void __set_completedTs(const int64_t val);
+
+  void __set_status(const ErasureRunStatus::type val);
+
+  void __set_matchesInspected(const int64_t val);
+
+  void __set_matchesRedacted(const int64_t val);
+
+  void __set_matchesFlagged(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_update_erasure_run_completion_args & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(startedTs == rhs.startedTs))
+      return false;
+    if (!(completedTs == rhs.completedTs))
+      return false;
+    if (!(status == rhs.status))
+      return false;
+    if (!(matchesInspected == rhs.matchesInspected))
+      return false;
+    if (!(matchesRedacted == rhs.matchesRedacted))
+      return false;
+    if (!(matchesFlagged == rhs.matchesFlagged))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_erasure_run_completion_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_erasure_run_completion_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_update_erasure_run_completion_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_erasure_run_completion_pargs() noexcept;
+  const int64_t* tblId;
+  const int64_t* startedTs;
+  const int64_t* completedTs;
+  /**
+   * 
+   * @see ErasureRunStatus
+   */
+  const ErasureRunStatus::type* status;
+  const int64_t* matchesInspected;
+  const int64_t* matchesRedacted;
+  const int64_t* matchesFlagged;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_run_completion_result__isset {
+  _ThriftHiveMetastore_update_erasure_run_completion_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_update_erasure_run_completion_result__isset;
+
+class ThriftHiveMetastore_update_erasure_run_completion_result {
+ public:
+
+  ThriftHiveMetastore_update_erasure_run_completion_result(const ThriftHiveMetastore_update_erasure_run_completion_result&);
+  ThriftHiveMetastore_update_erasure_run_completion_result& operator=(const ThriftHiveMetastore_update_erasure_run_completion_result&);
+  ThriftHiveMetastore_update_erasure_run_completion_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_update_erasure_run_completion_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_update_erasure_run_completion_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_update_erasure_run_completion_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_update_erasure_run_completion_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_update_erasure_run_completion_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_update_erasure_run_completion_presult__isset {
+  _ThriftHiveMetastore_update_erasure_run_completion_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_update_erasure_run_completion_presult__isset;
+
+class ThriftHiveMetastore_update_erasure_run_completion_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_update_erasure_run_completion_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_update_erasure_run_completion_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_acquire_erasure_run_lock_args__isset {
+  _ThriftHiveMetastore_acquire_erasure_run_lock_args__isset() : tblId(false), runId(false), principal(false) {}
+  bool tblId :1;
+  bool runId :1;
+  bool principal :1;
+} _ThriftHiveMetastore_acquire_erasure_run_lock_args__isset;
+
+class ThriftHiveMetastore_acquire_erasure_run_lock_args {
+ public:
+
+  ThriftHiveMetastore_acquire_erasure_run_lock_args(const ThriftHiveMetastore_acquire_erasure_run_lock_args&);
+  ThriftHiveMetastore_acquire_erasure_run_lock_args& operator=(const ThriftHiveMetastore_acquire_erasure_run_lock_args&);
+  ThriftHiveMetastore_acquire_erasure_run_lock_args() noexcept
+                                                    : tblId(0),
+                                                      runId(0),
+                                                      principal() {
+  }
+
+  virtual ~ThriftHiveMetastore_acquire_erasure_run_lock_args() noexcept;
+  int64_t tblId;
+  int64_t runId;
+  std::string principal;
+
+  _ThriftHiveMetastore_acquire_erasure_run_lock_args__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  void __set_runId(const int64_t val);
+
+  void __set_principal(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_acquire_erasure_run_lock_args & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(runId == rhs.runId))
+      return false;
+    if (!(principal == rhs.principal))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_acquire_erasure_run_lock_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_acquire_erasure_run_lock_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_acquire_erasure_run_lock_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_acquire_erasure_run_lock_pargs() noexcept;
+  const int64_t* tblId;
+  const int64_t* runId;
+  const std::string* principal;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_acquire_erasure_run_lock_result__isset {
+  _ThriftHiveMetastore_acquire_erasure_run_lock_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_acquire_erasure_run_lock_result__isset;
+
+class ThriftHiveMetastore_acquire_erasure_run_lock_result {
+ public:
+
+  ThriftHiveMetastore_acquire_erasure_run_lock_result(const ThriftHiveMetastore_acquire_erasure_run_lock_result&);
+  ThriftHiveMetastore_acquire_erasure_run_lock_result& operator=(const ThriftHiveMetastore_acquire_erasure_run_lock_result&);
+  ThriftHiveMetastore_acquire_erasure_run_lock_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_acquire_erasure_run_lock_result() noexcept;
+  ErasureRunLock success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_acquire_erasure_run_lock_result__isset __isset;
+
+  void __set_success(const ErasureRunLock& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_acquire_erasure_run_lock_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_acquire_erasure_run_lock_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_acquire_erasure_run_lock_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_acquire_erasure_run_lock_presult__isset {
+  _ThriftHiveMetastore_acquire_erasure_run_lock_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_acquire_erasure_run_lock_presult__isset;
+
+class ThriftHiveMetastore_acquire_erasure_run_lock_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_acquire_erasure_run_lock_presult() noexcept;
+  ErasureRunLock* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_acquire_erasure_run_lock_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_run_lock_args__isset {
+  _ThriftHiveMetastore_get_erasure_run_lock_args__isset() : tblId(false) {}
+  bool tblId :1;
+} _ThriftHiveMetastore_get_erasure_run_lock_args__isset;
+
+class ThriftHiveMetastore_get_erasure_run_lock_args {
+ public:
+
+  ThriftHiveMetastore_get_erasure_run_lock_args(const ThriftHiveMetastore_get_erasure_run_lock_args&) noexcept;
+  ThriftHiveMetastore_get_erasure_run_lock_args& operator=(const ThriftHiveMetastore_get_erasure_run_lock_args&) noexcept;
+  ThriftHiveMetastore_get_erasure_run_lock_args() noexcept
+                                                : tblId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_run_lock_args() noexcept;
+  int64_t tblId;
+
+  _ThriftHiveMetastore_get_erasure_run_lock_args__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_run_lock_args & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_run_lock_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_run_lock_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_erasure_run_lock_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_run_lock_pargs() noexcept;
+  const int64_t* tblId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_run_lock_result__isset {
+  _ThriftHiveMetastore_get_erasure_run_lock_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_erasure_run_lock_result__isset;
+
+class ThriftHiveMetastore_get_erasure_run_lock_result {
+ public:
+
+  ThriftHiveMetastore_get_erasure_run_lock_result(const ThriftHiveMetastore_get_erasure_run_lock_result&);
+  ThriftHiveMetastore_get_erasure_run_lock_result& operator=(const ThriftHiveMetastore_get_erasure_run_lock_result&);
+  ThriftHiveMetastore_get_erasure_run_lock_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_erasure_run_lock_result() noexcept;
+  ErasureRunLock success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_erasure_run_lock_result__isset __isset;
+
+  void __set_success(const ErasureRunLock& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_erasure_run_lock_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_erasure_run_lock_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_erasure_run_lock_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_erasure_run_lock_presult__isset {
+  _ThriftHiveMetastore_get_erasure_run_lock_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_erasure_run_lock_presult__isset;
+
+class ThriftHiveMetastore_get_erasure_run_lock_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_erasure_run_lock_presult() noexcept;
+  ErasureRunLock* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_erasure_run_lock_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_complete_erasure_run_lock_args__isset {
+  _ThriftHiveMetastore_complete_erasure_run_lock_args__isset() : tblId(false), runId(false) {}
+  bool tblId :1;
+  bool runId :1;
+} _ThriftHiveMetastore_complete_erasure_run_lock_args__isset;
+
+class ThriftHiveMetastore_complete_erasure_run_lock_args {
+ public:
+
+  ThriftHiveMetastore_complete_erasure_run_lock_args(const ThriftHiveMetastore_complete_erasure_run_lock_args&) noexcept;
+  ThriftHiveMetastore_complete_erasure_run_lock_args& operator=(const ThriftHiveMetastore_complete_erasure_run_lock_args&) noexcept;
+  ThriftHiveMetastore_complete_erasure_run_lock_args() noexcept
+                                                     : tblId(0),
+                                                       runId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_complete_erasure_run_lock_args() noexcept;
+  int64_t tblId;
+  int64_t runId;
+
+  _ThriftHiveMetastore_complete_erasure_run_lock_args__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  void __set_runId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_complete_erasure_run_lock_args & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(runId == rhs.runId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_complete_erasure_run_lock_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_complete_erasure_run_lock_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_complete_erasure_run_lock_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_complete_erasure_run_lock_pargs() noexcept;
+  const int64_t* tblId;
+  const int64_t* runId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_complete_erasure_run_lock_result__isset {
+  _ThriftHiveMetastore_complete_erasure_run_lock_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_complete_erasure_run_lock_result__isset;
+
+class ThriftHiveMetastore_complete_erasure_run_lock_result {
+ public:
+
+  ThriftHiveMetastore_complete_erasure_run_lock_result(const ThriftHiveMetastore_complete_erasure_run_lock_result&);
+  ThriftHiveMetastore_complete_erasure_run_lock_result& operator=(const ThriftHiveMetastore_complete_erasure_run_lock_result&);
+  ThriftHiveMetastore_complete_erasure_run_lock_result() noexcept
+                                                       : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_complete_erasure_run_lock_result() noexcept;
+  bool success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_complete_erasure_run_lock_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_complete_erasure_run_lock_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_complete_erasure_run_lock_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_complete_erasure_run_lock_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_complete_erasure_run_lock_presult__isset {
+  _ThriftHiveMetastore_complete_erasure_run_lock_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_complete_erasure_run_lock_presult__isset;
+
+class ThriftHiveMetastore_complete_erasure_run_lock_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_complete_erasure_run_lock_presult() noexcept;
+  bool* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_complete_erasure_run_lock_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_manually_release_erasure_run_lock_args__isset {
+  _ThriftHiveMetastore_manually_release_erasure_run_lock_args__isset() : tblId(false), releasedBy(false), releaseReason(false), force(false) {}
+  bool tblId :1;
+  bool releasedBy :1;
+  bool releaseReason :1;
+  bool force :1;
+} _ThriftHiveMetastore_manually_release_erasure_run_lock_args__isset;
+
+class ThriftHiveMetastore_manually_release_erasure_run_lock_args {
+ public:
+
+  ThriftHiveMetastore_manually_release_erasure_run_lock_args(const ThriftHiveMetastore_manually_release_erasure_run_lock_args&);
+  ThriftHiveMetastore_manually_release_erasure_run_lock_args& operator=(const ThriftHiveMetastore_manually_release_erasure_run_lock_args&);
+  ThriftHiveMetastore_manually_release_erasure_run_lock_args() noexcept
+                                                             : tblId(0),
+                                                               releasedBy(),
+                                                               releaseReason(),
+                                                               force(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_manually_release_erasure_run_lock_args() noexcept;
+  int64_t tblId;
+  std::string releasedBy;
+  std::string releaseReason;
+  bool force;
+
+  _ThriftHiveMetastore_manually_release_erasure_run_lock_args__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  void __set_releasedBy(const std::string& val);
+
+  void __set_releaseReason(const std::string& val);
+
+  void __set_force(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_manually_release_erasure_run_lock_args & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(releasedBy == rhs.releasedBy))
+      return false;
+    if (!(releaseReason == rhs.releaseReason))
+      return false;
+    if (!(force == rhs.force))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_manually_release_erasure_run_lock_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_manually_release_erasure_run_lock_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_manually_release_erasure_run_lock_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_manually_release_erasure_run_lock_pargs() noexcept;
+  const int64_t* tblId;
+  const std::string* releasedBy;
+  const std::string* releaseReason;
+  const bool* force;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_manually_release_erasure_run_lock_result__isset {
+  _ThriftHiveMetastore_manually_release_erasure_run_lock_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_manually_release_erasure_run_lock_result__isset;
+
+class ThriftHiveMetastore_manually_release_erasure_run_lock_result {
+ public:
+
+  ThriftHiveMetastore_manually_release_erasure_run_lock_result(const ThriftHiveMetastore_manually_release_erasure_run_lock_result&);
+  ThriftHiveMetastore_manually_release_erasure_run_lock_result& operator=(const ThriftHiveMetastore_manually_release_erasure_run_lock_result&);
+  ThriftHiveMetastore_manually_release_erasure_run_lock_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_manually_release_erasure_run_lock_result() noexcept;
+  ErasureRunLock success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_manually_release_erasure_run_lock_result__isset __isset;
+
+  void __set_success(const ErasureRunLock& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_manually_release_erasure_run_lock_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_manually_release_erasure_run_lock_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_manually_release_erasure_run_lock_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_manually_release_erasure_run_lock_presult__isset {
+  _ThriftHiveMetastore_manually_release_erasure_run_lock_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_manually_release_erasure_run_lock_presult__isset;
+
+class ThriftHiveMetastore_manually_release_erasure_run_lock_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_manually_release_erasure_run_lock_presult() noexcept;
+  ErasureRunLock* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_manually_release_erasure_run_lock_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_list_erasure_run_locks_args {
+ public:
+
+  ThriftHiveMetastore_list_erasure_run_locks_args(const ThriftHiveMetastore_list_erasure_run_locks_args&) noexcept;
+  ThriftHiveMetastore_list_erasure_run_locks_args& operator=(const ThriftHiveMetastore_list_erasure_run_locks_args&) noexcept;
+  ThriftHiveMetastore_list_erasure_run_locks_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_list_erasure_run_locks_args() noexcept;
+
+  bool operator == (const ThriftHiveMetastore_list_erasure_run_locks_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_list_erasure_run_locks_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_list_erasure_run_locks_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_list_erasure_run_locks_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_list_erasure_run_locks_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_list_erasure_run_locks_result__isset {
+  _ThriftHiveMetastore_list_erasure_run_locks_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_list_erasure_run_locks_result__isset;
+
+class ThriftHiveMetastore_list_erasure_run_locks_result {
+ public:
+
+  ThriftHiveMetastore_list_erasure_run_locks_result(const ThriftHiveMetastore_list_erasure_run_locks_result&);
+  ThriftHiveMetastore_list_erasure_run_locks_result& operator=(const ThriftHiveMetastore_list_erasure_run_locks_result&);
+  ThriftHiveMetastore_list_erasure_run_locks_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_list_erasure_run_locks_result() noexcept;
+  std::vector<ErasureRunLock>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_list_erasure_run_locks_result__isset __isset;
+
+  void __set_success(const std::vector<ErasureRunLock> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_list_erasure_run_locks_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_list_erasure_run_locks_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_list_erasure_run_locks_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_list_erasure_run_locks_presult__isset {
+  _ThriftHiveMetastore_list_erasure_run_locks_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_list_erasure_run_locks_presult__isset;
+
+class ThriftHiveMetastore_list_erasure_run_locks_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_list_erasure_run_locks_presult() noexcept;
+  std::vector<ErasureRunLock> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_list_erasure_run_locks_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_grant_policy_priv_args__isset {
+  _ThriftHiveMetastore_grant_policy_priv_args__isset() : priv(false) {}
+  bool priv :1;
+} _ThriftHiveMetastore_grant_policy_priv_args__isset;
+
+class ThriftHiveMetastore_grant_policy_priv_args {
+ public:
+
+  ThriftHiveMetastore_grant_policy_priv_args(const ThriftHiveMetastore_grant_policy_priv_args&);
+  ThriftHiveMetastore_grant_policy_priv_args& operator=(const ThriftHiveMetastore_grant_policy_priv_args&);
+  ThriftHiveMetastore_grant_policy_priv_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_grant_policy_priv_args() noexcept;
+  PolicyPriv priv;
+
+  _ThriftHiveMetastore_grant_policy_priv_args__isset __isset;
+
+  void __set_priv(const PolicyPriv& val);
+
+  bool operator == (const ThriftHiveMetastore_grant_policy_priv_args & rhs) const
+  {
+    if (!(priv == rhs.priv))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_grant_policy_priv_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_grant_policy_priv_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_grant_policy_priv_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_grant_policy_priv_pargs() noexcept;
+  const PolicyPriv* priv;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_grant_policy_priv_result__isset {
+  _ThriftHiveMetastore_grant_policy_priv_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_grant_policy_priv_result__isset;
+
+class ThriftHiveMetastore_grant_policy_priv_result {
+ public:
+
+  ThriftHiveMetastore_grant_policy_priv_result(const ThriftHiveMetastore_grant_policy_priv_result&);
+  ThriftHiveMetastore_grant_policy_priv_result& operator=(const ThriftHiveMetastore_grant_policy_priv_result&);
+  ThriftHiveMetastore_grant_policy_priv_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_grant_policy_priv_result() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_grant_policy_priv_result__isset __isset;
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_grant_policy_priv_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_grant_policy_priv_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_grant_policy_priv_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_grant_policy_priv_presult__isset {
+  _ThriftHiveMetastore_grant_policy_priv_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_grant_policy_priv_presult__isset;
+
+class ThriftHiveMetastore_grant_policy_priv_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_grant_policy_priv_presult() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_grant_policy_priv_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_revoke_policy_priv_args__isset {
+  _ThriftHiveMetastore_revoke_policy_priv_args__isset() : policyPrivId(false) {}
+  bool policyPrivId :1;
+} _ThriftHiveMetastore_revoke_policy_priv_args__isset;
+
+class ThriftHiveMetastore_revoke_policy_priv_args {
+ public:
+
+  ThriftHiveMetastore_revoke_policy_priv_args(const ThriftHiveMetastore_revoke_policy_priv_args&) noexcept;
+  ThriftHiveMetastore_revoke_policy_priv_args& operator=(const ThriftHiveMetastore_revoke_policy_priv_args&) noexcept;
+  ThriftHiveMetastore_revoke_policy_priv_args() noexcept
+                                              : policyPrivId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_revoke_policy_priv_args() noexcept;
+  int64_t policyPrivId;
+
+  _ThriftHiveMetastore_revoke_policy_priv_args__isset __isset;
+
+  void __set_policyPrivId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_revoke_policy_priv_args & rhs) const
+  {
+    if (!(policyPrivId == rhs.policyPrivId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_revoke_policy_priv_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_revoke_policy_priv_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_revoke_policy_priv_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_revoke_policy_priv_pargs() noexcept;
+  const int64_t* policyPrivId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_revoke_policy_priv_result__isset {
+  _ThriftHiveMetastore_revoke_policy_priv_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_revoke_policy_priv_result__isset;
+
+class ThriftHiveMetastore_revoke_policy_priv_result {
+ public:
+
+  ThriftHiveMetastore_revoke_policy_priv_result(const ThriftHiveMetastore_revoke_policy_priv_result&);
+  ThriftHiveMetastore_revoke_policy_priv_result& operator=(const ThriftHiveMetastore_revoke_policy_priv_result&);
+  ThriftHiveMetastore_revoke_policy_priv_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_revoke_policy_priv_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_revoke_policy_priv_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_revoke_policy_priv_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_revoke_policy_priv_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_revoke_policy_priv_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_revoke_policy_priv_presult__isset {
+  _ThriftHiveMetastore_revoke_policy_priv_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_revoke_policy_priv_presult__isset;
+
+class ThriftHiveMetastore_revoke_policy_priv_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_revoke_policy_priv_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_revoke_policy_priv_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_list_policy_privs_args__isset {
+  _ThriftHiveMetastore_list_policy_privs_args__isset() : policyId(false), principalName(false) {}
+  bool policyId :1;
+  bool principalName :1;
+} _ThriftHiveMetastore_list_policy_privs_args__isset;
+
+class ThriftHiveMetastore_list_policy_privs_args {
+ public:
+
+  ThriftHiveMetastore_list_policy_privs_args(const ThriftHiveMetastore_list_policy_privs_args&);
+  ThriftHiveMetastore_list_policy_privs_args& operator=(const ThriftHiveMetastore_list_policy_privs_args&);
+  ThriftHiveMetastore_list_policy_privs_args() noexcept
+                                             : policyId(0),
+                                               principalName() {
+  }
+
+  virtual ~ThriftHiveMetastore_list_policy_privs_args() noexcept;
+  int64_t policyId;
+  std::string principalName;
+
+  _ThriftHiveMetastore_list_policy_privs_args__isset __isset;
+
+  void __set_policyId(const int64_t val);
+
+  void __set_principalName(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_list_policy_privs_args & rhs) const
+  {
+    if (!(policyId == rhs.policyId))
+      return false;
+    if (!(principalName == rhs.principalName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_list_policy_privs_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_list_policy_privs_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_list_policy_privs_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_list_policy_privs_pargs() noexcept;
+  const int64_t* policyId;
+  const std::string* principalName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_list_policy_privs_result__isset {
+  _ThriftHiveMetastore_list_policy_privs_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_list_policy_privs_result__isset;
+
+class ThriftHiveMetastore_list_policy_privs_result {
+ public:
+
+  ThriftHiveMetastore_list_policy_privs_result(const ThriftHiveMetastore_list_policy_privs_result&);
+  ThriftHiveMetastore_list_policy_privs_result& operator=(const ThriftHiveMetastore_list_policy_privs_result&);
+  ThriftHiveMetastore_list_policy_privs_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_list_policy_privs_result() noexcept;
+  std::vector<PolicyPriv>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_list_policy_privs_result__isset __isset;
+
+  void __set_success(const std::vector<PolicyPriv> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_list_policy_privs_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_list_policy_privs_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_list_policy_privs_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_list_policy_privs_presult__isset {
+  _ThriftHiveMetastore_list_policy_privs_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_list_policy_privs_presult__isset;
+
+class ThriftHiveMetastore_list_policy_privs_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_list_policy_privs_presult() noexcept;
+  std::vector<PolicyPriv> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_list_policy_privs_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -36878,6 +42071,126 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override;
   void send_get_replayed_txns_for_policy(const std::string& policyName);
   void recv_get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return);
+  void create_erasure_policy(const ErasurePolicy& erasurePolicy) override;
+  void send_create_erasure_policy(const ErasurePolicy& erasurePolicy);
+  void recv_create_erasure_policy();
+  void drop_erasure_policy(const std::string& policyName, const bool ifExists) override;
+  void send_drop_erasure_policy(const std::string& policyName, const bool ifExists);
+  void recv_drop_erasure_policy();
+  void drop_anon_index(const std::string& indexName) override;
+  void send_drop_anon_index(const std::string& indexName);
+  void recv_drop_anon_index();
+  void get_erasure_policy(ErasurePolicy& _return, const std::string& policyName) override;
+  void send_get_erasure_policy(const std::string& policyName);
+  void recv_get_erasure_policy(ErasurePolicy& _return);
+  void add_index(const Index& new_index, const Table& index_table) override;
+  void send_add_index(const Index& new_index, const Table& index_table);
+  void recv_add_index();
+  void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) override;
+  void send_get_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name);
+  void recv_get_index_by_name(Index& _return);
+  bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData, const bool ifExists) override;
+  void send_drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData, const bool ifExists);
+  bool recv_drop_index_by_name();
+  void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) override;
+  void send_get_indexes(const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
+  void recv_get_indexes(std::vector<Index> & _return);
+  void get_all_erasure_policies(std::vector<PolicyInfo> & _return) override;
+  void send_get_all_erasure_policies();
+  void recv_get_all_erasure_policies(std::vector<PolicyInfo> & _return);
+  void add_erasure_policy_version(ErasurePolicyVersion& _return, const ErasurePolicyVersion& version) override;
+  void send_add_erasure_policy_version(const ErasurePolicyVersion& version);
+  void recv_add_erasure_policy_version(ErasurePolicyVersion& _return);
+  void get_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName, const std::string& versionLabel) override;
+  void send_get_erasure_policy_version(const std::string& policyName, const std::string& versionLabel);
+  void recv_get_erasure_policy_version(ErasurePolicyVersion& _return);
+  void list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & _return, const std::string& policyName) override;
+  void send_list_erasure_policy_versions(const std::string& policyName);
+  void recv_list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & _return);
+  void update_erasure_policy_version_status(const int64_t versionId, const PolicyVersionStatus::type newStatus, const std::string& principal) override;
+  void send_update_erasure_policy_version_status(const int64_t versionId, const PolicyVersionStatus::type newStatus, const std::string& principal);
+  void recv_update_erasure_policy_version_status();
+  void get_active_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName) override;
+  void send_get_active_erasure_policy_version(const std::string& policyName);
+  void recv_get_active_erasure_policy_version(ErasurePolicyVersion& _return);
+  void get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & _return, const int64_t versionId) override;
+  void send_get_erasure_policy_statements(const int64_t versionId);
+  void recv_get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & _return);
+  void get_erasure_policy_rules(std::vector<ErasurePolicyRule> & _return, const int64_t statementId) override;
+  void send_get_erasure_policy_rules(const int64_t statementId);
+  void recv_get_erasure_policy_rules(std::vector<ErasurePolicyRule> & _return);
+  void add_erasure_policy_binding(ErasurePolicyBinding& _return, const ErasurePolicyBinding& binding) override;
+  void send_add_erasure_policy_binding(const ErasurePolicyBinding& binding);
+  void recv_add_erasure_policy_binding(ErasurePolicyBinding& _return);
+  void get_erasure_policy_binding(ErasurePolicyBinding& _return, const int64_t tblId, const std::string& columnName) override;
+  void send_get_erasure_policy_binding(const int64_t tblId, const std::string& columnName);
+  void recv_get_erasure_policy_binding(ErasurePolicyBinding& _return);
+  void drop_erasure_policy_binding(const int64_t bindingId) override;
+  void send_drop_erasure_policy_binding(const int64_t bindingId);
+  void recv_drop_erasure_policy_binding();
+  void update_erasure_policy_binding_settings(const int64_t bindingId, const PolicyResolutionMode::type resolutionMode, const ColumnInternalFormat::type columnFormat) override;
+  void send_update_erasure_policy_binding_settings(const int64_t bindingId, const PolicyResolutionMode::type resolutionMode, const ColumnInternalFormat::type columnFormat);
+  void recv_update_erasure_policy_binding_settings();
+  void attach_policy_to_binding(const int64_t bindingId, const int64_t policyId, const int32_t ordinal) override;
+  void send_attach_policy_to_binding(const int64_t bindingId, const int64_t policyId, const int32_t ordinal);
+  void recv_attach_policy_to_binding();
+  void detach_policy_from_binding(const int64_t bindingId, const int64_t policyId) override;
+  void send_detach_policy_from_binding(const int64_t bindingId, const int64_t policyId);
+  void recv_detach_policy_from_binding();
+  void get_binding_members(std::vector<ErasurePolicyBindingMember> & _return, const int64_t bindingId) override;
+  void send_get_binding_members(const int64_t bindingId);
+  void recv_get_binding_members(std::vector<ErasurePolicyBindingMember> & _return);
+  void replace_binding_resolved_rules(const int64_t bindingId, const std::vector<ErasurePolicyBindingResolved> & resolved) override;
+  void send_replace_binding_resolved_rules(const int64_t bindingId, const std::vector<ErasurePolicyBindingResolved> & resolved);
+  void recv_replace_binding_resolved_rules();
+  void get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & _return, const int64_t bindingId) override;
+  void send_get_binding_resolved_rules(const int64_t bindingId);
+  void recv_get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & _return);
+  void record_lifecycle_event(const ErasurePolicyLifecycleEvent& evt) override;
+  void send_record_lifecycle_event(const ErasurePolicyLifecycleEvent& evt);
+  void recv_record_lifecycle_event();
+  void get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & _return, const std::string& policyName, const int64_t fromTs, const int64_t untilTs) override;
+  void send_get_lifecycle_events_for_policy(const std::string& policyName, const int64_t fromTs, const int64_t untilTs);
+  void recv_get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & _return);
+  void get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t bindingId, const int64_t fromTs, const int64_t untilTs) override;
+  void send_get_lifecycle_events_for_binding(const int64_t bindingId, const int64_t fromTs, const int64_t untilTs);
+  void recv_get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & _return);
+  void get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t fromTs, const int64_t untilTs) override;
+  void send_get_attach_rejected_events(const int64_t fromTs, const int64_t untilTs);
+  void recv_get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & _return);
+  void record_erasure_run(const ErasureRunAudit& run) override;
+  void send_record_erasure_run(const ErasureRunAudit& run);
+  void recv_record_erasure_run();
+  void get_erasure_runs_for_table(std::vector<ErasureRunAudit> & _return, const int64_t tblId, const int64_t fromTs, const int64_t untilTs, const std::string& byUser, const std::string& forIdentity) override;
+  void send_get_erasure_runs_for_table(const int64_t tblId, const int64_t fromTs, const int64_t untilTs, const std::string& byUser, const std::string& forIdentity);
+  void recv_get_erasure_runs_for_table(std::vector<ErasureRunAudit> & _return);
+  void update_erasure_run_completion(const int64_t tblId, const int64_t startedTs, const int64_t completedTs, const ErasureRunStatus::type status, const int64_t matchesInspected, const int64_t matchesRedacted, const int64_t matchesFlagged) override;
+  void send_update_erasure_run_completion(const int64_t tblId, const int64_t startedTs, const int64_t completedTs, const ErasureRunStatus::type status, const int64_t matchesInspected, const int64_t matchesRedacted, const int64_t matchesFlagged);
+  void recv_update_erasure_run_completion();
+  void acquire_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const int64_t runId, const std::string& principal) override;
+  void send_acquire_erasure_run_lock(const int64_t tblId, const int64_t runId, const std::string& principal);
+  void recv_acquire_erasure_run_lock(ErasureRunLock& _return);
+  void get_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId) override;
+  void send_get_erasure_run_lock(const int64_t tblId);
+  void recv_get_erasure_run_lock(ErasureRunLock& _return);
+  bool complete_erasure_run_lock(const int64_t tblId, const int64_t runId) override;
+  void send_complete_erasure_run_lock(const int64_t tblId, const int64_t runId);
+  bool recv_complete_erasure_run_lock();
+  void manually_release_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const std::string& releasedBy, const std::string& releaseReason, const bool force) override;
+  void send_manually_release_erasure_run_lock(const int64_t tblId, const std::string& releasedBy, const std::string& releaseReason, const bool force);
+  void recv_manually_release_erasure_run_lock(ErasureRunLock& _return);
+  void list_erasure_run_locks(std::vector<ErasureRunLock> & _return) override;
+  void send_list_erasure_run_locks();
+  void recv_list_erasure_run_locks(std::vector<ErasureRunLock> & _return);
+  void grant_policy_priv(const PolicyPriv& priv) override;
+  void send_grant_policy_priv(const PolicyPriv& priv);
+  void recv_grant_policy_priv();
+  void revoke_policy_priv(const int64_t policyPrivId) override;
+  void send_revoke_policy_priv(const int64_t policyPrivId);
+  void recv_revoke_policy_priv();
+  void list_policy_privs(std::vector<PolicyPriv> & _return, const int64_t policyId, const std::string& principalName) override;
+  void send_list_policy_privs(const int64_t policyId, const std::string& principalName);
+  void recv_list_policy_privs(std::vector<PolicyPriv> & _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -37175,6 +42488,46 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_package(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_write_event_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_replayed_txns_for_policy(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_create_erasure_policy(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_erasure_policy(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_anon_index(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_erasure_policy(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_index(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_index_by_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_index_by_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_indexes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_all_erasure_policies(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_erasure_policy_version(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_erasure_policy_version(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_list_erasure_policy_versions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_erasure_policy_version_status(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_active_erasure_policy_version(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_erasure_policy_statements(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_erasure_policy_rules(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_erasure_policy_binding(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_erasure_policy_binding(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_erasure_policy_binding(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_erasure_policy_binding_settings(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_attach_policy_to_binding(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_detach_policy_from_binding(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_binding_members(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_replace_binding_resolved_rules(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_binding_resolved_rules(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_record_lifecycle_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_lifecycle_events_for_policy(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_lifecycle_events_for_binding(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_attach_rejected_events(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_record_erasure_run(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_erasure_runs_for_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_update_erasure_run_completion(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_acquire_erasure_run_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_erasure_run_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_complete_erasure_run_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_manually_release_erasure_run_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_list_erasure_run_locks(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_grant_policy_priv(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_revoke_policy_priv(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_list_policy_privs(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(::std::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -37466,6 +42819,46 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_package"] = &ThriftHiveMetastoreProcessor::process_drop_package;
     processMap_["get_all_write_event_info"] = &ThriftHiveMetastoreProcessor::process_get_all_write_event_info;
     processMap_["get_replayed_txns_for_policy"] = &ThriftHiveMetastoreProcessor::process_get_replayed_txns_for_policy;
+    processMap_["create_erasure_policy"] = &ThriftHiveMetastoreProcessor::process_create_erasure_policy;
+    processMap_["drop_erasure_policy"] = &ThriftHiveMetastoreProcessor::process_drop_erasure_policy;
+    processMap_["drop_anon_index"] = &ThriftHiveMetastoreProcessor::process_drop_anon_index;
+    processMap_["get_erasure_policy"] = &ThriftHiveMetastoreProcessor::process_get_erasure_policy;
+    processMap_["add_index"] = &ThriftHiveMetastoreProcessor::process_add_index;
+    processMap_["get_index_by_name"] = &ThriftHiveMetastoreProcessor::process_get_index_by_name;
+    processMap_["drop_index_by_name"] = &ThriftHiveMetastoreProcessor::process_drop_index_by_name;
+    processMap_["get_indexes"] = &ThriftHiveMetastoreProcessor::process_get_indexes;
+    processMap_["get_all_erasure_policies"] = &ThriftHiveMetastoreProcessor::process_get_all_erasure_policies;
+    processMap_["add_erasure_policy_version"] = &ThriftHiveMetastoreProcessor::process_add_erasure_policy_version;
+    processMap_["get_erasure_policy_version"] = &ThriftHiveMetastoreProcessor::process_get_erasure_policy_version;
+    processMap_["list_erasure_policy_versions"] = &ThriftHiveMetastoreProcessor::process_list_erasure_policy_versions;
+    processMap_["update_erasure_policy_version_status"] = &ThriftHiveMetastoreProcessor::process_update_erasure_policy_version_status;
+    processMap_["get_active_erasure_policy_version"] = &ThriftHiveMetastoreProcessor::process_get_active_erasure_policy_version;
+    processMap_["get_erasure_policy_statements"] = &ThriftHiveMetastoreProcessor::process_get_erasure_policy_statements;
+    processMap_["get_erasure_policy_rules"] = &ThriftHiveMetastoreProcessor::process_get_erasure_policy_rules;
+    processMap_["add_erasure_policy_binding"] = &ThriftHiveMetastoreProcessor::process_add_erasure_policy_binding;
+    processMap_["get_erasure_policy_binding"] = &ThriftHiveMetastoreProcessor::process_get_erasure_policy_binding;
+    processMap_["drop_erasure_policy_binding"] = &ThriftHiveMetastoreProcessor::process_drop_erasure_policy_binding;
+    processMap_["update_erasure_policy_binding_settings"] = &ThriftHiveMetastoreProcessor::process_update_erasure_policy_binding_settings;
+    processMap_["attach_policy_to_binding"] = &ThriftHiveMetastoreProcessor::process_attach_policy_to_binding;
+    processMap_["detach_policy_from_binding"] = &ThriftHiveMetastoreProcessor::process_detach_policy_from_binding;
+    processMap_["get_binding_members"] = &ThriftHiveMetastoreProcessor::process_get_binding_members;
+    processMap_["replace_binding_resolved_rules"] = &ThriftHiveMetastoreProcessor::process_replace_binding_resolved_rules;
+    processMap_["get_binding_resolved_rules"] = &ThriftHiveMetastoreProcessor::process_get_binding_resolved_rules;
+    processMap_["record_lifecycle_event"] = &ThriftHiveMetastoreProcessor::process_record_lifecycle_event;
+    processMap_["get_lifecycle_events_for_policy"] = &ThriftHiveMetastoreProcessor::process_get_lifecycle_events_for_policy;
+    processMap_["get_lifecycle_events_for_binding"] = &ThriftHiveMetastoreProcessor::process_get_lifecycle_events_for_binding;
+    processMap_["get_attach_rejected_events"] = &ThriftHiveMetastoreProcessor::process_get_attach_rejected_events;
+    processMap_["record_erasure_run"] = &ThriftHiveMetastoreProcessor::process_record_erasure_run;
+    processMap_["get_erasure_runs_for_table"] = &ThriftHiveMetastoreProcessor::process_get_erasure_runs_for_table;
+    processMap_["update_erasure_run_completion"] = &ThriftHiveMetastoreProcessor::process_update_erasure_run_completion;
+    processMap_["acquire_erasure_run_lock"] = &ThriftHiveMetastoreProcessor::process_acquire_erasure_run_lock;
+    processMap_["get_erasure_run_lock"] = &ThriftHiveMetastoreProcessor::process_get_erasure_run_lock;
+    processMap_["complete_erasure_run_lock"] = &ThriftHiveMetastoreProcessor::process_complete_erasure_run_lock;
+    processMap_["manually_release_erasure_run_lock"] = &ThriftHiveMetastoreProcessor::process_manually_release_erasure_run_lock;
+    processMap_["list_erasure_run_locks"] = &ThriftHiveMetastoreProcessor::process_list_erasure_run_locks;
+    processMap_["grant_policy_priv"] = &ThriftHiveMetastoreProcessor::process_grant_policy_priv;
+    processMap_["revoke_policy_priv"] = &ThriftHiveMetastoreProcessor::process_revoke_policy_priv;
+    processMap_["list_policy_privs"] = &ThriftHiveMetastoreProcessor::process_list_policy_privs;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -40256,6 +45649,389 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void create_erasure_policy(const ErasurePolicy& erasurePolicy) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->create_erasure_policy(erasurePolicy);
+    }
+    ifaces_[i]->create_erasure_policy(erasurePolicy);
+  }
+
+  void drop_erasure_policy(const std::string& policyName, const bool ifExists) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_erasure_policy(policyName, ifExists);
+    }
+    ifaces_[i]->drop_erasure_policy(policyName, ifExists);
+  }
+
+  void drop_anon_index(const std::string& indexName) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_anon_index(indexName);
+    }
+    ifaces_[i]->drop_anon_index(indexName);
+  }
+
+  void get_erasure_policy(ErasurePolicy& _return, const std::string& policyName) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_erasure_policy(_return, policyName);
+    }
+    ifaces_[i]->get_erasure_policy(_return, policyName);
+    return;
+  }
+
+  void add_index(const Index& new_index, const Table& index_table) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_index(new_index, index_table);
+    }
+    ifaces_[i]->add_index(new_index, index_table);
+  }
+
+  void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_index_by_name(_return, db_name, tbl_name, index_name);
+    }
+    ifaces_[i]->get_index_by_name(_return, db_name, tbl_name, index_name);
+    return;
+  }
+
+  bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData, const bool ifExists) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_index_by_name(db_name, tbl_name, index_name, deleteData, ifExists);
+    }
+    return ifaces_[i]->drop_index_by_name(db_name, tbl_name, index_name, deleteData, ifExists);
+  }
+
+  void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_indexes(_return, db_name, tbl_name, max_indexes);
+    }
+    ifaces_[i]->get_indexes(_return, db_name, tbl_name, max_indexes);
+    return;
+  }
+
+  void get_all_erasure_policies(std::vector<PolicyInfo> & _return) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_all_erasure_policies(_return);
+    }
+    ifaces_[i]->get_all_erasure_policies(_return);
+    return;
+  }
+
+  void add_erasure_policy_version(ErasurePolicyVersion& _return, const ErasurePolicyVersion& version) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_erasure_policy_version(_return, version);
+    }
+    ifaces_[i]->add_erasure_policy_version(_return, version);
+    return;
+  }
+
+  void get_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName, const std::string& versionLabel) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_erasure_policy_version(_return, policyName, versionLabel);
+    }
+    ifaces_[i]->get_erasure_policy_version(_return, policyName, versionLabel);
+    return;
+  }
+
+  void list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & _return, const std::string& policyName) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->list_erasure_policy_versions(_return, policyName);
+    }
+    ifaces_[i]->list_erasure_policy_versions(_return, policyName);
+    return;
+  }
+
+  void update_erasure_policy_version_status(const int64_t versionId, const PolicyVersionStatus::type newStatus, const std::string& principal) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_erasure_policy_version_status(versionId, newStatus, principal);
+    }
+    ifaces_[i]->update_erasure_policy_version_status(versionId, newStatus, principal);
+  }
+
+  void get_active_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_active_erasure_policy_version(_return, policyName);
+    }
+    ifaces_[i]->get_active_erasure_policy_version(_return, policyName);
+    return;
+  }
+
+  void get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & _return, const int64_t versionId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_erasure_policy_statements(_return, versionId);
+    }
+    ifaces_[i]->get_erasure_policy_statements(_return, versionId);
+    return;
+  }
+
+  void get_erasure_policy_rules(std::vector<ErasurePolicyRule> & _return, const int64_t statementId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_erasure_policy_rules(_return, statementId);
+    }
+    ifaces_[i]->get_erasure_policy_rules(_return, statementId);
+    return;
+  }
+
+  void add_erasure_policy_binding(ErasurePolicyBinding& _return, const ErasurePolicyBinding& binding) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_erasure_policy_binding(_return, binding);
+    }
+    ifaces_[i]->add_erasure_policy_binding(_return, binding);
+    return;
+  }
+
+  void get_erasure_policy_binding(ErasurePolicyBinding& _return, const int64_t tblId, const std::string& columnName) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_erasure_policy_binding(_return, tblId, columnName);
+    }
+    ifaces_[i]->get_erasure_policy_binding(_return, tblId, columnName);
+    return;
+  }
+
+  void drop_erasure_policy_binding(const int64_t bindingId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_erasure_policy_binding(bindingId);
+    }
+    ifaces_[i]->drop_erasure_policy_binding(bindingId);
+  }
+
+  void update_erasure_policy_binding_settings(const int64_t bindingId, const PolicyResolutionMode::type resolutionMode, const ColumnInternalFormat::type columnFormat) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_erasure_policy_binding_settings(bindingId, resolutionMode, columnFormat);
+    }
+    ifaces_[i]->update_erasure_policy_binding_settings(bindingId, resolutionMode, columnFormat);
+  }
+
+  void attach_policy_to_binding(const int64_t bindingId, const int64_t policyId, const int32_t ordinal) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->attach_policy_to_binding(bindingId, policyId, ordinal);
+    }
+    ifaces_[i]->attach_policy_to_binding(bindingId, policyId, ordinal);
+  }
+
+  void detach_policy_from_binding(const int64_t bindingId, const int64_t policyId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->detach_policy_from_binding(bindingId, policyId);
+    }
+    ifaces_[i]->detach_policy_from_binding(bindingId, policyId);
+  }
+
+  void get_binding_members(std::vector<ErasurePolicyBindingMember> & _return, const int64_t bindingId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_binding_members(_return, bindingId);
+    }
+    ifaces_[i]->get_binding_members(_return, bindingId);
+    return;
+  }
+
+  void replace_binding_resolved_rules(const int64_t bindingId, const std::vector<ErasurePolicyBindingResolved> & resolved) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->replace_binding_resolved_rules(bindingId, resolved);
+    }
+    ifaces_[i]->replace_binding_resolved_rules(bindingId, resolved);
+  }
+
+  void get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & _return, const int64_t bindingId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_binding_resolved_rules(_return, bindingId);
+    }
+    ifaces_[i]->get_binding_resolved_rules(_return, bindingId);
+    return;
+  }
+
+  void record_lifecycle_event(const ErasurePolicyLifecycleEvent& evt) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->record_lifecycle_event(evt);
+    }
+    ifaces_[i]->record_lifecycle_event(evt);
+  }
+
+  void get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & _return, const std::string& policyName, const int64_t fromTs, const int64_t untilTs) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_lifecycle_events_for_policy(_return, policyName, fromTs, untilTs);
+    }
+    ifaces_[i]->get_lifecycle_events_for_policy(_return, policyName, fromTs, untilTs);
+    return;
+  }
+
+  void get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t bindingId, const int64_t fromTs, const int64_t untilTs) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_lifecycle_events_for_binding(_return, bindingId, fromTs, untilTs);
+    }
+    ifaces_[i]->get_lifecycle_events_for_binding(_return, bindingId, fromTs, untilTs);
+    return;
+  }
+
+  void get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t fromTs, const int64_t untilTs) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_attach_rejected_events(_return, fromTs, untilTs);
+    }
+    ifaces_[i]->get_attach_rejected_events(_return, fromTs, untilTs);
+    return;
+  }
+
+  void record_erasure_run(const ErasureRunAudit& run) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->record_erasure_run(run);
+    }
+    ifaces_[i]->record_erasure_run(run);
+  }
+
+  void get_erasure_runs_for_table(std::vector<ErasureRunAudit> & _return, const int64_t tblId, const int64_t fromTs, const int64_t untilTs, const std::string& byUser, const std::string& forIdentity) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_erasure_runs_for_table(_return, tblId, fromTs, untilTs, byUser, forIdentity);
+    }
+    ifaces_[i]->get_erasure_runs_for_table(_return, tblId, fromTs, untilTs, byUser, forIdentity);
+    return;
+  }
+
+  void update_erasure_run_completion(const int64_t tblId, const int64_t startedTs, const int64_t completedTs, const ErasureRunStatus::type status, const int64_t matchesInspected, const int64_t matchesRedacted, const int64_t matchesFlagged) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->update_erasure_run_completion(tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged);
+    }
+    ifaces_[i]->update_erasure_run_completion(tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged);
+  }
+
+  void acquire_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const int64_t runId, const std::string& principal) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->acquire_erasure_run_lock(_return, tblId, runId, principal);
+    }
+    ifaces_[i]->acquire_erasure_run_lock(_return, tblId, runId, principal);
+    return;
+  }
+
+  void get_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_erasure_run_lock(_return, tblId);
+    }
+    ifaces_[i]->get_erasure_run_lock(_return, tblId);
+    return;
+  }
+
+  bool complete_erasure_run_lock(const int64_t tblId, const int64_t runId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->complete_erasure_run_lock(tblId, runId);
+    }
+    return ifaces_[i]->complete_erasure_run_lock(tblId, runId);
+  }
+
+  void manually_release_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const std::string& releasedBy, const std::string& releaseReason, const bool force) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->manually_release_erasure_run_lock(_return, tblId, releasedBy, releaseReason, force);
+    }
+    ifaces_[i]->manually_release_erasure_run_lock(_return, tblId, releasedBy, releaseReason, force);
+    return;
+  }
+
+  void list_erasure_run_locks(std::vector<ErasureRunLock> & _return) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->list_erasure_run_locks(_return);
+    }
+    ifaces_[i]->list_erasure_run_locks(_return);
+    return;
+  }
+
+  void grant_policy_priv(const PolicyPriv& priv) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->grant_policy_priv(priv);
+    }
+    ifaces_[i]->grant_policy_priv(priv);
+  }
+
+  void revoke_policy_priv(const int64_t policyPrivId) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->revoke_policy_priv(policyPrivId);
+    }
+    ifaces_[i]->revoke_policy_priv(policyPrivId);
+  }
+
+  void list_policy_privs(std::vector<PolicyPriv> & _return, const int64_t policyId, const std::string& principalName) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->list_policy_privs(_return, policyId, principalName);
+    }
+    ifaces_[i]->list_policy_privs(_return, policyId, principalName);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -41133,6 +46909,126 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override;
   int32_t send_get_replayed_txns_for_policy(const std::string& policyName);
   void recv_get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const int32_t seqid);
+  void create_erasure_policy(const ErasurePolicy& erasurePolicy) override;
+  int32_t send_create_erasure_policy(const ErasurePolicy& erasurePolicy);
+  void recv_create_erasure_policy(const int32_t seqid);
+  void drop_erasure_policy(const std::string& policyName, const bool ifExists) override;
+  int32_t send_drop_erasure_policy(const std::string& policyName, const bool ifExists);
+  void recv_drop_erasure_policy(const int32_t seqid);
+  void drop_anon_index(const std::string& indexName) override;
+  int32_t send_drop_anon_index(const std::string& indexName);
+  void recv_drop_anon_index(const int32_t seqid);
+  void get_erasure_policy(ErasurePolicy& _return, const std::string& policyName) override;
+  int32_t send_get_erasure_policy(const std::string& policyName);
+  void recv_get_erasure_policy(ErasurePolicy& _return, const int32_t seqid);
+  void add_index(const Index& new_index, const Table& index_table) override;
+  int32_t send_add_index(const Index& new_index, const Table& index_table);
+  void recv_add_index(const int32_t seqid);
+  void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) override;
+  int32_t send_get_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name);
+  void recv_get_index_by_name(Index& _return, const int32_t seqid);
+  bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData, const bool ifExists) override;
+  int32_t send_drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData, const bool ifExists);
+  bool recv_drop_index_by_name(const int32_t seqid);
+  void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) override;
+  int32_t send_get_indexes(const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes);
+  void recv_get_indexes(std::vector<Index> & _return, const int32_t seqid);
+  void get_all_erasure_policies(std::vector<PolicyInfo> & _return) override;
+  int32_t send_get_all_erasure_policies();
+  void recv_get_all_erasure_policies(std::vector<PolicyInfo> & _return, const int32_t seqid);
+  void add_erasure_policy_version(ErasurePolicyVersion& _return, const ErasurePolicyVersion& version) override;
+  int32_t send_add_erasure_policy_version(const ErasurePolicyVersion& version);
+  void recv_add_erasure_policy_version(ErasurePolicyVersion& _return, const int32_t seqid);
+  void get_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName, const std::string& versionLabel) override;
+  int32_t send_get_erasure_policy_version(const std::string& policyName, const std::string& versionLabel);
+  void recv_get_erasure_policy_version(ErasurePolicyVersion& _return, const int32_t seqid);
+  void list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & _return, const std::string& policyName) override;
+  int32_t send_list_erasure_policy_versions(const std::string& policyName);
+  void recv_list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & _return, const int32_t seqid);
+  void update_erasure_policy_version_status(const int64_t versionId, const PolicyVersionStatus::type newStatus, const std::string& principal) override;
+  int32_t send_update_erasure_policy_version_status(const int64_t versionId, const PolicyVersionStatus::type newStatus, const std::string& principal);
+  void recv_update_erasure_policy_version_status(const int32_t seqid);
+  void get_active_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName) override;
+  int32_t send_get_active_erasure_policy_version(const std::string& policyName);
+  void recv_get_active_erasure_policy_version(ErasurePolicyVersion& _return, const int32_t seqid);
+  void get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & _return, const int64_t versionId) override;
+  int32_t send_get_erasure_policy_statements(const int64_t versionId);
+  void recv_get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & _return, const int32_t seqid);
+  void get_erasure_policy_rules(std::vector<ErasurePolicyRule> & _return, const int64_t statementId) override;
+  int32_t send_get_erasure_policy_rules(const int64_t statementId);
+  void recv_get_erasure_policy_rules(std::vector<ErasurePolicyRule> & _return, const int32_t seqid);
+  void add_erasure_policy_binding(ErasurePolicyBinding& _return, const ErasurePolicyBinding& binding) override;
+  int32_t send_add_erasure_policy_binding(const ErasurePolicyBinding& binding);
+  void recv_add_erasure_policy_binding(ErasurePolicyBinding& _return, const int32_t seqid);
+  void get_erasure_policy_binding(ErasurePolicyBinding& _return, const int64_t tblId, const std::string& columnName) override;
+  int32_t send_get_erasure_policy_binding(const int64_t tblId, const std::string& columnName);
+  void recv_get_erasure_policy_binding(ErasurePolicyBinding& _return, const int32_t seqid);
+  void drop_erasure_policy_binding(const int64_t bindingId) override;
+  int32_t send_drop_erasure_policy_binding(const int64_t bindingId);
+  void recv_drop_erasure_policy_binding(const int32_t seqid);
+  void update_erasure_policy_binding_settings(const int64_t bindingId, const PolicyResolutionMode::type resolutionMode, const ColumnInternalFormat::type columnFormat) override;
+  int32_t send_update_erasure_policy_binding_settings(const int64_t bindingId, const PolicyResolutionMode::type resolutionMode, const ColumnInternalFormat::type columnFormat);
+  void recv_update_erasure_policy_binding_settings(const int32_t seqid);
+  void attach_policy_to_binding(const int64_t bindingId, const int64_t policyId, const int32_t ordinal) override;
+  int32_t send_attach_policy_to_binding(const int64_t bindingId, const int64_t policyId, const int32_t ordinal);
+  void recv_attach_policy_to_binding(const int32_t seqid);
+  void detach_policy_from_binding(const int64_t bindingId, const int64_t policyId) override;
+  int32_t send_detach_policy_from_binding(const int64_t bindingId, const int64_t policyId);
+  void recv_detach_policy_from_binding(const int32_t seqid);
+  void get_binding_members(std::vector<ErasurePolicyBindingMember> & _return, const int64_t bindingId) override;
+  int32_t send_get_binding_members(const int64_t bindingId);
+  void recv_get_binding_members(std::vector<ErasurePolicyBindingMember> & _return, const int32_t seqid);
+  void replace_binding_resolved_rules(const int64_t bindingId, const std::vector<ErasurePolicyBindingResolved> & resolved) override;
+  int32_t send_replace_binding_resolved_rules(const int64_t bindingId, const std::vector<ErasurePolicyBindingResolved> & resolved);
+  void recv_replace_binding_resolved_rules(const int32_t seqid);
+  void get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & _return, const int64_t bindingId) override;
+  int32_t send_get_binding_resolved_rules(const int64_t bindingId);
+  void recv_get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & _return, const int32_t seqid);
+  void record_lifecycle_event(const ErasurePolicyLifecycleEvent& evt) override;
+  int32_t send_record_lifecycle_event(const ErasurePolicyLifecycleEvent& evt);
+  void recv_record_lifecycle_event(const int32_t seqid);
+  void get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & _return, const std::string& policyName, const int64_t fromTs, const int64_t untilTs) override;
+  int32_t send_get_lifecycle_events_for_policy(const std::string& policyName, const int64_t fromTs, const int64_t untilTs);
+  void recv_get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & _return, const int32_t seqid);
+  void get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t bindingId, const int64_t fromTs, const int64_t untilTs) override;
+  int32_t send_get_lifecycle_events_for_binding(const int64_t bindingId, const int64_t fromTs, const int64_t untilTs);
+  void recv_get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & _return, const int32_t seqid);
+  void get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t fromTs, const int64_t untilTs) override;
+  int32_t send_get_attach_rejected_events(const int64_t fromTs, const int64_t untilTs);
+  void recv_get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & _return, const int32_t seqid);
+  void record_erasure_run(const ErasureRunAudit& run) override;
+  int32_t send_record_erasure_run(const ErasureRunAudit& run);
+  void recv_record_erasure_run(const int32_t seqid);
+  void get_erasure_runs_for_table(std::vector<ErasureRunAudit> & _return, const int64_t tblId, const int64_t fromTs, const int64_t untilTs, const std::string& byUser, const std::string& forIdentity) override;
+  int32_t send_get_erasure_runs_for_table(const int64_t tblId, const int64_t fromTs, const int64_t untilTs, const std::string& byUser, const std::string& forIdentity);
+  void recv_get_erasure_runs_for_table(std::vector<ErasureRunAudit> & _return, const int32_t seqid);
+  void update_erasure_run_completion(const int64_t tblId, const int64_t startedTs, const int64_t completedTs, const ErasureRunStatus::type status, const int64_t matchesInspected, const int64_t matchesRedacted, const int64_t matchesFlagged) override;
+  int32_t send_update_erasure_run_completion(const int64_t tblId, const int64_t startedTs, const int64_t completedTs, const ErasureRunStatus::type status, const int64_t matchesInspected, const int64_t matchesRedacted, const int64_t matchesFlagged);
+  void recv_update_erasure_run_completion(const int32_t seqid);
+  void acquire_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const int64_t runId, const std::string& principal) override;
+  int32_t send_acquire_erasure_run_lock(const int64_t tblId, const int64_t runId, const std::string& principal);
+  void recv_acquire_erasure_run_lock(ErasureRunLock& _return, const int32_t seqid);
+  void get_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId) override;
+  int32_t send_get_erasure_run_lock(const int64_t tblId);
+  void recv_get_erasure_run_lock(ErasureRunLock& _return, const int32_t seqid);
+  bool complete_erasure_run_lock(const int64_t tblId, const int64_t runId) override;
+  int32_t send_complete_erasure_run_lock(const int64_t tblId, const int64_t runId);
+  bool recv_complete_erasure_run_lock(const int32_t seqid);
+  void manually_release_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const std::string& releasedBy, const std::string& releaseReason, const bool force) override;
+  int32_t send_manually_release_erasure_run_lock(const int64_t tblId, const std::string& releasedBy, const std::string& releaseReason, const bool force);
+  void recv_manually_release_erasure_run_lock(ErasureRunLock& _return, const int32_t seqid);
+  void list_erasure_run_locks(std::vector<ErasureRunLock> & _return) override;
+  int32_t send_list_erasure_run_locks();
+  void recv_list_erasure_run_locks(std::vector<ErasureRunLock> & _return, const int32_t seqid);
+  void grant_policy_priv(const PolicyPriv& priv) override;
+  int32_t send_grant_policy_priv(const PolicyPriv& priv);
+  void recv_grant_policy_priv(const int32_t seqid);
+  void revoke_policy_priv(const int64_t policyPrivId) override;
+  int32_t send_revoke_policy_priv(const int64_t policyPrivId);
+  void recv_revoke_policy_priv(const int32_t seqid);
+  void list_policy_privs(std::vector<PolicyPriv> & _return, const int64_t policyId, const std::string& principalName) override;
+  int32_t send_list_policy_privs(const int64_t policyId, const std::string& principalName);
+  void recv_list_policy_privs(std::vector<PolicyPriv> & _return, const int32_t seqid);
 };
 
 #ifdef _MSC_VER

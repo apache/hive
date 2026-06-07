@@ -311,6 +311,46 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void drop_package(DropPackageRequest request)')
     print('   get_all_write_event_info(GetAllWriteEventInfoRequest request)')
     print('  ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(string policyName)')
+    print('  void create_erasure_policy(ErasurePolicy erasurePolicy)')
+    print('  void drop_erasure_policy(string policyName, bool ifExists)')
+    print('  void drop_anon_index(string indexName)')
+    print('  ErasurePolicy get_erasure_policy(string policyName)')
+    print('  void add_index(Index new_index, Table index_table)')
+    print('  Index get_index_by_name(string db_name, string tbl_name, string index_name)')
+    print('  bool drop_index_by_name(string db_name, string tbl_name, string index_name, bool deleteData, bool ifExists)')
+    print('   get_indexes(string db_name, string tbl_name, i16 max_indexes)')
+    print('   get_all_erasure_policies()')
+    print('  ErasurePolicyVersion add_erasure_policy_version(ErasurePolicyVersion version)')
+    print('  ErasurePolicyVersion get_erasure_policy_version(string policyName, string versionLabel)')
+    print('   list_erasure_policy_versions(string policyName)')
+    print('  void update_erasure_policy_version_status(i64 versionId, PolicyVersionStatus newStatus, string principal)')
+    print('  ErasurePolicyVersion get_active_erasure_policy_version(string policyName)')
+    print('   get_erasure_policy_statements(i64 versionId)')
+    print('   get_erasure_policy_rules(i64 statementId)')
+    print('  ErasurePolicyBinding add_erasure_policy_binding(ErasurePolicyBinding binding)')
+    print('  ErasurePolicyBinding get_erasure_policy_binding(i64 tblId, string columnName)')
+    print('  void drop_erasure_policy_binding(i64 bindingId)')
+    print('  void update_erasure_policy_binding_settings(i64 bindingId, PolicyResolutionMode resolutionMode, ColumnInternalFormat columnFormat)')
+    print('  void attach_policy_to_binding(i64 bindingId, i64 policyId, i32 ordinal)')
+    print('  void detach_policy_from_binding(i64 bindingId, i64 policyId)')
+    print('   get_binding_members(i64 bindingId)')
+    print('  void replace_binding_resolved_rules(i64 bindingId,  resolved)')
+    print('   get_binding_resolved_rules(i64 bindingId)')
+    print('  void record_lifecycle_event(ErasurePolicyLifecycleEvent evt)')
+    print('   get_lifecycle_events_for_policy(string policyName, i64 fromTs, i64 untilTs)')
+    print('   get_lifecycle_events_for_binding(i64 bindingId, i64 fromTs, i64 untilTs)')
+    print('   get_attach_rejected_events(i64 fromTs, i64 untilTs)')
+    print('  void record_erasure_run(ErasureRunAudit run)')
+    print('   get_erasure_runs_for_table(i64 tblId, i64 fromTs, i64 untilTs, string byUser, string forIdentity)')
+    print('  void update_erasure_run_completion(i64 tblId, i64 startedTs, i64 completedTs, ErasureRunStatus status, i64 matchesInspected, i64 matchesRedacted, i64 matchesFlagged)')
+    print('  ErasureRunLock acquire_erasure_run_lock(i64 tblId, i64 runId, string principal)')
+    print('  ErasureRunLock get_erasure_run_lock(i64 tblId)')
+    print('  bool complete_erasure_run_lock(i64 tblId, i64 runId)')
+    print('  ErasureRunLock manually_release_erasure_run_lock(i64 tblId, string releasedBy, string releaseReason, bool force)')
+    print('   list_erasure_run_locks()')
+    print('  void grant_policy_priv(PolicyPriv priv)')
+    print('  void revoke_policy_priv(i64 policyPrivId)')
+    print('   list_policy_privs(i64 policyId, string principalName)')
     print('  string getName()')
     print('  string getVersion()')
     print('  fb_status getStatus()')
@@ -2124,6 +2164,246 @@ elif cmd == 'get_replayed_txns_for_policy':
         print('get_replayed_txns_for_policy requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_replayed_txns_for_policy(args[0],))
+
+elif cmd == 'create_erasure_policy':
+    if len(args) != 1:
+        print('create_erasure_policy requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.create_erasure_policy(eval(args[0]),))
+
+elif cmd == 'drop_erasure_policy':
+    if len(args) != 2:
+        print('drop_erasure_policy requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.drop_erasure_policy(args[0], eval(args[1]),))
+
+elif cmd == 'drop_anon_index':
+    if len(args) != 1:
+        print('drop_anon_index requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.drop_anon_index(args[0],))
+
+elif cmd == 'get_erasure_policy':
+    if len(args) != 1:
+        print('get_erasure_policy requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_erasure_policy(args[0],))
+
+elif cmd == 'add_index':
+    if len(args) != 2:
+        print('add_index requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.add_index(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'get_index_by_name':
+    if len(args) != 3:
+        print('get_index_by_name requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.get_index_by_name(args[0], args[1], args[2],))
+
+elif cmd == 'drop_index_by_name':
+    if len(args) != 5:
+        print('drop_index_by_name requires 5 args')
+        sys.exit(1)
+    pp.pprint(client.drop_index_by_name(args[0], args[1], args[2], eval(args[3]), eval(args[4]),))
+
+elif cmd == 'get_indexes':
+    if len(args) != 3:
+        print('get_indexes requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.get_indexes(args[0], args[1], eval(args[2]),))
+
+elif cmd == 'get_all_erasure_policies':
+    if len(args) != 0:
+        print('get_all_erasure_policies requires 0 args')
+        sys.exit(1)
+    pp.pprint(client.get_all_erasure_policies())
+
+elif cmd == 'add_erasure_policy_version':
+    if len(args) != 1:
+        print('add_erasure_policy_version requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.add_erasure_policy_version(eval(args[0]),))
+
+elif cmd == 'get_erasure_policy_version':
+    if len(args) != 2:
+        print('get_erasure_policy_version requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.get_erasure_policy_version(args[0], args[1],))
+
+elif cmd == 'list_erasure_policy_versions':
+    if len(args) != 1:
+        print('list_erasure_policy_versions requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.list_erasure_policy_versions(args[0],))
+
+elif cmd == 'update_erasure_policy_version_status':
+    if len(args) != 3:
+        print('update_erasure_policy_version_status requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.update_erasure_policy_version_status(eval(args[0]), eval(args[1]), args[2],))
+
+elif cmd == 'get_active_erasure_policy_version':
+    if len(args) != 1:
+        print('get_active_erasure_policy_version requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_active_erasure_policy_version(args[0],))
+
+elif cmd == 'get_erasure_policy_statements':
+    if len(args) != 1:
+        print('get_erasure_policy_statements requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_erasure_policy_statements(eval(args[0]),))
+
+elif cmd == 'get_erasure_policy_rules':
+    if len(args) != 1:
+        print('get_erasure_policy_rules requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_erasure_policy_rules(eval(args[0]),))
+
+elif cmd == 'add_erasure_policy_binding':
+    if len(args) != 1:
+        print('add_erasure_policy_binding requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.add_erasure_policy_binding(eval(args[0]),))
+
+elif cmd == 'get_erasure_policy_binding':
+    if len(args) != 2:
+        print('get_erasure_policy_binding requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.get_erasure_policy_binding(eval(args[0]), args[1],))
+
+elif cmd == 'drop_erasure_policy_binding':
+    if len(args) != 1:
+        print('drop_erasure_policy_binding requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.drop_erasure_policy_binding(eval(args[0]),))
+
+elif cmd == 'update_erasure_policy_binding_settings':
+    if len(args) != 3:
+        print('update_erasure_policy_binding_settings requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.update_erasure_policy_binding_settings(eval(args[0]), eval(args[1]), eval(args[2]),))
+
+elif cmd == 'attach_policy_to_binding':
+    if len(args) != 3:
+        print('attach_policy_to_binding requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.attach_policy_to_binding(eval(args[0]), eval(args[1]), eval(args[2]),))
+
+elif cmd == 'detach_policy_from_binding':
+    if len(args) != 2:
+        print('detach_policy_from_binding requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.detach_policy_from_binding(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'get_binding_members':
+    if len(args) != 1:
+        print('get_binding_members requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_binding_members(eval(args[0]),))
+
+elif cmd == 'replace_binding_resolved_rules':
+    if len(args) != 2:
+        print('replace_binding_resolved_rules requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.replace_binding_resolved_rules(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'get_binding_resolved_rules':
+    if len(args) != 1:
+        print('get_binding_resolved_rules requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_binding_resolved_rules(eval(args[0]),))
+
+elif cmd == 'record_lifecycle_event':
+    if len(args) != 1:
+        print('record_lifecycle_event requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.record_lifecycle_event(eval(args[0]),))
+
+elif cmd == 'get_lifecycle_events_for_policy':
+    if len(args) != 3:
+        print('get_lifecycle_events_for_policy requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.get_lifecycle_events_for_policy(args[0], eval(args[1]), eval(args[2]),))
+
+elif cmd == 'get_lifecycle_events_for_binding':
+    if len(args) != 3:
+        print('get_lifecycle_events_for_binding requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.get_lifecycle_events_for_binding(eval(args[0]), eval(args[1]), eval(args[2]),))
+
+elif cmd == 'get_attach_rejected_events':
+    if len(args) != 2:
+        print('get_attach_rejected_events requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.get_attach_rejected_events(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'record_erasure_run':
+    if len(args) != 1:
+        print('record_erasure_run requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.record_erasure_run(eval(args[0]),))
+
+elif cmd == 'get_erasure_runs_for_table':
+    if len(args) != 5:
+        print('get_erasure_runs_for_table requires 5 args')
+        sys.exit(1)
+    pp.pprint(client.get_erasure_runs_for_table(eval(args[0]), eval(args[1]), eval(args[2]), args[3], args[4],))
+
+elif cmd == 'update_erasure_run_completion':
+    if len(args) != 7:
+        print('update_erasure_run_completion requires 7 args')
+        sys.exit(1)
+    pp.pprint(client.update_erasure_run_completion(eval(args[0]), eval(args[1]), eval(args[2]), eval(args[3]), eval(args[4]), eval(args[5]), eval(args[6]),))
+
+elif cmd == 'acquire_erasure_run_lock':
+    if len(args) != 3:
+        print('acquire_erasure_run_lock requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.acquire_erasure_run_lock(eval(args[0]), eval(args[1]), args[2],))
+
+elif cmd == 'get_erasure_run_lock':
+    if len(args) != 1:
+        print('get_erasure_run_lock requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_erasure_run_lock(eval(args[0]),))
+
+elif cmd == 'complete_erasure_run_lock':
+    if len(args) != 2:
+        print('complete_erasure_run_lock requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.complete_erasure_run_lock(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'manually_release_erasure_run_lock':
+    if len(args) != 4:
+        print('manually_release_erasure_run_lock requires 4 args')
+        sys.exit(1)
+    pp.pprint(client.manually_release_erasure_run_lock(eval(args[0]), args[1], args[2], eval(args[3]),))
+
+elif cmd == 'list_erasure_run_locks':
+    if len(args) != 0:
+        print('list_erasure_run_locks requires 0 args')
+        sys.exit(1)
+    pp.pprint(client.list_erasure_run_locks())
+
+elif cmd == 'grant_policy_priv':
+    if len(args) != 1:
+        print('grant_policy_priv requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.grant_policy_priv(eval(args[0]),))
+
+elif cmd == 'revoke_policy_priv':
+    if len(args) != 1:
+        print('revoke_policy_priv requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.revoke_policy_priv(eval(args[0]),))
+
+elif cmd == 'list_policy_privs':
+    if len(args) != 2:
+        print('list_policy_privs requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.list_policy_privs(eval(args[0]), args[1],))
 
 elif cmd == 'getName':
     if len(args) != 0:

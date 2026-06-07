@@ -2067,4 +2067,306 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_replayed_txns_for_policy($policyName);
+    /**
+     * @param \metastore\ErasurePolicy $erasurePolicy
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function create_erasure_policy(\metastore\ErasurePolicy $erasurePolicy);
+    /**
+     * @param string $policyName
+     * @param bool $ifExists
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function drop_erasure_policy($policyName, $ifExists);
+    /**
+     * @param string $indexName
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function drop_anon_index($indexName);
+    /**
+     * @param string $policyName
+     * @return \metastore\ErasurePolicy
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_erasure_policy($policyName);
+    /**
+     * @param \metastore\Index $new_index
+     * @param \metastore\Table $index_table
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\MetaException
+     */
+    public function add_index(\metastore\Index $new_index, \metastore\Table $index_table);
+    /**
+     * @param string $db_name
+     * @param string $tbl_name
+     * @param string $index_name
+     * @return \metastore\Index
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_index_by_name($db_name, $tbl_name, $index_name);
+    /**
+     * @param string $db_name
+     * @param string $tbl_name
+     * @param string $index_name
+     * @param bool $deleteData
+     * @param bool $ifExists
+     * @return bool
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function drop_index_by_name($db_name, $tbl_name, $index_name, $deleteData, $ifExists);
+    /**
+     * @param string $db_name
+     * @param string $tbl_name
+     * @param int $max_indexes
+     * @return \metastore\Index[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_indexes($db_name, $tbl_name, $max_indexes);
+    /**
+     * @return \metastore\PolicyInfo[]
+     * @throws \metastore\MetaException
+     */
+    public function get_all_erasure_policies();
+    /**
+     * @param \metastore\ErasurePolicyVersion $version
+     * @return \metastore\ErasurePolicyVersion
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function add_erasure_policy_version(\metastore\ErasurePolicyVersion $version);
+    /**
+     * @param string $policyName
+     * @param string $versionLabel
+     * @return \metastore\ErasurePolicyVersion
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_erasure_policy_version($policyName, $versionLabel);
+    /**
+     * @param string $policyName
+     * @return \metastore\ErasurePolicyVersion[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function list_erasure_policy_versions($policyName);
+    /**
+     * @param int $versionId
+     * @param int $newStatus
+     * @param string $principal
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function update_erasure_policy_version_status($versionId, $newStatus, $principal);
+    /**
+     * @param string $policyName
+     * @return \metastore\ErasurePolicyVersion
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_active_erasure_policy_version($policyName);
+    /**
+     * @param int $versionId
+     * @return \metastore\ErasurePolicyStatement[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_erasure_policy_statements($versionId);
+    /**
+     * @param int $statementId
+     * @return \metastore\ErasurePolicyRule[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_erasure_policy_rules($statementId);
+    /**
+     * @param \metastore\ErasurePolicyBinding $binding
+     * @return \metastore\ErasurePolicyBinding
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function add_erasure_policy_binding(\metastore\ErasurePolicyBinding $binding);
+    /**
+     * @param int $tblId
+     * @param string $columnName
+     * @return \metastore\ErasurePolicyBinding
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_erasure_policy_binding($tblId, $columnName);
+    /**
+     * @param int $bindingId
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function drop_erasure_policy_binding($bindingId);
+    /**
+     * @param int $bindingId
+     * @param int $resolutionMode
+     * @param int $columnFormat
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function update_erasure_policy_binding_settings($bindingId, $resolutionMode, $columnFormat);
+    /**
+     * @param int $bindingId
+     * @param int $policyId
+     * @param int $ordinal
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function attach_policy_to_binding($bindingId, $policyId, $ordinal);
+    /**
+     * @param int $bindingId
+     * @param int $policyId
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function detach_policy_from_binding($bindingId, $policyId);
+    /**
+     * @param int $bindingId
+     * @return \metastore\ErasurePolicyBindingMember[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_binding_members($bindingId);
+    /**
+     * @param int $bindingId
+     * @param \metastore\ErasurePolicyBindingResolved[] $resolved
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function replace_binding_resolved_rules($bindingId, array $resolved);
+    /**
+     * @param int $bindingId
+     * @return \metastore\ErasurePolicyBindingResolved[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_binding_resolved_rules($bindingId);
+    /**
+     * @param \metastore\ErasurePolicyLifecycleEvent $evt
+     * @throws \metastore\MetaException
+     */
+    public function record_lifecycle_event(\metastore\ErasurePolicyLifecycleEvent $evt);
+    /**
+     * @param string $policyName
+     * @param int $fromTs
+     * @param int $untilTs
+     * @return \metastore\ErasurePolicyLifecycleEvent[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_lifecycle_events_for_policy($policyName, $fromTs, $untilTs);
+    /**
+     * @param int $bindingId
+     * @param int $fromTs
+     * @param int $untilTs
+     * @return \metastore\ErasurePolicyLifecycleEvent[]
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_lifecycle_events_for_binding($bindingId, $fromTs, $untilTs);
+    /**
+     * @param int $fromTs
+     * @param int $untilTs
+     * @return \metastore\ErasurePolicyLifecycleEvent[]
+     * @throws \metastore\MetaException
+     */
+    public function get_attach_rejected_events($fromTs, $untilTs);
+    /**
+     * @param \metastore\ErasureRunAudit $run
+     * @throws \metastore\MetaException
+     */
+    public function record_erasure_run(\metastore\ErasureRunAudit $run);
+    /**
+     * @param int $tblId
+     * @param int $fromTs
+     * @param int $untilTs
+     * @param string $byUser
+     * @param string $forIdentity
+     * @return \metastore\ErasureRunAudit[]
+     * @throws \metastore\MetaException
+     */
+    public function get_erasure_runs_for_table($tblId, $fromTs, $untilTs, $byUser, $forIdentity);
+    /**
+     * @param int $tblId
+     * @param int $startedTs
+     * @param int $completedTs
+     * @param int $status
+     * @param int $matchesInspected
+     * @param int $matchesRedacted
+     * @param int $matchesFlagged
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function update_erasure_run_completion($tblId, $startedTs, $completedTs, $status, $matchesInspected, $matchesRedacted, $matchesFlagged);
+    /**
+     * @param int $tblId
+     * @param int $runId
+     * @param string $principal
+     * @return \metastore\ErasureRunLock
+     * @throws \metastore\MetaException
+     */
+    public function acquire_erasure_run_lock($tblId, $runId, $principal);
+    /**
+     * @param int $tblId
+     * @return \metastore\ErasureRunLock
+     * @throws \metastore\MetaException
+     */
+    public function get_erasure_run_lock($tblId);
+    /**
+     * @param int $tblId
+     * @param int $runId
+     * @return bool
+     * @throws \metastore\MetaException
+     */
+    public function complete_erasure_run_lock($tblId, $runId);
+    /**
+     * @param int $tblId
+     * @param string $releasedBy
+     * @param string $releaseReason
+     * @param bool $force
+     * @return \metastore\ErasureRunLock
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function manually_release_erasure_run_lock($tblId, $releasedBy, $releaseReason, $force);
+    /**
+     * @return \metastore\ErasureRunLock[]
+     * @throws \metastore\MetaException
+     */
+    public function list_erasure_run_locks();
+    /**
+     * @param \metastore\PolicyPriv $priv
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function grant_policy_priv(\metastore\PolicyPriv $priv);
+    /**
+     * @param int $policyPrivId
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function revoke_policy_priv($policyPrivId);
+    /**
+     * @param int $policyId
+     * @param string $principalName
+     * @return \metastore\PolicyPriv[]
+     * @throws \metastore\MetaException
+     */
+    public function list_policy_privs($policyId, $principalName);
 }

@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ErasurePolicy;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -75,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PolicyInfo;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -2355,4 +2358,134 @@ public interface RawStore extends Configurable {
    * @throws RuntimeException If the context cannot be unwrapped to the provided class
    */
   <T> T unwrap(Class<T> iface);
+  /* anonymization extensions */
+
+  void createErasurePolicy(final ErasurePolicy erasurePolicy) throws InvalidObjectException, MetaException;
+
+  void dropErasurePolicy(final String policyName, boolean ifExists) throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
+
+  void dropAnonIndex(final String indexName) throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
+
+  ErasurePolicy getErasurePolicy(final String policyName) throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
+
+  Index getIndex(String dbName, String origTableName, String indexName) throws MetaException;
+
+  boolean addIndex(Index index) throws InvalidObjectException, MetaException;
+
+  boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
+
+  List<Index> getIndexes(String dbName, String origTableName, int max) throws MetaException;
+
+  List<PolicyInfo> getAllErasurePolicies() throws MetaException;
+
+  /* erasure policy governance: versioning, multi-policy binding, lifecycle audit, run audit, priv grants */
+
+  org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion addErasurePolicyVersion(
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion version)
+      throws InvalidObjectException, MetaException;
+
+  org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion getErasurePolicyVersion(
+      String policyName, String versionLabel) throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion> listErasurePolicyVersions(
+      String policyName) throws NoSuchObjectException, MetaException;
+
+  void updateErasurePolicyVersionStatus(long versionId,
+      org.apache.hadoop.hive.metastore.api.PolicyVersionStatus newStatus, String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException;
+
+  org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion getActiveErasurePolicyVersion(
+      String policyName) throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyStatement> getErasurePolicyStatements(
+      long versionId) throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyRule> getErasurePolicyRules(long statementId)
+      throws NoSuchObjectException, MetaException;
+
+  org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding addErasurePolicyBinding(
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding binding)
+      throws InvalidObjectException, MetaException;
+
+  org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding getErasurePolicyBinding(
+      long tblId, String columnName) throws NoSuchObjectException, MetaException;
+
+  void dropErasurePolicyBinding(long bindingId) throws NoSuchObjectException, MetaException;
+
+  void updateErasurePolicyBindingSettings(long bindingId,
+      org.apache.hadoop.hive.metastore.api.PolicyResolutionMode resolutionMode,
+      org.apache.hadoop.hive.metastore.api.ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException;
+
+  void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws InvalidObjectException, MetaException;
+
+  void detachPolicyFromBinding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingMember> getBindingMembers(long bindingId)
+      throws NoSuchObjectException, MetaException;
+
+  void replaceBindingResolvedRules(long bindingId,
+      List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved> getBindingResolvedRules(
+      long bindingId) throws NoSuchObjectException, MetaException;
+
+  void recordLifecycleEvent(org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent evt)
+      throws MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(
+      String policyName, long fromTs, long untilTs) throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(
+      long bindingId, long fromTs, long untilTs) throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> getAttachRejectedEvents(
+      long fromTs, long untilTs) throws MetaException;
+
+  void recordErasureRun(org.apache.hadoop.hive.metastore.api.ErasureRunAudit run) throws MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.ErasureRunAudit> getErasureRunsForTable(long tblId,
+      long fromTs, long untilTs, String byUser, String forIdentity) throws MetaException;
+
+  /**
+   * Update the {@code MErasureRunAudit} row identified by {@code (tblId,
+   * startedTs)} with its completion timestamp and final status. Used by the
+   * post-execution hook after the Tez DAG returns.
+   */
+  void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      org.apache.hadoop.hive.metastore.api.ErasureRunStatus status,
+      long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException;
+
+  // -----------------------------------------------------------------------
+  // §4.7 per-table ERASE FROM TABLE run-lock. See ObjectStore for the
+  // canonical JDO-backed implementation and MErasureRunLock for the
+  // underlying entity. The acquire path raises MetaException whose
+  // message names the runId and principal currently holding the lock,
+  // so the analyzer can surface a clear error to the operator.
+  // -----------------------------------------------------------------------
+
+  org.apache.hadoop.hive.metastore.model.MErasureRunLock acquireErasureRunLock(long tblId,
+      long runId, String principal) throws MetaException;
+
+  org.apache.hadoop.hive.metastore.model.MErasureRunLock getErasureRunLock(long tblId);
+
+  boolean completeErasureRunLock(long tblId, long runId);
+
+  org.apache.hadoop.hive.metastore.model.MErasureRunLock manuallyReleaseErasureRunLock(
+      long tblId, String releasedBy, String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException;
+
+  java.util.List<org.apache.hadoop.hive.metastore.model.MErasureRunLock> listErasureRunLocks();
+
+  void grantPolicyPriv(org.apache.hadoop.hive.metastore.api.PolicyPriv priv)
+      throws InvalidObjectException, MetaException;
+
+  void revokePolicyPriv(long policyPrivId) throws NoSuchObjectException, MetaException;
+
+  List<org.apache.hadoop.hive.metastore.api.PolicyPriv> listPolicyPrivs(long policyId, String principalName)
+      throws MetaException;
 }

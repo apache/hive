@@ -250,7 +250,11 @@ public class StatsUtils {
       List<String> neededColumnNames, List<ColStatistics> existingColStats, HiveConf conf, long nr,
       List<ColumnInfo> schema) {
 
-    Set<String> neededCols = new HashSet<>(neededColumnNames);
+    // Callers sometimes invoke this with a null needed-columns list (observed
+    // for plain statements whose TableScan has no pruned-projection metadata).
+    // Treat null as "no columns needed" so the HashSet construction does not NPE.
+    Set<String> neededCols = neededColumnNames == null
+        ? new HashSet<>() : new HashSet<>(neededColumnNames);
     Set<String> columnNamesWithStats = HashSet.newHashSet(existingColStats.size());
 
     for (ColStatistics cstats : existingColStats) {
@@ -279,6 +283,13 @@ public class StatsUtils {
   private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList, Table table,
       List<ColumnInfo> schema, List<String> neededColumns, ColumnStatsList colStatsCache,
       List<String> referencedColumns, boolean needColStats, boolean failIfCacheMiss) throws HiveException {
+
+    if (neededColumns == null) {
+      neededColumns = java.util.Collections.emptyList();
+    }
+    if (referencedColumns == null) {
+      referencedColumns = java.util.Collections.emptyList();
+    }
 
     Statistics stats = null;
 

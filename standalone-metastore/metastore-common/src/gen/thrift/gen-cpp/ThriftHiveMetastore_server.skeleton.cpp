@@ -1455,6 +1455,206 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_replayed_txns_for_policy\n");
   }
 
+  void create_erasure_policy(const ErasurePolicy& erasurePolicy) {
+    // Your implementation goes here
+    printf("create_erasure_policy\n");
+  }
+
+  void drop_erasure_policy(const std::string& policyName, const bool ifExists) {
+    // Your implementation goes here
+    printf("drop_erasure_policy\n");
+  }
+
+  void drop_anon_index(const std::string& indexName) {
+    // Your implementation goes here
+    printf("drop_anon_index\n");
+  }
+
+  void get_erasure_policy(ErasurePolicy& _return, const std::string& policyName) {
+    // Your implementation goes here
+    printf("get_erasure_policy\n");
+  }
+
+  void add_index(const Index& new_index, const Table& index_table) {
+    // Your implementation goes here
+    printf("add_index\n");
+  }
+
+  void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) {
+    // Your implementation goes here
+    printf("get_index_by_name\n");
+  }
+
+  bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData, const bool ifExists) {
+    // Your implementation goes here
+    printf("drop_index_by_name\n");
+  }
+
+  void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
+    // Your implementation goes here
+    printf("get_indexes\n");
+  }
+
+  void get_all_erasure_policies(std::vector<PolicyInfo> & _return) {
+    // Your implementation goes here
+    printf("get_all_erasure_policies\n");
+  }
+
+  void add_erasure_policy_version(ErasurePolicyVersion& _return, const ErasurePolicyVersion& version) {
+    // Your implementation goes here
+    printf("add_erasure_policy_version\n");
+  }
+
+  void get_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName, const std::string& versionLabel) {
+    // Your implementation goes here
+    printf("get_erasure_policy_version\n");
+  }
+
+  void list_erasure_policy_versions(std::vector<ErasurePolicyVersion> & _return, const std::string& policyName) {
+    // Your implementation goes here
+    printf("list_erasure_policy_versions\n");
+  }
+
+  void update_erasure_policy_version_status(const int64_t versionId, const PolicyVersionStatus::type newStatus, const std::string& principal) {
+    // Your implementation goes here
+    printf("update_erasure_policy_version_status\n");
+  }
+
+  void get_active_erasure_policy_version(ErasurePolicyVersion& _return, const std::string& policyName) {
+    // Your implementation goes here
+    printf("get_active_erasure_policy_version\n");
+  }
+
+  void get_erasure_policy_statements(std::vector<ErasurePolicyStatement> & _return, const int64_t versionId) {
+    // Your implementation goes here
+    printf("get_erasure_policy_statements\n");
+  }
+
+  void get_erasure_policy_rules(std::vector<ErasurePolicyRule> & _return, const int64_t statementId) {
+    // Your implementation goes here
+    printf("get_erasure_policy_rules\n");
+  }
+
+  void add_erasure_policy_binding(ErasurePolicyBinding& _return, const ErasurePolicyBinding& binding) {
+    // Your implementation goes here
+    printf("add_erasure_policy_binding\n");
+  }
+
+  void get_erasure_policy_binding(ErasurePolicyBinding& _return, const int64_t tblId, const std::string& columnName) {
+    // Your implementation goes here
+    printf("get_erasure_policy_binding\n");
+  }
+
+  void drop_erasure_policy_binding(const int64_t bindingId) {
+    // Your implementation goes here
+    printf("drop_erasure_policy_binding\n");
+  }
+
+  void update_erasure_policy_binding_settings(const int64_t bindingId, const PolicyResolutionMode::type resolutionMode, const ColumnInternalFormat::type columnFormat) {
+    // Your implementation goes here
+    printf("update_erasure_policy_binding_settings\n");
+  }
+
+  void attach_policy_to_binding(const int64_t bindingId, const int64_t policyId, const int32_t ordinal) {
+    // Your implementation goes here
+    printf("attach_policy_to_binding\n");
+  }
+
+  void detach_policy_from_binding(const int64_t bindingId, const int64_t policyId) {
+    // Your implementation goes here
+    printf("detach_policy_from_binding\n");
+  }
+
+  void get_binding_members(std::vector<ErasurePolicyBindingMember> & _return, const int64_t bindingId) {
+    // Your implementation goes here
+    printf("get_binding_members\n");
+  }
+
+  void replace_binding_resolved_rules(const int64_t bindingId, const std::vector<ErasurePolicyBindingResolved> & resolved) {
+    // Your implementation goes here
+    printf("replace_binding_resolved_rules\n");
+  }
+
+  void get_binding_resolved_rules(std::vector<ErasurePolicyBindingResolved> & _return, const int64_t bindingId) {
+    // Your implementation goes here
+    printf("get_binding_resolved_rules\n");
+  }
+
+  void record_lifecycle_event(const ErasurePolicyLifecycleEvent& evt) {
+    // Your implementation goes here
+    printf("record_lifecycle_event\n");
+  }
+
+  void get_lifecycle_events_for_policy(std::vector<ErasurePolicyLifecycleEvent> & _return, const std::string& policyName, const int64_t fromTs, const int64_t untilTs) {
+    // Your implementation goes here
+    printf("get_lifecycle_events_for_policy\n");
+  }
+
+  void get_lifecycle_events_for_binding(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t bindingId, const int64_t fromTs, const int64_t untilTs) {
+    // Your implementation goes here
+    printf("get_lifecycle_events_for_binding\n");
+  }
+
+  void get_attach_rejected_events(std::vector<ErasurePolicyLifecycleEvent> & _return, const int64_t fromTs, const int64_t untilTs) {
+    // Your implementation goes here
+    printf("get_attach_rejected_events\n");
+  }
+
+  void record_erasure_run(const ErasureRunAudit& run) {
+    // Your implementation goes here
+    printf("record_erasure_run\n");
+  }
+
+  void get_erasure_runs_for_table(std::vector<ErasureRunAudit> & _return, const int64_t tblId, const int64_t fromTs, const int64_t untilTs, const std::string& byUser, const std::string& forIdentity) {
+    // Your implementation goes here
+    printf("get_erasure_runs_for_table\n");
+  }
+
+  void update_erasure_run_completion(const int64_t tblId, const int64_t startedTs, const int64_t completedTs, const ErasureRunStatus::type status, const int64_t matchesInspected, const int64_t matchesRedacted, const int64_t matchesFlagged) {
+    // Your implementation goes here
+    printf("update_erasure_run_completion\n");
+  }
+
+  void acquire_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const int64_t runId, const std::string& principal) {
+    // Your implementation goes here
+    printf("acquire_erasure_run_lock\n");
+  }
+
+  void get_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId) {
+    // Your implementation goes here
+    printf("get_erasure_run_lock\n");
+  }
+
+  bool complete_erasure_run_lock(const int64_t tblId, const int64_t runId) {
+    // Your implementation goes here
+    printf("complete_erasure_run_lock\n");
+  }
+
+  void manually_release_erasure_run_lock(ErasureRunLock& _return, const int64_t tblId, const std::string& releasedBy, const std::string& releaseReason, const bool force) {
+    // Your implementation goes here
+    printf("manually_release_erasure_run_lock\n");
+  }
+
+  void list_erasure_run_locks(std::vector<ErasureRunLock> & _return) {
+    // Your implementation goes here
+    printf("list_erasure_run_locks\n");
+  }
+
+  void grant_policy_priv(const PolicyPriv& priv) {
+    // Your implementation goes here
+    printf("grant_policy_priv\n");
+  }
+
+  void revoke_policy_priv(const int64_t policyPrivId) {
+    // Your implementation goes here
+    printf("revoke_policy_priv\n");
+  }
+
+  void list_policy_privs(std::vector<PolicyPriv> & _return, const int64_t policyId, const std::string& principalName) {
+    // Your implementation goes here
+    printf("list_policy_privs\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

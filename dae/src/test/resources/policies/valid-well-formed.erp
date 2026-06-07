@@ -1,0 +1,6 @@
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+FOR SCHEMA 'msg_v1'
+    ERASE   email,
+            profile:firstName
+    REPLACE country = 'UNKNOWN'

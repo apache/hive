@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.hive.ql.anon.btree.BtreeConstants;
+import org.apache.hadoop.hive.ql.anon.btree.BtreeInputFormat;
+import org.apache.hadoop.hive.ql.anon.btree.BtreeOutputFormat;
+import org.apache.hadoop.hive.ql.anon.index.dir.DirectoryInputFormat;
+import org.apache.hadoop.hive.ql.anon.index.dir.DirectoryOutputFormat;
+import org.apache.hadoop.hive.ql.anon.index.tab.TabularInputFormat;
+import org.apache.hadoop.hive.ql.anon.index.tab.TabularOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -36,6 +43,9 @@ public final class IOConstants {
   public static final String AVRO = "AVRO";
   public static final String AVROFILE = "AVROFILE";
   public static final String JSONFILE = "JSONFILE";
+  public static final String BTREE = BtreeConstants.BTREE;
+  public static final String DIRECTORY = "DIRECTORY";
+  public static final String TABULAR = "TABULAR";
 
   /**
    * The desired TABLE column names and types for input format schema evolution.
@@ -51,11 +61,18 @@ public final class IOConstants {
   @VisibleForTesting
   public static final String CUSTOM_TEXT_SERDE = "CustomTextSerde";
 
-  public static final String TEXTFILE_INPUT = TextInputFormat.class
-      .getName();
+  public static final String TEXTFILE_INPUT = TextInputFormat.class.getName();
   @SuppressWarnings("deprecation")
-  public static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class
-      .getName();
+  public static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class.getName();
+
+  public static final String BTREE_INPUT = BtreeInputFormat.class.getName();
+  public static final String BTREE_OUTPUT = BtreeOutputFormat.class.getName();
+
+  public static final String DIRECTORY_INPUT = DirectoryInputFormat.class.getName();
+  public static final String DIRECTORY_OUTPUT = DirectoryOutputFormat.class.getName();
+
+  public static final String TABULAR_INPUT = TabularInputFormat.class.getName();
+  public static final String TABULAR_OUTPUT = TabularOutputFormat.class.getName();
 
   private IOConstants() {
     // prevent instantiation

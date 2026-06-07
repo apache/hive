@@ -1,0 +1,8 @@
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+
+FOR SCHEMA 'm'
+    ERASE   profile:*,
+            addresses[*]:*,
+            sessions[type='guest']:*
+    REPLACE country = 'UNKNOWN'

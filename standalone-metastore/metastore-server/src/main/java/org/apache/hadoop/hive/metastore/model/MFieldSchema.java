@@ -28,6 +28,8 @@ public class MFieldSchema {
   private String name;
   private String type;
   private String comment;
+//  private String policy;
+//  private MErasurePolicy policy;
   public MFieldSchema() {}
 
   /**
@@ -40,6 +42,17 @@ public class MFieldSchema {
     this.name = name;
     this.type = type;
   }
+
+//  /**
+//   * @param name field name
+//   * @param type field type
+//   * @param comment field comment
+//   * @param policy field policy name
+//   */
+//  public MFieldSchema(String name, String type, String comment, MErasurePolicy policy) {
+//    this(name, type, comment);
+//    this.policy = policy;
+//  }
   /**
    * @return the name
    */
@@ -76,4 +89,20 @@ public class MFieldSchema {
   public void setType(String field) {
     this.type = field;
   }
+
+//  public MErasurePolicy getPolicy() {
+//    return policy;
+//  }
+//
+//  public void setPolicy(MErasurePolicy policy) {
+//    this.policy = policy;
+//  }
+
+  //  public String getPolicy() {
+//    return policy;
+//  }
+//
+//  public void setPolicy(String policy) {
+//    this.policy = policy;
+//  }
 }

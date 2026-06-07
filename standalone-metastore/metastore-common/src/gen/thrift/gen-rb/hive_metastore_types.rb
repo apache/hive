@@ -251,6 +251,105 @@ module PartitionFilterMode
   VALID_VALUES = Set.new([BY_NAMES, BY_VALUES, BY_EXPR]).freeze
 end
 
+module IndexType
+  BTREE = 1
+  DIRECTORY = 2
+  TABULAR = 3
+  VALUE_MAP = {1 => "BTREE", 2 => "DIRECTORY", 3 => "TABULAR"}
+  VALID_VALUES = Set.new([BTREE, DIRECTORY, TABULAR]).freeze
+end
+
+module ColumnInternalFormat
+  JSON = 1
+  MSGPACK = 2
+  XML = 3
+  PROTOBUF = 4
+  AVRO = 5
+  VALUE_MAP = {1 => "JSON", 2 => "MSGPACK", 3 => "XML", 4 => "PROTOBUF", 5 => "AVRO"}
+  VALID_VALUES = Set.new([JSON, MSGPACK, XML, PROTOBUF, AVRO]).freeze
+end
+
+module PolicyVersionStatus
+  DRAFT = 1
+  VALIDATED = 2
+  ACTIVE = 3
+  SUPERSEDED = 4
+  INACTIVE = 5
+  VALUE_MAP = {1 => "DRAFT", 2 => "VALIDATED", 3 => "ACTIVE", 4 => "SUPERSEDED", 5 => "INACTIVE"}
+  VALID_VALUES = Set.new([DRAFT, VALIDATED, ACTIVE, SUPERSEDED, INACTIVE]).freeze
+end
+
+module PolicyLiteralKind
+  INT = 1
+  LONG = 2
+  STRING = 3
+  VALUE_MAP = {1 => "INT", 2 => "LONG", 3 => "STRING"}
+  VALID_VALUES = Set.new([INT, LONG, STRING]).freeze
+end
+
+module PolicyActionKind
+  ERASE = 1
+  REPLACE = 2
+  HASH = 3
+  TOKENIZE = 4
+  ENCRYPT = 5
+  GENERALIZE = 6
+  INSPECT = 7
+  FLAG = 8
+  VALUE_MAP = {1 => "ERASE", 2 => "REPLACE", 3 => "HASH", 4 => "TOKENIZE", 5 => "ENCRYPT", 6 => "GENERALIZE", 7 => "INSPECT", 8 => "FLAG"}
+  VALID_VALUES = Set.new([ERASE, REPLACE, HASH, TOKENIZE, ENCRYPT, GENERALIZE, INSPECT, FLAG]).freeze
+end
+
+module PolicyResolutionMode
+  EXPLICIT = 1
+  STRICTEST = 2
+  VALUE_MAP = {1 => "EXPLICIT", 2 => "STRICTEST"}
+  VALID_VALUES = Set.new([EXPLICIT, STRICTEST]).freeze
+end
+
+module PolicyLifecycleEventType
+  VALIDATED = 1
+  ACTIVATED = 2
+  DEACTIVATED = 3
+  SUPERSEDED = 4
+  BOUND = 5
+  UNBOUND = 6
+  ATTACH_REJECTED = 7
+  LOADED = 8
+  INVALIDATED = 9
+  VALUE_MAP = {1 => "VALIDATED", 2 => "ACTIVATED", 3 => "DEACTIVATED", 4 => "SUPERSEDED", 5 => "BOUND", 6 => "UNBOUND", 7 => "ATTACH_REJECTED", 8 => "LOADED", 9 => "INVALIDATED"}
+  VALID_VALUES = Set.new([VALIDATED, ACTIVATED, DEACTIVATED, SUPERSEDED, BOUND, UNBOUND, ATTACH_REJECTED, LOADED, INVALIDATED]).freeze
+end
+
+module PolicyConflictClass
+  C1_ACTION = 1
+  C2_VALUE = 2
+  C3_PATH_PREFIX = 3
+  VALUE_MAP = {1 => "C1_ACTION", 2 => "C2_VALUE", 3 => "C3_PATH_PREFIX"}
+  VALID_VALUES = Set.new([C1_ACTION, C2_VALUE, C3_PATH_PREFIX]).freeze
+end
+
+module ErasureRunStatus
+  SUCCEEDED = 1
+  FAILED = 2
+  INTERRUPTED = 3
+  RELEASED = 4
+  FORCE_RELEASED = 5
+  EXTRACTED = 6
+  INITIATED = 7
+  VALUE_MAP = {1 => "SUCCEEDED", 2 => "FAILED", 3 => "INTERRUPTED", 4 => "RELEASED", 5 => "FORCE_RELEASED", 6 => "EXTRACTED", 7 => "INITIATED"}
+  VALID_VALUES = Set.new([SUCCEEDED, FAILED, INTERRUPTED, RELEASED, FORCE_RELEASED, EXTRACTED, INITIATED]).freeze
+end
+
+module ErasureRunLockStatus
+  RUNNING = 1
+  COMPLETED = 2
+  RELEASED = 3
+  FORCE_RELEASED = 4
+  VALUE_MAP = {1 => "RUNNING", 2 => "COMPLETED", 3 => "RELEASED", 4 => "FORCE_RELEASED"}
+  VALID_VALUES = Set.new([RUNNING, COMPLETED, RELEASED, FORCE_RELEASED]).freeze
+end
+
 class Version; end
 
 class FieldSchema; end
@@ -890,6 +989,34 @@ class GetAllWriteEventInfoRequest; end
 class DeleteColumnStatisticsRequest; end
 
 class ReplayedTxnsForPolicyResult; end
+
+class CreateAnonPolicyRequest; end
+
+class ErasurePolicy; end
+
+class Index; end
+
+class PolicyInfo; end
+
+class ErasureRunLock; end
+
+class ErasurePolicyVersion; end
+
+class ErasurePolicyStatement; end
+
+class ErasurePolicyRule; end
+
+class ErasurePolicyBinding; end
+
+class ErasurePolicyBindingMember; end
+
+class ErasurePolicyBindingResolved; end
+
+class ErasurePolicyLifecycleEvent; end
+
+class ErasureRunAudit; end
+
+class PolicyPriv; end
 
 class MetaException < ::Thrift::Exception; end
 
@@ -8503,6 +8630,471 @@ class ReplayedTxnsForPolicyResult
 
   FIELDS = {
     REPLTXNMAPENTRY => {:type => ::Thrift::Types::MAP, :name => 'replTxnMapEntry', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CreateAnonPolicyRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  POLICY = 1
+  ENVCONTEXT = 2
+
+  FIELDS = {
+    POLICY => {:type => ::Thrift::Types::STRUCT, :name => 'policy', :class => ::ErasurePolicy},
+    ENVCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'envContext', :class => ::EnvironmentContext, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field policy is unset!') unless @policy
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicy
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  POLICYNAME = 1
+  POLICYID = 3
+
+  FIELDS = {
+    POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'},
+    POLICYID => {:type => ::Thrift::Types::I64, :name => 'policyId', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class Index
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  INDEXNAME = 1
+  INDEXHANDLERCLASS = 2
+  DBNAME = 3
+  ORIGTABLENAME = 4
+  CREATETIME = 5
+  LASTACCESSTIME = 6
+  INDEXTABLENAME = 7
+  SD = 8
+  DEFERREDREBUILD = 9
+  PAGESIZE = 10
+  BUFFERPOOLSIZE = 11
+  POINTERTYPE = 12
+  INDEXTYPE = 13
+
+  FIELDS = {
+    INDEXNAME => {:type => ::Thrift::Types::STRING, :name => 'indexName'},
+    INDEXHANDLERCLASS => {:type => ::Thrift::Types::STRING, :name => 'indexHandlerClass'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    ORIGTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'origTableName'},
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
+    LASTACCESSTIME => {:type => ::Thrift::Types::I32, :name => 'lastAccessTime'},
+    INDEXTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'indexTableName'},
+    SD => {:type => ::Thrift::Types::STRUCT, :name => 'sd', :class => ::StorageDescriptor},
+    DEFERREDREBUILD => {:type => ::Thrift::Types::BOOL, :name => 'deferredRebuild'},
+    PAGESIZE => {:type => ::Thrift::Types::I32, :name => 'pageSize'},
+    BUFFERPOOLSIZE => {:type => ::Thrift::Types::I32, :name => 'bufferPoolSize'},
+    POINTERTYPE => {:type => ::Thrift::Types::STRING, :name => 'pointerType'},
+    INDEXTYPE => {:type => ::Thrift::Types::I32, :name => 'indexType', :enum_class => ::IndexType}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @indexType.nil? || ::IndexType::VALID_VALUES.include?(@indexType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field indexType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PolicyInfo
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  DOC = 2
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    DOC => {:type => ::Thrift::Types::STRING, :name => 'doc'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasureRunLock
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TBLID = 1
+  RUNID = 2
+  PRINCIPAL = 3
+  STARTEDTS = 4
+  COMPLETEDTS = 5
+  RELEASEDBY = 6
+  RELEASEDTS = 7
+  RELEASEREASON = 8
+  STATUS = 9
+
+  FIELDS = {
+    TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+    RUNID => {:type => ::Thrift::Types::I64, :name => 'runId'},
+    PRINCIPAL => {:type => ::Thrift::Types::STRING, :name => 'principal'},
+    STARTEDTS => {:type => ::Thrift::Types::I64, :name => 'startedTs'},
+    COMPLETEDTS => {:type => ::Thrift::Types::I64, :name => 'completedTs', :optional => true},
+    RELEASEDBY => {:type => ::Thrift::Types::STRING, :name => 'releasedBy', :optional => true},
+    RELEASEDTS => {:type => ::Thrift::Types::I64, :name => 'releasedTs', :optional => true},
+    RELEASEREASON => {:type => ::Thrift::Types::STRING, :name => 'releaseReason', :optional => true},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::ErasureRunLockStatus}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @status.nil? || ::ErasureRunLockStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicyVersion
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  VERSIONID = 1
+  POLICYNAME = 2
+  VERSIONLABEL = 3
+  STATUS = 4
+  IDENTITYFIELDNAME = 5
+  IDENTITYFIELDTYPE = 6
+  SCHEMATYPE = 7
+  SOURCEPATH = 8
+  SOURCECHECKSUM = 9
+  VALIDATEDBY = 10
+  VALIDATEDTS = 11
+  ACTIVATEDBY = 12
+  ACTIVATEDTS = 13
+  DEACTIVATEDBY = 14
+  DEACTIVATEDTS = 15
+  SOURCETEXT = 16
+
+  FIELDS = {
+    VERSIONID => {:type => ::Thrift::Types::I64, :name => 'versionId'},
+    POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'},
+    VERSIONLABEL => {:type => ::Thrift::Types::STRING, :name => 'versionLabel'},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::PolicyVersionStatus},
+    IDENTITYFIELDNAME => {:type => ::Thrift::Types::STRING, :name => 'identityFieldName'},
+    IDENTITYFIELDTYPE => {:type => ::Thrift::Types::I32, :name => 'identityFieldType', :enum_class => ::PolicyLiteralKind},
+    SCHEMATYPE => {:type => ::Thrift::Types::I32, :name => 'schemaType', :enum_class => ::PolicyLiteralKind},
+    SOURCEPATH => {:type => ::Thrift::Types::STRING, :name => 'sourcePath', :optional => true},
+    SOURCECHECKSUM => {:type => ::Thrift::Types::STRING, :name => 'sourceChecksum', :optional => true},
+    VALIDATEDBY => {:type => ::Thrift::Types::STRING, :name => 'validatedBy', :optional => true},
+    VALIDATEDTS => {:type => ::Thrift::Types::I64, :name => 'validatedTs', :optional => true},
+    ACTIVATEDBY => {:type => ::Thrift::Types::STRING, :name => 'activatedBy', :optional => true},
+    ACTIVATEDTS => {:type => ::Thrift::Types::I64, :name => 'activatedTs', :optional => true},
+    DEACTIVATEDBY => {:type => ::Thrift::Types::STRING, :name => 'deactivatedBy', :optional => true},
+    DEACTIVATEDTS => {:type => ::Thrift::Types::I64, :name => 'deactivatedTs', :optional => true},
+    SOURCETEXT => {:type => ::Thrift::Types::STRING, :name => 'sourceText', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @status.nil? || ::PolicyVersionStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
+    unless @identityFieldType.nil? || ::PolicyLiteralKind::VALID_VALUES.include?(@identityFieldType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field identityFieldType!')
+    end
+    unless @schemaType.nil? || ::PolicyLiteralKind::VALID_VALUES.include?(@schemaType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field schemaType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicyStatement
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATEMENTID = 1
+  VERSIONID = 2
+  SCHEMAVALUE = 3
+  ORDINAL = 4
+
+  FIELDS = {
+    STATEMENTID => {:type => ::Thrift::Types::I64, :name => 'statementId'},
+    VERSIONID => {:type => ::Thrift::Types::I64, :name => 'versionId'},
+    SCHEMAVALUE => {:type => ::Thrift::Types::STRING, :name => 'schemaValue'},
+    ORDINAL => {:type => ::Thrift::Types::I32, :name => 'ordinal'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicyRule
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RULEID = 1
+  STATEMENTID = 2
+  FIELDPATH = 3
+  ACTION = 4
+  LITERALVALUE = 5
+  LITERALTYPE = 6
+  PARAMS = 7
+  ORDINAL = 8
+
+  FIELDS = {
+    RULEID => {:type => ::Thrift::Types::I64, :name => 'ruleId'},
+    STATEMENTID => {:type => ::Thrift::Types::I64, :name => 'statementId'},
+    FIELDPATH => {:type => ::Thrift::Types::STRING, :name => 'fieldPath'},
+    ACTION => {:type => ::Thrift::Types::I32, :name => 'action', :enum_class => ::PolicyActionKind},
+    LITERALVALUE => {:type => ::Thrift::Types::STRING, :name => 'literalValue', :optional => true},
+    LITERALTYPE => {:type => ::Thrift::Types::I32, :name => 'literalType', :optional => true, :enum_class => ::PolicyLiteralKind},
+    PARAMS => {:type => ::Thrift::Types::STRING, :name => 'params', :optional => true},
+    ORDINAL => {:type => ::Thrift::Types::I32, :name => 'ordinal'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @action.nil? || ::PolicyActionKind::VALID_VALUES.include?(@action)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field action!')
+    end
+    unless @literalType.nil? || ::PolicyLiteralKind::VALID_VALUES.include?(@literalType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field literalType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicyBinding
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  BINDINGID = 1
+  TBLID = 2
+  COLUMNNAME = 3
+  SCHEMAFIELD = 4
+  ROWLOCATOR = 5
+  COLUMNFORMAT = 6
+  RESOLUTIONMODE = 7
+  CREATEDBY = 8
+  CREATEDTS = 9
+
+  FIELDS = {
+    BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+    TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+    COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
+    SCHEMAFIELD => {:type => ::Thrift::Types::STRING, :name => 'schemaField'},
+    ROWLOCATOR => {:type => ::Thrift::Types::STRING, :name => 'rowLocator'},
+    COLUMNFORMAT => {:type => ::Thrift::Types::I32, :name => 'columnFormat', :enum_class => ::ColumnInternalFormat},
+    RESOLUTIONMODE => {:type => ::Thrift::Types::I32, :name => 'resolutionMode', :enum_class => ::PolicyResolutionMode},
+    CREATEDBY => {:type => ::Thrift::Types::STRING, :name => 'createdBy'},
+    CREATEDTS => {:type => ::Thrift::Types::I64, :name => 'createdTs'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @columnFormat.nil? || ::ColumnInternalFormat::VALID_VALUES.include?(@columnFormat)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field columnFormat!')
+    end
+    unless @resolutionMode.nil? || ::PolicyResolutionMode::VALID_VALUES.include?(@resolutionMode)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field resolutionMode!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicyBindingMember
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  BINDINGID = 1
+  POLICYID = 2
+  ORDINAL = 3
+
+  FIELDS = {
+    BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+    POLICYID => {:type => ::Thrift::Types::I64, :name => 'policyId'},
+    ORDINAL => {:type => ::Thrift::Types::I32, :name => 'ordinal'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicyBindingResolved
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOLVEDID = 1
+  BINDINGID = 2
+  SCHEMAVALUE = 3
+  FIELDPATH = 4
+  ACTION = 5
+  LITERALVALUE = 6
+  LITERALTYPE = 7
+  PARAMS = 8
+  CONTRIBUTINGPOLICIES = 9
+  RESOLUTIONNOTE = 10
+
+  FIELDS = {
+    RESOLVEDID => {:type => ::Thrift::Types::I64, :name => 'resolvedId'},
+    BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+    SCHEMAVALUE => {:type => ::Thrift::Types::STRING, :name => 'schemaValue'},
+    FIELDPATH => {:type => ::Thrift::Types::STRING, :name => 'fieldPath'},
+    ACTION => {:type => ::Thrift::Types::I32, :name => 'action', :enum_class => ::PolicyActionKind},
+    LITERALVALUE => {:type => ::Thrift::Types::STRING, :name => 'literalValue', :optional => true},
+    LITERALTYPE => {:type => ::Thrift::Types::I32, :name => 'literalType', :optional => true, :enum_class => ::PolicyLiteralKind},
+    PARAMS => {:type => ::Thrift::Types::STRING, :name => 'params', :optional => true},
+    CONTRIBUTINGPOLICIES => {:type => ::Thrift::Types::STRING, :name => 'contributingPolicies'},
+    RESOLUTIONNOTE => {:type => ::Thrift::Types::STRING, :name => 'resolutionNote', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @action.nil? || ::PolicyActionKind::VALID_VALUES.include?(@action)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field action!')
+    end
+    unless @literalType.nil? || ::PolicyLiteralKind::VALID_VALUES.include?(@literalType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field literalType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasurePolicyLifecycleEvent
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTID = 1
+  VERSIONID = 2
+  EVENTTYPE = 3
+  PRINCIPAL = 4
+  EVENTTS = 5
+  NOTE = 6
+  CONFLICTCLASS = 7
+  BINDINGID = 8
+
+  FIELDS = {
+    EVENTID => {:type => ::Thrift::Types::I64, :name => 'eventId'},
+    VERSIONID => {:type => ::Thrift::Types::I64, :name => 'versionId'},
+    EVENTTYPE => {:type => ::Thrift::Types::I32, :name => 'eventType', :enum_class => ::PolicyLifecycleEventType},
+    PRINCIPAL => {:type => ::Thrift::Types::STRING, :name => 'principal'},
+    EVENTTS => {:type => ::Thrift::Types::I64, :name => 'eventTs'},
+    NOTE => {:type => ::Thrift::Types::STRING, :name => 'note', :optional => true},
+    CONFLICTCLASS => {:type => ::Thrift::Types::I32, :name => 'conflictClass', :optional => true, :enum_class => ::PolicyConflictClass},
+    BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @eventType.nil? || ::PolicyLifecycleEventType::VALID_VALUES.include?(@eventType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field eventType!')
+    end
+    unless @conflictClass.nil? || ::PolicyConflictClass::VALID_VALUES.include?(@conflictClass)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field conflictClass!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ErasureRunAudit
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RUNID = 1
+  TBLID = 2
+  COLUMNNAME = 3
+  BINDINGID = 4
+  PRINCIPAL = 5
+  STARTEDTS = 6
+  COMPLETEDTS = 7
+  IDENTITYVALUES = 8
+  POLICYVERSIONS = 9
+  RESOLVEDRULESSNAPSHOTID = 10
+  FILESREWRITTEN = 11
+  BYTESBEFORE = 12
+  BYTESAFTER = 13
+  STATUS = 14
+  MATCHESINSPECTED = 15
+  MATCHESREDACTED = 16
+  MATCHESFLAGGED = 17
+  RELEASEREASON = 18
+
+  FIELDS = {
+    RUNID => {:type => ::Thrift::Types::I64, :name => 'runId'},
+    TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+    COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'},
+    BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+    PRINCIPAL => {:type => ::Thrift::Types::STRING, :name => 'principal'},
+    STARTEDTS => {:type => ::Thrift::Types::I64, :name => 'startedTs'},
+    COMPLETEDTS => {:type => ::Thrift::Types::I64, :name => 'completedTs', :optional => true},
+    IDENTITYVALUES => {:type => ::Thrift::Types::STRING, :name => 'identityValues', :optional => true},
+    POLICYVERSIONS => {:type => ::Thrift::Types::STRING, :name => 'policyVersions', :optional => true},
+    RESOLVEDRULESSNAPSHOTID => {:type => ::Thrift::Types::I64, :name => 'resolvedRulesSnapshotId', :optional => true},
+    FILESREWRITTEN => {:type => ::Thrift::Types::I32, :name => 'filesRewritten', :optional => true},
+    BYTESBEFORE => {:type => ::Thrift::Types::I64, :name => 'bytesBefore', :optional => true},
+    BYTESAFTER => {:type => ::Thrift::Types::I64, :name => 'bytesAfter', :optional => true},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::ErasureRunStatus},
+    MATCHESINSPECTED => {:type => ::Thrift::Types::I64, :name => 'matchesInspected', :optional => true},
+    MATCHESREDACTED => {:type => ::Thrift::Types::I64, :name => 'matchesRedacted', :optional => true},
+    MATCHESFLAGGED => {:type => ::Thrift::Types::I64, :name => 'matchesFlagged', :optional => true},
+    RELEASEREASON => {:type => ::Thrift::Types::STRING, :name => 'releaseReason', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @status.nil? || ::ErasureRunStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PolicyPriv
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  POLICYPRIVID = 1
+  POLICYID = 2
+  PRINCIPALNAME = 3
+  PRINCIPALTYPE = 4
+  PRIVILEGE = 5
+  CREATETIME = 6
+  GRANTOR = 7
+  GRANTORTYPE = 8
+  GRANTOPTION = 9
+
+  FIELDS = {
+    POLICYPRIVID => {:type => ::Thrift::Types::I64, :name => 'policyPrivId'},
+    POLICYID => {:type => ::Thrift::Types::I64, :name => 'policyId'},
+    PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName'},
+    PRINCIPALTYPE => {:type => ::Thrift::Types::STRING, :name => 'principalType'},
+    PRIVILEGE => {:type => ::Thrift::Types::STRING, :name => 'privilege'},
+    CREATETIME => {:type => ::Thrift::Types::I64, :name => 'createTime'},
+    GRANTOR => {:type => ::Thrift::Types::STRING, :name => 'grantor', :optional => true},
+    GRANTORTYPE => {:type => ::Thrift::Types::STRING, :name => 'grantorType', :optional => true},
+    GRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'grantOption'}
   }
 
   def struct_fields; FIELDS; end

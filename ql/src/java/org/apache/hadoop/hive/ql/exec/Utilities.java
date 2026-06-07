@@ -5138,4 +5138,34 @@ public final class Utilities {
   public static int getTableCreateTime(Configuration conf, String tableName) {
     return conf.getInt(String.format("%s.%s", tableName, CREATE_TIME), 0);
   }
+
+  /**
+   * Accepts qualified name which is in the form of dbname.tablename and returns dbname from it
+   *
+   * @param dbTableName
+   * @return dbname
+   * @throws SemanticException input string is not qualified name
+   */
+  public static String getDatabaseName(String dbTableName) throws SemanticException {
+    String[] split = dbTableName.split("\\.");
+    if (split.length != 2) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbTableName);
+    }
+    return split[0];
+  }
+
+  /**
+   * Accepts qualified name which is in the form of dbname.tablename and returns tablename from it
+   *
+   * @param dbTableName
+   * @return tablename
+   * @throws SemanticException input string is not qualified name
+   */
+  public static String getTableName(String dbTableName) throws SemanticException {
+    String[] split = dbTableName.split("\\.");
+    if (split.length != 2) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbTableName);
+    }
+    return split[1];
+  }
 }
