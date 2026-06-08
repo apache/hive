@@ -4144,7 +4144,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `hr` = 11
+WHERE `ds` = '2008-04-08' AND `hr` = 1.10E1
 ORDER BY `key`
 LIMIT 10
 STAGE DEPENDENCIES:
@@ -4294,7 +4294,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE `key` = 11 AND `ds` = '2008-04-08' AND `hr` IN ('11', '12')
+WHERE `key` = 1.10E1 AND `ds` = '2008-04-08' AND `hr` IN ('11', '12')
 ORDER BY `key`, `hr`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4482,7 +4482,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS STRING) AS `hr`
 FROM `default`.`srcpart`
-WHERE `key` = 11 AND `hr` = '11'
+WHERE `key` = 1.10E1 AND `hr` = '11'
 ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
