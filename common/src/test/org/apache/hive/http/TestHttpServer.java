@@ -71,18 +71,6 @@ public class TestHttpServer {
   }
 
   /**
-   * The reload-interval ConfVar defaults to 60s so the feature is on out of the box.
-   * Wiring in {@code createAndAddChannelConnector} treats <= 0 as "disabled".
-   */
-  @Test
-  public void testReloadIntervalConfDefaultIs60Seconds() {
-    HiveConf conf = new HiveConf();
-    long ms = conf.getTimeVar(
-        ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL, TimeUnit.MILLISECONDS);
-    assertEquals(60_000L, ms);
-  }
-
-  /**
    * When the watched keystore file is modified, the scheduled
    * {@code FileMonitoringTimerTask} must invoke
    * {@code SslContextFactory#reload}.

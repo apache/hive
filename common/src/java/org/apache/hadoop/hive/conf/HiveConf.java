@@ -3856,9 +3856,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
         "SSL certificate keystore password for HiveServer2 WebUI."),
-    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL("hive.server2.webui.keystore.reload.interval", "60s",
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL("hive.server2.webui.keystore.reload.interval", "0",
         new TimeValidator(TimeUnit.MILLISECONDS),
-        "The refresh interval used to check if either of the keystore certificate file has changed."),
+        "Interval at which HiveServer2 WebUI checks the SSL keystore file for changes; " +
+        "set to 0 to disable auto-reload. The default is 0."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
         "SSL certificate keystore type for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_INCLUDE_CIPHERSUITES("hive.server2.webui.include.ciphersuites", "",

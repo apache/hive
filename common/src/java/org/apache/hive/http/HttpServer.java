@@ -738,7 +738,7 @@ public class HttpServer {
     timer.schedule(new FileMonitoringTimerTask(
             Paths.get(keyStorePath),
             path -> {
-              LOG.info("Reloading certificates from store keystore " + keyStorePath);
+              LOG.info("Reloading certificates from store keystore {}", keyStorePath);
               try {
                 sslContextFactory.reload(factory -> { });
               } catch (Exception ex) {
