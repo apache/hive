@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Cache buster comment to force Jenkins to recompile this module completely with ASM 9.7 TODO remove
 package org.apache.hadoop.hive.druid;
 
 import com.fasterxml.jackson.core.type.TypeReference;
