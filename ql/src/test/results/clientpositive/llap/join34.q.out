@@ -43,7 +43,7 @@ FROM `default`.`src`
 WHERE `key` > 1.000E2) AS `t3`) AS `t4`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE (`key` < 2.00E1 OR `key` > 1.000E2) AND `key` IS NOT NULL) AS `t6` ON `t4`.`key` = `t6`.`key`
+WHERE `key` < 2.00E1 OR `key` > 1.000E2) AS `t6` ON `t4`.`key` = `t6`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -295,12 +295,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) (type: boolean)
                     Statistics: Num rows: 16 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

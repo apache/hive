@@ -1262,27 +1262,27 @@
               "name": "$12"
             },
             {
-              "literal": "Books",
+              "literal": "Books                                             ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 5
+                "precision": 50
               }
             },
             {
-              "literal": "Jewelry",
+              "literal": "Jewelry                                           ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 7
+                "precision": 50
               }
             },
             {
-              "literal": "Sports",
+              "literal": "Sports                                            ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 6
+                "precision": 50
               }
             }
           ]
