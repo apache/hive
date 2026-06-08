@@ -88,9 +88,28 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
       cache.start();
 
       this.claimsCache = CuratorCache.build(client, claimsPath);
-      CuratorCacheListener claimsListener = CuratorCacheListener.builder()
-          .forPathChildrenCache(claimsPath, client, new ClaimsPathListener())
-          .build();
+      CuratorCacheListener claimsListener = CuratorCacheListener.builder().forCreates(
+          childData -> {
+        if (childData == null) {
+          return;
+        }
+        String applicationId = getApplicationId(childData);
+        synchronized (lock) {
+          available.remove(applicationId);
+        }
+      }).forDeletes(
+          childData -> {
+        if (childData == null) {
+          return;
+        }
+        String applicationId = getApplicationId(childData);
+        synchronized (lock) {
+          if (!taken.contains(applicationId)) {
+            available.add(applicationId);
+            lock.notifyAll();
+          }
+        }
+      }).build();
       claimsCache.listenable().addListener(claimsListener);
       claimsCache.start();
 
@@ -223,36 +242,6 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
           break;
         default:
           // Ignore all the other events; logged above.
-        }
-      }
-    }
-  }
-
-  private final class ClaimsPathListener implements PathChildrenCacheListener {
-    @Override
-    public void childEvent(CuratorFramework client, PathChildrenCacheEvent event) {
-      ChildData childData = event.getData();
-      if (childData == null) {
-        return;
-      }
-
-      String applicationId = getApplicationId(childData);
-      synchronized (lock) {
-        switch (event.getType()) {
-        case CHILD_REMOVED:
-          if (!taken.contains(applicationId)) {
-            // if the claim node was released by this particular HS2 itself,
-            // it will be added back to the available list & locks are notified as part of returnSession()
-            available.add(applicationId);
-            lock.notifyAll();
-          }
-          break;
-        case CHILD_ADDED:
-          // A Tez AM was claimed by another HS2, so remove the AM from the available list of this particular HS2
-          available.remove(applicationId);
-          break;
-        default:
-          break;
         }
       }
     }
