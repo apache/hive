@@ -160,9 +160,9 @@ public class MetastoreUtil {
   }
 
   /**
-   * Builds a minimal HMS {@link Table} shell for a native Iceberg logical view (identity, view type,
+   * Builds a minimal HMS {@link Table} shell for Iceberg view (identity, view type,
    * and Iceberg storage-handler markers only). The storage handler {@code postGetTable} hook enriches
-   * this object via {@link IcebergLogicalViewSupport#enrichHmsTableFromIcebergView} (view SQL,
+   * this object via {@link IcebergViewSupport#enrichHmsTableFromIcebergView} (view SQL,
    * schema, and Iceberg parameters).
    */
   public static Table buildMinimalHMSView(String catName, String dbName, String tableName) {

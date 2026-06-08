@@ -40,9 +40,9 @@ import org.apache.iceberg.view.ViewBuilder;
  * Commits a native Iceberg view through the configured default Iceberg catalog (HiveCatalog or REST
  * catalog, etc.) when {@code Catalog} also implements {@link ViewCatalog}.
  */
-public final class IcebergLogicalViewSupport {
+public final class IcebergViewSupport {
 
-  private IcebergLogicalViewSupport() {
+  private IcebergViewSupport() {
   }
 
   /**
@@ -54,18 +54,7 @@ public final class IcebergLogicalViewSupport {
     String catalogName = IcebergCatalogProperties.getCatalogName(conf);
     Map<String, String> catalogProps = IcebergCatalogProperties.getCatalogProperties(conf, catalogName);
     Catalog catalog = CatalogUtil.buildIcebergCatalog(catalogName, catalogProps, conf);
-
-    try {
-      if (catalog instanceof Closeable closeable) {
-        try (Closeable ignored = closeable) {
-          loadAndApplyView(hmsTable, conf, catalog, catalogName, identifier);
-        }
-      } else {
-        loadAndApplyView(hmsTable, conf, catalog, catalogName, identifier);
-      }
-    } catch (IOException e) {
-      throw new UncheckedIOException("Failed to close Iceberg catalog", e);
-    }
+    runWithCatalog(catalog, () -> loadAndApplyView(hmsTable, conf, catalog, catalogName, identifier));
   }
 
   private static void loadAndApplyView(
@@ -78,7 +67,6 @@ public final class IcebergLogicalViewSupport {
     MetastoreUtil.applyIcebergViewToHmsTable(hmsTable, viewCatalog.loadView(identifier), conf);
   }
 
-  /** Creates or replaces a view in the Iceberg catalog. */
   public static void createOrReplaceView(
       Configuration conf,
       String databaseName,
@@ -92,15 +80,24 @@ public final class IcebergLogicalViewSupport {
     String catalogName = IcebergCatalogProperties.getCatalogName(conf);
     Map<String, String> catalogProps = IcebergCatalogProperties.getCatalogProperties(conf, catalogName);
     Catalog catalog = CatalogUtil.buildIcebergCatalog(catalogName, catalogProps, conf);
+    runWithCatalog(
+        catalog,
+        () -> commitView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment));
+  }
 
+  /**
+   * Runs {@code action} with {@code catalog}, then closes it when the catalog implements
+   * {@link Closeable} (e.g. REST catalog clients).
+   */
+  private static void runWithCatalog(Catalog catalog, Runnable action) {
     if (catalog instanceof Closeable closeable) {
       try (Closeable ignored = closeable) {
-        commitView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
+        action.run();
       } catch (IOException e) {
         throw new UncheckedIOException("Failed to close Iceberg catalog", e);
       }
     } else {
-      commitView(catalog, catalogName, identifier, fieldSchemas, viewSql, tblProperties, comment);
+      action.run();
     }
   }
 

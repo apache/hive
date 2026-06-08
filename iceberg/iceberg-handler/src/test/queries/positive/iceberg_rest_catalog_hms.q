@@ -68,7 +68,7 @@ describe formatted ice_orc2;
 select * from ice_orc2;
 
 -----------------------------------------------------------------------------------------------
---! Native Iceberg logical view with TBLPROPERTIES ('view-format'='iceberg') on a REST catalog table
+--! Iceberg view with TBLPROPERTIES ('view-format'='iceberg') on a REST catalog table
 -----------------------------------------------------------------------------------------------
 
 create view ice_v1 tblproperties ('view-format'='iceberg')
@@ -79,7 +79,7 @@ desc formatted ice_v1;
 drop view ice_v1;
 
 -----------------------------------------------------------------------------------------------
---! Native Iceberg logical view: 'view-format' table properly omitted, Hive config 'hive.default.storage.handler.class' 
+--! Iceberg view: 'view-format' table properly omitted, Hive config 'hive.default.storage.handler.class' 
 --! set to 'HiveIcebergStorageHandler'
 -----------------------------------------------------------------------------------------------
 

@@ -48,7 +48,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.hive.IcebergLogicalViewSupport;
+import org.apache.iceberg.hive.IcebergViewSupport;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -205,7 +205,7 @@ class TestHiveRESTCatalogClient {
   }
 
   @Test
-  void testAlterIcebergLogicalView() {
+  void testAlterIcebergView() {
     RESTCatalog viewCapableCatalog =
         Mockito.mock(RESTCatalog.class, Mockito.withSettings().extraInterfaces(ViewCatalog.class));
     Mockito.doReturn("hive").when(viewCapableCatalog).name();
@@ -217,12 +217,12 @@ class TestHiveRESTCatalogClient {
     configuration.set("iceberg.catalog.ice01.uri", "http://localhost");
     HiveRESTCatalogClient client = new HiveRESTCatalogClient(configuration);
 
-    try (MockedStatic<IcebergLogicalViewSupport> viewSupport =
-        Mockito.mockStatic(IcebergLogicalViewSupport.class)) {
-      client.alter_table("hive", "ice_db", "ice_v1", createLogicalView(), null, null);
+    try (MockedStatic<IcebergViewSupport> viewSupport =
+        Mockito.mockStatic(IcebergViewSupport.class)) {
+      client.alter_table("hive", "ice_db", "ice_v1", createIcebergView(), null, null);
       viewSupport.verify(
           () ->
-              IcebergLogicalViewSupport.createOrReplaceView(
+              IcebergViewSupport.createOrReplaceView(
                   any(),
                   eq("ice_db"),
                   eq("ice_v1"),
@@ -233,7 +233,7 @@ class TestHiveRESTCatalogClient {
     }
   }
 
-  private static Table createLogicalView() {
+  private static Table createIcebergView() {
     Table view = new Table();
     view.setTableName("ice_v1");
     view.setDbName("ice_db");

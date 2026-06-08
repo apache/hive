@@ -83,7 +83,7 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
         oldview.getTTable().getParameters().putAll(desc.getProperties());
       }
       if (!desc.usesStorageHandler()) {
-        // External logical view is replaced with a native Hive view
+        // External view is replaced with a native Hive view
         clearStorageHandlerProp(oldview);
       }
       oldview.setPartCols(desc.getPartitionColumns());

@@ -227,7 +227,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     try {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
 
-      if (storageHandler != null && storageHandler.supportsExternalLogicalViewCatalog()) {
+      if (storageHandler != null && storageHandler.supportsExternalViewCatalog()) {
         return storageHandlerClass;
       }
     } catch (HiveException e) {

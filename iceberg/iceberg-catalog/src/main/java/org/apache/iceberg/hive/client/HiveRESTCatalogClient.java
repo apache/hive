@@ -53,8 +53,8 @@ import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.hive.IcebergLogicalViewSupport;
 import org.apache.iceberg.hive.IcebergTableProperties;
+import org.apache.iceberg.hive.IcebergViewSupport;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -276,7 +276,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     Map<String, String> tblProps =
         table.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(table.getParameters());
     String comment = tblProps.get("comment");
-    IcebergLogicalViewSupport.createOrReplaceView(
+    IcebergViewSupport.createOrReplaceView(
         conf, dbName, tableName, hmsTableColumns(table), table.getViewExpandedText(), tblProps, comment);
   }
 

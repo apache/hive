@@ -24,10 +24,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
-/**
- * Parameters for {@link HiveStorageHandler#createOrReplaceExternalLogicalView}.
- */
-public final class CreateExternalLogicalViewRequest implements Serializable {
+public final class CreateExternalViewRequest implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String databaseName;
@@ -39,7 +36,7 @@ public final class CreateExternalLogicalViewRequest implements Serializable {
   private final boolean replace;
   private final boolean ifNotExists;
 
-  public CreateExternalLogicalViewRequest(
+  public CreateExternalViewRequest(
       String databaseName,
       String viewName,
       List<FieldSchema> schema,

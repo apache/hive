@@ -43,7 +43,7 @@ import static org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE;
 import static org.apache.iceberg.CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TestIcebergLogicalViewSupport {
+class TestIcebergViewSupport {
 
   private static final String DB = "native_vw_db";
   private static final String VIEW = "native_vw";
@@ -87,7 +87,7 @@ class TestIcebergLogicalViewSupport {
     String sql = String.format("select id, name from %s.src_tbl", DB);
     Map<String, String> props = Collections.singletonMap("k1", "v1");
 
-    IcebergLogicalViewSupport.createOrReplaceView(
+    IcebergViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, sql, props, "hello-view");
 
     HiveCatalog cat = loadCatalog();
@@ -108,12 +108,12 @@ class TestIcebergLogicalViewSupport {
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
     TableIdentifier id = TableIdentifier.of(DB, VIEW);
 
-    IcebergLogicalViewSupport.createOrReplaceView(
+    IcebergViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, "select 1 as id", null, null);
     View afterCreate = loadCatalog().loadView(id);
     assertThat(afterCreate.sqlFor("hive").sql().trim()).isEqualTo("select 1 as id");
 
-    IcebergLogicalViewSupport.createOrReplaceView(
+    IcebergViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, "select 2 as id", null, null);
 
     assertThat(loadCatalog().viewExists(id)).isTrue();
@@ -127,7 +127,7 @@ class TestIcebergLogicalViewSupport {
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
     String sql = "select 42 as id";
 
-    IcebergLogicalViewSupport.createOrReplaceView(
+    IcebergViewSupport.createOrReplaceView(
         conf, DB, VIEW, cols, sql, null, null);
 
     org.apache.hadoop.hive.metastore.api.Table hmsTable =
@@ -135,7 +135,7 @@ class TestIcebergLogicalViewSupport {
     hmsTable.setViewOriginalText("select 0");
     hmsTable.setViewExpandedText("select 0");
 
-    IcebergLogicalViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
+    IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
     assertThat(hmsTable.getViewExpandedText()).isEqualTo(sql);
     assertThat(hmsTable.getViewOriginalText()).isEqualTo(sql);
 

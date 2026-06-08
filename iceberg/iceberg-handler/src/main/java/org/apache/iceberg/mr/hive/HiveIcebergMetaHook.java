@@ -117,8 +117,8 @@ import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
-import org.apache.iceberg.hive.IcebergLogicalViewSupport;
 import org.apache.iceberg.hive.IcebergTableProperties;
+import org.apache.iceberg.hive.IcebergViewSupport;
 import org.apache.iceberg.hive.MetastoreLock;
 import org.apache.iceberg.hive.NoLock;
 import org.apache.iceberg.io.CloseableIterable;
@@ -179,12 +179,12 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (isIcebergLogicalView(hmsTable)) {
+    if (isIcebergView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       Map<String, String> tblProps =
           hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
       String comment = tblProps.get("comment");
-      IcebergLogicalViewSupport.createOrReplaceView(
+      IcebergViewSupport.createOrReplaceView(
           conf,
           hmsTable.getDbName(),
           hmsTable.getTableName(),
@@ -266,7 +266,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    if (BaseHiveIcebergMetaHook.isIcebergLogicalView(hmsTable)) {
+    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable)) {
       currentAlterTableOp = null;
       if (commitLock == null) {
         commitLock = new NoLock();
@@ -503,12 +503,12 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     if (commitLock == null) {
       throw new IllegalStateException("Hive commit lock should already be set");
     }
-    if (BaseHiveIcebergMetaHook.isIcebergLogicalView(hmsTable)) {
+    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       Map<String, String> tblProps =
           hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
       String comment = tblProps.get("comment");
-      IcebergLogicalViewSupport.createOrReplaceView(
+      IcebergViewSupport.createOrReplaceView(
           conf,
           hmsTable.getDbName(),
           hmsTable.getTableName(),

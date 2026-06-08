@@ -222,7 +222,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
   }
 
   @Test
-  public void testIcebergLogicalView() throws Exception {
+  public void testIcebergView() throws Exception {
     Database db = new Database();
     db.setCatalogName(CATALOG_NAME);
     db.setName(VIEW_DB_NAME);
@@ -233,7 +233,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
     hive.createDatabase(db, true);
 
     List<FieldSchema> cols = Collections.singletonList(new FieldSchema("x", "int", ""));
-    createIcebergLogicalView(VIEW_DB_NAME, NATIVE_VIEW_NAME, cols, "select 1 as x", "rest-native-view");
+    createIcebergView(VIEW_DB_NAME, NATIVE_VIEW_NAME, cols, "select 1 as x", "rest-native-view");
 
     Assertions.assertTrue(msClient.tableExists(CATALOG_NAME, VIEW_DB_NAME, NATIVE_VIEW_NAME));
     
@@ -257,7 +257,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
     msClient.dropDatabase(VIEW_DB_NAME);
   }
 
-  private void createIcebergLogicalView(
+  private void createIcebergView(
       String dbName, String viewName, List<FieldSchema> cols, String viewSql, String comment) throws Exception {
     Table view = new Table();
     view.setCatName(CATALOG_NAME);

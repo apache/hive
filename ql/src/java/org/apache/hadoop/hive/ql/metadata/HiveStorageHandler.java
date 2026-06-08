@@ -1032,7 +1032,7 @@ public interface HiveStorageHandler extends Configurable {
    * @return {@code true} if this handler may store CREATE VIEW text and column metadata in an external catalog
    *         rather than only as a classic HMS virtual view.
    */
-  default boolean supportsExternalLogicalViewCatalog() {
+  default boolean supportsExternalViewCatalog() {
     return false;
   }
 
