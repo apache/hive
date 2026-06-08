@@ -205,22 +205,22 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
 
       synchronized (lock) {
         switch (event.getType()) {
-          case CHILD_UPDATED, CHILD_ADDED:
-            if (available.contains(applicationId) || taken.contains(applicationId)) {
-              return;
-            }
-            available.add(applicationId);
-            lock.notifyAll();
-            break;
-          case CHILD_REMOVED:
-            if (taken.remove(applicationId)) {
-              LOG.warn("The session in use has disappeared from the registry ({})", applicationId);
-            } else if (!available.remove(applicationId)) {
-              LOG.warn("An unknown session has been removed ({})", applicationId);
-            }
-            break;
-          default:
-            // Ignore all the other events; logged above.
+        case CHILD_UPDATED, CHILD_ADDED:
+          if (available.contains(applicationId) || taken.contains(applicationId)) {
+            return; // We do not expect updates to existing sessions; ignore them for now.
+          }
+          available.add(applicationId);
+          lock.notifyAll();
+          break;
+        case CHILD_REMOVED:
+          if (taken.remove(applicationId)) {
+            LOG.warn("The session in use has disappeared from the registry ({})", applicationId);
+          } else if (!available.remove(applicationId)) {
+            LOG.warn("An unknown session has been removed ({})", applicationId);
+          }
+          break;
+        default:
+          // Ignore all the other events; logged above.
         }
       }
     }
@@ -237,20 +237,20 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
       String applicationId = getApplicationId(childData);
       synchronized (lock) {
         switch (event.getType()) {
-          case CHILD_REMOVED:
-            if (!taken.contains(applicationId)) {
-              // if the claim node was released by this particular HS2 itself,
-              // it will be added back to the available list & locks are notified as part of returnSession()
-              available.add(applicationId);
-              lock.notifyAll();
-            }
-            break;
-          case CHILD_ADDED:
-            // A Tez AM was claimed by another HS2, so remove the AM from the available list of this particular HS2
-            available.remove(applicationId);
-            break;
-          default:
-            break;
+        case CHILD_REMOVED:
+          if (!taken.contains(applicationId)) {
+            // if the claim node was released by this particular HS2 itself,
+            // it will be added back to the available list & locks are notified as part of returnSession()
+            available.add(applicationId);
+            lock.notifyAll();
+          }
+          break;
+        case CHILD_ADDED:
+          // A Tez AM was claimed by another HS2, so remove the AM from the available list of this particular HS2
+          available.remove(applicationId);
+          break;
+        default:
+          break;
         }
       }
     }
