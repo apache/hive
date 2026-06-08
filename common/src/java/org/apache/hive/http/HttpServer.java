@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +53,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +69,7 @@ import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.security.http.CrossOriginFilter;
+import org.apache.hadoop.security.ssl.FileMonitoringTimerTask;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.http.security.PamConstraint;
 import org.apache.hive.http.security.PamConstraintMapping;
@@ -140,6 +144,8 @@ public class HttpServer {
   private Server webServer;
   private QueuedThreadPool threadPool;
   private PortHandlerWrapper portHandlerWrapper;
+  @VisibleForTesting
+  Timer keystoreChangeMonitor;
 
   /**
    * Create a status server on the given port.
@@ -360,6 +366,10 @@ public class HttpServer {
   }
 
   public void stop() throws Exception {
+    if (this.keystoreChangeMonitor != null) {
+      this.keystoreChangeMonitor.cancel();
+      this.keystoreChangeMonitor = null;
+    }
     webServer.stop();
   }
 
@@ -695,6 +705,11 @@ public class HttpServer {
           new String[excludedSSLProtocols.size()]));
       sslContextFactory.setKeyStorePassword(b.keyStorePassword);
       connector = new ServerConnector(webServer, sslContextFactory, http);
+
+      long reloadInterval = b.conf.getTimeVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL, TimeUnit.MILLISECONDS);
+      if (reloadInterval > 0) {
+        this.keystoreChangeMonitor = createKeystoreChangeMonitor(reloadInterval, b.keyStorePath, sslContextFactory);
+      }
     }
 
     connector.setAcceptQueueSize(queueSize);
@@ -704,6 +719,36 @@ public class HttpServer {
 
     webServer.addConnector(connector);
     return connector;
+  }
+
+  @VisibleForTesting
+  void setKeystoreChangeMonitor(Timer monitor) {
+    keystoreChangeMonitor = monitor;
+  }
+
+  @VisibleForTesting
+  Timer createKeystoreChangeMonitor(long reloadInterval, String keyStorePath,
+                                    SslContextFactory sslContextFactory) {
+    LOG.info("Starting SSL Certificates Store Monitor. reload interval: {}ms,  keyStorePath: {}", reloadInterval, keyStorePath);
+    Timer timer = new Timer("SSL Certificates Store Monitor", true);
+    //
+    // The Jetty SSLContextFactory provides a 'reload' method which will reload both
+    // truststore and keystore certificates.
+    //
+    timer.schedule(new FileMonitoringTimerTask(
+            Paths.get(keyStorePath),
+            path -> {
+              LOG.info("Reloading certificates from store keystore {}", keyStorePath);
+              try {
+                sslContextFactory.reload(factory -> { });
+              } catch (Exception ex) {
+                LOG.error("Failed to reload SSL keystore certificates", ex);
+              }
+            },null),
+        reloadInterval,
+        reloadInterval
+    );
+    return timer;
   }
 
   /**
