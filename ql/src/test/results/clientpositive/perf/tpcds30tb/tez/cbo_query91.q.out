@@ -23,7 +23,7 @@ HiveProject(call_center=[$0], call_center_name=[$1], manager=[$2], returns_loss=
                       HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($4))])
                         HiveTableScan(table=[[default, customer]], table:alias=[customer])
                     HiveProject(cd_demo_sk=[$0], cd_marital_status=[$2], cd_education_status=[$3])
-                      HiveFilter(condition=[AND(IN($2, 'M', 'W'), IN($3, 'Advanced Degree', 'Unknown'), IN(ROW($2, $3), ROW('M', 'Unknown             '), ROW('W', 'Advanced Degree     ')))])
+                      HiveFilter(condition=[AND(IN($2, 'M', 'W'), IN($3, 'Advanced Degree     ', 'Unknown             '), IN(ROW($2, $3), ROW('M', 'Unknown             '), ROW('W', 'Advanced Degree     ')))])
                         HiveTableScan(table=[[default, customer_demographics]], table:alias=[customer_demographics])
                 HiveProject(hd_demo_sk=[$0])
                   HiveFilter(condition=[LIKE($2, '0-500%':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])

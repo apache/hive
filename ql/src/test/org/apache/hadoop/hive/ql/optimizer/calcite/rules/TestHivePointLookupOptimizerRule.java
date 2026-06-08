@@ -519,7 +519,7 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("IN($1, 10000:DECIMAL(19, 5), 11000:DECIMAL(19, 5))", condition.toString());
+    assertEquals("IN($1, 10000.00000:DECIMAL(19, 5), 11000.00000:DECIMAL(19, 5))", condition.toString());
   }
 
   @Test

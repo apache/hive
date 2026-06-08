@@ -24,7 +24,7 @@ CBO PLAN:
 HiveProject(masking_test_subq_n3.key=[$0], masking_test_subq_n3.value=[$1])
   HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
     HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
-      HiveFilter(condition=[IS NOT NULL(CAST($0):DOUBLE)])
+      HiveFilter(condition=[IS NOT NULL($0)])
         HiveTableScan(table=[[default, masking_test_subq_n3]], table:alias=[masking_test_subq_n3])
     HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
       HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
@@ -56,10 +56,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_subq_n3
-                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -650,7 +650,7 @@ CBO PLAN:
 HiveProject(masking_test_subq_n3.key=[$0], masking_test_subq_n3.value=[$1])
   HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
     HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
-      HiveFilter(condition=[AND(>($0, 0), IS NOT NULL(CAST($0):DOUBLE))])
+      HiveFilter(condition=[>($0, 0)])
         HiveTableScan(table=[[default, masking_test_subq_n3]], table:alias=[masking_test_subq_n3])
     HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
       HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
@@ -682,10 +682,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_subq_n3
-                  filterExpr: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key > 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key > 0) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -1273,7 +1273,7 @@ CBO PLAN:
 HiveProject(key=[$0])
   HiveSemiJoin(condition=[AND(=($0, $2), =($3, $1))], joinType=[semi])
     HiveProject(key=[$0], key1=[CAST($0):DOUBLE])
-      HiveFilter(condition=[AND(>($0, 0), IS NOT NULL(CAST($0):DOUBLE))])
+      HiveFilter(condition=[>($0, 0)])
         HiveTableScan(table=[[default, masking_test_subq_n3]], table:alias=[masking_test_subq_n3])
     HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
       HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
@@ -1305,10 +1305,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_subq_n3
-                  filterExpr: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key > 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key > 0) (type: boolean)
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), UDFToDouble(key) (type: double)
@@ -1896,7 +1896,7 @@ CBO PLAN:
 HiveProject(value=[$1])
   HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
     HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
-      HiveFilter(condition=[AND(>($0, 0), IS NOT NULL(CAST($0):DOUBLE))])
+      HiveFilter(condition=[>($0, 0)])
         HiveTableScan(table=[[default, masking_test_subq_n3]], table:alias=[masking_test_subq_n3])
     HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
       HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
@@ -1928,10 +1928,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_subq_n3
-                  filterExpr: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key > 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key > 0) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -2538,7 +2538,7 @@ HiveProject(masking_test_subq_n3.key=[$5], masking_test_subq_n3.value=[$6], srcp
     HiveProject(key=[$0], value=[$1], EXPR$0=[CAST($0):DOUBLE])
       HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
         HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
-          HiveFilter(condition=[IS NOT NULL(CAST($0):DOUBLE)])
+          HiveFilter(condition=[IS NOT NULL($0)])
             HiveTableScan(table=[[default, masking_test_subq_n3]], table:alias=[masking_test_subq_n3])
         HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
           HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
@@ -2603,10 +2603,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_subq_n3
-                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -6845,7 +6845,7 @@ CBO PLAN:
 HiveProject(masking_test_subq_n3.key=[$0], masking_test_subq_n3.value=[$1])
   HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
     HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
-      HiveFilter(condition=[AND(>($0, 0), IS NOT NULL(CAST($0):DOUBLE))])
+      HiveFilter(condition=[>($0, 0)])
         HiveTableScan(table=[[default, masking_test_subq_n3]], table:alias=[masking_test_subq_n3])
     HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
       HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
@@ -6877,10 +6877,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_subq_n3
-                  filterExpr: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key > 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key > 0) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -7468,7 +7468,7 @@ CBO PLAN:
 HiveProject(masking_test_subq_n3.key=[$0], masking_test_subq_n3.value=[$1])
   HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
     HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
-      HiveFilter(condition=[AND(>($0, 0), IS NOT NULL(CAST($0):DOUBLE))])
+      HiveFilter(condition=[>($0, 0)])
         HiveTableScan(table=[[default, masking_test_subq_n3]], table:alias=[masking_test_subq_n3])
     HiveProject(key=[$0], key0=[CAST($0):DOUBLE])
       HiveFilter(condition=[AND(IS NOT NULL(CAST($0):DOUBLE), IS NOT NULL($0))])
@@ -7500,10 +7500,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_subq_n3
-                  filterExpr: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key > 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key > 0) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)

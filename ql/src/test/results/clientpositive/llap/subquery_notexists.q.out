@@ -646,7 +646,7 @@ HiveProject(p1.p_name=[$0])
       HiveProject(p_col0=[CAST($4):DOUBLE])
         HiveTableScan(table=[[default, part]], table:alias=[part])
     HiveProject(literalTrue=[true], p_partkey0=[CAST($0):DOUBLE])
-      HiveFilter(condition=[IS NOT NULL(CAST($0):DOUBLE)])
+      HiveFilter(condition=[IS NOT NULL($0)])
         HiveTableScan(table=[[default, part]], table:alias=[pp1])
 
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -688,7 +688,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string)
                   Filter Operator
-                    predicate: UDFToDouble(p_partkey) is not null (type: boolean)
+                    predicate: p_partkey is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToDouble(p_partkey) (type: double)
