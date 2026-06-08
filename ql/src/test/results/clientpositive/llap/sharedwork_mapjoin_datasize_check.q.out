@@ -48,18 +48,18 @@ OPTIMIZED SQL: SELECT `t5`.`$f0` AS `aa.a`, `t12`.`$f1` AS `aa.b`, `t12`.`$f2` A
 FROM (SELECT `t0`.`key` AS `$f0`, SUM(CAST(`t0`.`value` AS DOUBLE)) / COUNT(CAST(`t0`.`value` AS DOUBLE)) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `value` > 1000001 AND `key` IS NOT NULL) AS `t0`
+WHERE `value` > 1.0000010E6 AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000001 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `value` > 1.0000010E6 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 GROUP BY `t0`.`key`) AS `t5`
 INNER JOIN (SELECT `t7`.`key` AS `$f0`, SUM(CAST(`t7`.`value` AS DOUBLE)) / COUNT(CAST(`t7`.`value` AS DOUBLE)) AS `$f1`, SUM(`t9`.`value`) AS `$f2`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t7`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t7`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t9` ON `t7`.`key` = `t9`.`key`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t9` ON `t7`.`key` = `t9`.`key`
 GROUP BY `t7`.`key`) AS `t12` ON `t5`.`$f0` = `t12`.`$f0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -503,36 +503,36 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`$f0` AS `aa.a`, `t11`.`$f1` AS `aa.b`, `t11`.`$f2` AS `aa.c`, `t4`.`$f0` AS `bb.a`, `t4`.`$f1` AS `bb.b`, `t4`.`$f2` AS `bb.c`, `t17`.`$f0` AS `cc.a`, `t17`.`$f1` AS `cc.b`, `t17`.`$f2` AS `cc.c`, `t23`.`$f0` AS `dd.a`, `t23`.`$f1` AS `dd.b`, `t23`.`$f2` AS `dd.c`
 FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`b`) / COUNT(`t0`.`b`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
-FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `b`
+FROM (SELECT `key`, 2.0E0 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
-WHERE `value` > 1000001 AND `key` IS NOT NULL) AS `t0`
+WHERE `value` > 1.0000010E6 AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000001 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `value` > 1.0000010E6 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 GROUP BY `t0`.`key`) AS `t4`
 INNER JOIN (SELECT `t6`.`key` AS `$f0`, SUM(CAST(`t6`.`value` AS DOUBLE)) / COUNT(CAST(`t6`.`value` AS DOUBLE)) AS `$f1`, SUM(`t8`.`value`) AS `$f2`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t6`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t6`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
 GROUP BY `t6`.`key`) AS `t11` ON `t4`.`$f0` = `t11`.`$f0`
 INNER JOIN (SELECT `t13`.`key` AS `$f0`, SUM(`t13`.`b`) / COUNT(`t13`.`b`) AS `$f1`, SUM(`t15`.`value`) AS `$f2`
-FROM (SELECT `key`, 3 * CAST(`value` AS DOUBLE) AS `b`
+FROM (SELECT `key`, 3.0E0 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
-WHERE `value` > 1000002 AND `key` IS NOT NULL) AS `t13`
+WHERE `value` > 1.0000020E6 AND `key` IS NOT NULL) AS `t13`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000002 AND `key` IS NOT NULL) AS `t15` ON `t13`.`key` = `t15`.`key`
+WHERE `value` > 1.0000020E6 AND `key` IS NOT NULL) AS `t15` ON `t13`.`key` = `t15`.`key`
 GROUP BY `t13`.`key`) AS `t17` ON `t4`.`$f0` = `t17`.`$f0`
 INNER JOIN (SELECT `t19`.`key` AS `$f0`, SUM(`t19`.`b`) / COUNT(`t19`.`b`) AS `$f1`, SUM(`t21`.`value`) AS `$f2`
-FROM (SELECT `key`, 4 * CAST(`value` AS DOUBLE) AS `b`
+FROM (SELECT `key`, 4.0E0 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
-WHERE `value` > 1000003 AND `key` IS NOT NULL) AS `t19`
+WHERE `value` > 1.0000030E6 AND `key` IS NOT NULL) AS `t19`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000003 AND `key` IS NOT NULL) AS `t21` ON `t19`.`key` = `t21`.`key`
+WHERE `value` > 1.0000030E6 AND `key` IS NOT NULL) AS `t21` ON `t19`.`key` = `t21`.`key`
 GROUP BY `t19`.`key`) AS `t23` ON `t4`.`$f0` = `t23`.`$f0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1199,36 +1199,36 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`$f0` AS `aa.a`, `t11`.`$f1` AS `aa.b`, `t11`.`$f2` AS `aa.c`, `t4`.`$f0` AS `bb.a`, `t4`.`$f1` AS `bb.b`, `t4`.`$f2` AS `bb.c`, `t17`.`$f0` AS `cc.a`, `t17`.`$f1` AS `cc.b`, `t17`.`$f2` AS `cc.c`, `t23`.`$f0` AS `dd.a`, `t23`.`$f1` AS `dd.b`, `t23`.`$f2` AS `dd.c`
 FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`b`) / COUNT(`t0`.`b`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
-FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `b`
+FROM (SELECT `key`, 2.0E0 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t0`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000001 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `value` > 1.0000010E6 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 GROUP BY `t0`.`key`) AS `t4`
 INNER JOIN (SELECT `t6`.`key` AS `$f0`, SUM(CAST(`t6`.`value` AS DOUBLE)) / COUNT(CAST(`t6`.`value` AS DOUBLE)) AS `$f1`, SUM(`t8`.`value`) AS `$f2`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t6`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t6`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
 GROUP BY `t6`.`key`) AS `t11` ON `t4`.`$f0` = `t11`.`$f0`
 INNER JOIN (SELECT `t13`.`key` AS `$f0`, SUM(`t13`.`b`) / COUNT(`t13`.`b`) AS `$f1`, SUM(`t15`.`value`) AS `$f2`
-FROM (SELECT `key`, 3 * CAST(`value` AS DOUBLE) AS `b`
+FROM (SELECT `key`, 3.0E0 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t13`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t13`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000002 AND `key` IS NOT NULL) AS `t15` ON `t13`.`key` = `t15`.`key`
+WHERE `value` > 1.0000020E6 AND `key` IS NOT NULL) AS `t15` ON `t13`.`key` = `t15`.`key`
 GROUP BY `t13`.`key`) AS `t17` ON `t4`.`$f0` = `t17`.`$f0`
 INNER JOIN (SELECT `t19`.`key` AS `$f0`, SUM(`t19`.`b`) / COUNT(`t19`.`b`) AS `$f1`, SUM(`t21`.`value`) AS `$f2`
-FROM (SELECT `key`, 4 * CAST(`value` AS DOUBLE) AS `b`
+FROM (SELECT `key`, 4.0E0 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
-WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t19`
+WHERE `value` > 1.0000000E6 AND `key` IS NOT NULL) AS `t19`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` > 1000003 AND `key` IS NOT NULL) AS `t21` ON `t19`.`key` = `t21`.`key`
+WHERE `value` > 1.0000030E6 AND `key` IS NOT NULL) AS `t21` ON `t19`.`key` = `t21`.`key`
 GROUP BY `t19`.`key`) AS `t23` ON `t4`.`$f0` = `t23`.`$f0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
