@@ -115,7 +115,7 @@ FROM `default`.`my_table_0003`
 WHERE `col_24` IS NOT NULL) AS `t6` ON `t4`.`col_22` = `t6`.`col_24`
 LEFT JOIN (SELECT `col_1`
 FROM `default`.`my_table_0001_01`
-WHERE `col_100` = 210 AND `col_1` IS NOT NULL) AS `t8` ON `t0`.`col_1` = `t8`.`col_1`
+WHERE `col_100` = 2.100E2 AND `col_1` IS NOT NULL) AS `t8` ON `t0`.`col_1` = `t8`.`col_1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
