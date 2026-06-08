@@ -368,6 +368,7 @@ public class HttpServer {
   public void stop() throws Exception {
     if (this.keystoreChangeMonitor != null) {
       this.keystoreChangeMonitor.cancel();
+      this.keystoreChangeMonitor = null;
     }
     webServer.stop();
   }
