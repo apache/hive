@@ -118,15 +118,16 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
       }
     }
     
-    long endTimeNs = System.nanoTime() + (1000000000L * maxAttempts);
-    long queueWaitTimeMs = Math.max(0, (endTimeNs - System.nanoTime()) / 1000000L);
+    long startTimeNs = System.nanoTime();
+    long timeoutNs = TimeUnit.SECONDS.toNanos(maxAttempts);
+    long queueWaitTimeMs = Math.max(0, (timeoutNs - (System.nanoTime() - startTimeNs)) / 1000000L);
     if (!globalQueue.acquire(queueWaitTimeMs, TimeUnit.MILLISECONDS)) {
       throw new IOException("Cannot get a session (timed out in queue) after " + maxAttempts + " seconds");
     }
 
     try {
       synchronized (lock) {
-        while (System.nanoTime() < endTimeNs) {
+        while (System.nanoTime() - startTimeNs < timeoutNs) {
           Iterator<String> iter = available.iterator();
 
           while (iter.hasNext()) {
@@ -141,7 +142,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
               iter.remove();
             }
           }
-          long remainingTimeNs = endTimeNs - System.nanoTime();
+          long remainingTimeNs = timeoutNs - (System.nanoTime() - startTimeNs);
           if (remainingTimeNs > 0) {
             long waitTimeMs = Math.min(1000L, remainingTimeNs / 1_000_000L);
             lock.wait(waitTimeMs);
