@@ -134,7 +134,7 @@ public class TezExternalSessionState extends TezSessionState {
     // We never close external sessions that don't have errors.
     try {
       if (externalAppId != null) {
-        LOG.info("Returning external session with appID: {}", externalAppId);
+        LOG.debug("Returning external session with appID: {}", externalAppId);
         SessionState sessionState = SessionState.get();
         if (sessionState != null) {
           sessionState.setTezSession(null);
