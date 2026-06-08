@@ -1228,12 +1228,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) < 50) and (cstring1 like '%n') and (length(cstring1) > 0))) (type: boolean)
+                  filterExpr: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or (null and (cstring1 like '%n') and null)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) < 50) and (cstring1 like '%n') and (length(cstring1) > 0))) (type: boolean)
+                    predicate: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or (null and (cstring1 like '%n') and null)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
@@ -30022,7 +30022,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesparquet.ctinyint`, `csmallint` AS `alltypesparquet.csmallint`, `cint` AS `alltypesparquet.cint`, `cbigint` AS `alltypesparquet.cbigint`, `cfloat` AS `alltypesparquet.cfloat`, `cdouble` AS `alltypesparquet.cdouble`, `cstring1` AS `alltypesparquet.cstring1`, `cstring2` AS `alltypesparquet.cstring2`, `ctimestamp1` AS `alltypesparquet.ctimestamp1`, `ctimestamp2` AS `alltypesparquet.ctimestamp2`, `cboolean1` AS `alltypesparquet.cboolean1`, `cboolean2` AS `alltypesparquet.cboolean2`
 FROM `default`.`alltypesparquet`
-WHERE `cint` = 49 AND `cfloat` = 3.5 OR `cint` = 47 AND `cfloat` = 2.09 OR `cint` = 45 AND `cfloat` = 3.02
+WHERE `cint` = 49 AND `cfloat` = 3.5E0 OR `cint` = 47 AND `cfloat` = 2.09E0 OR `cint` = 45 AND `cfloat` = 3.02E0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30133,7 +30133,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesparquet.ctinyint`, `csmallint` AS `alltypesparquet.csmallint`, `cint` AS `alltypesparquet.cint`, `cbigint` AS `alltypesparquet.cbigint`, `cfloat` AS `alltypesparquet.cfloat`, `cdouble` AS `alltypesparquet.cdouble`, `cstring1` AS `alltypesparquet.cstring1`, `cstring2` AS `alltypesparquet.cstring2`, `ctimestamp1` AS `alltypesparquet.ctimestamp1`, `ctimestamp2` AS `alltypesparquet.ctimestamp2`, `cboolean1` AS `alltypesparquet.cboolean1`, `cboolean2` AS `alltypesparquet.cboolean2`
 FROM `default`.`alltypesparquet`
-WHERE (`cint`, `cfloat`) IN ((49, 3.5), (47, 2.09), (45, 3.02))
+WHERE (`cint`, `cfloat`) IN ((49, 3.5E0), (47, 2.09E0), (45, 3.02E0))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30244,7 +30244,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesparquet.ctinyint`, `csmallint` AS `alltypesparquet.csmallint`, `cint` AS `alltypesparquet.cint`, `cbigint` AS `alltypesparquet.cbigint`, `cfloat` AS `alltypesparquet.cfloat`, `cdouble` AS `alltypesparquet.cdouble`, `cstring1` AS `alltypesparquet.cstring1`, `cstring2` AS `alltypesparquet.cstring2`, `ctimestamp1` AS `alltypesparquet.ctimestamp1`, `ctimestamp2` AS `alltypesparquet.ctimestamp2`, `cboolean1` AS `alltypesparquet.cboolean1`, `cboolean2` AS `alltypesparquet.cboolean2`
 FROM `default`.`alltypesparquet`
-WHERE (`cint` = 49 OR `cfloat` = 3.5) AND (`cint` = 47 OR `cfloat` = 2.09) AND (`cint` = 45 OR `cfloat` = 3.02)
+WHERE (`cint` = 49 OR `cfloat` = 3.5E0) AND (`cint` = 47 OR `cfloat` = 2.09E0) AND (`cint` = 45 OR `cfloat` = 3.02E0)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
