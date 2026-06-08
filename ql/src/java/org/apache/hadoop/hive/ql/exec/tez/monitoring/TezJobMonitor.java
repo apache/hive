@@ -499,6 +499,20 @@ public class TezJobMonitor {
     }
   }
 
+  public static void killRunningDAGsForApplication(String applicationId) {
+    synchronized (shutdownList) {
+      for (DAGClient c : shutdownList) {
+        try {
+          if (applicationId.equals(c.getSessionIdentifierString())) {
+            c.tryKillDAG();
+          }
+        } catch (Exception e) {
+          LOG.error("Error while trying to kill running DAG on tez session {}", applicationId);
+        }
+      }
+    }
+  }
+
   static long getCounterValueByGroupName(TezCounters vertexCounters, String groupNamePattern,
                                          String counterName) {
     TezCounter tezCounter = vertexCounters.getGroup(groupNamePattern).findCounter(counterName);
