@@ -21,9 +21,19 @@ package org.apache.hive.service.server;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hive.http.HttpServer;
+import org.apache.hive.service.cli.CLIService;
+import org.apache.hive.service.cli.session.SessionManager;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
 import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestHiveServer2 {
 
@@ -97,5 +107,25 @@ public class TestHiveServer2 {
     assertEquals(Integer.valueOf(4), startedWorkers.get("pool2"));
     assertEquals(Integer.valueOf(5), startedWorkers.get("pool3"));
     assertEquals(Integer.valueOf(3), startedWorkers.get(Constants.COMPACTION_DEFAULT_POOL));
+  }
+
+  @Test
+  public void testCreateHttpServerBuilderStampsStartcodeBeforeConfIsCopied() throws Exception {
+    HiveConf conf = new HiveConf();
+
+    CLIService cli = mock(CLIService.class);
+    SessionManager sessionManager = mock(SessionManager.class);
+    when(cli.getSessionManager()).thenReturn(sessionManager);
+
+    HttpServer.Builder builder = HiveServer2.createHttpServerBuilder(
+        "localhost", 0, "test", "/", conf, cli, null);
+
+    // setConf stores a *copy* of the conf on the Builder. Read that copy back via
+    // reflection — that's the same instance the servlet context exposes to the JSP.
+    Field confField = HttpServer.Builder.class.getDeclaredField("conf");
+    confField.setAccessible(true);
+    HiveConf builderConf = (HiveConf) confField.get(builder);
+    assertNotNull("Builder.conf must be set after createHttpServerBuilder", builderConf);
+    assertNotNull("startcode must be exists", builderConf.get("startcode"));
   }
 }
