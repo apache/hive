@@ -21,13 +21,13 @@ HiveProject(src1.key=[$0], src1.value=[$1], src2.key=[$2], src2.value=[$3], src3
   HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(key=[$0], value=[$1])
-        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0), IS NOT NULL($0))])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0))])
           HiveTableScan(table=[[default, src]], table:alias=[src1])
       HiveProject(key=[$0], value=[$1])
-        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0), IS NOT NULL($0))])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0))])
           HiveTableScan(table=[[default, src]], table:alias=[src2])
     HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0), IS NOT NULL($0))])
+      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0))])
         HiveTableScan(table=[[default, src]], table:alias=[src3])
 
 PREHOOK: query: EXPLAIN CBO
@@ -61,7 +61,7 @@ HiveProject(src1.key=[$4], src1.value=[$5], src2.key=[$2], src2.value=[$3], src3
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, src]], table:alias=[src2])
       HiveProject(key=[$0], value=[$1])
-        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0), IS NOT NULL($0))])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 10.0E0), <(CAST($0):DOUBLE, 20.0E0))])
           HiveTableScan(table=[[default, src]], table:alias=[src1])
 
 PREHOOK: query: EXPLAIN CBO

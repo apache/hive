@@ -390,7 +390,7 @@ POSTHOOK: Input: default@ax
 CBO PLAN:
 HiveProject(_c0=[$0])
   HiveAggregate(group=[{}], agg#0=[count()])
-    HiveFilter(condition=[IN($1, 'a', 'aa', 'aaa', 'ab', 'abc', 'ac', 'ba', 'bb', 'bbb', 'bc', 'bca', 'ca', 'cab', 'cb', 'cbc', 'z')])
+    HiveFilter(condition=[IN($1, 'a         ', 'aa        ', 'aaa       ', 'ab        ', 'abc       ', 'ac        ', 'ba        ', 'bb        ', 'bbb       ', 'bc        ', 'bca       ', 'ca        ', 'cab       ', 'cb        ', 'cbc       ', 'z         ')])
       HiveTableScan(table=[[default, ax]], table:alias=[ax])
 
 PREHOOK: query: explain select count(*) from ax where t in

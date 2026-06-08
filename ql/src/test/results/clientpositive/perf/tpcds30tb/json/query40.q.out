@@ -2189,7 +2189,13 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 13,
+                  "scale": 2
+                }
               },
               {
                 "literal": 0,
@@ -2259,7 +2265,13 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 13,
+                  "scale": 2
+                }
               },
               {
                 "literal": 0,

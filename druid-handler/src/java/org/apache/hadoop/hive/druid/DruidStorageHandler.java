@@ -138,9 +138,6 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 @SuppressWarnings({ "rawtypes" }) public class DruidStorageHandler extends DefaultHiveMetaHook
     implements HiveStorageHandler {
 
-  // TODO cleanup
-  private static final String TMP_CACHE_BUSTER_TOKEN = "Force-Recompile-Druid-Module-ASM-9.7";
-
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
 
   private static final SessionState.LogHelper CONSOLE = new SessionState.LogHelper(LOG);
