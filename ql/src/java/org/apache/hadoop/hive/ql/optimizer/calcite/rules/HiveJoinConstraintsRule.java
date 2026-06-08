@@ -163,7 +163,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
         }
         // Then, we start by trying to reference only left side in top projections
         List<RexNode> swappedTopProjExprs = topProjExprs.stream()
-            .map(projExpr -> projExpr.accept(new RexPermuteInputsShuttle(mappingRL, call.rel(1))))
+            .map(projExpr -> projExpr.accept(new RexPermuteInputsShuttle(mappingRL, false, call.rel(1))))
             .collect(Collectors.toList());
         rightInputPotentialFK = RelOptUtil.InputFinder.bits(swappedTopProjExprs, null).intersects(rightBits);
         if (!rightInputPotentialFK) {
@@ -171,7 +171,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
         } else {
           // If it did not work, we try to reference only right side in top projections
           swappedTopProjExprs = topProjExprs.stream()
-              .map(projExpr -> projExpr.accept(new RexPermuteInputsShuttle(mappingLR, call.rel(1))))
+              .map(projExpr -> projExpr.accept(new RexPermuteInputsShuttle(mappingLR, false, call.rel(1))))
               .collect(Collectors.toList());
           leftInputPotentialFK = RelOptUtil.InputFinder.bits(swappedTopProjExprs, null).intersects(leftBits);
           if (!leftInputPotentialFK) {

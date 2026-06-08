@@ -53,6 +53,7 @@ import org.apache.calcite.rex.RexLambdaRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexNodeAndFieldIndex;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexPatternFieldRef;
 import org.apache.calcite.rex.RexShuttle;
@@ -1149,6 +1150,11 @@ public class HiveCalciteUtil {
 
     @Override
     public Boolean visitLambdaRef(RexLambdaRef lambdaRef) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitNodeAndFieldIndex(RexNodeAndFieldIndex nodeAndFieldIndex) {
       return false;
     }
   }
