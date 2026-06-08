@@ -168,6 +168,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
         client.delete().guaranteed().forPath(claimsPath + "/" + appId);
       } catch (KeeperException.NoNodeException e) {
         // If the claim Node has already been deleted, we can ignore it.
+        LOG.debug("Claim Node has already been deleted for the session {}", appId, e);
       } catch (Exception e) {
         LOG.warn("Failed to delete claim node for session {}", appId, e);
       }
