@@ -305,7 +305,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       // Semijoin reduction is a runtime filter, so relying on (possibly stale) stats only costs
       // performance, not correctness - the relaxed check also accepts analyzed external tables.
       if (!StatsUtils.checkCanProvideStatsForOpt(new Table(ts.getConf().getTableMetadata().getTTable()))) {
-        LOG.debug("Disabling semijoin optimzation on {} since it is an external table and also could not provide statistics.",
+        LOG.debug("Disabling semijoin optimization on {} since it is an external table and also could not provide statistics.",
             ts.getConf().getTableMetadata().getFullyQualifiedName());
         disableSemiJoin = true;
       } else {
