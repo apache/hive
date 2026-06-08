@@ -563,7 +563,7 @@ public class PartitionPruner extends Transform {
       Warehouse.makeValsFromName(partName, values);
 
       List<Object> convertedValues = new ArrayList<>(values.size());
-      for(int i=0; i<values.size(); i++) {
+      for (int i = 0; i < values.size(); i++) {
         String partitionValue = values.get(i);
         PrimitiveTypeInfo typeInfo = partColumnTypeInfos.get(i);
 

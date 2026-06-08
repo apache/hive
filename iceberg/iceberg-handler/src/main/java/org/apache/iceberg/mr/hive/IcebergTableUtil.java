@@ -452,6 +452,24 @@ public class IcebergTableUtil {
     deleteFiles.deleteFromRowFilter(exp).commit();
   }
 
+  /**
+   * Parses an Iceberg partition path into a Hive-compatible spec map, representing null partition
+   * values with the Hive default partition name.
+   */
+  public static Map<String, String> makeSpecFromName(String partName, PartitionSpec spec, PartitionData data,
+      String defaultPartitionName) {
+    Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+    Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+
+    List<PartitionField> fields = spec.fields();
+    for (int i = 0; i < fields.size(); i++) {
+      if (data.get(i) == null) {
+        partSpecMap.put(fields.get(i).name(), defaultPartitionName);
+      }
+    }
+    return partSpecMap;
+  }
+
   public static PartitionData toPartitionData(StructLike key, Types.StructType keyType) {
     PartitionData keyTemplate = new PartitionData(keyType);
     return keyTemplate.copyFor(key);

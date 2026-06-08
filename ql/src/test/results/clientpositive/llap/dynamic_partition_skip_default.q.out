@@ -276,8 +276,11 @@ STAGE PLANS:
           alias: dynamic_part_table
           filterExpr: ((partcol1 = '1') and (partcol2) IN ('1', '__HIVE_DEFAULT_PARTITION__')) (type: boolean)
           GatherStats: false
-          Select Operator
-            expressions: intcol (type: string)
-            outputColumnNames: _col0
-            ListSink
+          Filter Operator
+            isSamplingPred: false
+            predicate: (partcol2) IN ('1', '__HIVE_DEFAULT_PARTITION__') (type: boolean)
+            Select Operator
+              expressions: intcol (type: string)
+              outputColumnNames: _col0
+              ListSink
 
