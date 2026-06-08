@@ -81,19 +81,19 @@ POSTHOOK: Input: default@src5_n3
 OPTIMIZED SQL: SELECT `key` AS `s.key`, `count` AS `s.count`
 FROM (SELECT `key`, `count`
 FROM `default`.`src2_n6`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 UNION ALL
 SELECT `key`, `count`
 FROM `default`.`src3_n2`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 UNION ALL
 SELECT `key`, `count`
 FROM `default`.`src4_n0`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 UNION ALL
 SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`src5_n3`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 GROUP BY `key`) AS `t8`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -540,19 +540,19 @@ POSTHOOK: Input: default@src5_n3
 OPTIMIZED SQL: SELECT `key` AS `s.key`, `count` AS `s.count`
 FROM (SELECT `key`, `count`
 FROM `default`.`src2_n6`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 UNION ALL
 SELECT `key`, `count`
 FROM `default`.`src3_n2`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 UNION ALL
 SELECT `t4`.`key`, `t6`.`count`
 FROM (SELECT `key`
 FROM `default`.`src4_n0`
-WHERE `key` < 10) AS `t4`
+WHERE `key` < 1.00E1) AS `t4`
 INNER JOIN (SELECT `key`, `count`
 FROM `default`.`src5_n3`
-WHERE `key` < 10) AS `t6` ON `t4`.`key` = `t6`.`key`) AS `t8`
+WHERE `key` < 1.00E1) AS `t6` ON `t4`.`key` = `t6`.`key`) AS `t8`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -977,19 +977,19 @@ POSTHOOK: Input: default@src5_n3
 OPTIMIZED SQL: SELECT `key` AS `s.key`, `count` AS `s.count`
 FROM (SELECT `key`, `count`
 FROM `default`.`src2_n6`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 UNION ALL
 SELECT `key`, `count`
 FROM `default`.`src3_n2`
-WHERE `key` < 10
+WHERE `key` < 1.00E1
 UNION ALL
 SELECT `t4`.`key`, COUNT(*) AS `$f1`
 FROM (SELECT `key`
 FROM `default`.`src4_n0`
-WHERE `key` < 10) AS `t4`
+WHERE `key` < 1.00E1) AS `t4`
 INNER JOIN (SELECT `key`
 FROM `default`.`src5_n3`
-WHERE `key` < 10) AS `t6` ON `t4`.`key` = `t6`.`key`
+WHERE `key` < 1.00E1) AS `t6` ON `t4`.`key` = `t6`.`key`
 GROUP BY `t4`.`key`) AS `t9`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

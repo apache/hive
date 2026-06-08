@@ -959,7 +959,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
                   Filter Operator
-                    predicate: CAST( c AS STRING) is not null (type: boolean)
+                    predicate: c is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: c (type: char(2))
