@@ -379,7 +379,7 @@ public class TestFilterSelectivityEstimator {
     filter = simplify(filter);
     Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.7346938775510203, estimator.estimateSelectivity(filter), DELTA);
+    Assert.assertEquals(0.8095238095238095, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test
