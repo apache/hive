@@ -528,10 +528,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t0
-                  filterExpr: UDFToLong(col0) is not null (type: boolean)
+                  filterExpr: col0 is not null (type: boolean)
                   Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToLong(col0) is not null (type: boolean)
+                    predicate: col0 is not null (type: boolean)
                     Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: col0 (type: int), UDFToLong(col0) (type: bigint)

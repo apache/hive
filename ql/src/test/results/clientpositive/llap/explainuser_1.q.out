@@ -2893,7 +2893,7 @@ Stage-0
                               Select Operator [SEL_12] (rows=1 width=114)
                                 Output:["_col0","_col1"]
                                 Filter Operator [FIL_39] (rows=1 width=114)
-                                  predicate:(((_col2 - _col1) > 600.0D) and _col1 is not null)
+                                  predicate:((_col2 - _col1) > 600.0D)
                                   Group By Operator [GBY_10] (rows=5 width=114)
                                     Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"],keys:KEY._col0
                                   <-Map 1 [SIMPLE_EDGE] llap
@@ -2908,7 +2908,7 @@ Stage-0
                     Select Operator [SEL_25] (rows=1 width=110)
                       Output:["_col0","_col1","_col2"]
                       Filter Operator [FIL_40] (rows=1 width=114)
-                        predicate:(((_col2 - _col1) > 600.0D) and _col1 is not null)
+                        predicate:((_col2 - _col1) > 600.0D)
                         Group By Operator [GBY_23] (rows=5 width=114)
                           Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"],keys:KEY._col0
                         <-Map 1 [SIMPLE_EDGE] llap
