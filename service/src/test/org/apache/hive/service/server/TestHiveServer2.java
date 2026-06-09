@@ -32,9 +32,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -132,71 +129,43 @@ public class TestHiveServer2 {
     assertNotNull("startcode must be exists", builderConf.get("startcode"));
   }
 
-  // ---- WebUI custom auth filter wiring (createHttpServerBuilder) ----------
-
   /**
-   * Default config: custom auth filter is off, builder must not carry any
-   * filter wiring.
+   * {@code hive.server2.webui.auth.method=CUSTOM} (case-insensitive) must
+   * resolve to {@link HiveServer2.WebUIAuthMethod#CUSTOM}; unknown / null /
+   * empty values fall back to NONE. This is the gate that lets the CUSTOM
+   * branch in {@code init()} run.
    */
   @Test
-  public void testCustomAuthFilterDisabledByDefault() throws Exception {
-    HiveConf conf = new HiveConf();
-    HttpServer.Builder builder = invokeCreateHttpServerBuilder(conf);
-
-    assertFalse("useCustomAuthFilter should default to false",
-        builder.useCustomAuthFilter);
+  public void testGetWebUIAuthMethod() {
+    assertEquals(HiveServer2.WebUIAuthMethod.NONE,
+        HiveServer2.getWebUIAuthMethod(null));
+    assertEquals(HiveServer2.WebUIAuthMethod.NONE,
+        HiveServer2.getWebUIAuthMethod(""));
+    assertEquals(HiveServer2.WebUIAuthMethod.NONE,
+        HiveServer2.getWebUIAuthMethod("NONE"));
+    assertEquals(HiveServer2.WebUIAuthMethod.LDAP,
+        HiveServer2.getWebUIAuthMethod("LDAP"));
+    assertEquals("lower-case input must resolve the same as upper-case",
+        HiveServer2.WebUIAuthMethod.LDAP, HiveServer2.getWebUIAuthMethod("ldap"));
+    assertEquals(HiveServer2.WebUIAuthMethod.CUSTOM,
+        HiveServer2.getWebUIAuthMethod("CUSTOM"));
+    assertEquals("lower-case input must resolve the same as upper-case",
+        HiveServer2.WebUIAuthMethod.CUSTOM, HiveServer2.getWebUIAuthMethod("custom"));
+    assertEquals("unknown values fall back to NONE",
+        HiveServer2.WebUIAuthMethod.NONE, HiveServer2.getWebUIAuthMethod("bogus"));
   }
 
   /**
-   * When the ConfVars are set, createHttpServerBuilder must thread the filter
-   * class name and every {@code ...custom.auth.filter.param.<name>} key into
-   * the Builder (the param key is stored without the prefix).
+   * Sanity check that the conf carries the CUSTOM mode end-to-end: writing
+   * the ConfVar with the string "CUSTOM" must round-trip through HiveConf
+   * and through {@link HiveServer2#getWebUIAuthMethod} without coercion.
    */
   @Test
-  public void testCustomAuthFilterWiredFromConfig() throws Exception {
+  public void testWebUIAuthMethodFromHiveConfRoundTrip() {
     HiveConf conf = new HiveConf();
-    conf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_CUSTOM_AUTH_FILTER, true);
-    conf.setVar(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER, "com.example.MyAuthFilter");
-    conf.set(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.realm", "hive");
-    conf.set(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.ttl", "600");
-
-    HttpServer.Builder builder = invokeCreateHttpServerBuilder(conf);
-
-    assertTrue("useCustomAuthFilter should be true",
-        builder.useCustomAuthFilter);
-    assertEquals("com.example.MyAuthFilter",
-        builder.customAuthFilter);
-
-    @SuppressWarnings("unchecked")
-    Map<String, String> params = builder.customAuthFilterParams;
-    assertNotNull("customAuthFilterParams must be populated", params);
-    assertEquals("hive", params.get("realm"));
-    assertEquals("600", params.get("ttl"));
-  }
-
-  /**
-   * Enabling the filter without providing a class name is a configuration
-   * error and must fail fast at builder construction.
-   */
-  @Test
-  public void testCustomAuthFilterRejectsEmptyClassName() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_CUSTOM_AUTH_FILTER, true);
-    conf.setVar(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER, "");
-
-    try {
-      invokeCreateHttpServerBuilder(conf);
-      fail("Expected IllegalArgumentException when custom auth filter class name is empty");
-    } catch (IllegalArgumentException expected) {
-      assertTrue("Exception message should reference the custom auth filter ConfVar",
-          expected.getMessage().contains(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname));
-    }
-  }
-
-  private static HttpServer.Builder invokeCreateHttpServerBuilder(HiveConf conf) throws Exception {
-    CLIService cli = mock(CLIService.class);
-    SessionManager sm = mock(SessionManager.class);
-    when(cli.getSessionManager()).thenReturn(sm);
-    return HiveServer2.createHttpServerBuilder("localhost", 0, "test", "/", conf, cli, null);
+    conf.setVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD, "CUSTOM");
+    assertEquals(HiveServer2.WebUIAuthMethod.CUSTOM,
+        HiveServer2.getWebUIAuthMethod(
+            conf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD)));
   }
 }

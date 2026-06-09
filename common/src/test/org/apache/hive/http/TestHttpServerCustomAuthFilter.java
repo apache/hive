@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,12 +42,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
- * End-to-end test that wires a sample {@link Filter} into HttpServer via
- * the custom-auth-filter Builder API and verifies that real HTTP requests
- * to the running server flow through the filter — and that the filter's
- * decision (pass through or short-circuit with 401) is honored.
+ * End-to-end test that wires a sample {@link Filter} into HttpServer via the
+ * {@code addGlobalFilter(name, pathSpec, Filter, initParams)} Builder API and
+ * verifies that real HTTP requests to the running server flow through the
+ * filter — and that the filter's decision (pass through or short-circuit with
+ * 401) is honored.
+ *
+ * <p>This mirrors the wiring HiveServer2 performs at startup when
+ * {@code hive.server2.webui.auth.method=CUSTOM} is set: instantiate the
+ * configured filter class, read prefix-scoped init parameters off HiveConf,
+ * then register the pair on the builder.
  */
 public class TestHttpServerCustomAuthFilter {
 
@@ -66,9 +75,9 @@ public class TestHttpServerCustomAuthFilter {
   }
 
   /**
-   * With {@code useCustomAuthFilter=true} and a passthrough filter, requests
-   * reach the underlying servlet AND the filter sees them, including the
-   * configured init parameters.
+   * A passthrough custom filter registered against the global filter map
+   * sees every request to the root webapp AND receives its configured init
+   * parameters.
    */
   @Test(timeout = 30_000)
   public void testCustomAuthFilterInterceptsRequests() throws Exception {
@@ -81,9 +90,7 @@ public class TestHttpServerCustomAuthFilter {
         .setConf(new HiveConf())
         .setHost("localhost")
         .setPort(port)
-        .setUseCustomAuthFilter(true)
-        .setCustomAuthFilter(RecordingFilter.class.getName())
-        .setCustomAuthFilterParams(params)
+        .addGlobalFilter("custom-auth-filter", "/*", new RecordingFilter(), params)
         .build();
     server.start();
 
@@ -109,9 +116,7 @@ public class TestHttpServerCustomAuthFilter {
         .setConf(new HiveConf())
         .setHost("localhost")
         .setPort(port)
-        .setUseCustomAuthFilter(true)
-        .setCustomAuthFilter(BlockingFilter.class.getName())
-        .setCustomAuthFilterParams(new HashMap<>())
+        .addGlobalFilter("custom-auth-filter", "/*", new BlockingFilter())
         .build();
     server.start();
 
@@ -122,12 +127,11 @@ public class TestHttpServerCustomAuthFilter {
   }
 
   /**
-   * Without {@code useCustomAuthFilter=true}, no custom filter is installed
-   * and requests proceed normally; the recording filter sees nothing even
-   * though it is present on the classpath.
+   * Without any global filter registered, requests proceed normally; the
+   * recording filter sees nothing even though it is present on the classpath.
    */
   @Test(timeout = 30_000)
-  public void testCustomAuthFilterNotInstalledWhenDisabled() throws Exception {
+  public void testCustomAuthFilterNotInstalledWhenAbsent() throws Exception {
     int port = freePort();
     server = new HttpServer.Builder("test")
         .setConf(new HiveConf())
@@ -138,8 +142,141 @@ public class TestHttpServerCustomAuthFilter {
 
     int code = doGet("/jmx");
     assertEquals(200, code);
-    assertEquals("Filter must not be installed when useCustomAuthFilter is off",
+    assertEquals("Filter must not be installed when not registered on the builder",
         0, RecordingFilter.callCount.get());
+  }
+
+  /**
+   * Reproduces HiveServer2's config-driven wiring path: read the filter class
+   * name and prefix-scoped init params straight off {@link HiveConf} via
+   * {@code getPropsWithPrefix}, then hand both to the className-based
+   * {@code addGlobalFilter} overload. The Builder owns instantiation, so the
+   * caller code stays free of reflection.
+   */
+  @Test(timeout = 30_000)
+  public void testCustomAuthFilterWiredFromHiveConfPropsWithPrefix() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.set(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD.varname, "CUSTOM");
+    conf.set(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname,
+        RecordingFilter.class.getName());
+    String paramPrefix =
+        HiveConf.ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.";
+    conf.set(paramPrefix + "realm", "hive");
+    conf.set(paramPrefix + "ttl", "600");
+
+    String authFilter = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER);
+    Map<String, String> params = conf.getPropsWithPrefix(paramPrefix);
+
+    int port = freePort();
+    server = new HttpServer.Builder("test")
+        .setConf(conf)
+        .setHost("localhost")
+        .setPort(port)
+        .addGlobalFilter("custom-auth-filter", "/*", authFilter, params)
+        .build();
+    server.start();
+
+    int code = doGet("/jmx");
+    assertEquals(200, code);
+    assertTrue("Filter should have been invoked",
+        RecordingFilter.callCount.get() >= 1);
+    assertEquals("realm param flowed through from HiveConf to filter init",
+        "hive", RecordingFilter.initParams.get("realm"));
+    assertEquals("ttl param flowed through from HiveConf to filter init",
+        "600", RecordingFilter.initParams.get("ttl"));
+  }
+
+  /**
+   * The {@code /logs} endpoint is mounted on a sibling {@code ServletContextHandler},
+   * not on the root webapp context, so it does not automatically inherit filters
+   * registered against the webapp. This test asserts that a global custom auth
+   * filter still applies to {@code /logs} — leaving log files unauthenticated
+   * would defeat the point of enabling WebUI auth at all.
+   */
+  @Test(timeout = 30_000)
+  public void testCustomAuthFilterAppliedToLogsEndpoint() throws Exception {
+    Path logDir = Files.createTempDirectory("hs2-webui-logs-");
+
+    HiveConf conf = new HiveConf();
+    conf.set("hive.log.dir", logDir.toAbsolutePath().toString());
+
+    int port = freePort();
+    server = new HttpServer.Builder("test")
+        .setConf(conf)
+        .setHost("localhost")
+        .setPort(port)
+        .addGlobalFilter("custom-auth-filter", "/*", new RecordingFilter())
+        .build();
+    server.start();
+
+    doGet("/logs/");
+
+    assertTrue("Custom auth filter must intercept /logs as well; was "
+        + RecordingFilter.callCount.get(), RecordingFilter.callCount.get() >= 1);
+  }
+
+  /**
+   * The blocking variant: a deny-by-default filter on {@code /logs} must
+   * short-circuit with 401 before the log-serving servlet runs.
+   */
+  @Test(timeout = 30_000)
+  public void testCustomAuthFilterCanBlockLogsEndpoint() throws Exception {
+    Path logDir = Files.createTempDirectory("hs2-webui-logs-");
+
+    HiveConf conf = new HiveConf();
+    conf.set("hive.log.dir", logDir.toAbsolutePath().toString());
+
+    int port = freePort();
+    server = new HttpServer.Builder("test")
+        .setConf(conf)
+        .setHost("localhost")
+        .setPort(port)
+        .addGlobalFilter("custom-auth-filter", "/*", new BlockingFilter())
+        .build();
+    server.start();
+
+    int code = doGet("/logs/");
+    assertEquals("Blocking filter must short-circuit /logs with 401", 401, code);
+    assertTrue("Filter should have run before blocking",
+        BlockingFilter.callCount.get() >= 1);
+  }
+
+  /**
+   * The className overload defers class resolution to Jetty's lifecycle:
+   * Builder.addGlobalFilter just stores the name, FilterHolder.doStart()
+   * loads the class. So a bad class name must surface as a startup failure
+   * (server.start()) — not silently — and the resulting stack should name
+   * the offending class so the operator can fix the config.
+   */
+  @Test(timeout = 30_000)
+  public void testCustomAuthFilterRejectsBadClassName() throws Exception {
+    int port = freePort();
+    server = new HttpServer.Builder("test")
+        .setConf(new HiveConf())
+        .setHost("localhost")
+        .setPort(port)
+        .addGlobalFilter("custom-auth-filter", "/*",
+            "com.example.NonExistentFilterClass", null)
+        .build();
+
+    try {
+      server.start();
+      fail("Expected server.start() to fail when the filter class is missing");
+    } catch (Exception expected) {
+      String trace = stackTraceAsString(expected);
+      assertTrue("Failure should name the offending class somewhere in the trace; was:\n" + trace,
+          trace.contains("com.example.NonExistentFilterClass"));
+    } finally {
+      // Server may be partially started — make sure we don't leak the connector.
+      try { server.stop(); } catch (Exception ignore) { }
+      server = null;
+    }
+  }
+
+  private static String stackTraceAsString(Throwable t) {
+    java.io.StringWriter sw = new java.io.StringWriter();
+    t.printStackTrace(new java.io.PrintWriter(sw));
+    return sw.toString();
   }
 
   // ---- helpers -------------------------------------------------------------

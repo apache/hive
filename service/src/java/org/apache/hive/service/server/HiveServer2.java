@@ -196,7 +196,7 @@ public class HiveServer2 extends CompositeService {
   private QueryHistoryService queryHistoryService;
 
   public enum WebUIAuthMethod {
-    NONE, LDAP
+    NONE, LDAP, CUSTOM
   }
 
   public static WebUIAuthMethod getWebUIAuthMethod(String method) {
@@ -204,6 +204,8 @@ public class HiveServer2 extends CompositeService {
     switch (m) {
       case "ldap":
         return WebUIAuthMethod.LDAP;
+      case "custom":
+        return WebUIAuthMethod.CUSTOM;
       default:
         return WebUIAuthMethod.NONE;
     }
@@ -422,6 +424,16 @@ public class HiveServer2 extends CompositeService {
           if (WebUIAuthMethod.LDAP == webUIAuthMethod) {
             ldapAuthService = new LdapAuthService(hiveConf, passwdAuthenticationProvider);
             builder.addGlobalFilter("ldap", "/*", new LDAPAuthenticationFilter(ldapAuthService));
+          } else if (WebUIAuthMethod.CUSTOM == webUIAuthMethod) {
+            String authFilter = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER);
+            if (authFilter == null || authFilter.isEmpty()) {
+              throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname
+                  + " is not configured. It is required when Custom Auth Filter is used.");
+            }
+            String paramPrefix = ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.";
+            Map<String, String> params = hiveConf.getPropsWithPrefix(paramPrefix);
+            builder.addGlobalFilter("custom-auth-filter", "/*", authFilter, params);
+            LOG.info("WebUI will use Custom Auth Filter: {}  params: {}", authFilter, params);
           }
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
@@ -543,21 +555,6 @@ public class HiveServer2 extends CompositeService {
         throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL.varname + " has false value. It is recommended to set to true when PAM is used.");
       }
     }
-    if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_CUSTOM_AUTH_FILTER)) {
-      String authFilter = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER);
-      if (authFilter == null || authFilter.isEmpty()) {
-        throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname
-            + " is not configured. It is required when Custom Auth Filter is used.");
-      }
-      String paramPrefix = ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.";
-      Map<String, String> params = hiveConf.getPropsWithPrefix(paramPrefix);
-
-      builder.setUseCustomAuthFilter(true);
-      builder.setCustomAuthFilter(authFilter);
-      builder.setCustomAuthFilterParams(params);
-      LOG.info("WebUI will use Custom Auth Filter: {}  params: {}", authFilter, params);
-    }
-    
     return builder;
   }
   
