@@ -224,7 +224,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
       sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
-          targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
+          targetTable.getAllCols().size() + 1);
       valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys(Operation.MERGE));
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
@@ -238,20 +238,33 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
                              List<String> values) {
-      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias, 
+      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias,
           HiveUtils.unparseIdentifier(name, conf));
-      
-      for (FieldSchema fieldSchema : targetTable.getCols()) {
-        if (newValues.containsKey(fieldSchema.getName())) {
-          String rhsExp = newValues.get(fieldSchema.getName());
-          values.add(getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
-        } else {
-          values.add(formatter.apply(fieldSchema.getName()));
-        }
+      List<String> valuesToBeAdded = new ArrayList<>();
+      for (int i = 0; i < targetTable.getAllCols().size(); i++) {
+        valuesToBeAdded.add(null);
       }
-      
-      targetTable.getPartCols().forEach(fieldSchema -> values.add(
-          formatter.apply(fieldSchema.getName())));
+      for (FieldSchema fieldSchema : targetTable.getCols()) {
+        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, fieldSchema.getName(), true);
+      }
+
+      for (FieldSchema partCol : targetTable.getPartCols()) {
+        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, partCol.getName(),
+            targetTable.hasNonNativePartitionSupport());
+      }
+      values.addAll(valuesToBeAdded);
+    }
+
+    protected void setColumnValue(Table targetTable, List<String> valuesToBeAdded,
+        Map<String, String> newValues, UnaryOperator<String> formatter, String columnName,
+        boolean applyNewValues) {
+      int index = targetTable.getColumnIndexByName(columnName);
+      String formattedColumn = formatter.apply(columnName);
+      if (applyNewValues && newValues.containsKey(columnName)) {
+        valuesToBeAdded.set(index, getRhsExpValue(newValues.get(columnName), formattedColumn));
+      } else {
+        valuesToBeAdded.set(index, formattedColumn);
+      }
     }
     
     protected String getRhsExpValue(String newValue, String alias) {

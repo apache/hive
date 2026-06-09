@@ -1536,10 +1536,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       case DELETE ->
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case UPDATE -> shouldOverwrite(table, operation) ?
           ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default -> ImmutableList.of();
     };
@@ -2130,6 +2130,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (hmsTable.getMetaTable() != null) {
+      return false;
+    }
     if (!hmsTable.getTTable().isSetId()) {
       return false;
     }
@@ -2275,6 +2278,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (hmsTable.getMetaTable() != null) {
+      return Collections.emptyList();
+    }
     if (!hmsTable.getTTable().isSetId()) {
       return Collections.emptyList();
     }

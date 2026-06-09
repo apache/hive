@@ -90,10 +90,7 @@ public class DummyPartition extends Partition {
     Table table = this.getTable();
     values = new ArrayList<>();
 
-    // TODO (HIVE-29413): Refactor to a generic getPartCols() implementation
-    for (FieldSchema fs : table.hasNonNativePartitionSupport()
-        ? table.getStorageHandler().getPartitionKeys(table)
-        : table.getPartCols()) {
+    for (FieldSchema fs : table.getPartCols()) {
       String val = partSpec.get(fs.getName());
       values.add(val);
     }

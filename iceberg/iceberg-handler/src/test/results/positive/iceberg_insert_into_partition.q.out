@@ -479,7 +479,6 @@ POSTHOOK: Input: default@ice_parquet_int
 # col_name            	data_type           	comment             
 strcol              	string              	                    
 intcol              	int                 	                    
-pcol                	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1676,8 +1675,6 @@ POSTHOOK: Input: default@ice_parquet_string
 # col_name            	data_type           	comment             
 name                	string              	                    
 age                 	int                 	                    
-country             	string              	                    
-state               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -2733,8 +2730,6 @@ POSTHOOK: Input: default@ice_parquet_string
 # col_name            	data_type           	comment             
 name                	string              	                    
 age                 	int                 	                    
-country             	string              	                    
-state               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -3430,7 +3425,6 @@ POSTHOOK: Input: default@ice_parquet_bigint
 # col_name            	data_type           	comment             
 datecol             	date                	                    
 intcol              	int                 	                    
-pcol                	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -4124,7 +4118,6 @@ POSTHOOK: Input: default@ice_parquet_double
 # col_name            	data_type           	comment             
 datecol             	date                	                    
 intcol              	int                 	                    
-pcol                	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -4818,7 +4811,6 @@ POSTHOOK: Input: default@ice_parquet_decimal
 # col_name            	data_type           	comment             
 datecol             	date                	                    
 intcol              	int                 	                    
-pcol                	decimal(10,6)       	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

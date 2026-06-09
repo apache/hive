@@ -262,8 +262,10 @@ public class ColumnStatsAutoGatherContext {
       columnNameToIndex.putIfAbsent(selRSSig.get(i).getAlias(), i);
     }
     for (int i = 0; i < this.columns.size(); i++) {
-      ColumnInfo col = columns.get(i);
-      Integer selRSIdx = getSelRSColumnIndex(i, col, columnNameToIndex);
+      FieldSchema column = this.columns.get(i);
+      int index= tbl.getColumnIndexByName(column.getName());
+      ColumnInfo col = columns.get(index);
+      Integer selRSIdx = getSelRSColumnIndex(column.getName(), col, columnNameToIndex);
       if (selRSIdx == null) {
         continue;
       }
@@ -274,42 +276,63 @@ public class ColumnStatsAutoGatherContext {
       columnExprMap.put(internalName, exprNodeDesc);
       signature.add(selRSSig.get(selRSIdx));
     }
+    int dynPartsCount=0;
+    if (partSpec != null) {
+      for (Map.Entry<String, String> entry : partSpec.entrySet()) {
+        if (entry.getValue() == null) {
+          dynPartsCount++;
+        }
+      }
+    }
+    boolean inputRRHasStaticParts = (this.columns.size() + dynPartsCount < columns.size());
     // if there is any partition column (in static partition or dynamic
     // partition or mixed case)
-    int dynamicPartBegin = -1;
+    int dynamicPartBegin = 0;
     for (int i = 0; i < partitionColumns.size(); i++) {
       ExprNodeDesc exprNodeDesc;
       TypeInfo srcType;
       String partColName = partitionColumns.get(i).getName();
+      int index = tbl.getColumnIndexByName(partColName);
+      ColumnInfo col;
+
       // 2. deal with static partition columns
       if (partSpec != null && partSpec.containsKey(partColName)
-          && partSpec.get(partColName) != null) {
+          && partSpec.get(partColName) != null ) {
         if (dynamicPartBegin > 0) {
           throw new SemanticException(
               "Dynamic partition columns should not come before static partition columns.");
         }
-        exprNodeDesc = new ExprNodeConstantDesc(partSpec.get(partColName));
+        if (inputRRHasStaticParts) {
+          col = columns.get(index + dynamicPartBegin);
+          exprNodeDesc = new ExprNodeColumnDesc(col);
+        } else {
+          exprNodeDesc = new ExprNodeConstantDesc(partSpec.get(partColName));
+        }
         srcType = exprNodeDesc.getTypeInfo();
+        if (!inputRRHasStaticParts) {
+          dynamicPartBegin--;
+        }
       }
       // 3. dynamic partition columns
       else {
-        dynamicPartBegin++;
-        ColumnInfo col = columns.get(this.columns.size() + dynamicPartBegin);
+        col = columns.get(index + dynamicPartBegin);
         exprNodeDesc = new ExprNodeColumnDesc(col);
         srcType = col.getType();
-
       }
-      TypeInfo destType = selRSSig.get(this.columns.size() + i).getType();
+      if (inputRRHasStaticParts) {
+        index = columnNameToIndex.get(partColName);
+      }
+      TypeInfo destType = selRSSig.get(index).getType();
       if (!srcType.equals(destType)) {
         // This may be possible when srcType is string but destType is integer
         exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
             .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
       }
       colList.add(exprNodeDesc);
-      String internalName = selRS.getColumnNames().get(this.columns.size() + i);
+      String internalName = selRS.getColumnNames().get(index);
       columnNames.add(internalName);
       columnExprMap.put(internalName, exprNodeDesc);
-      signature.add(selRSSig.get(this.columns.size() + i));
+      signature.add(selRSSig.get(index));
     }
     operator.setConf(new SelectDesc(colList, columnNames));
     operator.setColumnExprMap(columnExprMap);
@@ -317,7 +340,7 @@ public class ColumnStatsAutoGatherContext {
     operator.setSchema(selRS);
   }
 
-  private Integer getSelRSColumnIndex(int i, ColumnInfo col, Map<String, Integer> columnNameToIndex) {
+  private Integer getSelRSColumnIndex(String columnName, ColumnInfo col, Map<String, Integer> columnNameToIndex) {
     ObjectInspector objectInspector = col.getObjectInspector();
     if (objectInspector == null) {
       return null;
@@ -326,7 +349,7 @@ public class ColumnStatsAutoGatherContext {
     if (!columnSupported) {
       return null;
     }
-    return columnNameToIndex.get(this.columns.get(i).getName());
+    return columnNameToIndex.get(columnName);
   }
 
   public String getCompleteName() {

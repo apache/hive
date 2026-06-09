@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.tree.Tree;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
@@ -95,15 +97,14 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
           break;
         case HiveParser.TOK_WHERE:
           RowResolver rwsch = new RowResolver();
-          Map<String, String> colTypes = new HashMap<>();
           Table table;
           try {
             table = getDb().getTable(tableName);
-            for (FieldSchema fs : table.getCols()) {
+            List<FieldSchema> colsToLookUp = table.hasNonNativePartitionSupport() ? table.getAllCols() : table.getCols();
+            for (FieldSchema fs : colsToLookUp) {
               TypeInfo columnType = TypeInfoUtils.getTypeInfoFromTypeString(fs.getType());
               rwsch.put(tableName.getTable(), fs.getName(), 
                   new ColumnInfo(fs.getName(), columnType, null, true));
-              colTypes.put(fs.getName().toLowerCase(), fs.getType());
             }
           } catch (HiveException e) {
             throw new SemanticException(e);

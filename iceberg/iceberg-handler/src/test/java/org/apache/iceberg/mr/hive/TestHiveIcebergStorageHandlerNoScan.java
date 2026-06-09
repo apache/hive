@@ -946,7 +946,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testCreatePartitionedTableWithColumnComments() {
     TableIdentifier identifier = TableIdentifier.of("default", "partitioned_with_comment_table");
-    String[] expectedDoc = new String[] {"int column", "string column", null, "partition column", null};
+    String[] expectedDoc = new String[] {"int column", "string column", null, "partition column",
+        "Transform: identity"};
     shell.executeStatement("CREATE EXTERNAL TABLE partitioned_with_comment_table (" +
         "t_int INT COMMENT 'int column',  " +
         "t_string STRING COMMENT 'string column', " +
@@ -959,13 +960,18 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     List<Object[]> rows = shell.executeStatement("DESCRIBE default.partitioned_with_comment_table");
     List<Types.NestedField> columns = icebergTable.schema().columns();
+    List<String> partitionColumns = List.of("t_string_3", "t_string_4");
     // The partition transform information and partition information is 6 extra lines, and 4 more line for the columns
     Assert.assertEquals(columns.size() + 10, rows.size());
     for (int i = 0; i < columns.size(); i++) {
       Types.NestedField field = columns.get(i);
-      Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          field.doc() != null ? field.doc() : ""}, rows.get(i));
-      Assert.assertEquals(expectedDoc[i], field.doc());
+      String fieldDoc = field.doc();
+      if (fieldDoc == null && partitionColumns.contains(field.name())) {
+        fieldDoc = "Transform: identity";
+      }
+      Assert.assertArrayEquals(new Object[]{field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
+          fieldDoc != null ? fieldDoc : ""}, rows.get(i));
+      Assert.assertEquals(expectedDoc[i], fieldDoc);
     }
   }
 

@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl.table;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;

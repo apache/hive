@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -169,7 +170,14 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
         Table table = ts.getConf().getTableMetadata();
 
         boolean nonEquiJoin = isNonEquiJoin(ctx.parent);
-        if (table != null && table.isPartitionKey(column) && !nonEquiJoin) {
+        // Non-native tables (e.g. Iceberg) share a single table location for all partitions, so
+        // path-based DPP cannot work; prefer split-level pruning when the storage handler supports it.
+        if (table != null && table.isNonNative() && !nonEquiJoin
+            && table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
+          String columnType = table.getFieldSchemaByName(column).getType();
+          generateEventOperatorPlan(ctx, parseContext, ts, column, columnType, ctx.parent);
+        } else if (table != null && table.isPartitionKey(column) && !nonEquiJoin
+            && !table.hasNonNativePartitionSupport()) {
           String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
@@ -191,11 +199,6 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
             // all partitions have been statically removed
             LOG.debug("No partition pruning necessary.");
           }
-        } else if (table.isNonNative() &&
-          table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
-          generateEventOperatorPlan(ctx, parseContext, ts, column,
-            table.getCols().stream().filter(e -> e.getName().equals(column)).
-          map(e -> e.getType()).findFirst().get(), ctx.parent);
         } else { // semijoin
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)

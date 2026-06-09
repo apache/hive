@@ -521,6 +521,15 @@ public final class ColumnPrunerProcFactory {
       cols.add(new FieldNode(VirtualColumn.RAWDATASIZE.getName()));
     }
 
+    Table tableMetadata = desc.getTableMetadata();
+    Set<String> nonNativePartitionKeyNames = null;
+    if (tableMetadata != null && tableMetadata.hasNonNativePartitionSupport()) {
+      nonNativePartitionKeyNames = new HashSet<>();
+      for (FieldSchema partCol : tableMetadata.getPartCols()) {
+        nonNativePartitionKeyNames.add(partCol.getName().toLowerCase());
+      }
+    }
+
     for (FieldNode fn : cols) {
       String column = fn.getFieldName();
       ColumnInfo colInfo = inputRS.getColumnInfo(column);
@@ -528,9 +537,11 @@ public final class ColumnPrunerProcFactory {
         continue;
       }
       referencedColumnNames.add(column);
-      if (colInfo.getIsVirtualCol() && !colInfo.isHiddenPartitionCol()) {
+      boolean isNonNativePartitionSourceCol = nonNativePartitionKeyNames != null
+          && nonNativePartitionKeyNames.contains(column.toLowerCase());
+      if (colInfo.getIsVirtualCol() && !isNonNativePartitionSourceCol) {
         // part is also a virtual column, but part col should not in this
-        // list.
+        // list in case of non native tables like iceberg which have their partition support.
         for (int j = 0; j < virtualCols.size(); j++) {
           VirtualColumn vc = virtualCols.get(j);
           if (vc.getName().equals(colInfo.getInternalName())) {
@@ -807,8 +818,7 @@ public final class ColumnPrunerProcFactory {
         for (FieldNode col : cols) {
           int index = originalOutputColumnNames.indexOf(col.getFieldName());
           Table tab = cppCtx.getParseContext().getViewProjectToTableSchema().get(op);
-          List<FieldSchema> fullFieldList = new ArrayList<FieldSchema>(tab.getCols());
-          fullFieldList.addAll(tab.getPartCols());
+          List<FieldSchema> fullFieldList = new ArrayList<>(tab.getAllCols());
           cppCtx.getParseContext().getColumnAccessInfo()
               .add(tab.getCompleteName(), fullFieldList.get(index).getName());
         }
