@@ -134,6 +134,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
+ * @version 4.3.0-ASM-CACHE-EVICT-V4 TODO cleanup
  */
 @SuppressWarnings({ "rawtypes" }) public class DruidStorageHandler extends DefaultHiveMetaHook
     implements HiveStorageHandler {
