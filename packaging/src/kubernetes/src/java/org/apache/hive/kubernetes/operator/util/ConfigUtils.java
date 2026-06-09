@@ -25,6 +25,12 @@ public final class ConfigUtils {
   private ConfigUtils() {
   }
 
+  // Component names used across the operator for labels, resource naming, and autoscaling keys.
+  public static final String COMPONENT_HIVESERVER2 = "hiveserver2";
+  public static final String COMPONENT_METASTORE = "metastore";
+  public static final String COMPONENT_LLAP = "llap";
+  public static final String COMPONENT_TEZAM = "tezam";
+
   public static final String METASTORE_THRIFT_PORT_KEY = "metastore.thrift.port";
   public static final String METASTORE_THRIFT_PORT_HIVE_KEY = "hive.metastore.port";
   public static final int METASTORE_THRIFT_PORT_DEFAULT = 9083;

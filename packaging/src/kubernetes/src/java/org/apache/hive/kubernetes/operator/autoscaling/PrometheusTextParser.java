@@ -36,53 +36,11 @@ public final class PrometheusTextParser {
 
   /**
    * Parse Prometheus text format into metric-name → value map.
-   * Lines with labels are keyed as "metric_name{labels}" to preserve identity.
-   * Duplicate metric names (e.g. from multiple label sets) are summed.
+   * Labels are stripped from keys; duplicate metric names (from multiple
+   * label sets) are summed.
    */
   public static Map<String, Double> parse(String body) {
-    Map<String, Double> result = new HashMap<>();
-    if (body == null || body.isEmpty()) {
-      return result;
-    }
-    try (BufferedReader reader = new BufferedReader(new StringReader(body))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        if (line.isEmpty() || line.charAt(0) == '#') {
-          continue;
-        }
-        String metricKey;
-        String valuePart;
-        int braceStart = line.indexOf('{');
-        if (braceStart >= 0) {
-          int braceEnd = line.indexOf('}', braceStart);
-          if (braceEnd < 0) {
-            continue;
-          }
-          metricKey = line.substring(0, braceStart);
-          valuePart = line.substring(braceEnd + 1).trim();
-        } else {
-          int spaceIdx = line.indexOf(' ');
-          if (spaceIdx < 0) {
-            continue;
-          }
-          metricKey = line.substring(0, spaceIdx);
-          valuePart = line.substring(spaceIdx + 1).trim();
-        }
-        int spaceInValue = valuePart.indexOf(' ');
-        if (spaceInValue > 0) {
-          valuePart = valuePart.substring(0, spaceInValue);
-        }
-        try {
-          double value = Double.parseDouble(valuePart);
-          result.merge(metricKey, value, Double::sum);
-        } catch (NumberFormatException e) {
-          // Skip NaN, +Inf, -Inf, or malformed values
-        }
-      }
-    } catch (IOException e) {
-      // StringReader does not throw IOException
-    }
-    return result;
+    return doParse(body, false);
   }
 
   /**
@@ -90,6 +48,10 @@ public final class PrometheusTextParser {
    * Key format: "metric_name{label=value,...}"
    */
   public static Map<String, Double> parseWithLabels(String body) {
+    return doParse(body, true);
+  }
+
+  private static Map<String, Double> doParse(String body, boolean keepLabels) {
     Map<String, Double> result = new HashMap<>();
     if (body == null || body.isEmpty()) {
       return result;
@@ -108,7 +70,7 @@ public final class PrometheusTextParser {
           if (braceEnd < 0) {
             continue;
           }
-          metricKey = line.substring(0, braceEnd + 1);
+          metricKey = keepLabels ? line.substring(0, braceEnd + 1) : line.substring(0, braceStart);
           valuePart = line.substring(braceEnd + 1).trim();
         } else {
           int spaceIdx = line.indexOf(' ');
@@ -124,9 +86,13 @@ public final class PrometheusTextParser {
         }
         try {
           double value = Double.parseDouble(valuePart);
-          result.put(metricKey, value);
+          if (keepLabels) {
+            result.put(metricKey, value);
+          } else {
+            result.merge(metricKey, value, Double::sum);
+          }
         } catch (NumberFormatException e) {
-          // Skip
+          // Skip NaN, +Inf, -Inf, or malformed values
         }
       }
     } catch (IOException e) {

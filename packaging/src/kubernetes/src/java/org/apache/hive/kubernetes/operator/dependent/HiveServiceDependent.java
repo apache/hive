@@ -74,7 +74,7 @@ public abstract class HiveServiceDependent
   )
   public static class HiveServer2 extends HiveServiceDependent {
     public HiveServer2() {
-      super("hiveserver2");
+      super(ConfigUtils.COMPONENT_HIVESERVER2);
     }
 
     @Override
@@ -109,7 +109,7 @@ public abstract class HiveServiceDependent
   )
   public static class Metastore extends HiveServiceDependent {
     public Metastore() {
-      super("metastore");
+      super(ConfigUtils.COMPONENT_METASTORE);
     }
 
     @Override
@@ -136,7 +136,7 @@ public abstract class HiveServiceDependent
   )
   public static class Llap extends HiveServiceDependent {
     public Llap() {
-      super("llap");
+      super(ConfigUtils.COMPONENT_LLAP);
     }
 
     @Override
@@ -160,7 +160,7 @@ public abstract class HiveServiceDependent
   )
   public static class TezAm extends HiveServiceDependent {
     public TezAm() {
-      super("tezam");
+      super(ConfigUtils.COMPONENT_TEZAM);
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.TezAmSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
@@ -52,7 +53,7 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class TezAmStatefulSetDependent
     extends HiveDependentResource<StatefulSet, HiveCluster> {
 
-  public static final String COMPONENT = "tezam";
+  public static final String COMPONENT = ConfigUtils.COMPONENT_TEZAM;
   private static final String SCRATCH_MOUNT_PATH = "/opt/hive/scratch";
 
   public TezAmStatefulSetDependent() {
@@ -79,7 +80,7 @@ public class TezAmStatefulSetDependent
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "tezam", null));
+    envVars.add(new EnvVar("SERVICE_NAME", COMPONENT, null));
     envVars.add(new EnvVar("IS_RESUME", "true", null));
     envVars.add(new EnvVar("HIVE_ZOOKEEPER_QUORUM",
         spec.zookeeper().quorum(), null));
@@ -155,13 +156,13 @@ public class TezAmStatefulSetDependent
           .withNewTemplate()
             .withNewMetadata()
               .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
-              .addToAnnotations("kubectl.kubernetes.io/default-container", "tezam")
+              .addToAnnotations("kubectl.kubernetes.io/default-container", COMPONENT)
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
               .withInitContainers(initContainers)
               .addNewContainer()
-                .withName("tezam")
+                .withName(COMPONENT)
                 .withImage(spec.image())
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)

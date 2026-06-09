@@ -25,6 +25,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /**
@@ -75,7 +76,7 @@ public abstract class HivePdbDependent
   )
   public static class HiveServer2 extends HivePdbDependent {
     public HiveServer2() {
-      super("hiveserver2");
+      super(ConfigUtils.COMPONENT_HIVESERVER2);
     }
   }
 
@@ -85,7 +86,7 @@ public abstract class HivePdbDependent
   )
   public static class Metastore extends HivePdbDependent {
     public Metastore() {
-      super("metastore");
+      super(ConfigUtils.COMPONENT_METASTORE);
     }
   }
 
@@ -95,7 +96,7 @@ public abstract class HivePdbDependent
   )
   public static class Llap extends HivePdbDependent {
     public Llap() {
-      super("llap");
+      super(ConfigUtils.COMPONENT_LLAP);
     }
   }
 
@@ -105,7 +106,7 @@ public abstract class HivePdbDependent
   )
   public static class TezAm extends HivePdbDependent {
     public TezAm() {
-      super("tezam");
+      super(ConfigUtils.COMPONENT_TEZAM);
     }
   }
 }

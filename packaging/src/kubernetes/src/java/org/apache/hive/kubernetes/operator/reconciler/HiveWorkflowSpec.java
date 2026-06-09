@@ -46,6 +46,26 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
  */
 public final class HiveWorkflowSpec implements WorkflowSpec {
 
+  // Dependent resource spec names (used as identifiers and dependency references)
+  private static final String HADOOP_CONFIGMAP = "hadoop-configmap";
+  private static final String METASTORE_CONFIGMAP = "metastore-configmap";
+  private static final String HIVESERVER2_CONFIGMAP = "hiveserver2-configmap";
+  private static final String LLAP_CONFIGMAP = "llap-configmap";
+  private static final String SCHEMA_INIT_JOB = "schema-init-job";
+  private static final String METASTORE_DEPLOYMENT = "metastore-deployment";
+  private static final String METASTORE_SERVICE = "metastore-service";
+  private static final String HIVESERVER2_DEPLOYMENT = "hiveserver2-deployment";
+  private static final String HIVESERVER2_SERVICE = "hiveserver2-service";
+  private static final String LLAP_STATEFULSET = "llap-statefulset";
+  private static final String LLAP_SERVICE = "llap-service";
+  private static final String TEZAM_SERVICE = "tezam-service";
+  private static final String TEZAM_STATEFULSET = "tezam-statefulset";
+  private static final String SCRATCH_PVC = "scratch-pvc";
+  private static final String HS2_PDB = "hs2-pdb";
+  private static final String METASTORE_PDB = "metastore-pdb";
+  private static final String LLAP_PDB = "llap-pdb";
+  private static final String TEZAM_PDB = "tezam-pdb";
+
   private static final Condition<?, HiveCluster> METASTORE_ENABLED =
       (dr, primary, ctx) -> primary.getSpec().metastore().isEnabled();
 
@@ -80,93 +100,92 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
 
     // --- ConfigMap dependents ---
     specs.add(new DependentResourceSpec(
-        HiveConfigMapDependent.Hadoop.class, "hadoop-configmap",
+        HiveConfigMapDependent.Hadoop.class, HADOOP_CONFIGMAP,
         Set.of(), null, null, null, null, null));
 
     specs.add(new DependentResourceSpec(
-        HiveConfigMapDependent.Metastore.class, "metastore-configmap",
+        HiveConfigMapDependent.Metastore.class, METASTORE_CONFIGMAP,
         Set.of(), null, null, null, METASTORE_ENABLED, null));
 
     specs.add(new DependentResourceSpec(
-        HiveConfigMapDependent.HiveServer2.class, "hiveserver2-configmap",
+        HiveConfigMapDependent.HiveServer2.class, HIVESERVER2_CONFIGMAP,
         Set.of(), null, null, null, null, null));
 
     // --- Job dependents ---
     specs.add(new DependentResourceSpec(
-        SchemaInitJobDependent.class, "schema-init-job",
-        Set.of("metastore-configmap", "hadoop-configmap"),
+        SchemaInitJobDependent.class, SCHEMA_INIT_JOB,
+        Set.of(METASTORE_CONFIGMAP, HADOOP_CONFIGMAP),
         schemaJobCompleted(), null, null, METASTORE_ENABLED, null));
 
     // --- Deployment dependents ---
     specs.add(new DependentResourceSpec(
-        MetastoreDeploymentDependent.class, "metastore-deployment",
-        Set.of("schema-init-job"),
+        MetastoreDeploymentDependent.class, METASTORE_DEPLOYMENT,
+        Set.of(SCHEMA_INIT_JOB),
         metastoreReady(), null, null, METASTORE_ENABLED, null));
 
     // --- Service dependents ---
     specs.add(new DependentResourceSpec(
-        HiveServiceDependent.Metastore.class, "metastore-service",
-        Set.of("metastore-configmap"),
+        HiveServiceDependent.Metastore.class, METASTORE_SERVICE,
+        Set.of(METASTORE_CONFIGMAP),
         null, null, null, METASTORE_ENABLED, null));
 
     specs.add(new DependentResourceSpec(
-        HiveServer2DeploymentDependent.class, "hiveserver2-deployment",
-        Set.of("hiveserver2-configmap", "hadoop-configmap"),
+        HiveServer2DeploymentDependent.class, HIVESERVER2_DEPLOYMENT,
+        Set.of(HIVESERVER2_CONFIGMAP, HADOOP_CONFIGMAP),
         null, hs2Precondition(), null, null, null));
 
     specs.add(new DependentResourceSpec(
-        HiveServiceDependent.HiveServer2.class, "hiveserver2-service",
-        Set.of("hiveserver2-configmap"),
+        HiveServiceDependent.HiveServer2.class, HIVESERVER2_SERVICE,
+        Set.of(HIVESERVER2_CONFIGMAP),
         null, null, null, null, null));
 
     // --- LLAP (conditional) ---
     specs.add(new DependentResourceSpec(
-        HiveConfigMapDependent.Llap.class, "llap-configmap",
+        HiveConfigMapDependent.Llap.class, LLAP_CONFIGMAP,
         Set.of(), null, null, null, LLAP_ENABLED, null));
 
     specs.add(new DependentResourceSpec(
-        LlapStatefulSetDependent.class, "llap-statefulset",
-        Set.of("llap-configmap", "hadoop-configmap"),
+        LlapStatefulSetDependent.class, LLAP_STATEFULSET,
+        Set.of(LLAP_CONFIGMAP, HADOOP_CONFIGMAP),
         null, null, null, LLAP_ENABLED, null));
 
     specs.add(new DependentResourceSpec(
-        HiveServiceDependent.Llap.class, "llap-service",
+        HiveServiceDependent.Llap.class, LLAP_SERVICE,
         Set.of(), null, null, null, LLAP_ENABLED, null));
 
     // --- TezAM (conditional) ---
     specs.add(new DependentResourceSpec(
-        ScratchPvcDependent.class, "scratch-pvc",
+        ScratchPvcDependent.class, SCRATCH_PVC,
         Set.of(), null, null, null, TEZAM_ENABLED, null));
 
     specs.add(new DependentResourceSpec(
-        HiveServiceDependent.TezAm.class, "tezam-service",
+        HiveServiceDependent.TezAm.class, TEZAM_SERVICE,
         Set.of(), null, null, null, TEZAM_ENABLED, null));
 
     specs.add(new DependentResourceSpec(
-        TezAmStatefulSetDependent.class, "tezam-statefulset",
-        Set.of("hiveserver2-configmap", "hadoop-configmap", "tezam-service", "scratch-pvc"),
+        TezAmStatefulSetDependent.class, TEZAM_STATEFULSET,
+        Set.of(HIVESERVER2_CONFIGMAP, HADOOP_CONFIGMAP, TEZAM_SERVICE, SCRATCH_PVC),
         null, null, null, TEZAM_ENABLED, null));
-
 
     // --- Autoscaling: PodDisruptionBudgets (conditional) ---
     specs.add(new DependentResourceSpec(
-        HivePdbDependent.HiveServer2.class, "hs2-pdb",
-        Set.of("hiveserver2-deployment"),
+        HivePdbDependent.HiveServer2.class, HS2_PDB,
+        Set.of(HIVESERVER2_DEPLOYMENT),
         null, HS2_AUTOSCALING, null, null, null));
 
     specs.add(new DependentResourceSpec(
-        HivePdbDependent.Metastore.class, "metastore-pdb",
-        Set.of("metastore-deployment"),
+        HivePdbDependent.Metastore.class, METASTORE_PDB,
+        Set.of(METASTORE_DEPLOYMENT),
         null, METASTORE_AUTOSCALING, null, null, null));
 
     specs.add(new DependentResourceSpec(
-        HivePdbDependent.Llap.class, "llap-pdb",
-        Set.of("llap-statefulset"),
+        HivePdbDependent.Llap.class, LLAP_PDB,
+        Set.of(LLAP_STATEFULSET),
         null, LLAP_AUTOSCALING, null, null, null));
 
     specs.add(new DependentResourceSpec(
-        HivePdbDependent.TezAm.class, "tezam-pdb",
-        Set.of("tezam-statefulset"),
+        HivePdbDependent.TezAm.class, TEZAM_PDB,
+        Set.of(TEZAM_STATEFULSET),
         null, TEZAM_AUTOSCALING, null, null, null));
 
     return Collections.unmodifiableList(specs);
