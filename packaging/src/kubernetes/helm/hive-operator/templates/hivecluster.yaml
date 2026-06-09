@@ -219,4 +219,15 @@ spec:
   volumeMounts:
     {{- toYaml .Values.cluster.storage.volumeMounts | nindent 4 }}
   {{- end }}
+
+  {{- if and .Values.cluster.autoSuspend .Values.cluster.autoSuspend.enabled }}
+  autoSuspend:
+    enabled: true
+    idleTimeoutMinutes: {{ .Values.cluster.autoSuspend.idleTimeoutMinutes | default 15 }}
+    {{- if hasKey .Values.cluster.autoSuspend "includeMetastore" }}
+    includeMetastore: {{ .Values.cluster.autoSuspend.includeMetastore }}
+    {{- end }}
+  {{- end }}
+
+  suspend: false
 {{- end }}

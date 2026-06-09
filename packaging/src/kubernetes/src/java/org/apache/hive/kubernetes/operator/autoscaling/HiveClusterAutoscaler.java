@@ -62,6 +62,15 @@ public class HiveClusterAutoscaler {
     return MANAGED_REPLICAS.get(namespace + "/" + clusterName + "/" + component);
   }
 
+  /**
+   * Sets the managed replica count for a component. Used by suspend/wake logic
+   * to override what the autoscaler would normally compute.
+   */
+  public static void setManagedReplicas(String namespace, String clusterName,
+      String component, int replicas) {
+    MANAGED_REPLICAS.put(namespace + "/" + clusterName + "/" + component, replicas);
+  }
+
   private final MetricsScraper scraper;
   // Key: "namespace/clusterName/component"
   private final ConcurrentHashMap<String, ComponentAutoscaler> autoscalers =
@@ -71,6 +80,10 @@ public class HiveClusterAutoscaler {
 
   public HiveClusterAutoscaler(MetricsScraper scraper) {
     this.scraper = scraper;
+  }
+
+  public MetricsScraper getScraper() {
+    return scraper;
   }
 
   /**

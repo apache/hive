@@ -13,12 +13,47 @@ spec:
     singular: hivecluster
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .status.clusterPhase
+      name: Phase
+      priority: 0
+      type: string
+    - jsonPath: .status.idleForMinutes
+      name: Idle (min)
+      priority: 0
+      type: integer
+    - jsonPath: .status.suspendedSince
+      name: Suspended Since
+      priority: 1
+      type: string
+    name: v1
     schema:
       openAPIV3Schema:
         properties:
           spec:
             properties:
+              autoSuspend:
+                description: "Auto-suspend configuration. When enabled and all components\
+                  \ are idle for the configured timeout, the cluster scales to 0 replicas."
+                properties:
+                  enabled:
+                    default: false
+                    description: "Whether auto-suspend is enabled. Requires autoscaling\
+                      \ to be enabled on all active components (HS2, LLAP if enabled,\
+                      \ TezAM if enabled, and HMS if includeMetastore is true)."
+                    type: boolean
+                  idleTimeoutMinutes:
+                    default: 15
+                    description: "Minutes of idle time (HS2=0 sessions, LLAP/TezAM\
+                      \ at minReplicas) before the cluster auto-suspends."
+                    type: integer
+                  includeMetastore:
+                    default: true
+                    description: "Whether Metastore participates in auto-suspend.\
+                      \ When false, HMS stays at minReplicas during suspend and HMS\
+                      \ autoscaling is not required for auto-suspend to activate."
+                    type: boolean
+                type: object
               envVars:
                 description: "Environment variables injected into all component pods\
                   \ (e.g., storage credentials, custom JVM options)"
@@ -542,6 +577,10 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              suspend:
+                description: "When true, the cluster is immediately suspended (all\
+                  \ components scaled to 0). Set to false to wake a suspended cluster."
+                type: boolean
               tezAm:
                 description: Tez Application Master configuration. Enabled by default.
                 properties:
@@ -689,6 +728,8 @@ spec:
             x-kubernetes-preserve-unknown-fields: true
           status:
             properties:
+              clusterPhase:
+                type: string
               conditions:
                 items:
                   properties:
@@ -736,6 +777,10 @@ spec:
                   readyReplicas:
                     type: integer
                 type: object
+              idleForMinutes:
+                type: integer
+              idleSince:
+                type: string
               llap:
                 properties:
                   autoscaling:
@@ -798,6 +843,8 @@ spec:
                 type: object
               observedGeneration:
                 type: integer
+              suspendedSince:
+                type: string
               tezAm:
                 properties:
                   autoscaling:

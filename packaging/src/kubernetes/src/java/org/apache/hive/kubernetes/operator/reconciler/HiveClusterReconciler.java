@@ -39,9 +39,11 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper;
+import org.apache.hive.kubernetes.operator.autoscaling.PodMetrics;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterStatus;
+import org.apache.hive.kubernetes.operator.model.spec.AutoSuspendSpec;
 import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
 import org.slf4j.Logger;
@@ -68,30 +70,101 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     HiveClusterStatus existingStatus = resource.getStatus();
     HiveClusterStatus newStatus = buildStatus(resource, context, existingStatus);
 
-    boolean statusChanged = !statusEqualsIgnoringTimestamps(existingStatus, newStatus);
+    // --- Suspend / Wake evaluation (works regardless of autoscaling) ---
+    KubernetesClient client = context.getClient();
+    SuspendAction action = evaluateSuspendState(resource, existingStatus, client);
+    int rescheduleSeconds = 0;
 
-    // Operator-driven autoscaling: evaluate metrics and patch workloads
-    if (anyAutoscalingEnabled(resource.getSpec())) {
-      KubernetesClient client = context.getClient();
+    switch (action) {
+      case SUSPEND_NOW:
+        suspendCluster(resource, client);
+        boolean manual = resource.getSpec().suspend();
+        // Auto-suspend: set spec.suspend=true so the cluster stays suspended
+        // until the user explicitly sets it to false.
+        // The spec patch triggers a watch event → immediate re-reconcile where
+        // STAY_SUSPENDED sets the status cleanly.
+        if (!manual) {
+          patchSuspendSpec(client, resource, true);
+          return UpdateControl.noUpdate();
+        }
+        String reason = "ManualSuspend";
+        newStatus.setClusterPhase("Suspended");
+        newStatus.setSuspendedSince(Instant.now().toString());
+        newStatus.setIdleSince(null);
+        newStatus.getConditions().add(buildCondition("Suspended", "True", reason,
+            "Cluster suspended via spec.suspend",
+            existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
+        rescheduleSeconds = 30;
+        break;
+
+      case STAY_SUSPENDED:
+        newStatus.setClusterPhase("Suspended");
+        newStatus.setSuspendedSince(existingStatus != null ? existingStatus.getSuspendedSince() : null);
+        newStatus.setIdleSince(null);
+        newStatus.getConditions().add(buildCondition("Suspended", "True", "Suspended",
+            "Cluster is suspended",
+            existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
+        rescheduleSeconds = 30;
+        break;
+
+      case WAKE:
+        wakeCluster(resource, client);
+        newStatus.setClusterPhase("Running");
+        newStatus.setSuspendedSince(null);
+        newStatus.setIdleSince(null);
+        newStatus.getConditions().add(buildCondition("Suspended", "False", "Woken",
+            "Cluster woken up",
+            existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
+        rescheduleSeconds = anyAutoscalingEnabled(resource.getSpec())
+            ? getMinScrapeInterval(resource.getSpec()) : 30;
+        break;
+
+      case IDLE_START:
+        newStatus.setClusterPhase("Idle");
+        newStatus.setIdleSince(Instant.now().toString());
+        newStatus.setIdleForMinutes(0);
+        newStatus.setSuspendedSince(null);
+        break;
+
+      case IDLE_WAITING:
+        String idleSince = existingStatus != null ? existingStatus.getIdleSince() : null;
+        newStatus.setClusterPhase("Idle");
+        newStatus.setIdleSince(idleSince);
+        newStatus.setIdleForMinutes(idleSince != null
+            ? (int) Duration.between(Instant.parse(idleSince), Instant.now()).toMinutes() : 0);
+        newStatus.setSuspendedSince(null);
+        break;
+
+      case RUNNING:
+      default:
+        newStatus.setClusterPhase("Running");
+        newStatus.setIdleSince(null);
+        newStatus.setIdleForMinutes(null);
+        newStatus.setSuspendedSince(null);
+        break;
+    }
+
+    // --- Autoscaling evaluation (only when enabled and not suspended) ---
+    if (rescheduleSeconds == 0 && anyAutoscalingEnabled(resource.getSpec())) {
       HiveClusterAutoscaler scaler = getOrCreateAutoscaler(client);
       HiveClusterAutoscaler.AutoscalingEvaluation eval = scaler.evaluate(resource, client);
       for (Map.Entry<String, Integer> entry : eval.patches().entrySet()) {
         patchReplicas(client, resource, entry.getKey(), entry.getValue());
       }
-      // Set autoscaling status on each component
       applyAutoscalingStatuses(newStatus, eval.statuses());
-      // Always patch status when autoscaling is active (metrics change each scrape)
-      int interval = getMinScrapeInterval(resource.getSpec());
-      resource.setStatus(newStatus);
-      return UpdateControl.<HiveCluster>patchStatus(resource)
-          .rescheduleAfter(Duration.ofSeconds(interval));
+      rescheduleSeconds = getMinScrapeInterval(resource.getSpec());
     }
 
-    if (!statusChanged) {
+    // --- Single exit point for status update ---
+    boolean statusNowChanged = !statusEqualsIgnoringTimestamps(existingStatus, newStatus);
+    if (!statusNowChanged && rescheduleSeconds == 0) {
       return UpdateControl.noUpdate();
     }
-
     resource.setStatus(newStatus);
+    if (rescheduleSeconds > 0) {
+      return UpdateControl.<HiveCluster>patchStatus(resource)
+          .rescheduleAfter(Duration.ofSeconds(rescheduleSeconds));
+    }
     return UpdateControl.patchStatus(resource);
   }
 
@@ -417,12 +490,230 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
       String component, int replicas) {
     String namespace = resource.getMetadata().getNamespace();
     String workloadName = resource.getMetadata().getName() + "-" + component;
-    if ("llap".equals(component) || "tezam".equals(component)) {
-      client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
-      LOG.info("Scaled StatefulSet {}/{} to {} replicas", namespace, workloadName, replicas);
-    } else {
-      client.apps().deployments().inNamespace(namespace).withName(workloadName).scale(replicas);
-      LOG.info("Scaled Deployment {}/{} to {} replicas", namespace, workloadName, replicas);
+    try {
+      if ("llap".equals(component) || "tezam".equals(component)) {
+        client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
+      } else {
+        client.apps().deployments().inNamespace(namespace).withName(workloadName).scale(replicas);
+      }
+      LOG.info("Scaled {}/{} to {} replicas", namespace, workloadName, replicas);
+    } catch (Exception e) {
+      LOG.debug("Could not scale {}/{}: {}", namespace, workloadName, e.getMessage());
     }
+  }
+
+  private void patchSuspendSpec(KubernetesClient client, HiveCluster resource, boolean suspend) {
+    String ns = resource.getMetadata().getNamespace();
+    String name = resource.getMetadata().getName();
+    client.resources(HiveCluster.class).inNamespace(ns).withName(name)
+        .edit(hc -> {
+          // Records are immutable so we build a new spec with the updated suspend value
+          HiveClusterSpec oldSpec = hc.getSpec();
+          HiveClusterSpec newSpec = new HiveClusterSpec(
+              oldSpec.image(), oldSpec.imagePullPolicy(), oldSpec.metastore(),
+              oldSpec.hiveServer2(), oldSpec.llap(), oldSpec.tezAm(), oldSpec.zookeeper(),
+              oldSpec.hadoop(), oldSpec.envVars(), oldSpec.externalJars(),
+              oldSpec.volumes(), oldSpec.volumeMounts(), oldSpec.autoSuspend(), suspend);
+          hc.setSpec(newSpec);
+          return hc;
+        });
+    LOG.info("Patched spec.suspend={} on {}/{}", suspend, ns, name);
+  }
+
+  // --- Auto-Suspend / Wake ---
+
+  enum SuspendAction { RUNNING, IDLE_START, IDLE_WAITING, SUSPEND_NOW, STAY_SUSPENDED, WAKE }
+
+  private SuspendAction evaluateSuspendState(HiveCluster resource,
+      HiveClusterStatus existingStatus, KubernetesClient client) {
+
+    // 1. Manual suspend: spec.suspend = true → suspend immediately
+    if (resource.getSpec().suspend()) {
+      if (existingStatus != null && "Suspended".equals(existingStatus.getClusterPhase())) {
+        return SuspendAction.STAY_SUSPENDED;
+      }
+      return SuspendAction.SUSPEND_NOW;
+    }
+
+    // 2. Currently suspended and spec.suspend = false → wake
+    if (existingStatus != null && "Suspended".equals(existingStatus.getClusterPhase())) {
+      return SuspendAction.WAKE;
+    }
+
+    // 3. Auto-suspend evaluation (only if enabled and all autoscaling is on)
+    AutoSuspendSpec autoSuspend = resource.getSpec().autoSuspend();
+    if (!autoSuspend.isEnabled()) {
+      LOG.debug("Auto-suspend disabled");
+      return SuspendAction.RUNNING;
+    }
+    if (!allAutoscalingEnabled(resource.getSpec())) {
+      LOG.debug("Auto-suspend skipped: not all components have autoscaling enabled");
+      return SuspendAction.RUNNING;
+    }
+
+    // 4. Check idle conditions
+    boolean allIdle = isClusterIdle(resource, existingStatus, client);
+    if (!allIdle) {
+      return SuspendAction.RUNNING;
+    }
+
+    // 5. Check idle duration
+    String idleSince = existingStatus != null ? existingStatus.getIdleSince() : null;
+    if (idleSince == null) {
+      return SuspendAction.IDLE_START;
+    }
+
+    Instant idleStart = Instant.parse(idleSince);
+    if (Duration.between(idleStart, Instant.now()).toMinutes() >= autoSuspend.idleTimeoutMinutes()) {
+      return SuspendAction.SUSPEND_NOW;
+    }
+
+    return SuspendAction.IDLE_WAITING;
+  }
+
+
+  private boolean isClusterIdle(HiveCluster resource, HiveClusterStatus existingStatus,
+      KubernetesClient client) {
+    HiveClusterSpec spec = resource.getSpec();
+    String ns = resource.getMetadata().getNamespace();
+    String name = resource.getMetadata().getName();
+
+    // All components must be at minReplicas
+    if (spec.llap().isEnabled()
+        && !isAtMinReplicas(client, ns, name + "-llap", true,
+            spec.llap().autoscaling().minReplicas())) {
+      return false;
+    }
+    if (spec.tezAm().isEnabled()
+        && !isAtMinReplicas(client, ns, name + "-tezam", true,
+            spec.tezAm().autoscaling().minReplicas())) {
+      return false;
+    }
+    if (!isAtMinReplicas(client, ns, name + "-hiveserver2", false,
+        Math.max(1, spec.hiveServer2().autoscaling().minReplicas()))) {
+      return false;
+    }
+
+    // HS2 must have 0 open sessions.
+    // If metrics scrape fails (empty list), assume NOT idle to prevent accidental suspend.
+    HiveClusterAutoscaler scaler = getOrCreateAutoscaler(client);
+    List<PodMetrics> hs2Metrics = scaler.scrapeHs2Metrics(resource);
+    if (hs2Metrics.isEmpty()) {
+      LOG.debug("Idle check: HS2 metrics unavailable, assuming not idle");
+      return false;
+    }
+    int totalSessions = hs2Metrics.stream()
+        .mapToInt(pm -> pm.metrics().getOrDefault("hs2_open_sessions", 0.0).intValue())
+        .sum();
+    if (totalSessions > 0) {
+      LOG.debug("Idle check failed: HS2 has {} open sessions", totalSessions);
+      return false;
+    }
+
+    // HMS must be at minReplicas (only checked if includeMetastore=true)
+    if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()
+        && !isAtMinReplicas(client, ns, name + "-metastore", false,
+            Math.max(1, spec.metastore().autoscaling().minReplicas()))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /** Returns true if the workload is absent or its replicas <= minReplicas. */
+  private boolean isAtMinReplicas(KubernetesClient client, String ns,
+      String workloadName, boolean statefulSet, int minReplicas) {
+    try {
+      Integer currentReplicas = null;
+      if (statefulSet) {
+        var ss = client.apps().statefulSets().inNamespace(ns).withName(workloadName).get();
+        if (ss != null && ss.getSpec() != null) {
+          currentReplicas = ss.getSpec().getReplicas();
+        }
+      } else {
+        var deploy = client.apps().deployments().inNamespace(ns).withName(workloadName).get();
+        if (deploy != null && deploy.getSpec() != null) {
+          currentReplicas = deploy.getSpec().getReplicas();
+        }
+      }
+      if (currentReplicas != null && currentReplicas > minReplicas) {
+        LOG.debug("Idle check failed: {} replicas {} > min {}", workloadName, currentReplicas, minReplicas);
+        return false;
+      }
+      return true;
+    } catch (Exception e) {
+      LOG.debug("Idle check: could not read {}: {}", workloadName, e.getMessage());
+      return true;
+    }
+  }
+
+  private void suspendCluster(HiveCluster resource, KubernetesClient client) {
+    String ns = resource.getMetadata().getNamespace();
+    String name = resource.getMetadata().getName();
+    HiveClusterSpec spec = resource.getSpec();
+
+    // Set MANAGED_REPLICAS to 0 so autoscaler doesn't fight the suspend.
+    // Actual scaling to 0 is handled by the DependentResources which check
+    // spec.suspend() in resolveReplicaCount().
+    HiveClusterAutoscaler.setManagedReplicas(ns, name, "hiveserver2", 0);
+    if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()) {
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, "metastore", 0);
+    }
+    if (spec.llap().isEnabled()) {
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, "llap", 0);
+    }
+    if (spec.tezAm().isEnabled()) {
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, "tezam", 0);
+    }
+
+    LOG.info("Cluster {}/{} suspended", ns, name);
+  }
+
+  private void wakeCluster(HiveCluster resource, KubernetesClient client) {
+    HiveClusterSpec spec = resource.getSpec();
+    String ns = resource.getMetadata().getNamespace();
+    String name = resource.getMetadata().getName();
+
+    // Set MANAGED_REPLICAS to wake values. The JOSDK workflow will recreate
+    // the dependent resources (Deployments/StatefulSets) on the next reconcile
+    // and use these values for spec.replicas. We don't call patchReplicas()
+    // because the workloads may have been garbage-collected while suspended.
+    int hs2Min = Math.max(1, spec.hiveServer2().autoscaling().minReplicas());
+    HiveClusterAutoscaler.setManagedReplicas(ns, name, "hiveserver2", hs2Min);
+
+    if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()) {
+      int hmsMin = Math.max(1, spec.metastore().autoscaling().minReplicas());
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, "metastore", hmsMin);
+    }
+
+    if (spec.llap().isEnabled()) {
+      int llapWake = spec.llap().autoscaling().minReplicas();
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, "llap", llapWake);
+    }
+
+    if (spec.tezAm().isEnabled()) {
+      int tezWake = spec.tezAm().autoscaling().minReplicas();
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, "tezam", tezWake);
+    }
+
+    LOG.info("Cluster {}/{} woken up — restored to minReplicas", ns, name);
+  }
+
+  private static boolean allAutoscalingEnabled(HiveClusterSpec spec) {
+    if (!spec.hiveServer2().autoscaling().isEnabled()) {
+      return false;
+    }
+    // Skip HMS check if includeMetastore=false (HMS doesn't participate in suspend)
+    if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()
+        && !spec.metastore().autoscaling().isEnabled()) {
+      return false;
+    }
+    if (spec.llap().isEnabled() && !spec.llap().autoscaling().isEnabled()) {
+      return false;
+    }
+    if (spec.tezAm().isEnabled() && !spec.tezAm().autoscaling().isEnabled()) {
+      return false;
+    }
+    return true;
   }
 }
