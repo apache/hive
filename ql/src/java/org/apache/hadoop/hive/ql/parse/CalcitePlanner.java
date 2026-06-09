@@ -3013,7 +3013,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
 
         // 3.2 Add column info corresponding to partition columns
-        for (FieldSchema partCol : tabMetaData.getPartitionKeys()) {
+        for (FieldSchema partCol : tabMetaData.getPartCols()) {
+          if (tabMetaData.hasNonNativePartitionSupport()) {
+            break;
+          }
           colName = partCol.getName();
           colInfo = new ColumnInfo(colName,
                   TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()),
