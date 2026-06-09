@@ -276,8 +276,9 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     Map<String, String> tblProps =
         table.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(table.getParameters());
     String comment = tblProps.get("comment");
+    List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
     IcebergViewSupport.createOrReplaceView(
-        conf, dbName, tableName, hmsTableColumns(table), table.getViewExpandedText(), tblProps, comment);
+        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment);
   }
 
   private static List<FieldSchema> hmsTableColumns(Table table) {
