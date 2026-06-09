@@ -176,6 +176,14 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    */
   protected Integer resolveReplicaCount(P primary, Context<P> context,
       AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
+    // Suspended cluster → 0 replicas (dependent resources natively respect suspend).
+    // Exception: HMS stays running if includeMetastore=false in autoSuspend config.
+    if (primary instanceof HiveCluster hc && hc.getSpec().suspend()) {
+      boolean isMetastore = "metastore".equals(getComponentName());
+      if (!isMetastore || hc.getSpec().autoSuspend().includeMetastore()) {
+        return 0;
+      }
+    }
     if (autoscaling == null || !autoscaling.isEnabled()) {
       return staticReplicas;
     }

@@ -98,7 +98,7 @@ public class MetricsScraper {
       futures.add(fetchMetricsAsync(podIp)
           .thenApply(body -> new PodMetrics(podName, PrometheusTextParser.parse(body)))
           .exceptionally(ex -> {
-            LOG.warn("Failed to scrape metrics from pod {}: {}", podName, ex.getMessage());
+            LOG.debug("Failed to scrape metrics from pod {}: {}", podName, ex.getMessage());
             return null;
           }));
     }

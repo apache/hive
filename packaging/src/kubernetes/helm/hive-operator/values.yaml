@@ -102,6 +102,20 @@ cluster:
       #   readOnly: true
 
   # ---------------------------------------------------------------------------
+  # AUTO-SUSPEND — fully hibernates the cluster after idle timeout
+  # ---------------------------------------------------------------------------
+  # When enabled (requires autoscaling on all active components), the operator
+  # scales the entire cluster to 0 replicas after all components have been idle
+  # for idleTimeoutMinutes. Use kubectl patch to manually suspend/wake:
+  #   kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":true}}'
+  #   kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":false}}'
+  autoSuspend:
+    enabled: false
+    idleTimeoutMinutes: 15
+    # Set to false to keep HMS running during suspend (HMS autoscaling not required)
+    includeMetastore: true
+
+  # ---------------------------------------------------------------------------
   # METASTORE — defaults to enabled, 2 replicas (HA)
   # ---------------------------------------------------------------------------
   metastore:

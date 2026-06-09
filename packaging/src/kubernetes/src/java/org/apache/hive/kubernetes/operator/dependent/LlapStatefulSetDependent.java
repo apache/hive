@@ -87,6 +87,8 @@ public class LlapStatefulSetDependent
         spec.zookeeper().quorum(), null));
     envVars.add(new EnvVar("HIVE_LLAP_DAEMON_SERVICE_HOSTS",
         llap.serviceHosts(), null));
+    envVars.add(new EnvVar("LLAP_LOG4J2_PROPERTIES_FILE_NAME",
+        "llap-daemon-log4j2.properties", null));
 
     // User-provided env vars (storage credentials, etc.)
     if (spec.envVars() != null) {

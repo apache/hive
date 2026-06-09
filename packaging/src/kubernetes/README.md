@@ -637,6 +637,163 @@ terminates immediately once sessions drain, not after the full grace period.
 | **LLAP** | 0 | No HS2 sessions (activation gate fails) | HS2 has open sessions (next scrape) |
 | **TezAM** | 0 | No HS2 sessions (activation gate fails) | HS2 has open sessions (next scrape) |
 
+### Auto-Suspend (Full Cluster Hibernation)
+
+Auto-suspend goes beyond scale-to-zero — it fully hibernates the **entire** cluster
+(including HS2 and HMS) to 0 replicas after a configurable idle timeout. This is
+useful for dev/test clusters that should not consume resources when nobody is using
+them.
+
+**Prerequisites:** Auto-suspend requires autoscaling to be enabled on ALL active
+components (HS2, LLAP if enabled, TezAM if enabled, and HMS if `includeMetastore=true`).
+The operator will not auto-suspend unless it can confirm all components are at their
+minimum state.
+
+**Idle criteria (all must hold simultaneously for `idleTimeoutMinutes`):**
+
+| Component | Idle Condition |
+|-----------|---------------|
+| **HS2** | At `minReplicas` with 0 open sessions |
+| **HMS** | At `minReplicas` (only checked if `includeMetastore=true`) |
+| **LLAP** | At `minReplicas` (default 0) |
+| **TezAM** | At `minReplicas` (default 0) |
+
+**Important:** HS2 can **only** scale to 0 replicas via auto-suspend. Normal
+autoscaling always maintains `minReplicas >= 1` for HS2. Auto-suspend is the
+only mechanism that overrides this to achieve full hibernation.
+
+```
+                    Auto-Suspend Flow
+
+  1. Autoscaling scales all components to their minReplicas
+     (HS2≥1, HMS≥1, LLAP/TezAM to configured min)
+
+  2. Operator detects idle state:
+     - HS2 has 0 open sessions
+     - HMS at minReplicas (if includeMetastore=true)
+     - LLAP/TezAM at minReplicas
+
+  3. Idle timer starts (status: clusterPhase=Idle, idleSince=<now>)
+
+  4. After idleTimeoutMinutes (default 15):
+     - ALL components scaled to 0 (HMS excluded if includeMetastore=false)
+     - spec.suspend set to true (cluster stays suspended until user wakes it)
+     - Status: clusterPhase=Suspended, suspendedSince=<now>
+
+  5. To wake: kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":false}}'
+     All components restored to minReplicas
+     (HS2/HMS ≥1, LLAP/TezAM ≥1 for immediate usability)
+
+```
+
+**Configuration:**
+
+```yaml
+cluster:
+  autoSuspend:
+    enabled: true
+    idleTimeoutMinutes: 15    # minutes idle before full hibernation
+    includeMetastore: true    # set false to keep HMS running during suspend
+```
+
+**Manual Suspend/Wake Commands:**
+
+```bash
+# Suspend immediately (bypasses idle timer)
+kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":true}}'
+
+# Wake cluster (restores to minReplicas)
+kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":false}}'
+```
+
+Manual suspend works regardless of whether `autoSuspend.enabled` is true — it
+immediately scales all components to 0 without waiting for the idle timeout.
+When `includeMetastore: false`, HMS stays running even during manual suspend.
+
+**Observing cluster state:**
+
+```bash
+# Quick view — printer columns show phase and idle time
+kubectl get hivecluster
+```
+```
+NAME   PHASE   IDLE (MIN)   AGE
+hive   Idle    12           2h
+```
+
+```bash
+# After suspend triggers
+kubectl get hivecluster
+```
+```
+NAME   PHASE       IDLE (MIN)   AGE
+hive   Suspended                2h
+```
+
+```bash
+# Full status (kubectl get hivecluster hive -o yaml)
+```
+```yaml
+status:
+  clusterPhase: Suspended
+  idleSince: "2026-06-08T10:00:00Z"
+  idleForMinutes: 15
+  suspendedSince: "2026-06-08T10:15:00Z"
+  conditions:
+    - type: Suspended
+      status: "True"
+      reason: AutoSuspend        # or ManualSuspend
+      message: "Cluster suspended after idle timeout"
+      lastTransitionTime: "2026-06-08T10:15:00Z"
+```
+
+When the cluster is running normally:
+```
+NAME   PHASE     IDLE (MIN)   AGE
+hive   Running                2h
+```
+
+**Full example (autoscaling + auto-suspend):**
+
+```yaml
+cluster:
+  autoSuspend:
+    enabled: true
+    idleTimeoutMinutes: 15
+    includeMetastore: false   # keep HMS running during suspend
+
+  hiveServer2:
+    replicas: 10
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+
+  metastore:
+    replicas: 6
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+
+  llap:
+    replicas: 8
+    autoscaling:
+      enabled: true
+      minReplicas: 0        # scales to 0 via normal autoscaling when HS2 idle
+
+  tezAm:
+    replicas: 10
+    autoscaling:
+      enabled: true
+      minReplicas: 0        # scales to 0 via normal autoscaling when HS2 idle
+```
+
+With this configuration, the cluster lifecycle is:
+1. Under load → all components scaled up by autoscaler
+2. Load drops → autoscaler scales to minReplicas (HS2=1, HMS=1, LLAP=0, TezAM=0)
+3. HS2 idle (0 sessions) for 15 minutes → auto-suspend kicks in → HS2, LLAP, TezAM to 0 (HMS stays at minReplicas)
+4. `kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":false}}'` → wake → HS2=1, LLAP=1, TezAM=1
+5. User connects → autoscaler detects sessions → scales up as needed
+
 ### CPU-Based Scaling (HS2 and HMS)
 
 In addition to the primary metrics (sessions for HS2, API request rate for HMS),
@@ -1045,6 +1202,14 @@ setup is needed — simply connect to HS2 and the operator wakes LLAP/TezAM as n
 | `cluster.tezAm.configOverrides` | `{}` | Extra TezAM config properties |
 | `cluster.tezAm.extraVolumes` | `[]` | Additional volumes for TezAM pods |
 | `cluster.tezAm.extraVolumeMounts` | `[]` | Additional volume mounts for TezAM containers |
+
+### Auto-Suspend
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.autoSuspend.enabled` | `false` | Enable full cluster hibernation after idle timeout. Requires autoscaling enabled on all active components (HMS only if `includeMetastore=true`). |
+| `cluster.autoSuspend.idleTimeoutMinutes` | `15` | Minutes of idle time (HS2=0 sessions, LLAP/TezAM at minReplicas) before the cluster suspends. |
+| `cluster.autoSuspend.includeMetastore` | `true` | Whether HMS participates in auto-suspend. When false, HMS stays at minReplicas during suspend and HMS autoscaling is not required. |
 
 ### Autoscaling (per component)
 
