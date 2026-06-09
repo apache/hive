@@ -98,9 +98,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
           Table table;
           try {
             table = getDb().getTable(tableName);
-            List<FieldSchema> colsToLookUp = table.hasNonNativePartitionSupport() ? table.getAllCols() :
-                table.getCols();
-            for (FieldSchema fs : colsToLookUp) {
+            for (FieldSchema fs : table.getAllCols()) {
               TypeInfo columnType = TypeInfoUtils.getTypeInfoFromTypeString(fs.getType());
               rwsch.put(tableName.getTable(), fs.getName(),
                   new ColumnInfo(fs.getName(), columnType, null, true));
