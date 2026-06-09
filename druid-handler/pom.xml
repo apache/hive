@@ -407,6 +407,8 @@
                         <exclude>META-INF/*.RSA</exclude>
                         <exclude>META-INF/versions/**</exclude>
                         <exclude>static/</exclude>
+                        <!-- TODO cleanup -->
+                        <exclude>evict-stale-asm-shade-cache/**</exclude>
                       </excludes>
                     </filter>
                   </filters>
