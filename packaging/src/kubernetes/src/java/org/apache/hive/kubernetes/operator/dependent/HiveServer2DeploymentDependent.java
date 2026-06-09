@@ -49,7 +49,7 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class HiveServer2DeploymentDependent
     extends HiveDependentResource<Deployment, HiveCluster> {
 
-  public static final String COMPONENT = "hiveserver2";
+  public static final String COMPONENT = ConfigUtils.COMPONENT_HIVESERVER2;
   private static final String SCRATCH_MOUNT_PATH = "/opt/hive/scratch";
 
   public HiveServer2DeploymentDependent() {
@@ -76,7 +76,7 @@ public class HiveServer2DeploymentDependent
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "hiveserver2", null));
+    envVars.add(new EnvVar("SERVICE_NAME", COMPONENT, null));
     envVars.add(new EnvVar("IS_RESUME", "true", null));
     envVars.add(new EnvVar("TEZ_AM_EXTERNAL_ID",
         "tez-session-hs2", null));
@@ -240,13 +240,13 @@ public class HiveServer2DeploymentDependent
           .withNewTemplate()
             .withNewMetadata()
               .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
-              .addToAnnotations("kubectl.kubernetes.io/default-container", "hiveserver2")
+              .addToAnnotations("kubectl.kubernetes.io/default-container", COMPONENT)
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
               .withInitContainers(initContainers)
               .addNewContainer()
-                .withName("hiveserver2")
+                .withName(COMPONENT)
                 .withImage(spec.image())
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)

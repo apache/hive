@@ -179,7 +179,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     // Suspended cluster → 0 replicas (dependent resources natively respect suspend).
     // Exception: HMS stays running if includeMetastore=false in autoSuspend config.
     if (primary instanceof HiveCluster hc && hc.getSpec().suspend()) {
-      boolean isMetastore = "metastore".equals(getComponentName());
+      boolean isMetastore = ConfigUtils.COMPONENT_METASTORE.equals(getComponentName());
       if (!isMetastore || hc.getSpec().autoSuspend().includeMetastore()) {
         return 0;
       }
@@ -785,7 +785,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     // LLAP uses LLAP_DAEMON_OPTS (its startup script ignores SERVICE_OPTS).
     String agentArg = String.format("-javaagent:%s=%d:%s",
         JMX_EXPORTER_JAR, ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT, JMX_EXPORTER_CONFIG);
-    String optsEnvVar = "llap".equals(component) ? "LLAP_DAEMON_OPTS" : "SERVICE_OPTS";
+    String optsEnvVar = ConfigUtils.COMPONENT_LLAP.equals(component) ? "LLAP_DAEMON_OPTS" : "SERVICE_OPTS";
     boolean found = false;
     for (int i = 0; i < envVars.size(); i++) {
       if (optsEnvVar.equals(envVars.get(i).getName())) {
@@ -812,7 +812,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     sb.append("rules:\n");
 
     switch (component) {
-      case "hiveserver2":
+      case ConfigUtils.COMPONENT_HIVESERVER2:
         // HS2 session and operation metrics
         sb.append("- pattern: 'metrics<name=hs2_(.+)><>Value'\n");
         sb.append("  name: hs2_$1\n");
@@ -829,7 +829,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("  name: jvm_process_cpu_load\n");
         sb.append("  type: GAUGE\n");
         break;
-      case "metastore":
+      case ConfigUtils.COMPONENT_METASTORE:
         // HMS API call metrics
         sb.append("- pattern: 'metrics<name=api_(.+)><>Count'\n");
         sb.append("  name: api_$1_total\n");
@@ -842,7 +842,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("  name: jvm_process_cpu_load\n");
         sb.append("  type: GAUGE\n");
         break;
-      case "llap":
+      case ConfigUtils.COMPONENT_LLAP:
         // Only export the executor metrics the autoscaler and drain script need.
         // A wildcard '.*' pattern serializes 600+ metrics every scrape interval,
         // causing CPU spikes and GC pressure on the LLAP JVM.
@@ -861,7 +861,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         sb.append("  name: hadoop_llapdaemon_executornumexecutors\n");
         sb.append("  type: GAUGE\n");
         break;
-      case "tezam":
+      case ConfigUtils.COMPONENT_TEZAM:
         // TezAM DAG execution metrics
         sb.append("- pattern: 'Hadoop<service=TezAppMaster, name=TezAppMaster><>(.+)'\n");
         sb.append("  name: tez_am_$1\n");

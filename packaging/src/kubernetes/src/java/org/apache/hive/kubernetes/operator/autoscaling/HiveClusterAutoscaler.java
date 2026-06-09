@@ -29,6 +29,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,32 +103,32 @@ public class HiveClusterAutoscaler {
 
     // HiveServer2
     if (spec.hiveServer2().autoscaling().isEnabled()) {
-      Map<String, String> hs2Selector = Labels.selectorForComponent(cluster, "hiveserver2");
+      Map<String, String> hs2Selector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_HIVESERVER2);
       List<PodMetrics> hs2Metrics = scraper.scrape(namespace, hs2Selector);
       updatePodDeletionCost(client, namespace, hs2Metrics, "hs2_open_sessions");
       evaluateComponent(cluster, client, namespace, clusterName,
-          "hiveserver2", spec.hiveServer2().autoscaling(),
+          ConfigUtils.COMPONENT_HIVESERVER2, spec.hiveServer2().autoscaling(),
           spec.hiveServer2().replicas(), patches, statuses, hs2Metrics);
     }
 
     // Metastore
     if (spec.metastore().isEnabled() && spec.metastore().autoscaling().isEnabled()) {
       evaluateComponent(cluster, client, namespace, clusterName,
-          "metastore", spec.metastore().autoscaling(),
+          ConfigUtils.COMPONENT_METASTORE, spec.metastore().autoscaling(),
           spec.metastore().replicas(), patches, statuses);
     }
 
     // LLAP
     if (spec.llap().isEnabled() && spec.llap().autoscaling().isEnabled()) {
       evaluateComponent(cluster, client, namespace, clusterName,
-          "llap", spec.llap().autoscaling(),
+          ConfigUtils.COMPONENT_LLAP, spec.llap().autoscaling(),
           spec.llap().replicas(), patches, statuses);
     }
 
     // TezAM
     if (spec.tezAm().isEnabled() && spec.tezAm().autoscaling().isEnabled()) {
       evaluateComponent(cluster, client, namespace, clusterName,
-          "tezam", spec.tezAm().autoscaling(),
+          ConfigUtils.COMPONENT_TEZAM, spec.tezAm().autoscaling(),
           spec.tezAm().replicas(), patches, statuses);
     }
 
@@ -139,7 +140,7 @@ public class HiveClusterAutoscaler {
    */
   public List<PodMetrics> scrapeHs2Metrics(HiveCluster cluster) {
     String namespace = cluster.getMetadata().getNamespace();
-    Map<String, String> selector = Labels.selectorForComponent(cluster, "hiveserver2");
+    Map<String, String> selector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_HIVESERVER2);
     return scraper.scrape(namespace, selector);
   }
 
@@ -171,7 +172,8 @@ public class HiveClusterAutoscaler {
 
     // For LLAP and TezAM, scaling decisions are based on HS2 metrics (activation gate),
     // not their own pod metrics. Allow evaluation even with 0 own pods.
-    boolean usesHs2Activation = component.equals("llap") || component.equals("tezam");
+    boolean usesHs2Activation = ConfigUtils.COMPONENT_LLAP.equals(component)
+        || ConfigUtils.COMPONENT_TEZAM.equals(component);
 
     if (metrics.isEmpty() && !usesHs2Activation) {
       LOG.debug("[{}] No ready pods to scrape, skipping", component);
@@ -196,7 +198,7 @@ public class HiveClusterAutoscaler {
       as.setScaleUpThreshold(autoscaling.scaleUpThreshold());
     }
     // CPU metrics (only for HS2 and HMS — LLAP/TezAM don't use CPU-based scaling)
-    if (("hiveserver2".equals(component) || "metastore".equals(component))
+    if ((ConfigUtils.COMPONENT_HIVESERVER2.equals(component) || ConfigUtils.COMPONENT_METASTORE.equals(component))
         && autoscaling.cpuScaleUpThreshold() > 0) {
       as.setCurrentCpuPercent(result.cpuPercent());
       as.setCpuScaleUpThreshold(autoscaling.cpuScaleUpThreshold());
@@ -218,10 +220,10 @@ public class HiveClusterAutoscaler {
 
   private ScalingStrategy createStrategy(String component, HiveCluster cluster) {
     return switch (component) {
-      case "hiveserver2" -> new HiveServer2ScalingStrategy();
-      case "metastore" -> new MetastoreScalingStrategy();
-      case "llap" -> new LlapScalingStrategy(this, cluster);
-      case "tezam" -> new TezAmScalingStrategy(this, cluster);
+      case ConfigUtils.COMPONENT_HIVESERVER2 -> new HiveServer2ScalingStrategy();
+      case ConfigUtils.COMPONENT_METASTORE -> new MetastoreScalingStrategy();
+      case ConfigUtils.COMPONENT_LLAP -> new LlapScalingStrategy(this, cluster);
+      case ConfigUtils.COMPONENT_TEZAM -> new TezAmScalingStrategy(this, cluster);
       default -> throw new IllegalArgumentException("Unknown component: " + component);
     };
   }
@@ -229,7 +231,7 @@ public class HiveClusterAutoscaler {
   private int getCurrentReplicas(KubernetesClient client, String namespace,
       String clusterName, String component) {
     String workloadName = clusterName + "-" + component;
-    if ("llap".equals(component) || "tezam".equals(component)) {
+    if (ConfigUtils.COMPONENT_LLAP.equals(component) || ConfigUtils.COMPONENT_TEZAM.equals(component)) {
       var ss = client.apps().statefulSets()
           .inNamespace(namespace).withName(workloadName).get();
       return ss != null && ss.getSpec().getReplicas() != null ? ss.getSpec().getReplicas() : 0;

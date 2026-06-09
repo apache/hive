@@ -46,6 +46,7 @@ import org.apache.hive.kubernetes.operator.model.HiveClusterStatus;
 import org.apache.hive.kubernetes.operator.model.spec.AutoSuspendSpec;
 import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -430,17 +431,17 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
   private void applyAutoscalingStatuses(HiveClusterStatus status,
       Map<String, AutoscalingStatus> statuses) {
-    if (statuses.containsKey("hiveserver2") && status.getHiveServer2() != null) {
-      status.getHiveServer2().setAutoscaling(statuses.get("hiveserver2"));
+    if (statuses.containsKey(ConfigUtils.COMPONENT_HIVESERVER2) && status.getHiveServer2() != null) {
+      status.getHiveServer2().setAutoscaling(statuses.get(ConfigUtils.COMPONENT_HIVESERVER2));
     }
-    if (statuses.containsKey("metastore") && status.getMetastore() != null) {
-      status.getMetastore().setAutoscaling(statuses.get("metastore"));
+    if (statuses.containsKey(ConfigUtils.COMPONENT_METASTORE) && status.getMetastore() != null) {
+      status.getMetastore().setAutoscaling(statuses.get(ConfigUtils.COMPONENT_METASTORE));
     }
-    if (statuses.containsKey("llap") && status.getLlap() != null) {
-      status.getLlap().setAutoscaling(statuses.get("llap"));
+    if (statuses.containsKey(ConfigUtils.COMPONENT_LLAP) && status.getLlap() != null) {
+      status.getLlap().setAutoscaling(statuses.get(ConfigUtils.COMPONENT_LLAP));
     }
-    if (statuses.containsKey("tezam") && status.getTezAm() != null) {
-      status.getTezAm().setAutoscaling(statuses.get("tezam"));
+    if (statuses.containsKey(ConfigUtils.COMPONENT_TEZAM) && status.getTezAm() != null) {
+      status.getTezAm().setAutoscaling(statuses.get(ConfigUtils.COMPONENT_TEZAM));
     }
   }
 
@@ -491,7 +492,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     String namespace = resource.getMetadata().getNamespace();
     String workloadName = resource.getMetadata().getName() + "-" + component;
     try {
-      if ("llap".equals(component) || "tezam".equals(component)) {
+      if (ConfigUtils.COMPONENT_LLAP.equals(component) || ConfigUtils.COMPONENT_TEZAM.equals(component)) {
         client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
       } else {
         client.apps().deployments().inNamespace(namespace).withName(workloadName).scale(replicas);
@@ -580,16 +581,16 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
     // All components must be at minReplicas
     if (spec.llap().isEnabled()
-        && !isAtMinReplicas(client, ns, name + "-llap", true,
+        && !isAtMinReplicas(client, ns, name + "-" + ConfigUtils.COMPONENT_LLAP, true,
             spec.llap().autoscaling().minReplicas())) {
       return false;
     }
     if (spec.tezAm().isEnabled()
-        && !isAtMinReplicas(client, ns, name + "-tezam", true,
+        && !isAtMinReplicas(client, ns, name + "-" + ConfigUtils.COMPONENT_TEZAM, true,
             spec.tezAm().autoscaling().minReplicas())) {
       return false;
     }
-    if (!isAtMinReplicas(client, ns, name + "-hiveserver2", false,
+    if (!isAtMinReplicas(client, ns, name + "-" + ConfigUtils.COMPONENT_HIVESERVER2, false,
         Math.max(1, spec.hiveServer2().autoscaling().minReplicas()))) {
       return false;
     }
@@ -612,7 +613,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
     // HMS must be at minReplicas (only checked if includeMetastore=true)
     if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()
-        && !isAtMinReplicas(client, ns, name + "-metastore", false,
+        && !isAtMinReplicas(client, ns, name + "-" + ConfigUtils.COMPONENT_METASTORE, false,
             Math.max(1, spec.metastore().autoscaling().minReplicas()))) {
       return false;
     }
@@ -655,15 +656,15 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     // Set MANAGED_REPLICAS to 0 so autoscaler doesn't fight the suspend.
     // Actual scaling to 0 is handled by the DependentResources which check
     // spec.suspend() in resolveReplicaCount().
-    HiveClusterAutoscaler.setManagedReplicas(ns, name, "hiveserver2", 0);
+    HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_HIVESERVER2, 0);
     if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()) {
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, "metastore", 0);
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE, 0);
     }
     if (spec.llap().isEnabled()) {
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, "llap", 0);
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_LLAP, 0);
     }
     if (spec.tezAm().isEnabled()) {
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, "tezam", 0);
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_TEZAM, 0);
     }
 
     LOG.info("Cluster {}/{} suspended", ns, name);
@@ -679,21 +680,21 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     // and use these values for spec.replicas. We don't call patchReplicas()
     // because the workloads may have been garbage-collected while suspended.
     int hs2Min = Math.max(1, spec.hiveServer2().autoscaling().minReplicas());
-    HiveClusterAutoscaler.setManagedReplicas(ns, name, "hiveserver2", hs2Min);
+    HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_HIVESERVER2, hs2Min);
 
     if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()) {
       int hmsMin = Math.max(1, spec.metastore().autoscaling().minReplicas());
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, "metastore", hmsMin);
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE, hmsMin);
     }
 
     if (spec.llap().isEnabled()) {
       int llapWake = spec.llap().autoscaling().minReplicas();
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, "llap", llapWake);
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_LLAP, llapWake);
     }
 
     if (spec.tezAm().isEnabled()) {
       int tezWake = spec.tezAm().autoscaling().minReplicas();
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, "tezam", tezWake);
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_TEZAM, tezWake);
     }
 
     LOG.info("Cluster {}/{} woken up — restored to minReplicas", ns, name);

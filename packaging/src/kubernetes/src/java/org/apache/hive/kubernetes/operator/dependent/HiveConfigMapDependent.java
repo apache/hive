@@ -26,6 +26,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDep
 
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
@@ -93,7 +94,7 @@ public abstract class HiveConfigMapDependent extends HiveDependentResource<Confi
       + "app.kubernetes.io/managed-by=hive-kubernetes-operator"))
   public static class Metastore extends HiveConfigMapDependent {
     public Metastore() {
-      super("metastore", "metastore-config");
+      super(ConfigUtils.COMPONENT_METASTORE, "metastore-config");
     }
 
     @Override
@@ -114,7 +115,7 @@ public abstract class HiveConfigMapDependent extends HiveDependentResource<Confi
       + "app.kubernetes.io/managed-by=hive-kubernetes-operator"))
   public static class HiveServer2 extends HiveConfigMapDependent {
     public HiveServer2() {
-      super("hiveserver2", "hiveserver2-config");
+      super(ConfigUtils.COMPONENT_HIVESERVER2, "hiveserver2-config");
     }
 
     @Override
@@ -137,7 +138,7 @@ public abstract class HiveConfigMapDependent extends HiveDependentResource<Confi
       + "app.kubernetes.io/managed-by=hive-kubernetes-operator"))
   public static class Llap extends HiveConfigMapDependent {
     public Llap() {
-      super("llap", "llap-config");
+      super(ConfigUtils.COMPONENT_LLAP, "llap-config");
     }
 
     @Override

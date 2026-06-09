@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.List;
 
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,8 @@ public class ComponentAutoscaler {
   public ComponentAutoscaler(String component, ScalingStrategy strategy) {
     this.component = component;
     this.strategy = strategy;
-    this.cpuScalingApplicable = "hiveserver2".equals(component) || "metastore".equals(component);
+    this.cpuScalingApplicable = ConfigUtils.COMPONENT_HIVESERVER2.equals(component)
+        || ConfigUtils.COMPONENT_METASTORE.equals(component);
   }
 
   /** Whether the underlying strategy uses scaleUpThreshold for scaling decisions. */

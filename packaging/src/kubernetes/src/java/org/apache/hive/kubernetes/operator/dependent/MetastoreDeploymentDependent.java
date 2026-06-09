@@ -51,7 +51,7 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class MetastoreDeploymentDependent
     extends HiveDependentResource<Deployment, HiveCluster> {
 
-  public static final String COMPONENT = "metastore";
+  public static final String COMPONENT = ConfigUtils.COMPONENT_METASTORE;
 
   public MetastoreDeploymentDependent() {
     super(Deployment.class);
@@ -77,7 +77,7 @@ public class MetastoreDeploymentDependent
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "metastore", null));
+    envVars.add(new EnvVar("SERVICE_NAME", COMPONENT, null));
     envVars.add(new EnvVar("IS_RESUME", "true", null));
     envVars.addAll(buildDbEnvVars(db));
     if (spec.envVars() != null) {
@@ -153,13 +153,13 @@ public class MetastoreDeploymentDependent
           .withNewTemplate()
             .withNewMetadata()
               .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
-              .addToAnnotations("kubectl.kubernetes.io/default-container", "metastore")
+              .addToAnnotations("kubectl.kubernetes.io/default-container", COMPONENT)
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
               .withInitContainers(initContainers)
               .addNewContainer()
-                .withName("metastore")
+                .withName(COMPONENT)
                 .withImage(spec.image())
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)
