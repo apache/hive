@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.Constants;
@@ -48,6 +51,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +62,8 @@ import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
-import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.dropTables;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 
 /**
  * Superclass for Test[Crud|Mm]CompactorOnTez, for setup and helper classes.
@@ -541,8 +545,41 @@ public abstract class CompactorOnTezTest {
           "select ROW__ID, * from " + tblName + " where ROW__ID.bucketid = " + bucketId + " order by ROW__ID, a, b", driver);
     }
 
+    protected List<RowInfo> getStructuredBucketData(String tblName, String bucketId) throws Exception {
+      List<String> getBucketData = getBucketData(tblName, bucketId);
+
+      List<RowInfo> result = new ArrayList<>(getBucketData.size());
+      for (String row : getBucketData) {
+        result.add(RowInfo.fromRawString(row));
+      }
+
+      return result;
+    }
+
     protected void dropTable(String tblName) throws Exception {
       executeStatementOnDriver("drop table " + tblName, driver);
+    }
+
+    protected record RowInfo(long writeId, long bucketId, long rowId, TestRebalanceCompactor.RowData rowData) {
+      private static final ObjectMapper MAPPER = new ObjectMapper();
+
+      static RowInfo fromRawString(String row) throws JsonProcessingException {
+        // Example row data to parse: "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t5\t4",
+
+        String[] parts = row.split("\t", 3);
+
+        JsonNode json = MAPPER.readTree(parts[0]);
+
+        return new RowInfo(
+            json.get("writeid").asLong(),
+            json.get("bucketid").asLong(),
+            json.get("rowid").asLong(),
+            new TestRebalanceCompactor.RowData(
+                parts[1], // colA
+                Long.parseLong(parts[2])  // colB
+            )
+        );
+      }
     }
   }
 

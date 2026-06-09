@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -72,17 +69,14 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
 
   @Test
   public void testRebalanceCompactionOfNotPartitionedImplicitlyBucketedTableWithOrder() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    prepareHiveConfForRebalanceCompaction();
 
-    //set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "400");
     conf.set("tez.grouping.max-size", "5000");
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
-    TestDataProvider testDataProvider = prepareRebalanceTestData(tableName);
+    TestDataProvider testDataProvider = prepareRebalanceTestData();
 
     //Try to do a rebalancing compaction
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance' ORDER BY b DESC", driver);
@@ -97,12 +91,14 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     // Populate expected data
     Set<RowData> expectedData = new HashSet<>();
 
-    expectedData.add(new RowData("17", 17L));
-    expectedData.add(new RowData("16", 16L));
-    expectedData.add(new RowData("15", 15L));
-    expectedData.add(new RowData("14", 14L));
-    expectedData.add(new RowData("13", 13L));
-    expectedData.add(new RowData("12", 12L));
+    expectedData.addAll(List.of(
+        new RowData("17", 17L),
+        new RowData("16", 16L),
+        new RowData("15", 15L),
+        new RowData("14", 14L),
+        new RowData("13", 13L),
+        new RowData("12", 12L)
+    ));
 
     // Adding the '4' group
     expectedData.addAll(List.of(
@@ -123,17 +119,23 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     ));
 
     // Adding the '2' group
-    expectedData.add(new RowData("6", 2L));
-    expectedData.add(new RowData("5", 2L));
+    expectedData.addAll(List.of(
+        new RowData("6", 2L),
+        new RowData("5", 2L)
+    ));
 
-    verifyDataAfterCompaction(tableName, expectedData, testDataProvider);
+    verifyDataAfterCompaction(expectedData, testDataProvider);
+  }
+
+  private void prepareHiveConfForRebalanceCompaction() {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
   }
 
   @Test
   public void testRebalanceCompactionOfNotPartitionedImplicitlyBucketedTable() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    prepareHiveConfForRebalanceCompaction();
 
     // set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "400");
@@ -141,7 +143,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
-    TestDataProvider testDataProvider = prepareRebalanceTestData(tableName);
+    TestDataProvider testDataProvider = prepareRebalanceTestData();
 
     // Run rebalance compaction
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance'", driver);
@@ -179,15 +181,13 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t17\t17",
         },
     };
-    verifyRebalance(testDataProvider, tableName, null, expectedBuckets,
+    verifyRebalance(testDataProvider, null, expectedBuckets,
         new String[] {"bucket_00000", "bucket_00001", "bucket_00002","bucket_00003"});
   }
 
   @Test
   public void testRebalanceCompactionOfPartitionedImplicitlyBucketedTable() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    prepareHiveConfForRebalanceCompaction();
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "1");
@@ -291,15 +291,13 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":17}\t17\t17\ttomorrow",
         },
     };
-    verifyRebalance(testDataProvider, tableName, "ds=tomorrow", expectedBuckets,
+    verifyRebalance(testDataProvider, "ds=tomorrow", expectedBuckets,
         new String[] {"bucket_00000", "bucket_00001", "bucket_00002"});
   }
 
   @Test
   public void testRebalanceCompactionOfNotPartitionedExplicitlyBucketedTable() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    prepareHiveConfForRebalanceCompaction();
 
     final String tableName = "rebalance_test";
     dropTables(driver, tableName);
@@ -317,15 +315,13 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     List<ShowCompactResponseElement> compacts = verifyCompaction(1, TxnStore.REFUSED_RESPONSE);
     assertEquals(
         "Expecting error message 'Cannot execute rebalancing compaction on bucketed tables.' and found:" +
-              compacts.get(0).getState(),
-        "Cannot execute rebalancing compaction on bucketed tables.", compacts.get(0).getErrorMessage());
+              compacts.getFirst().getState(),
+        "Cannot execute rebalancing compaction on bucketed tables.", compacts.getFirst().getErrorMessage());
   }
 
   @Test
   public void testRebalanceCompactionNotPartitionedExplicitBucketNumbers() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    prepareHiveConfForRebalanceCompaction();
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
     conf.set("tez.grouping.min-size", "400");
@@ -333,7 +329,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
-    TestDataProvider testDataProvider = prepareRebalanceTestData(tableName);
+    TestDataProvider testDataProvider = prepareRebalanceTestData();
 
     //Try to do a rebalancing compaction
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance' CLUSTERED INTO 4 BUCKETS", driver);
@@ -369,15 +365,13 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
             "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t17\t17",
         },
     };
-    verifyRebalance(testDataProvider, tableName, null, expectedBuckets,
+    verifyRebalance(testDataProvider, null, expectedBuckets,
         new String[] {"bucket_00000", "bucket_00001", "bucket_00002", "bucket_00003"});
   }
 
   @SuppressWarnings("java:S2925")
   private void testRebalanceCompactionWithParallelDeleteAsSecond(boolean optimisticLock) throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    prepareHiveConfForRebalanceCompaction();
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, optimisticLock);
 
     //set grouping size to have 3 buckets, and re-create driver with the new config
@@ -386,7 +380,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     driver = new Driver(conf);
 
     final String tableName = "rebalance_test";
-    TestDataProvider testDataProvider = prepareRebalanceTestData(tableName);
+    TestDataProvider testDataProvider = prepareRebalanceTestData();
 
     //Try to do a rebalancing compaction
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance' ORDER BY b DESC", driver);
@@ -445,11 +439,13 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     // Populate expected data
     Set<RowData> expectedData = new HashSet<>();
 
-    expectedData.add(new RowData("17", 17L));
-    expectedData.add(new RowData("16", 16L));
-    expectedData.add(new RowData("15", 15L));
-    expectedData.add(new RowData("14", 14L));
-    expectedData.add(new RowData("13", 13L));
+    expectedData.addAll(List.of(
+        new RowData("17", 17L),
+        new RowData("16", 16L),
+        new RowData("15", 15L),
+        new RowData("14", 14L),
+        new RowData("13", 13L)
+    ));
 
     // Adding the '4' group
     expectedData.addAll(List.of(
@@ -470,40 +466,33 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     ));
 
     // Adding the '2' group
-    expectedData.add(new RowData("6", 2L));
-    expectedData.add(new RowData("5", 2L));
+    expectedData.addAll(List.of(
+        new RowData("6", 2L),
+        new RowData("5", 2L)
+    ));
 
-    verifyDataAfterCompaction(tableName, expectedData, testDataProvider);
+    verifyDataAfterCompaction(expectedData, testDataProvider);
   }
 
   record RowData(String colA, Long colB) {}
 
-  record RowInfo(long writeId, long bucketId, long rowId, RowData rowData) {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    static RowInfo fromRawString(String row) throws JsonProcessingException {
-      // Example row data to parse: "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t5\t4",
-
-      String[] parts = row.split("\t", 3);
-
-      JsonNode json = MAPPER.readTree(parts[0]);
-
-      return new RowInfo(
-          json.get("writeid").asLong(),
-          json.get("bucketid").asLong(),
-          json.get("rowid").asLong(),
-          new RowData(
-              parts[1], // colA
-              Long.parseLong(parts[2])  // colB
-          )
-      );
-    }
-  }
-
-  private void verifyDataAfterCompaction(String tableName, Set<RowData> expectedData, TestDataProvider testDataProvider)
+  /**
+   * Validate the data after rebalance compaction
+   * - the table is balanced (or if not, only numberOfDeletedRows amount of rows are missing
+   * - there is only one writeId
+   * - buckets has unique bucketId and the bucketId doesn't change inside a bucket
+   * - data is sorted by column b (so the order of column a is not predictable)
+   * - all the required value present
+   * - rowId must be strictly monotonic
+   *
+   * @param expectedData      Expected row data
+   * @param testDataProvider  Test data provider
+   * @throws Exception        Any exception that occurs during the execution
+   */
+  private void verifyDataAfterCompaction(Set<RowData> expectedData, TestDataProvider testDataProvider)
       throws Exception {
     FileSystem fs = FileSystem.get(conf);
-    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
+    GetTableRequest getTableRequest = new GetTableRequest("default", "rebalance_test");
     Table table = msClient.getTable(getTableRequest);
     List<String> bucketFilenames = CompactorTestUtil.getBucketFileNames(
         fs, table, null, "base_0000001");
@@ -513,49 +502,46 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
 
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
 
-    /*
-      Validate the data after the test case
-        - the table is balanced (or if not, only numberOfDeletedRows amount of rows are missing
-        - there is only one writeId
-        - buckets has unique bucketId and the bucketId doesn't change inside a bucket
-        - data is sorted by column b (so the order of column a is not predictable)
-        - all the required value present
-     */
-
-    int maximumRecordCountInABucket = (expectedData.size() + bucketCount - 1) / bucketCount;
+    int upperBound = (expectedData.size() + bucketCount - 1) / bucketCount;
 
     long previousValueForColB = Long.MAX_VALUE;
+    long previousRowId = Long.MIN_VALUE;
 
     for (int i = 0; i < bucketCount; i++) {
-      List<String> bucket = testDataProvider.getBucketData(table.getTableName(), BucketCodec.V1.encode(options.bucket(i)) + "");
+      List<TestDataProvider.RowInfo> bucket = testDataProvider.getStructuredBucketData(table.getTableName(), BucketCodec.V1.encode(options.bucket(i)) + "");
 
       int bucketSize = bucket.size();
-      assertTrue(bucketSize <= maximumRecordCountInABucket);
+      assertTrue(bucketSize <= upperBound);
 
       long bucketId = -1L;
       long writeId = -1L;
 
-      for (String row : bucket) {
-        RowInfo rowInfo = RowInfo.fromRawString(row);
+      for (TestDataProvider.RowInfo rowInfo : bucket) {
+
+        // RowId must be strictly monotonic
+        assertTrue(
+          String.format("RowId must be strictly monotonic rule failed. Previous RowId: %d, Bucket: %s,  ", previousRowId, rowInfo),
+          rowInfo.rowId() > previousRowId);
+        previousRowId = rowInfo.rowId();
 
         // Check if writeId doesn't change
         if (writeId == -1L) {
           // we are at the first element
-          writeId = rowInfo.writeId;
+          writeId = rowInfo.writeId();
         } else {
-          assertEquals(writeId, rowInfo.writeId);
+          assertEquals(writeId, rowInfo.writeId());
         }
 
         // Check if bucketId doesn't change inside the bucket
         if (bucketId == -1) {
           // we are at the first element of the bucket
-          bucketId = rowInfo.bucketId;
+          bucketId = rowInfo.bucketId();
         } else {
-          assertEquals(bucketId, rowInfo.bucketId);
+          assertEquals(bucketId, rowInfo.bucketId());
         }
 
         // Check if the data is sorted by colB desc
-        RowData rowData = rowInfo.rowData;
+        RowData rowData = rowInfo.rowData();
         assertTrue(rowData.colB <= previousValueForColB);
         previousValueForColB = rowData.colB;
 
@@ -569,29 +555,29 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     assertEquals(0, expectedData.size()); // we have found all the elements in a proper order
   }
 
-  private TestDataProvider prepareRebalanceTestData(String tableName) throws Exception {
-    final String stageTableName = "stage_" + tableName;
+  private TestDataProvider prepareRebalanceTestData() throws Exception {
+    final String stageTableName = "stage_" + "rebalance_test";
 
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(stageTableName, true, false);
     testDataProvider.insertTestData(stageTableName, true);
 
-    dropTables(driver, tableName);
-    executeStatementOnDriver("CREATE TABLE " + tableName + "(a string, b int) " +
+    dropTables(driver, "rebalance_test");
+    executeStatementOnDriver("CREATE TABLE " + "rebalance_test" + "(a string, b int) " +
         "STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
-    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tableName + " select a, b from " + stageTableName, driver);
+    executeStatementOnDriver("INSERT OVERWRITE TABLE " + "rebalance_test" + " select a, b from " + stageTableName, driver);
 
     //do some single inserts to have more data in the first bucket.
-    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('12',12)", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('13',13)", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('14',14)", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('15',15)", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('16',16)", driver);
-    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('17',17)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + "rebalance_test" + " values ('12',12)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + "rebalance_test" + " values ('13',13)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + "rebalance_test" + " values ('14',14)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + "rebalance_test" + " values ('15',15)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + "rebalance_test" + " values ('16',16)", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + "rebalance_test" + " values ('17',17)", driver);
 
     // Make sure we have all the records persisted
     List<String> allRecords = execSelectAndDumpData(
-        "SELECT * FROM " + tableName, driver, "Dumping data from test table, " + tableName);
+        "SELECT * FROM " + "rebalance_test", driver, "Dumping data from test table, " + "rebalance_test");
     Assert.assertEquals(18, allRecords.size());
 
     /*
@@ -601,16 +587,16 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
      In our test case, we inserted 6 extra rows into the first bucket so, we can say it is properly unbalanced
      if the first bucket has 6 more elements than the second one.
     */
-    Assert.assertFalse(isBalanced(tableName, testDataProvider));
+    Assert.assertFalse(isBalanced(testDataProvider));
 
     // Please note, as the test tests rebalance compaction, not insert overwrite, it is not necessary to test if
     // we have the exact same data after preparing the test data as we had at the source table.
     return testDataProvider;
   }
 
-  private boolean isBalanced(String tableName, TestDataProvider testDataProvider) throws Exception {
+  private boolean isBalanced(TestDataProvider testDataProvider) throws Exception {
     FileSystem fs = FileSystem.get(conf);
-    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
+    GetTableRequest getTableRequest = new GetTableRequest("default", "rebalance_test");
     Table table = msClient.getTable(getTableRequest);
 
     // Assert that we have multiple buckets
@@ -630,11 +616,11 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
         .map(Collection::size)
         .reduce(0, Integer::sum);
 
-    int optimalRecordsInBucket = allRecordCount / bucketCount;
-    int maximumRecordCountInABucket = (allRecordCount + bucketCount - 1) / bucketCount;
+    int lowerBound = allRecordCount / bucketCount;
+    int upperBound = (allRecordCount + bucketCount - 1) / bucketCount;
 
     for (int i = 0; i < bucketCount; i++) {
-      if (bucketData[i].size() > maximumRecordCountInABucket || bucketData[i].size() < optimalRecordsInBucket) {
+      if (bucketData[i].size() > upperBound || bucketData[i].size() < lowerBound) {
         return false;
       }
     }
@@ -642,10 +628,10 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     return true;
   }
 
-  private void verifyRebalance(TestDataProvider testDataProvider, String tableName, String partitionName,
+  private void verifyRebalance(TestDataProvider testDataProvider, String partitionName,
       String[][] expectedBucketContent, String[] bucketNames) throws Exception {
     // Verify buckets and their content after rebalance
-    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
+    GetTableRequest getTableRequest = new GetTableRequest("default", "rebalance_test");
     Table table = msClient.getTable(getTableRequest);
     FileSystem fs = FileSystem.get(conf);
     assertEquals("Buckets does not match after compaction", Arrays.asList(bucketNames),
@@ -653,7 +639,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
     for (int i = 0; i < expectedBucketContent.length; i++) {
       assertEquals("rebalanced bucket " + i, Arrays.asList(expectedBucketContent[i]),
-          testDataProvider.getBucketData(tableName, BucketCodec.V1.encode(options.bucket(i)) + ""));
+          testDataProvider.getBucketData("rebalance_test", BucketCodec.V1.encode(options.bucket(i)) + ""));
     }
   }
 
@@ -666,6 +652,6 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
         .map(FileStatus::getPath)
         .map(Path::getName)
         .sorted()
-        .findFirst().get();
+        .findFirst().orElse(null);
   }
 }
