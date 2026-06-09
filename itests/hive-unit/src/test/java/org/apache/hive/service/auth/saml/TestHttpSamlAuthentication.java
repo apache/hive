@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -137,9 +138,17 @@ public class TestHttpSamlAuthentication {
       idpContainer.stop();
       idpContainer = null;
     }
-    if (miniHS2 != null) {
+    if (miniHS2 != null && miniHS2.isStarted()) {
       miniHS2.stop();
     }
+    HiveSamlAuthTokenGenerator.shutdown();
+  }
+
+  private static ISAMLAuthTokenGenerator createTokenGenerator(String tokenTtl) {
+    HiveSamlAuthTokenGenerator.shutdown();
+    HiveConf conf = new HiveConf();
+    conf.setVar(ConfVars.HIVE_SERVER2_SAML_CALLBACK_TOKEN_TTL, tokenTtl);
+    return HiveSamlAuthTokenGenerator.get(conf);
   }
 
   private void setupIDP(boolean useSignedAssertions, String authMode) throws Exception {
@@ -552,6 +561,86 @@ public class TestHttpSamlAuthentication {
     try (HiveConnection connection = new HiveConnection(jdbcUrl, new Properties())) {
       fail("User should not be able to login just using the token");
     }
+  }
+
+  @Test
+  public void testValidTokenRoundTrip() throws Exception {
+    ISAMLAuthTokenGenerator tokenGenerator = createTokenGenerator("30s");
+    String token = tokenGenerator.get("alice", "relay-state-1");
+    assertEquals("alice", tokenGenerator.validate(token));
+  }
+
+  @Test
+  public void testForgedSignatureRejected() throws Exception {
+    ISAMLAuthTokenGenerator tokenGenerator = createTokenGenerator("30s");
+    String forgedPayload = "u=alice;id=1337;time=" + System.currentTimeMillis()
+        + ";rs=deadbeef;sg=bogus";
+    String forgedToken = Base64.getEncoder().encodeToString(forgedPayload.getBytes());
+    try {
+      tokenGenerator.validate(forgedToken);
+      fail("Expected forged token to be rejected");
+    } catch (HttpSamlAuthenticationException e) {
+      assertEquals("Token could not be verified", e.getMessage());
+    }
+  }
+
+  @Test
+  public void testInvalidTokenRejected() throws Exception {
+    ISAMLAuthTokenGenerator tokenGenerator = createTokenGenerator("30s");
+    try {
+      tokenGenerator.validate("notAValidToken");
+      fail("Expected malformed base64 token to be rejected");
+    } catch (HttpSamlAuthenticationException e) {
+      assertEquals("Invalid token", e.getMessage());
+    }
+    String invalidStructure = Base64.getEncoder().encodeToString("foo".getBytes());
+    try {
+      tokenGenerator.validate(invalidStructure);
+      fail("Expected invalid token structure to be rejected");
+    } catch (HttpSamlAuthenticationException e) {
+      assertEquals("Invalid token", e.getMessage());
+    }
+  }
+
+  @Test
+  public void testExpiredTokenRejected() throws Exception {
+    ISAMLAuthTokenGenerator tokenGenerator = createTokenGenerator("1s");
+    String token = tokenGenerator.get("alice", "relay-state-1");
+    Thread.sleep(1100);
+    try {
+      tokenGenerator.validate(token);
+      fail("Expected expired token to be rejected");
+    } catch (HttpSamlAuthenticationException e) {
+      assertEquals("Token is expired", e.getMessage());
+    }
+  }
+
+  @Test
+  public void testParseHandlesBase64PaddingInSignature() {
+    Map<String, String> kv = new HashMap<>();
+    String token = "u=alice;id=1;time=1000;rs=rs1;sg=YWJjZA==";
+    assertTrue(HiveSamlAuthTokenGenerator.parse(token, kv));
+    assertEquals("alice", kv.get("u"));
+    assertEquals("YWJjZA==", kv.get("sg"));
+  }
+
+  @Test
+  public void testParseRejectsEncodedBearerToken() {
+    Map<String, String> kv = new HashMap<>();
+    String encoded = Base64.getEncoder().encodeToString(
+        "u=alice;id=1;time=1000;rs=rs1;sg=abc".getBytes());
+    assertFalse(HiveSamlAuthTokenGenerator.parse(encoded, kv));
+  }
+
+  @Test
+  public void testParseDecodedTokenFromGenerator() throws Exception {
+    ISAMLAuthTokenGenerator tokenGenerator = createTokenGenerator("30s");
+    String encoded = tokenGenerator.get("bob", "relay-42");
+    String decoded = new String(Base64.getDecoder().decode(encoded));
+    Map<String, String> kv = new HashMap<>();
+    assertTrue(HiveSamlAuthTokenGenerator.parse(decoded, kv));
+    assertEquals("bob", kv.get("u"));
+    assertEquals("relay-42", kv.get(HiveSamlAuthTokenGenerator.RELAY_STATE));
   }
 
   private static void assertLoggedInUser(HiveConnection connection, String expectedUser)

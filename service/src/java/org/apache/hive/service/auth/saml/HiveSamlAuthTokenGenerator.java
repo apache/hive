@@ -144,7 +144,7 @@ public class HiveSamlAuthTokenGenerator implements ISAMLAuthTokenGenerator {
   }
 
   private boolean signatureMatches(String origSign, String derivedSign) {
-    return !MessageDigest.isEqual(origSign.getBytes(), derivedSign.getBytes());
+    return MessageDigest.isEqual(origSign.getBytes(), derivedSign.getBytes());
   }
 
   public static boolean parse(String token, Map<String, String> kv) {
@@ -153,7 +153,7 @@ public class HiveSamlAuthTokenGenerator implements ISAMLAuthTokenGenerator {
       return false;
     }
     for (String split : splits) {
-      String[] pair = split.split(SEPARATOR);
+      String[] pair = split.split(SEPARATOR, 2);
       if (pair.length != 2) {
         return false;
       }
