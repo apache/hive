@@ -20,6 +20,7 @@ package org.apache.hive.kubernetes.operator.model.spec;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.generator.annotation.Default;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 
 /** Autoscaling configuration for a Hive component. The operator scrapes JMX metrics directly from pods. */
 public record AutoscalingSpec(
@@ -61,7 +62,11 @@ public record AutoscalingSpec(
     @JsonPropertyDescription("CPU percentage (0-100) below which scale-down is considered. "
         + "Only applies to HS2 and HMS.")
     @Default("30")
-    Integer cpuScaleDownThreshold) {
+    Integer cpuScaleDownThreshold,
+    @JsonPropertyDescription("Port on which the Prometheus JMX Exporter serves metrics. "
+        + "The operator scrapes this port on each pod for autoscaling decisions.")
+    @Default("9404")
+    Integer metricsPort) {
 
   public AutoscalingSpec {
     enabled = enabled != null ? enabled : false;
@@ -73,6 +78,7 @@ public record AutoscalingSpec(
     metricsScrapeIntervalSeconds = metricsScrapeIntervalSeconds != null ? metricsScrapeIntervalSeconds : 10;
     cpuScaleUpThreshold = cpuScaleUpThreshold != null ? cpuScaleUpThreshold : 90;
     cpuScaleDownThreshold = cpuScaleDownThreshold != null ? cpuScaleDownThreshold : 30;
+    metricsPort = metricsPort != null ? metricsPort : ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT;
   }
 
   public boolean isEnabled() {

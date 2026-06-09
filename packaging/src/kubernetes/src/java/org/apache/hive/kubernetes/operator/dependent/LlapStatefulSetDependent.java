@@ -132,7 +132,7 @@ public class LlapStatefulSetDependent
     // Add Prometheus JMX Exporter when autoscaling is enabled
     AutoscalingSpec autoscaling = llap.autoscaling();
     if (autoscaling.isEnabled()) {
-      addJmxExporter(spec.image(), COMPONENT,
+      addJmxExporter(spec.image(), COMPONENT, autoscaling.metricsPort(),
           initContainers, volumeMounts, volumes, envVars, ports);
     }
 

@@ -105,6 +105,12 @@ spec:
                           The pod terminates immediately once sessions/connections
                           drain to 0; this value is only the upper safety cap.
                         type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
+                        type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10
                         description: How often (seconds) the operator scrapes JMX
@@ -271,6 +277,12 @@ spec:
                           The pod terminates immediately once sessions/connections
                           drain to 0; this value is only the upper safety cap.
                         type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
+                        type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10
                         description: How often (seconds) the operator scrapes JMX
@@ -411,6 +423,12 @@ spec:
                           drain during scale-down before the pod is forcibly terminated.
                           The pod terminates immediately once sessions/connections
                           drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
                         type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10
@@ -609,6 +627,12 @@ spec:
                           drain during scale-down before the pod is forcibly terminated.
                           The pod terminates immediately once sessions/connections
                           drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
                         type: integer
                       metricsScrapeIntervalSeconds:
                         default: 10

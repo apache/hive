@@ -121,7 +121,7 @@ public class MetastoreDeploymentDependent
     // Add Prometheus JMX Exporter when autoscaling is enabled
     AutoscalingSpec autoscaling = spec.metastore().autoscaling();
     if (autoscaling.isEnabled()) {
-      addJmxExporter(spec.image(), COMPONENT,
+      addJmxExporter(spec.image(), COMPONENT, autoscaling.metricsPort(),
           initContainers, volumeMounts, volumes, envVars, ports);
     }
 
