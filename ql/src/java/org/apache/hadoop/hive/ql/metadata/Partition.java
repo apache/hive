@@ -19,14 +19,8 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -492,7 +486,14 @@ public class Partition implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
-    return getColsInternal(false);
+    List<FieldSchema> nonPartFields = new ArrayList<>();
+    Set<String> partFieldsName = table.getPartCols().stream().map(FieldSchema::getName).collect(Collectors.toSet());
+    for (FieldSchema field : getColsInternal(false)) {
+      if (!partFieldsName.contains(field.getName())) {
+        nonPartFields.add(field);
+      }
+    }
+    return nonPartFields;
   }
 
   public List<FieldSchema> getColsForMetastore() {
