@@ -697,7 +697,7 @@ POSTHOOK: Input: default@ssb_mv_n3
 CBO PLAN:
 HiveProject(revenue=[$0])
   HiveAggregate(group=[{}], agg#0=[sum($16)])
-    HiveFilter(condition=[AND(<($8, 25.0E0), =(CAST($18):BIGINT NOT NULL, 29247), BETWEEN(false, $7, 1.0E0:DOUBLE, 3.0E0:DOUBLE), =($4, 1993))])
+    HiveFilter(condition=[AND(<($8, 25.0E0), =(CAST($18):BIGINT NOT NULL, 29247), =($4, 1993), BETWEEN(false, $7, 1.0E0:DOUBLE, 3.0E0:DOUBLE))])
       HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
@@ -733,7 +733,7 @@ POSTHOOK: Input: default@ssb_mv_n3
 CBO PLAN:
 HiveProject(revenue=[$0])
   HiveAggregate(group=[{}], agg#0=[sum($16)])
-    HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), BETWEEN(false, $8, 26.0E0:DOUBLE, 35.0E0:DOUBLE), BETWEEN(false, $7, 4.0E0:DOUBLE, 6.0E0:DOUBLE), =($6, 199401))])
+    HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($6, 199401), BETWEEN(false, $8, 26.0E0:DOUBLE, 35.0E0:DOUBLE), BETWEEN(false, $7, 4.0E0:DOUBLE, 6.0E0:DOUBLE))])
       HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
@@ -771,7 +771,7 @@ POSTHOOK: Input: default@ssb_mv_n3
 CBO PLAN:
 HiveProject(revenue=[$0])
   HiveAggregate(group=[{}], agg#0=[sum($16)])
-    HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), BETWEEN(false, $8, 26.0E0:DOUBLE, 35.0E0:DOUBLE), BETWEEN(false, $7, 5.0E0:DOUBLE, 7.0E0:DOUBLE), =($4, 1994), =($3, 6))])
+    HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 29247), =($4, 1994), =($3, 6), BETWEEN(false, $8, 26.0E0:DOUBLE, 35.0E0:DOUBLE), BETWEEN(false, $7, 5.0E0:DOUBLE, 7.0E0:DOUBLE))])
       HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
@@ -873,7 +873,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
   HiveProject(lo_revenue=[$2], d_year=[$0], p_brand1=[$1])
     HiveAggregate(group=[{4, 9}], agg#0=[sum($15)])
-      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), BETWEEN(false, $9, 'MFGR#2221':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'MFGR#2228':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($14, 'ASIA'))])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($14, 'ASIA'), BETWEEN(false, $9, 'MFGR#2221':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'MFGR#2228':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
         HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
@@ -980,7 +980,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$2], sort1=[$3], dir0=[ASC], dir1=[DESC])
   HiveProject(c_nation=[$0], s_nation=[$2], d_year=[$1], lo_revenue=[$3])
     HiveAggregate(group=[{1, 4, 13}], agg#0=[sum($15)])
-      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), BETWEEN(false, $4, 1992, 1997), =($2, 'ASIA'), =($14, 'ASIA'))])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($2, 'ASIA'), =($14, 'ASIA'), BETWEEN(false, $4, 1992, 1997))])
         HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo
@@ -1033,7 +1033,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$2], sort1=[$3], dir0=[ASC], dir1=[DESC])
   HiveProject(c_city=[$0], s_city=[$2], d_year=[$1], lo_revenue=[$3])
     HiveAggregate(group=[{0, 4, 12}], agg#0=[sum($15)])
-      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), BETWEEN(false, $4, 1992, 1997), =($1, 'UNITED STATES'), =($13, 'UNITED STATES'))])
+      HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($1, 'UNITED STATES'), =($13, 'UNITED STATES'), BETWEEN(false, $4, 1992, 1997))])
         HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
 
 PREHOOK: query: explain cbo

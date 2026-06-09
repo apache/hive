@@ -1863,7 +1863,11 @@
                             "input": 4,
                             "name": "$4"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "BIGINT",
+                          "nullable": true
+                        }
                       },
                       {
                         "literal": 30,
@@ -1939,7 +1943,11 @@
                                 "input": 4,
                                 "name": "$4"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 30,
@@ -1972,7 +1980,11 @@
                                 "input": 4,
                                 "name": "$4"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 60,
@@ -2050,7 +2062,11 @@
                                 "input": 4,
                                 "name": "$4"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 60,
@@ -2083,7 +2099,11 @@
                                 "input": 4,
                                 "name": "$4"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 90,
@@ -2161,7 +2181,11 @@
                                 "input": 4,
                                 "name": "$4"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 90,
@@ -2194,7 +2218,11 @@
                                 "input": 4,
                                 "name": "$4"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 120,
@@ -2265,7 +2293,11 @@
                             "input": 4,
                             "name": "$4"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "BIGINT",
+                          "nullable": true
+                        }
                       },
                       {
                         "literal": 120,
