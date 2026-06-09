@@ -207,7 +207,7 @@ public class HiveServer2DeploymentDependent
     // Add Prometheus JMX Exporter when autoscaling is enabled
     AutoscalingSpec autoscaling = hs2.autoscaling();
     if (autoscaling.isEnabled()) {
-      addJmxExporter(spec.image(), COMPONENT,
+      addJmxExporter(spec.image(), COMPONENT, autoscaling.metricsPort(),
           initContainers, volumeMounts, volumes, envVars, ports);
     }
 

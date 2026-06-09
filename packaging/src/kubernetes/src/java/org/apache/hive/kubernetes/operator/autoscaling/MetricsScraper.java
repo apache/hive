@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 public class MetricsScraper {
 
   private static final Logger LOG = LoggerFactory.getLogger(MetricsScraper.class);
-  private static final int JMX_EXPORTER_PORT = 9404;
   private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
   private final KubernetesClient client;
@@ -62,9 +61,10 @@ public class MetricsScraper {
    *
    * @param namespace the namespace to query
    * @param selector  label selector (e.g., app.kubernetes.io/component=hiveserver2)
+   * @param metricsPort the port on which the Prometheus JMX Exporter serves metrics
    * @return list of per-pod metrics (empty if no pods or all fail)
    */
-  public List<PodMetrics> scrape(String namespace, Map<String, String> selector) {
+  public List<PodMetrics> scrape(String namespace, Map<String, String> selector, int metricsPort) {
     List<Pod> pods;
     try {
       pods = client.pods()
@@ -95,7 +95,7 @@ public class MetricsScraper {
     for (Pod pod : scrapeable) {
       String podName = pod.getMetadata().getName();
       String podIp = pod.getStatus().getPodIP();
-      futures.add(fetchMetricsAsync(podIp)
+      futures.add(fetchMetricsAsync(podIp, metricsPort)
           .thenApply(body -> new PodMetrics(podName, PrometheusTextParser.parse(body)))
           .exceptionally(ex -> {
             LOG.debug("Failed to scrape metrics from pod {}: {}", podName, ex.getMessage());
@@ -116,8 +116,8 @@ public class MetricsScraper {
     return results;
   }
 
-  private CompletableFuture<String> fetchMetricsAsync(String podIp) {
-    URI uri = URI.create("http://" + podIp + ":" + JMX_EXPORTER_PORT + "/metrics");
+  private CompletableFuture<String> fetchMetricsAsync(String podIp, int metricsPort) {
+    URI uri = URI.create("http://" + podIp + ":" + metricsPort + "/metrics");
     HttpRequest request = HttpRequest.newBuilder()
         .uri(uri)
         .timeout(TIMEOUT)

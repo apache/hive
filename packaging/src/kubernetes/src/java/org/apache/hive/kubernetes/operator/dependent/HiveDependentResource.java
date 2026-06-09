@@ -742,7 +742,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    * @param ports list to add the metrics port to
    */
   protected static void addJmxExporter(
-      String image, String component,
+      String image, String component, int metricsPort,
       List<Container> initContainers,
       List<VolumeMount> volumeMounts,
       List<Volume> volumes,
@@ -778,13 +778,13 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     // Expose the metrics port
     ports.add(new io.fabric8.kubernetes.api.model.ContainerPortBuilder()
         .withName("metrics")
-        .withContainerPort(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT)
+        .withContainerPort(metricsPort)
         .withProtocol("TCP").build());
 
     // Add javaagent flag to the appropriate JVM opts env var.
     // LLAP uses LLAP_DAEMON_OPTS (its startup script ignores SERVICE_OPTS).
     String agentArg = String.format("-javaagent:%s=%d:%s",
-        JMX_EXPORTER_JAR, ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT, JMX_EXPORTER_CONFIG);
+        JMX_EXPORTER_JAR, metricsPort, JMX_EXPORTER_CONFIG);
     String optsEnvVar = ConfigUtils.COMPONENT_LLAP.equals(component) ? "LLAP_DAEMON_OPTS" : "SERVICE_OPTS";
     boolean found = false;
     for (int i = 0; i < envVars.size(); i++) {

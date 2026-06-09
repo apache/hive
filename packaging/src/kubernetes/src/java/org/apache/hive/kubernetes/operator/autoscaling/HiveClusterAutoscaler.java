@@ -103,11 +103,12 @@ public class HiveClusterAutoscaler {
 
     // HiveServer2
     if (spec.hiveServer2().autoscaling().isEnabled()) {
+      AutoscalingSpec hs2Auto = spec.hiveServer2().autoscaling();
       Map<String, String> hs2Selector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_HIVESERVER2);
-      List<PodMetrics> hs2Metrics = scraper.scrape(namespace, hs2Selector);
+      List<PodMetrics> hs2Metrics = scraper.scrape(namespace, hs2Selector, hs2Auto.metricsPort());
       updatePodDeletionCost(client, namespace, hs2Metrics, "hs2_open_sessions");
       evaluateComponent(cluster, client, namespace, clusterName,
-          ConfigUtils.COMPONENT_HIVESERVER2, spec.hiveServer2().autoscaling(),
+          ConfigUtils.COMPONENT_HIVESERVER2, hs2Auto,
           spec.hiveServer2().replicas(), patches, statuses, hs2Metrics);
     }
 
@@ -141,7 +142,8 @@ public class HiveClusterAutoscaler {
   public List<PodMetrics> scrapeHs2Metrics(HiveCluster cluster) {
     String namespace = cluster.getMetadata().getNamespace();
     Map<String, String> selector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_HIVESERVER2);
-    return scraper.scrape(namespace, selector);
+    int port = cluster.getSpec().hiveServer2().autoscaling().metricsPort();
+    return scraper.scrape(namespace, selector, port);
   }
 
   private void evaluateComponent(HiveCluster cluster, KubernetesClient client,
@@ -167,7 +169,7 @@ public class HiveClusterAutoscaler {
       metrics = preScrapedMetrics;
     } else {
       Map<String, String> selector = Labels.selectorForComponent(cluster, component);
-      metrics = scraper.scrape(namespace, selector);
+      metrics = scraper.scrape(namespace, selector, autoscaling.metricsPort());
     }
 
     // For LLAP and TezAM, scaling decisions are based on HS2 metrics (activation gate),
