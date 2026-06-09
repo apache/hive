@@ -162,8 +162,7 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       Table createdTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName());
       DataContainer dc = new DataContainer(createdTable.getTTable());
       context.getQueryState().getLineageState().setLineage(
-          createdTable.getPath(), dc, createdTable.hasNonNativePartitionSupport() ?
-              createdTable.getAllCols() : createdTable.getCols());
+          createdTable.getPath(), dc, createdTable);
 
       // We did not create the table before moving the data files for a non-partitioned table i.e
       // we used load file instead of load table (see SemanticAnalyzer#getFileSinkPlan() for
