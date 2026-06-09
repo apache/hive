@@ -846,6 +846,8 @@ public class Table implements Serializable {
   public void setPartCols(List<FieldSchema> partCols) {
     tTable.setPartitionKeys(partCols);
     tablePartCols = null;
+    tableNonPartCols = null;
+    inputColnameToIndFsMap = null;
   }
 
   public String getCatName() {
