@@ -65,8 +65,13 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
       compactors.add(initiator);
     }
     if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)) {
-      MetaStoreThread cleaner = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");
-      compactors.add(cleaner);
+      if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID)) {
+        MetaStoreThread cleaner = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");
+        compactors.add(cleaner);
+      } else {
+        HiveMetaStore.LOG.warn("Compactor Cleaner is turned On. But, automatic compaction cleaner will not run " +
+            "when the {} property is set to false.", MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID.getHiveName());
+      }
     }
     return compactors;
   }

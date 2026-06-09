@@ -36,11 +36,14 @@ public class CompactionHouseKeeperService extends AcidHouseKeeperService {
 
   @Override
   protected void initTasks(){
-    tasks = ImmutableMap.<FailableRunnable<MetaException>, String>builder()
-            .put(txnHandler::removeDuplicateCompletedTxnComponents,
-                    "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries")
-            .put(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries")
-            .build();
+    ImmutableMap.Builder<FailableRunnable<MetaException>, String> taskBuilder =
+        ImmutableMap.<FailableRunnable<MetaException>, String>builder()
+            .put(txnHandler::purgeCompactionHistory, "Cleaning obsolete compaction history entries");
+    if (MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID)) {
+      taskBuilder.put(txnHandler::removeDuplicateCompletedTxnComponents,
+          "Cleaning duplicate COMPLETED_TXN_COMPONENTS entries");
+    }
+    tasks = taskBuilder.build();
   }
 
   @Override
