@@ -1673,19 +1673,19 @@
               "name": "$4"
             },
             {
-              "literal": "AIRBORNE",
+              "literal": "AIRBORNE            ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 8
+                "precision": 20
               }
             },
             {
-              "literal": "DIAMOND",
+              "literal": "DIAMOND             ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 7
+                "precision": 20
               }
             }
           ]
@@ -4349,19 +4349,19 @@
               "name": "$4"
             },
             {
-              "literal": "AIRBORNE",
+              "literal": "AIRBORNE            ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 8
+                "precision": 20
               }
             },
             {
-              "literal": "DIAMOND",
+              "literal": "DIAMOND             ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 7
+                "precision": 20
               }
             }
           ]
