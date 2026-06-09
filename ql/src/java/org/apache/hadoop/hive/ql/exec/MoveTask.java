@@ -555,20 +555,18 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           // match the number of columns in the file sink.  For update there will be one too many
           // (because of the ROW__ID), and in the case of the delete there will be just the
           // ROW__ID, which we don't need to worry about from a lineage perspective.
-          List<FieldSchema> tableCols = null;
           switch (work.getLoadTableWork().getWriteType()) {
             case DELETE:
             case UPDATE:
               // Pass an empty list as no columns will be written to the file.
               // TODO I should be able to make this work for update
-              tableCols = new ArrayList<>();
+              queryState.getLineageState().setLineage(tbd.getSourcePath(), dc, new ArrayList<>());
               break;
 
             default:
-              tableCols = table.getCols();
+              queryState.getLineageState().setLineage(tbd.getSourcePath(), dc, table);
               break;
           }
-          queryState.getLineageState().setLineage(tbd.getSourcePath(), dc, tableCols);
         }
         releaseLocks(tbd);
       }
@@ -757,8 +755,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       // Don't set lineage on delete as we don't have all the columns
       if (work.getLoadTableWork().getWriteType() != AcidUtils.Operation.DELETE &&
           work.getLoadTableWork().getWriteType() != AcidUtils.Operation.UPDATE) {
-        queryState.getLineageState().setLineage(tbd.getSourcePath(), dc,
-            table.getCols());
+        queryState.getLineageState().setLineage(tbd.getSourcePath(), dc, table);
       }
       LOG.info("Loading partition " + entry.getKey());
     }
