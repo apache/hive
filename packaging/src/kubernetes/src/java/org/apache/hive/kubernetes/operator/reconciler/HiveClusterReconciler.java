@@ -33,11 +33,15 @@ import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import org.apache.hive.kubernetes.operator.autoscaling.BackgroundMetricsScraper;
 import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
+import org.apache.hive.kubernetes.operator.autoscaling.MetricsCache;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper;
 import org.apache.hive.kubernetes.operator.autoscaling.PodMetrics;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
@@ -55,11 +59,13 @@ import org.slf4j.LoggerFactory;
  * Orchestrates all dependent resources with proper dependency ordering.
  */
 @ControllerConfiguration
-public class HiveClusterReconciler implements Reconciler<HiveCluster> {
+public class HiveClusterReconciler
+    implements Reconciler<HiveCluster>, Cleaner<HiveCluster> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
 
   private volatile HiveClusterAutoscaler autoscaler;
+  private volatile BackgroundMetricsScraper bgScraper;
 
   @Override
   public UpdateControl<HiveCluster> reconcile(HiveCluster resource, Context<HiveCluster> context) {
@@ -153,7 +159,9 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
         patchReplicas(client, resource, entry.getKey(), entry.getValue());
       }
       applyAutoscalingStatuses(newStatus, eval.statuses());
-      rescheduleSeconds = getMinScrapeInterval(resource.getSpec());
+      // Reschedule sooner if a two-phase scale-down is pending annotation propagation
+      rescheduleSeconds = scaler.hasPendingScaleDowns()
+          ? 2 : getMinScrapeInterval(resource.getSpec());
     }
 
     // --- Single exit point for status update ---
@@ -167,6 +175,20 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
           .rescheduleAfter(Duration.ofSeconds(rescheduleSeconds));
     }
     return UpdateControl.patchStatus(resource);
+  }
+
+  @Override
+  public DeleteControl cleanup(HiveCluster resource, Context<HiveCluster> context) {
+    String ns = resource.getMetadata().getNamespace();
+    String name = resource.getMetadata().getName();
+    if (autoscaler != null) {
+      autoscaler.cleanupCluster(ns, name);
+    }
+    if (bgScraper != null) {
+      bgScraper.unregisterCluster(ns, name);
+    }
+    LOG.info("Cleaned up autoscaler state for deleted cluster {}/{}", ns, name);
+    return DeleteControl.defaultDelete();
   }
 
   @Override
@@ -449,7 +471,10 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
 
   private HiveClusterAutoscaler getOrCreateAutoscaler(KubernetesClient client) {
     if (autoscaler == null) {
-      autoscaler = new HiveClusterAutoscaler(new MetricsScraper(client));
+      MetricsScraper scraper = new MetricsScraper(client);
+      MetricsCache metricsCache = new MetricsCache();
+      bgScraper = new BackgroundMetricsScraper(scraper, metricsCache);
+      autoscaler = new HiveClusterAutoscaler(scraper, bgScraper, metricsCache);
     }
     return autoscaler;
   }
@@ -597,7 +622,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     // HS2 must have 0 open sessions.
     // If metrics scrape fails (empty list), assume NOT idle to prevent accidental suspend.
     HiveClusterAutoscaler scaler = getOrCreateAutoscaler(client);
-    List<PodMetrics> hs2Metrics = scaler.scrapeHs2Metrics(resource);
+    List<PodMetrics> hs2Metrics = scaler.getHs2MetricsFromCache(resource);
     if (hs2Metrics.isEmpty()) {
       LOG.debug("Idle check: HS2 metrics unavailable, assuming not idle");
       return false;

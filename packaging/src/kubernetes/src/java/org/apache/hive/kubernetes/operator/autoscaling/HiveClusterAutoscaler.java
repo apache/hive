@@ -18,6 +18,7 @@
 
 package org.apache.hive.kubernetes.operator.autoscaling;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -72,19 +73,51 @@ public class HiveClusterAutoscaler {
     MANAGED_REPLICAS.put(namespace + "/" + clusterName + "/" + component, replicas);
   }
 
+  private record PendingScaleDown(int targetReplicas, Instant annotatedAt) {}
+
   private final MetricsScraper scraper;
+  private final BackgroundMetricsScraper bgScraper;
+  private final MetricsCache metricsCache;
   // Key: "namespace/clusterName/component"
   private final ConcurrentHashMap<String, ComponentAutoscaler> autoscalers =
       new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, String> lastScaleTimes =
       new ConcurrentHashMap<>();
+  // Two-phase scale-down: holds deferred scale-down targets while pod-deletion-cost
+  // annotations propagate (2s delay before applying the actual scale patch).
+  private final ConcurrentHashMap<String, PendingScaleDown> pendingScaleDowns =
+      new ConcurrentHashMap<>();
 
-  public HiveClusterAutoscaler(MetricsScraper scraper) {
+  public HiveClusterAutoscaler(MetricsScraper scraper,
+      BackgroundMetricsScraper bgScraper, MetricsCache metricsCache) {
     this.scraper = scraper;
+    this.bgScraper = bgScraper;
+    this.metricsCache = metricsCache;
   }
 
-  public MetricsScraper getScraper() {
-    return scraper;
+  public BackgroundMetricsScraper getBackgroundScraper() {
+    return bgScraper;
+  }
+
+  /**
+   * Removes all in-memory state for a deleted HiveCluster to prevent memory leaks.
+   */
+  public void cleanupCluster(String namespace, String clusterName) {
+    String prefix = namespace + "/" + clusterName + "/";
+    MANAGED_REPLICAS.keySet().removeIf(k -> k.startsWith(prefix));
+    autoscalers.keySet().removeIf(k -> k.startsWith(prefix));
+    lastScaleTimes.keySet().removeIf(k -> k.startsWith(prefix));
+    pendingScaleDowns.keySet().removeIf(k -> k.startsWith(prefix));
+    LOG.info("Cleaned up autoscaler state for {}/{}", namespace, clusterName);
+  }
+
+  /**
+   * Returns true if there are pending scale-down operations waiting for
+   * annotation propagation. The reconciler should reschedule sooner (2s)
+   * when this returns true.
+   */
+  public boolean hasPendingScaleDowns() {
+    return !pendingScaleDowns.isEmpty();
   }
 
   /**
@@ -104,73 +137,121 @@ public class HiveClusterAutoscaler {
     // HiveServer2
     if (spec.hiveServer2().autoscaling().isEnabled()) {
       AutoscalingSpec hs2Auto = spec.hiveServer2().autoscaling();
+      String hs2Key = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_HIVESERVER2;
       Map<String, String> hs2Selector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_HIVESERVER2);
-      List<PodMetrics> hs2Metrics = scraper.scrape(namespace, hs2Selector, hs2Auto.metricsPort());
-      updatePodDeletionCost(client, namespace, hs2Metrics, "hs2_open_sessions");
-      evaluateComponent(cluster, client, namespace, clusterName,
-          ConfigUtils.COMPONENT_HIVESERVER2, hs2Auto,
-          spec.hiveServer2().replicas(), patches, statuses, hs2Metrics);
+      bgScraper.registerOrUpdate(namespace, clusterName,
+          ConfigUtils.COMPONENT_HIVESERVER2, hs2Selector,
+          hs2Auto.metricsPort(), hs2Auto.metricsScrapeIntervalSeconds());
+      int maxStale = hs2Auto.metricsScrapeIntervalSeconds() * 3;
+      List<PodMetrics> hs2Metrics = metricsCache.getOrEmpty(hs2Key, maxStale);
+
+      // Two-phase scale-down: check if a pending scale-down from a prior
+      // reconcile is ready to be applied (annotations have propagated).
+      PendingScaleDown pending = pendingScaleDowns.get(hs2Key);
+      if (pending != null) {
+        if (Duration.between(pending.annotatedAt(), Instant.now()).toSeconds() >= 2) {
+          patches.put(ConfigUtils.COMPONENT_HIVESERVER2, pending.targetReplicas());
+          MANAGED_REPLICAS.put(hs2Key, pending.targetReplicas());
+          lastScaleTimes.put(hs2Key, Instant.now().toString());
+          pendingScaleDowns.remove(hs2Key);
+          LOG.info("[hiveserver2] Applying deferred scale-down to {} replicas", pending.targetReplicas());
+        }
+        // Build status even when waiting for pending scale-down
+        evaluateComponent(cluster, client, namespace, clusterName,
+            ConfigUtils.COMPONENT_HIVESERVER2, hs2Auto,
+            spec.hiveServer2().replicas(), new HashMap<>(), statuses, hs2Metrics);
+      } else {
+        // Pod deletion cost only applies to Deployments (ReplicaSet controller).
+        // StatefulSets always scale down by highest ordinal regardless of this
+        // annotation. LLAP/TezAM graceful drain is handled by preStop hooks.
+        updateDeploymentPodDeletionCost(client, namespace, hs2Metrics, "hs2_open_sessions");
+
+        Map<String, Integer> hs2Patches = new HashMap<>();
+        evaluateComponent(cluster, client, namespace, clusterName,
+            ConfigUtils.COMPONENT_HIVESERVER2, hs2Auto,
+            spec.hiveServer2().replicas(), hs2Patches, statuses, hs2Metrics);
+
+        Integer hs2Patch = hs2Patches.get(ConfigUtils.COMPONENT_HIVESERVER2);
+        int currentReplicas = getCurrentReplicas(client, namespace, clusterName, ConfigUtils.COMPONENT_HIVESERVER2);
+        if (hs2Patch != null && hs2Patch < currentReplicas) {
+          // Scale-down: defer to allow deletion-cost annotations to propagate
+          pendingScaleDowns.put(hs2Key, new PendingScaleDown(hs2Patch, Instant.now()));
+          LOG.info("[hiveserver2] Deferring scale-down to {} (waiting for deletion-cost propagation)",
+              hs2Patch);
+        } else if (hs2Patch != null) {
+          // Scale-up: apply immediately
+          patches.put(ConfigUtils.COMPONENT_HIVESERVER2, hs2Patch);
+          MANAGED_REPLICAS.put(hs2Key, hs2Patch);
+        }
+      }
     }
 
     // Metastore
     if (spec.metastore().isEnabled() && spec.metastore().autoscaling().isEnabled()) {
+      AutoscalingSpec msAuto = spec.metastore().autoscaling();
+      Map<String, String> msSelector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_METASTORE);
+      bgScraper.registerOrUpdate(namespace, clusterName,
+          ConfigUtils.COMPONENT_METASTORE, msSelector,
+          msAuto.metricsPort(), msAuto.metricsScrapeIntervalSeconds());
+      String msKey = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_METASTORE;
+      List<PodMetrics> msMetrics = metricsCache.getOrEmpty(msKey, msAuto.metricsScrapeIntervalSeconds() * 3);
       evaluateComponent(cluster, client, namespace, clusterName,
-          ConfigUtils.COMPONENT_METASTORE, spec.metastore().autoscaling(),
-          spec.metastore().replicas(), patches, statuses);
+          ConfigUtils.COMPONENT_METASTORE, msAuto,
+          spec.metastore().replicas(), patches, statuses, msMetrics);
     }
 
     // LLAP
     if (spec.llap().isEnabled() && spec.llap().autoscaling().isEnabled()) {
+      AutoscalingSpec llapAuto = spec.llap().autoscaling();
+      Map<String, String> llapSelector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_LLAP);
+      bgScraper.registerOrUpdate(namespace, clusterName,
+          ConfigUtils.COMPONENT_LLAP, llapSelector,
+          llapAuto.metricsPort(), llapAuto.metricsScrapeIntervalSeconds());
+      String llapKey = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_LLAP;
+      List<PodMetrics> llapMetrics = metricsCache.getOrEmpty(llapKey, llapAuto.metricsScrapeIntervalSeconds() * 3);
       evaluateComponent(cluster, client, namespace, clusterName,
-          ConfigUtils.COMPONENT_LLAP, spec.llap().autoscaling(),
-          spec.llap().replicas(), patches, statuses);
+          ConfigUtils.COMPONENT_LLAP, llapAuto,
+          spec.llap().replicas(), patches, statuses, llapMetrics);
     }
 
     // TezAM
     if (spec.tezAm().isEnabled() && spec.tezAm().autoscaling().isEnabled()) {
+      AutoscalingSpec tezAuto = spec.tezAm().autoscaling();
+      Map<String, String> tezSelector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_TEZAM);
+      bgScraper.registerOrUpdate(namespace, clusterName,
+          ConfigUtils.COMPONENT_TEZAM, tezSelector,
+          tezAuto.metricsPort(), tezAuto.metricsScrapeIntervalSeconds());
+      String tezKey = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_TEZAM;
+      List<PodMetrics> tezMetrics = metricsCache.getOrEmpty(tezKey, tezAuto.metricsScrapeIntervalSeconds() * 3);
       evaluateComponent(cluster, client, namespace, clusterName,
-          ConfigUtils.COMPONENT_TEZAM, spec.tezAm().autoscaling(),
-          spec.tezAm().replicas(), patches, statuses);
+          ConfigUtils.COMPONENT_TEZAM, tezAuto,
+          spec.tezAm().replicas(), patches, statuses, tezMetrics);
     }
 
     return new AutoscalingEvaluation(patches, statuses);
   }
 
   /**
-   * Scrape metrics for HS2 pods (used by LLAP/TezAM activation gate).
+   * Returns cached HS2 metrics (used by LLAP/TezAM activation gate).
+   * Non-blocking — reads from the background-scraper cache.
    */
-  public List<PodMetrics> scrapeHs2Metrics(HiveCluster cluster) {
+  public List<PodMetrics> getHs2MetricsFromCache(HiveCluster cluster) {
     String namespace = cluster.getMetadata().getNamespace();
-    Map<String, String> selector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_HIVESERVER2);
-    int port = cluster.getSpec().hiveServer2().autoscaling().metricsPort();
-    return scraper.scrape(namespace, selector, port);
-  }
-
-  private void evaluateComponent(HiveCluster cluster, KubernetesClient client,
-      String namespace, String clusterName, String component,
-      AutoscalingSpec autoscaling, int maxReplicas,
-      Map<String, Integer> patches, Map<String, AutoscalingStatus> statuses) {
-    evaluateComponent(cluster, client, namespace, clusterName, component,
-        autoscaling, maxReplicas, patches, statuses, null);
+    String clusterName = cluster.getMetadata().getName();
+    String key = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_HIVESERVER2;
+    int maxStale = cluster.getSpec().hiveServer2().autoscaling().metricsScrapeIntervalSeconds() * 3;
+    return metricsCache.getOrEmpty(key, maxStale);
   }
 
   private void evaluateComponent(HiveCluster cluster, KubernetesClient client,
       String namespace, String clusterName, String component,
       AutoscalingSpec autoscaling, int maxReplicas,
       Map<String, Integer> patches, Map<String, AutoscalingStatus> statuses,
-      List<PodMetrics> preScrapedMetrics) {
+      List<PodMetrics> metrics) {
 
     int currentReplicas = getCurrentReplicas(client, namespace, clusterName, component);
 
     String key = namespace + "/" + clusterName + "/" + component;
-
-    List<PodMetrics> metrics;
-    if (preScrapedMetrics != null) {
-      metrics = preScrapedMetrics;
-    } else {
-      Map<String, String> selector = Labels.selectorForComponent(cluster, component);
-      metrics = scraper.scrape(namespace, selector, autoscaling.metricsPort());
-    }
 
     // For LLAP and TezAM, scaling decisions are based on HS2 metrics (activation gate),
     // not their own pod metrics. Allow evaluation even with 0 own pods.
@@ -248,8 +329,11 @@ public class HiveClusterAutoscaler {
   /**
    * Patches each pod's deletion cost annotation based on its active session count.
    * Kubernetes uses this during scale-down to kill idle pods first (lower cost = killed first).
+   * <p>
+   * Only meaningful for Deployments (HS2, Metastore) — the ReplicaSet controller
+   * respects this annotation. StatefulSets ignore it and always terminate by ordinal.
    */
-  private void updatePodDeletionCost(KubernetesClient client, String namespace,
+  private void updateDeploymentPodDeletionCost(KubernetesClient client, String namespace,
       List<PodMetrics> metrics, String metricName) {
     for (PodMetrics pm : metrics) {
       int sessions = pm.metrics().getOrDefault(metricName, 0.0).intValue();
