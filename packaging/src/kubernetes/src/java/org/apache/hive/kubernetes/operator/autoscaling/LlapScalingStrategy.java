@@ -57,7 +57,7 @@ public class LlapScalingStrategy implements ScalingStrategy {
     // Activation gate: check if HS2 has any open sessions.
     // If scrape returns empty but LLAP has running pods, treat as "unknown" and preserve.
     // This prevents spurious scale-to-zero from transient scrape failures after operator restart.
-    List<PodMetrics> hs2Metrics = orchestrator.scrapeHs2Metrics(cluster);
+    List<PodMetrics> hs2Metrics = orchestrator.getHs2MetricsFromCache(cluster);
     Boolean sessionsDetected = detectHs2Sessions(hs2Metrics);
     if (sessionsDetected == null && !podMetrics.isEmpty()) {
       // HS2 scrape returned no data but LLAP is running — hold current state

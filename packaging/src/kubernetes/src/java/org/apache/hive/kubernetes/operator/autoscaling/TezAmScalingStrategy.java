@@ -52,7 +52,7 @@ public class TezAmScalingStrategy implements ScalingStrategy {
   public int computeDesiredReplicas(List<PodMetrics> podMetrics,
       AutoscalingSpec autoscaling, int maxReplicas) {
 
-    List<PodMetrics> hs2Metrics = orchestrator.scrapeHs2Metrics(cluster);
+    List<PodMetrics> hs2Metrics = orchestrator.getHs2MetricsFromCache(cluster);
 
     // Activation gate: if HS2 scrape returns no data but TezAM has running pods,
     // treat as "unknown" and preserve current state to avoid spurious scale-to-zero.

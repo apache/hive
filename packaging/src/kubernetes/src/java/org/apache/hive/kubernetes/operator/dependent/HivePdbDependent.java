@@ -30,8 +30,8 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 
 /**
  * Unified PodDisruptionBudget dependent resource for all Hive components.
- * Ensures at least one pod remains available during voluntary disruptions
- * (scale-down, node drain, rolling updates).
+ * Uses maxUnavailable=1 to allow at most one pod to be disrupted at a time
+ * while still permitting node drains when replicas=1.
  * <p>
  * Subclassed per component (HS2, Metastore, LLAP, TezAM) only to satisfy
  * JOSDK's requirement for distinct no-arg-constructible classes in the workflow.
@@ -62,7 +62,7 @@ public abstract class HivePdbDependent
           .withLabels(Labels.forComponent(hiveCluster, component))
         .endMetadata()
         .withNewSpec()
-          .withMinAvailable(new IntOrString(1))
+          .withMaxUnavailable(new IntOrString(1))
           .withNewSelector()
             .withMatchLabels(Labels.selectorForComponent(hiveCluster, component))
           .endSelector()
