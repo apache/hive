@@ -521,14 +521,7 @@ public final class ColumnPrunerProcFactory {
       cols.add(new FieldNode(VirtualColumn.RAWDATASIZE.getName()));
     }
 
-    Table tableMetadata = desc.getTableMetadata();
-    Set<String> nonNativePartitionKeyNames = null;
-    if (tableMetadata != null && tableMetadata.hasNonNativePartitionSupport()) {
-      nonNativePartitionKeyNames = new HashSet<>();
-      for (FieldSchema partCol : tableMetadata.getPartCols()) {
-        nonNativePartitionKeyNames.add(partCol.getName().toLowerCase());
-      }
-    }
+    Set<String> nonNativePartitionCols = nonNativePartitionColNames(desc.getTableMetadata());
 
     for (FieldNode fn : cols) {
       String column = fn.getFieldName();
@@ -537,9 +530,7 @@ public final class ColumnPrunerProcFactory {
         continue;
       }
       referencedColumnNames.add(column);
-      boolean isNonNativePartitionSourceCol = nonNativePartitionKeyNames != null
-          && nonNativePartitionKeyNames.contains(column.toLowerCase());
-      if (colInfo.getIsVirtualCol() && !isNonNativePartitionSourceCol) {
+      if (colInfo.getIsVirtualCol() && !nonNativePartitionCols.contains(column)) {
         // part is also a virtual column, but part col should not in this
         // list in case of non native tables like iceberg which have their partition support.
         for (int j = 0; j < virtualCols.size(); j++) {
@@ -565,6 +556,17 @@ public final class ColumnPrunerProcFactory {
     scanOp.setNeededColumns(neededColumnNames);
     scanOp.setNeededNestedColumnPaths(neededNestedColumnPaths);
     scanOp.setReferencedColumns(referencedColumnNames);
+  }
+
+  private static Set<String> nonNativePartitionColNames(Table table) {
+    if (table == null || !table.hasNonNativePartitionSupport()) {
+      return Set.of();
+    }
+    Set<String> names = new HashSet<>();
+    for (FieldSchema partCol : table.getPartCols()) {
+      names.add(partCol.getName().toLowerCase());
+    }
+    return names;
   }
 
   /**

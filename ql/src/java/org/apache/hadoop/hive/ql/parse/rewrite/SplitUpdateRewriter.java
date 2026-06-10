@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetClausePatcher;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     int columnOffset = deleteValues.size();
 
     Table targetTable = updateBlock.getTargetTable();
-    List<String> insertValues = new ArrayList<>(targetTable.getAllCols().size());
+    List<String> insertValues = new ArrayList<>(Collections.nCopies(targetTable.getAllCols().size(), null));
     boolean first = true;
 
     List<FieldSchema> nonPartCols = targetTable.getCols();
@@ -80,7 +81,8 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     for (int i = 0; i < partCols.size(); i++) {
       boolean appendToSelect = targetTable.hasNonNativePartitionSupport();
       appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
-          partCols.get(i).getName(), nonPartCols.size() + i, columnOffset, appendToSelect, appendToSelect);
+          partCols.get(i).getName(), nonPartCols.size() + i, columnOffset, appendToSelect, !first);
+      first = false;
     }
     addRowLineageColumnsForUpdate(targetTable, sqlGenerator, insertValues, conf);
 
@@ -119,42 +121,33 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
                MultiInsertSqlGenerator sqlGenerator, List<String> insertValues,
                Map<Integer, ASTNode> setColExprs, String columnName, int setColExprIndex, int columnOffset,
                boolean appendToSelect, boolean prependComma) {
-    if (appendToSelect && prependComma) {
-      sqlGenerator.append(",");
-    }
-
-    Table targetTable = updateBlock.getTargetTable();
-    ASTNode setCol = updateBlock.getSetCols().get(columnName);
     String identifier = HiveUtils.unparseIdentifier(columnName, conf);
 
-    if (appendToSelect) {
-      if (setCol != null) {
-        if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
-            setCol.getChildCount() == 1 && setCol.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
-          sqlGenerator.append(updateBlock.getColNameToDefaultConstraint().get(columnName));
-        } else {
-          sqlGenerator.append(identifier);
-          // This is one of the columns we're setting, record it's position so we can come back
-          // later and patch it up. 0th is ROW_ID
-          setColExprs.put(setColExprIndex + columnOffset, setCol);
-        }
+    // The insert value is placed for every column (data and partition).
+    int index = updateBlock.getTargetTable().getColumnIndexByName(columnName);
+    insertValues.set(index, sqlGenerator.qualify(identifier));
+
+    if (!appendToSelect) {
+      return;
+    }
+    if (prependComma) {
+      sqlGenerator.append(",");
+    }
+    ASTNode setCol = updateBlock.getSetCols().get(columnName);
+    if (setCol != null) {
+      if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
+          setCol.getChildCount() == 1 && setCol.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
+        sqlGenerator.append(updateBlock.getColNameToDefaultConstraint().get(columnName));
       } else {
         sqlGenerator.append(identifier);
+        // This is one of the columns we're setting, record it's position so we can come back
+        // later and patch it up. 0th is ROW_ID
+        setColExprs.put(setColExprIndex + columnOffset, setCol);
       }
-      sqlGenerator.append(" AS ");
+    } else {
       sqlGenerator.append(identifier);
     }
-
-    int index = targetTable.getColumnIndexByName(columnName);
-    ensureInsertValuesSize(insertValues, index);
-    insertValues.set(index, sqlGenerator.qualify(identifier));
-  }
-
-  private static void ensureInsertValuesSize(List<String> insertValues, int index) {
-    if (index >= insertValues.size()) {
-      for (int j = insertValues.size(); j <= index; j++) {
-        insertValues.add(null);
-      }
-    }
+    sqlGenerator.append(" AS ");
+    sqlGenerator.append(identifier);
   }
 }

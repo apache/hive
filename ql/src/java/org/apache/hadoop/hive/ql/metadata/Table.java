@@ -116,7 +116,8 @@ public class Table implements Serializable {
    * These fields are all cached fields.  The information comes from tTable.
    */
   private List<FieldSchema> tablePartCols;
-  private transient Map<String, Pair<Integer, FieldSchema>> inputColnameToIndFsMap;
+  private record TableColumn(int index, FieldSchema field) {}
+  private transient Map<String, TableColumn> columnsByName;
   private transient List<FieldSchema> tableNonPartCols;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
@@ -759,39 +760,38 @@ public class Table implements Serializable {
     return false;
   }
 
-  private void fillColumnIndexByName() {
-    inputColnameToIndFsMap = new HashMap<>();
+  private void  ensureColumnsIndexed() {
+    if (columnsByName != null) {
+      return;
+    }
+    Map<String, TableColumn> indexedColumns = new HashMap<>();
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
     if (!hasNonNativePartitionSupport()) {
       fsList.addAll(getPartitionKeys());
     }
     for (int i = 0; i < fsList.size(); i++) {
-      inputColnameToIndFsMap.put(fsList.get(i).getName().toLowerCase(), Pair.of(i, fsList.get(i)));
+      indexedColumns.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
     }
+    columnsByName = indexedColumns;
   }
 
   public Integer getColumnIndexByName(String colName) {
-    if (inputColnameToIndFsMap == null) {
-      fillColumnIndexByName();
-    }
-    Pair<Integer, FieldSchema> indFsPair = inputColnameToIndFsMap.get(colName.toLowerCase());
-
-    return indFsPair != null ? indFsPair.getLeft() : null;
+    ensureColumnsIndexed();
+    TableColumn column = columnsByName.get(colName.toLowerCase());
+    return column != null ? column.index() : null;
   }
 
   public FieldSchema getFieldSchemaByName(String colName) {
-    if (inputColnameToIndFsMap == null) {
-      fillColumnIndexByName();
-    }
-    Pair<Integer, FieldSchema> indFsPair = inputColnameToIndFsMap.get(colName.toLowerCase());
-    return indFsPair == null ? null : indFsPair.getRight();
+    ensureColumnsIndexed();
+    TableColumn column = columnsByName.get(colName.toLowerCase());
+    return column != null ? column.field() : null;
   }
 
   public List<FieldSchema> getCols() {
     if (tableNonPartCols != null) {
       return tableNonPartCols;
     }
-    if (!isNonNative()) {
+    if (!hasNonNativePartitionSupport()) {
       tableNonPartCols = getColsInternal(false);
     } else {
       List<FieldSchema> nonPartFields = new ArrayList<>();
@@ -847,7 +847,7 @@ public class Table implements Serializable {
     tTable.setPartitionKeys(partCols);
     tablePartCols = null;
     tableNonPartCols = null;
-    inputColnameToIndFsMap = null;
+    columnsByName = null;
   }
 
   public String getCatName() {
@@ -899,7 +899,7 @@ public class Table implements Serializable {
     tTable.getSd().setCols(fields);
     tableNonPartCols = null;
     tablePartCols = null;
-    inputColnameToIndFsMap = null;
+    columnsByName = null;
   }
 
   public void setNumBuckets(int nb) {
