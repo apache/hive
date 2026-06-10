@@ -89,11 +89,15 @@ public class MetastoreDeploymentDependent
         ConfigUtils.METASTORE_THRIFT_PORT_KEY,
         ConfigUtils.METASTORE_THRIFT_PORT_HIVE_KEY,
         ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
+    int restPort = ConfigUtils.getInt(
+        spec.metastore().configOverrides(),
+        ConfigUtils.METASTORE_REST_HTTP_PORT_KEY,
+        null, ConfigUtils.METASTORE_REST_HTTP_PORT_DEFAULT);
     List<ContainerPort> ports = new ArrayList<>();
     ports.add(new ContainerPortBuilder()
         .withName("thrift").withContainerPort(thriftPort).withProtocol("TCP").build());
     ports.add(new ContainerPortBuilder()
-        .withName("rest").withContainerPort(9001).withProtocol("TCP").build());
+        .withName("rest").withContainerPort(restPort).withProtocol("TCP").build());
 
     Probe readinessProbe = buildTcpProbe(thriftPort, spec.metastore().readinessProbe(), 15, 10, 3);
     Probe livenessProbe = buildTcpProbe(thriftPort, spec.metastore().livenessProbe(), 60, 30, 5);
