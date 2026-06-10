@@ -222,11 +222,11 @@ public class HiveClusterAutoscaler {
 
   private ScalingStrategy createStrategy(String component, HiveCluster cluster) {
     return switch (component) {
-      case ConfigUtils.COMPONENT_HIVESERVER2 -> new HiveServer2ScalingStrategy();
-      case ConfigUtils.COMPONENT_METASTORE -> new MetastoreScalingStrategy();
-      case ConfigUtils.COMPONENT_LLAP -> new LlapScalingStrategy(this, cluster);
-      case ConfigUtils.COMPONENT_TEZAM -> new TezAmScalingStrategy(this, cluster);
-      default -> throw new IllegalArgumentException("Unknown component: " + component);
+    case ConfigUtils.COMPONENT_HIVESERVER2 -> new HiveServer2ScalingStrategy();
+    case ConfigUtils.COMPONENT_METASTORE -> new MetastoreScalingStrategy();
+    case ConfigUtils.COMPONENT_LLAP -> new LlapScalingStrategy(this, cluster);
+    case ConfigUtils.COMPONENT_TEZAM -> new TezAmScalingStrategy(this, cluster);
+    default -> throw new IllegalArgumentException("Unknown component: " + component);
     };
   }
 

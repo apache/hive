@@ -77,72 +77,72 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     int rescheduleSeconds = 0;
 
     switch (action) {
-      case SUSPEND_NOW:
-        suspendCluster(resource, client);
-        boolean manual = resource.getSpec().suspend();
-        // Auto-suspend: set spec.suspend=true so the cluster stays suspended
-        // until the user explicitly sets it to false.
-        // The spec patch triggers a watch event → immediate re-reconcile where
-        // STAY_SUSPENDED sets the status cleanly.
-        if (!manual) {
-          patchSuspendSpec(client, resource, true);
-          return UpdateControl.noUpdate();
-        }
-        String reason = "ManualSuspend";
-        newStatus.setClusterPhase("Suspended");
-        newStatus.setSuspendedSince(Instant.now().toString());
-        newStatus.setIdleSince(null);
-        newStatus.getConditions().add(buildCondition("Suspended", "True", reason,
-            "Cluster suspended via spec.suspend",
-            existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
-        rescheduleSeconds = 30;
-        break;
+    case SUSPEND_NOW:
+      suspendCluster(resource);
+      boolean manual = resource.getSpec().suspend();
+      // Auto-suspend: set spec.suspend=true so the cluster stays suspended
+      // until the user explicitly sets it to false.
+      // The spec patch triggers a watch event → immediate re-reconcile where
+      // STAY_SUSPENDED sets the status cleanly.
+      if (!manual) {
+        patchSuspendSpec(client, resource, true);
+        return UpdateControl.noUpdate();
+      }
+      String reason = "ManualSuspend";
+      newStatus.setClusterPhase("Suspended");
+      newStatus.setSuspendedSince(Instant.now().toString());
+      newStatus.setIdleSince(null);
+      newStatus.getConditions().add(buildCondition("Suspended", "True", reason,
+          "Cluster suspended via spec.suspend",
+          existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
+      rescheduleSeconds = 30;
+      break;
 
-      case STAY_SUSPENDED:
-        newStatus.setClusterPhase("Suspended");
-        newStatus.setSuspendedSince(existingStatus != null ? existingStatus.getSuspendedSince() : null);
-        newStatus.setIdleSince(null);
-        newStatus.getConditions().add(buildCondition("Suspended", "True", "Suspended",
-            "Cluster is suspended",
-            existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
-        rescheduleSeconds = 30;
-        break;
+    case STAY_SUSPENDED:
+      newStatus.setClusterPhase("Suspended");
+      newStatus.setSuspendedSince(existingStatus != null ? existingStatus.getSuspendedSince() : null);
+      newStatus.setIdleSince(null);
+      newStatus.getConditions().add(buildCondition("Suspended", "True", "Suspended",
+          "Cluster is suspended",
+          existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
+      rescheduleSeconds = 30;
+      break;
 
-      case WAKE:
-        wakeCluster(resource, client);
-        newStatus.setClusterPhase("Running");
-        newStatus.setSuspendedSince(null);
-        newStatus.setIdleSince(null);
-        newStatus.getConditions().add(buildCondition("Suspended", "False", "Woken",
-            "Cluster woken up",
-            existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
-        rescheduleSeconds = anyAutoscalingEnabled(resource.getSpec())
-            ? getMinScrapeInterval(resource.getSpec()) : 30;
-        break;
+    case WAKE:
+      wakeCluster(resource);
+      newStatus.setClusterPhase("Running");
+      newStatus.setSuspendedSince(null);
+      newStatus.setIdleSince(null);
+      newStatus.getConditions().add(buildCondition("Suspended", "False", "Woken",
+          "Cluster woken up",
+          existingStatus != null ? existingStatus.getConditions() : Collections.emptyList()));
+      rescheduleSeconds = anyAutoscalingEnabled(resource.getSpec())
+          ? getMinScrapeInterval(resource.getSpec()) : 30;
+      break;
 
-      case IDLE_START:
-        newStatus.setClusterPhase("Idle");
-        newStatus.setIdleSince(Instant.now().toString());
-        newStatus.setIdleForMinutes(0);
-        newStatus.setSuspendedSince(null);
-        break;
+    case IDLE_START:
+      newStatus.setClusterPhase("Idle");
+      newStatus.setIdleSince(Instant.now().toString());
+      newStatus.setIdleForMinutes(0);
+      newStatus.setSuspendedSince(null);
+      break;
 
-      case IDLE_WAITING:
-        String idleSince = existingStatus != null ? existingStatus.getIdleSince() : null;
-        newStatus.setClusterPhase("Idle");
-        newStatus.setIdleSince(idleSince);
-        newStatus.setIdleForMinutes(idleSince != null
-            ? (int) Duration.between(Instant.parse(idleSince), Instant.now()).toMinutes() : 0);
-        newStatus.setSuspendedSince(null);
-        break;
+    case IDLE_WAITING:
+      String idleSince = existingStatus != null ? existingStatus.getIdleSince() : null;
+      newStatus.setClusterPhase("Idle");
+      newStatus.setIdleSince(idleSince);
+      newStatus.setIdleForMinutes(idleSince != null
+          ? (int) Duration.between(Instant.parse(idleSince), Instant.now()).toMinutes() : 0);
+      newStatus.setSuspendedSince(null);
+      break;
 
-      case RUNNING:
-      default:
-        newStatus.setClusterPhase("Running");
-        newStatus.setIdleSince(null);
-        newStatus.setIdleForMinutes(null);
-        newStatus.setSuspendedSince(null);
-        break;
+    case RUNNING:
+    default:
+      newStatus.setClusterPhase("Running");
+      newStatus.setIdleSince(null);
+      newStatus.setIdleForMinutes(null);
+      newStatus.setSuspendedSince(null);
+      break;
     }
 
     // --- Autoscaling evaluation (only when enabled and not suspended) ---
@@ -553,7 +553,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     }
 
     // 4. Check idle conditions
-    boolean allIdle = isClusterIdle(resource, existingStatus, client);
+    boolean allIdle = isClusterIdle(resource, client);
     if (!allIdle) {
       return SuspendAction.RUNNING;
     }
@@ -573,8 +573,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
   }
 
 
-  private boolean isClusterIdle(HiveCluster resource, HiveClusterStatus existingStatus,
-      KubernetesClient client) {
+  private boolean isClusterIdle(HiveCluster resource, KubernetesClient client) {
     HiveClusterSpec spec = resource.getSpec();
     String ns = resource.getMetadata().getNamespace();
     String name = resource.getMetadata().getName();
@@ -648,7 +647,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     }
   }
 
-  private void suspendCluster(HiveCluster resource, KubernetesClient client) {
+  private void suspendCluster(HiveCluster resource) {
     String ns = resource.getMetadata().getNamespace();
     String name = resource.getMetadata().getName();
     HiveClusterSpec spec = resource.getSpec();
@@ -670,7 +669,7 @@ public class HiveClusterReconciler implements Reconciler<HiveCluster> {
     LOG.info("Cluster {}/{} suspended", ns, name);
   }
 
-  private void wakeCluster(HiveCluster resource, KubernetesClient client) {
+  private void wakeCluster(HiveCluster resource) {
     HiveClusterSpec spec = resource.getSpec();
     String ns = resource.getMetadata().getNamespace();
     String name = resource.getMetadata().getName();
