@@ -812,64 +812,64 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     sb.append("rules:\n");
 
     switch (component) {
-      case ConfigUtils.COMPONENT_HIVESERVER2:
-        // HS2 session and operation metrics
-        sb.append("- pattern: 'metrics<name=hs2_(.+)><>Value'\n");
-        sb.append("  name: hs2_$1\n");
-        sb.append("  type: GAUGE\n");
-        sb.append("- pattern: 'metrics<name=active_calls_(.+)><>Count'\n");
-        sb.append("  name: hs2_active_calls_$1\n");
-        sb.append("  type: GAUGE\n");
-        // Tez session pool metrics (pending tasks, backlog ratio, running tasks)
-        sb.append("- pattern: 'metrics<name=tez_session_(.+)><>Value'\n");
-        sb.append("  name: tez_session_$1\n");
-        sb.append("  type: GAUGE\n");
-        // JVM CPU usage for CPU-based autoscaling
-        sb.append("- pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'\n");
-        sb.append("  name: jvm_process_cpu_load\n");
-        sb.append("  type: GAUGE\n");
-        break;
-      case ConfigUtils.COMPONENT_METASTORE:
-        // HMS API call metrics
-        sb.append("- pattern: 'metrics<name=api_(.+)><>Count'\n");
-        sb.append("  name: api_$1_total\n");
-        sb.append("  type: COUNTER\n");
-        sb.append("- pattern: 'metrics<name=open_connections><>Count'\n");
-        sb.append("  name: hive_metastore_open_connections\n");
-        sb.append("  type: GAUGE\n");
-        // JVM CPU usage for CPU-based autoscaling
-        sb.append("- pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'\n");
-        sb.append("  name: jvm_process_cpu_load\n");
-        sb.append("  type: GAUGE\n");
-        break;
-      case ConfigUtils.COMPONENT_LLAP:
-        // Only export the executor metrics the autoscaler and drain script need.
-        // A wildcard '.*' pattern serializes 600+ metrics every scrape interval,
-        // causing CPU spikes and GC pressure on the LLAP JVM.
-        // Internal format: Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics-<pod>><>Attribute
-        // Separate rules per attribute — JMX Exporter 1.x caches per-bean, not per-attribute.
-        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumQueuedRequests'\n");
-        sb.append("  name: hadoop_llapdaemon_executornumqueuedrequests\n");
-        sb.append("  type: GAUGE\n");
-        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsConfigured'\n");
-        sb.append("  name: hadoop_llapdaemon_executornumexecutorsconfigured\n");
-        sb.append("  type: GAUGE\n");
-        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsAvailable'\n");
-        sb.append("  name: hadoop_llapdaemon_executornumexecutorsavailable\n");
-        sb.append("  type: GAUGE\n");
-        sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutors'\n");
-        sb.append("  name: hadoop_llapdaemon_executornumexecutors\n");
-        sb.append("  type: GAUGE\n");
-        break;
-      case ConfigUtils.COMPONENT_TEZAM:
-        // TezAM DAG execution metrics
-        sb.append("- pattern: 'Hadoop<service=TezAppMaster, name=TezAppMaster><>(.+)'\n");
-        sb.append("  name: tez_am_$1\n");
-        sb.append("  type: GAUGE\n");
-        break;
-      default:
-        sb.append("- pattern: '.*'\n");
-        break;
+    case ConfigUtils.COMPONENT_HIVESERVER2:
+      // HS2 session and operation metrics
+      sb.append("- pattern: 'metrics<name=hs2_(.+)><>Value'\n");
+      sb.append("  name: hs2_$1\n");
+      sb.append("  type: GAUGE\n");
+      sb.append("- pattern: 'metrics<name=active_calls_(.+)><>Count'\n");
+      sb.append("  name: hs2_active_calls_$1\n");
+      sb.append("  type: GAUGE\n");
+      // Tez session pool metrics (pending tasks, backlog ratio, running tasks)
+      sb.append("- pattern: 'metrics<name=tez_session_(.+)><>Value'\n");
+      sb.append("  name: tez_session_$1\n");
+      sb.append("  type: GAUGE\n");
+      // JVM CPU usage for CPU-based autoscaling
+      sb.append("- pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'\n");
+      sb.append("  name: jvm_process_cpu_load\n");
+      sb.append("  type: GAUGE\n");
+      break;
+    case ConfigUtils.COMPONENT_METASTORE:
+      // HMS API call metrics
+      sb.append("- pattern: 'metrics<name=api_(.+)><>Count'\n");
+      sb.append("  name: api_$1_total\n");
+      sb.append("  type: COUNTER\n");
+      sb.append("- pattern: 'metrics<name=open_connections><>Count'\n");
+      sb.append("  name: hive_metastore_open_connections\n");
+      sb.append("  type: GAUGE\n");
+      // JVM CPU usage for CPU-based autoscaling
+      sb.append("- pattern: 'java.lang<type=OperatingSystem><>ProcessCpuLoad'\n");
+      sb.append("  name: jvm_process_cpu_load\n");
+      sb.append("  type: GAUGE\n");
+      break;
+    case ConfigUtils.COMPONENT_LLAP:
+      // Only export the executor metrics the autoscaler and drain script need.
+      // A wildcard '.*' pattern serializes 600+ metrics every scrape interval,
+      // causing CPU spikes and GC pressure on the LLAP JVM.
+      // Internal format: Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics-<pod>><>Attribute
+      // Separate rules per attribute — JMX Exporter 1.x caches per-bean, not per-attribute.
+      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumQueuedRequests'\n");
+      sb.append("  name: hadoop_llapdaemon_executornumqueuedrequests\n");
+      sb.append("  type: GAUGE\n");
+      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsConfigured'\n");
+      sb.append("  name: hadoop_llapdaemon_executornumexecutorsconfigured\n");
+      sb.append("  type: GAUGE\n");
+      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsAvailable'\n");
+      sb.append("  name: hadoop_llapdaemon_executornumexecutorsavailable\n");
+      sb.append("  type: GAUGE\n");
+      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutors'\n");
+      sb.append("  name: hadoop_llapdaemon_executornumexecutors\n");
+      sb.append("  type: GAUGE\n");
+      break;
+    case ConfigUtils.COMPONENT_TEZAM:
+      // TezAM DAG execution metrics
+      sb.append("- pattern: 'Hadoop<service=TezAppMaster, name=TezAppMaster><>(.+)'\n");
+      sb.append("  name: tez_am_$1\n");
+      sb.append("  type: GAUGE\n");
+      break;
+    default:
+      sb.append("- pattern: '.*'\n");
+      break;
     }
     return sb.toString();
   }
