@@ -117,25 +117,16 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
    */
   protected void checkValidSetClauseTarget(ASTNode colName, Table targetTable) throws SemanticException {
     String columnName = normalizeColName(colName.getText());
-    // Make sure this isn't one of the partitioning columns, that's not supported.
-    boolean foundColumnInTargetTable = false;
-    for (FieldSchema fschema : targetTable.getPartCols()) {
-      if (fschema.getName().equalsIgnoreCase(columnName)) {
-        if (targetTable.hasNonNativePartitionSupport()) {
-          foundColumnInTargetTable = true;
-          break;
-        }
-        throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_PART_VALUE.getMsg());
-      }
+    // Native partition columns cannot be updated; Iceberg partition columns are regular updatable columns.
+    if (!targetTable.hasNonNativePartitionSupport() && targetTable.isPartitionKey(columnName)) {
+      throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_PART_VALUE.getMsg());
     }
     //updating bucket column should move row from one file to another - not supported
     if (targetTable.getBucketCols() != null && targetTable.getBucketCols().contains(columnName)) {
       throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_BUCKET_VALUE, columnName);
     }
-    if (foundColumnInTargetTable) {
-      return;
-    }
-    for (FieldSchema col : targetTable.getCols()) {
+    boolean foundColumnInTargetTable = false;
+    for (FieldSchema col : targetTable.getAllCols()) {
       if (columnName.equalsIgnoreCase(col.getName())) {
         foundColumnInTargetTable = true;
         break;

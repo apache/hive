@@ -261,9 +261,8 @@ public class ColumnStatsAutoGatherContext {
     for (int i = 0; i < selRSSig.size(); i++) {
       columnNameToIndex.putIfAbsent(selRSSig.get(i).getAlias(), i);
     }
-    for (int i = 0; i < this.columns.size(); i++) {
-      FieldSchema column = this.columns.get(i);
-      int index= tbl.getColumnIndexByName(column.getName());
+    for (FieldSchema column : this.columns) {
+      int index = tbl.getColumnIndexByName(column.getName());
       ColumnInfo col = columns.get(index);
       Integer selRSIdx = getSelRSColumnIndex(column.getName(), col, columnNameToIndex);
       if (selRSIdx == null) {
@@ -276,7 +275,7 @@ public class ColumnStatsAutoGatherContext {
       columnExprMap.put(internalName, exprNodeDesc);
       signature.add(selRSSig.get(selRSIdx));
     }
-    int dynPartsCount=0;
+    int dynPartsCount = 0;
     if (partSpec != null) {
       for (Map.Entry<String, String> entry : partSpec.entrySet()) {
         if (entry.getValue() == null) {
@@ -284,55 +283,59 @@ public class ColumnStatsAutoGatherContext {
         }
       }
     }
+    // True when the input row already carries the static partition columns as real columns (e.g. Iceberg),
+    // i.e. it has more columns than just the data columns plus the dynamic partition columns.
     boolean inputRRHasStaticParts = (this.columns.size() + dynPartsCount < columns.size());
-    // if there is any partition column (in static partition or dynamic
-    // partition or mixed case)
-    int dynamicPartBegin = 0;
+    // Column layout produced for the stats-gathering select:
+    //   <-- non-partition cols -->|<-- static partition cols -->|<-- dynamic partition cols -->
+    // For non-native tables (e.g. Iceberg) partition columns are ordinary interleaved columns instead.
+    boolean dynamicPartSeen = false;
+    // Count of native static partition columns already emitted as constants. They are absent from the input
+    // row, so each one shifts the input position of the columns that follow it.
+    int staticPartShift = 0;
     for (int i = 0; i < partitionColumns.size(); i++) {
-      ExprNodeDesc exprNodeDesc;
-      TypeInfo srcType;
       String partColName = partitionColumns.get(i).getName();
-      int index = tbl.getColumnIndexByName(partColName);
-      ColumnInfo col;
+      int tableIndex = tbl.getColumnIndexByName(partColName);
+      boolean isStaticPartition = partSpec != null && partSpec.containsKey(partColName)
+          && partSpec.get(partColName) != null;
 
+      ExprNodeDesc exprNodeDesc;
       // 2. deal with static partition columns
-      if (partSpec != null && partSpec.containsKey(partColName)
-          && partSpec.get(partColName) != null) {
-        if (dynamicPartBegin > 0) {
-          throw new SemanticException(
-              "Dynamic partition columns should not come before static partition columns.");
-        }
+      if (isStaticPartition) {
         if (inputRRHasStaticParts) {
-          col = columns.get(index + dynamicPartBegin);
-          exprNodeDesc = new ExprNodeColumnDesc(col);
+          // non-native (e.g. Iceberg): the partition column is a real column in the input row
+          exprNodeDesc = new ExprNodeColumnDesc(columns.get(tableIndex - staticPartShift));
         } else {
+          if (dynamicPartSeen) {
+            throw new SemanticException(
+                "Dynamic partition columns should not come before static partition columns.");
+          }
+          // native: the static partition value is a constant, not present in the input row
           exprNodeDesc = new ExprNodeConstantDesc(partSpec.get(partColName));
-        }
-        srcType = exprNodeDesc.getTypeInfo();
-        if (!inputRRHasStaticParts) {
-          dynamicPartBegin--;
+          staticPartShift++;
         }
       }
-      // 3. dynamic partition columns
+      // 3. dynamic partition columns: always read from the input row
       else {
-        col = columns.get(index + dynamicPartBegin);
-        exprNodeDesc = new ExprNodeColumnDesc(col);
-        srcType = col.getType();
+        dynamicPartSeen = true;
+        exprNodeDesc = new ExprNodeColumnDesc(columns.get(tableIndex - staticPartShift));
       }
-      if (inputRRHasStaticParts) {
-        index = columnNameToIndex.get(partColName);
-      }
-      TypeInfo destType = selRSSig.get(index).getType();
+      TypeInfo srcType = exprNodeDesc.getTypeInfo();
+
+      // For non-native tables partition columns are interleaved, so find the select-RS position by name;
+      // for native tables it equals the table column index.
+      int selRSIndex = inputRRHasStaticParts ? columnNameToIndex.get(partColName) : tableIndex;
+      TypeInfo destType = selRSSig.get(selRSIndex).getType();
       if (!srcType.equals(destType)) {
         // This may be possible when srcType is string but destType is integer
         exprNodeDesc = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
             .createConversionCast(exprNodeDesc, (PrimitiveTypeInfo) destType);
       }
       colList.add(exprNodeDesc);
-      String internalName = selRS.getColumnNames().get(index);
+      String internalName = selRS.getColumnNames().get(selRSIndex);
       columnNames.add(internalName);
       columnExprMap.put(internalName, exprNodeDesc);
-      signature.add(selRSSig.get(index));
+      signature.add(selRSSig.get(selRSIndex));
     }
     operator.setConf(new SelectDesc(colList, columnNames));
     operator.setColumnExprMap(columnExprMap);
