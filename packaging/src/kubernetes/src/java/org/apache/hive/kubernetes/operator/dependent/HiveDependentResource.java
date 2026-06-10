@@ -106,10 +106,6 @@ public abstract class HiveDependentResource<R extends HasMetadata,
           if (resources.isEmpty()) {
             return Optional.empty();
           }
-          // Always filter by expected name — even when only one resource
-          // is in the cache. Without this, a single Deployment (e.g.
-          // metastore) would be handed to HiveServer2's matcher, causing
-          // a cross-component update loop.
           String expectedName = getSecondaryResourceName(primary,
               context);
           return resources.stream()
@@ -138,14 +134,6 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     return super.match(actualResource, desired, primary, context);
   }
 
-  /**
-   * Handles 409 Conflict errors during resource creation caused by informer
-   * cache lag. When the operator creates a resource but the informer hasn't
-   * yet received the creation event, the framework may attempt to create it
-   * again. Kubernetes rejects the duplicate with 409 — this handler absorbs
-   * that expected race and lets the next reconciliation pick up the resource
-   * from the updated cache.
-   */
   @Override
   protected R handleCreate(R desired, P primary, Context<P> context) {
     try {

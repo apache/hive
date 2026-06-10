@@ -79,6 +79,21 @@ public final class ConfigUtils {
 
   public static final String HIVE_LLAP_DAEMON_NUM_EXECUTORS_KEY = "hive.llap.daemon.num.executors";
 
+  public static final String HIVE_LLAP_DAEMON_RPC_PORT_KEY = "hive.llap.daemon.rpc.port";
+  public static final int HIVE_LLAP_DAEMON_RPC_PORT_DEFAULT = 15001;
+
+  public static final String HIVE_LLAP_MANAGEMENT_RPC_PORT_KEY = "hive.llap.management.rpc.port";
+  public static final int HIVE_LLAP_MANAGEMENT_RPC_PORT_DEFAULT = 15004;
+
+  public static final String HIVE_LLAP_DAEMON_SHUFFLE_PORT_KEY = "hive.llap.daemon.yarn.shuffle.port";
+  public static final int HIVE_LLAP_DAEMON_SHUFFLE_PORT_DEFAULT = 15551;
+
+  public static final String HIVE_LLAP_DAEMON_WEB_PORT_KEY = "hive.llap.daemon.web.port";
+  public static final int HIVE_LLAP_DAEMON_WEB_PORT_DEFAULT = 15002;
+
+  public static final String HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_KEY = "hive.llap.daemon.output.service.port";
+  public static final int HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_DEFAULT = 15003;
+
   public static final String METASTORE_SERVER_TRANSPORT_MODE_KEY = "metastore.server.thrift.transport.mode";
   public static final String METASTORE_SERVER_TRANSPORT_MODE_DEFAULT = "http";
 
@@ -94,6 +109,9 @@ public final class ConfigUtils {
   public static final String METASTORE_SERVER_MAX_THREADS_KEY = "metastore.server.max.threads";
   public static final String METASTORE_SERVER_MAX_THREADS_HIVE_KEY = "hive.metastore.server.max.threads";
   public static final int METASTORE_SERVER_MAX_THREADS_DEFAULT = 1000;
+
+  public static final String METASTORE_REST_HTTP_PORT_KEY = "metastore.rest.http.port";
+  public static final int METASTORE_REST_HTTP_PORT_DEFAULT = 9001;
 
   public static final String HIVE_METASTORE_URIS_KEY = "hive.metastore.uris";
 

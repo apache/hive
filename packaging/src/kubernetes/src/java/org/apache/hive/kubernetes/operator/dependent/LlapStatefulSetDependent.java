@@ -96,17 +96,30 @@ public class LlapStatefulSetDependent
       envVars.addAll(spec.envVars());
     }
 
+    int managementPort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_MANAGEMENT_RPC_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_MANAGEMENT_RPC_PORT_DEFAULT);
+    int shufflePort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_DAEMON_SHUFFLE_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_DAEMON_SHUFFLE_PORT_DEFAULT);
+    int webPort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_DEFAULT);
+    int outputPort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_DEFAULT);
+
     List<ContainerPort> ports = new ArrayList<>();
     ports.add(new ContainerPortBuilder()
-        .withName("management").withContainerPort(15004).withProtocol("TCP").build());
+        .withName("management").withContainerPort(managementPort).withProtocol("TCP").build());
     ports.add(new ContainerPortBuilder()
-        .withName("shuffle").withContainerPort(15551).withProtocol("TCP").build());
+        .withName("shuffle").withContainerPort(shufflePort).withProtocol("TCP").build());
     ports.add(new ContainerPortBuilder()
-        .withName("web").withContainerPort(15002).withProtocol("TCP").build());
+        .withName("web").withContainerPort(webPort).withProtocol("TCP").build());
     ports.add(new ContainerPortBuilder()
-        .withName("output").withContainerPort(15003).withProtocol("TCP").build());
+        .withName("output").withContainerPort(outputPort).withProtocol("TCP").build());
 
-    Probe readinessProbe = buildTcpProbe(15004, llap.readinessProbe(), 15, 10, 3);
+    Probe readinessProbe = buildTcpProbe(managementPort, llap.readinessProbe(), 15, 10, 3);
 
     String headlessServiceName =
         hiveCluster.getMetadata().getName() + "-llap";

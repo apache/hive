@@ -114,17 +114,20 @@ public abstract class HiveServiceDependent
 
     @Override
     protected void customizeSpec(ServiceBuilder builder, HiveCluster hiveCluster) {
-      int thriftPort = ConfigUtils.getInt(
-          hiveCluster.getSpec().metastore().configOverrides(),
+      var overrides = hiveCluster.getSpec().metastore().configOverrides();
+      int thriftPort = ConfigUtils.getInt(overrides,
           ConfigUtils.METASTORE_THRIFT_PORT_KEY,
           ConfigUtils.METASTORE_THRIFT_PORT_HIVE_KEY,
           ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
+      int restPort = ConfigUtils.getInt(overrides,
+          ConfigUtils.METASTORE_REST_HTTP_PORT_KEY,
+          null, ConfigUtils.METASTORE_REST_HTTP_PORT_DEFAULT);
       builder.editSpec()
           .withType("ClusterIP")
           .addNewPort().withName("thrift").withProtocol("TCP")
             .withPort(thriftPort).withTargetPort(new IntOrString(thriftPort)).endPort()
           .addNewPort().withName("rest").withProtocol("TCP")
-            .withPort(9001).withTargetPort(new IntOrString(9001)).endPort()
+            .withPort(restPort).withTargetPort(new IntOrString(restPort)).endPort()
           .endSpec();
     }
   }
@@ -141,14 +144,24 @@ public abstract class HiveServiceDependent
 
     @Override
     protected void customizeSpec(ServiceBuilder builder, HiveCluster hiveCluster) {
+      var overrides = hiveCluster.getSpec().llap().configOverrides();
+      int managementPort = ConfigUtils.getInt(overrides,
+          ConfigUtils.HIVE_LLAP_MANAGEMENT_RPC_PORT_KEY, null,
+          ConfigUtils.HIVE_LLAP_MANAGEMENT_RPC_PORT_DEFAULT);
+      int shufflePort = ConfigUtils.getInt(overrides,
+          ConfigUtils.HIVE_LLAP_DAEMON_SHUFFLE_PORT_KEY, null,
+          ConfigUtils.HIVE_LLAP_DAEMON_SHUFFLE_PORT_DEFAULT);
+      int webPort = ConfigUtils.getInt(overrides,
+          ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_KEY, null,
+          ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_DEFAULT);
       builder.editSpec()
           .withClusterIP("None")
           .addNewPort().withName("management").withProtocol("TCP")
-            .withPort(15004).withTargetPort(new IntOrString(15004)).endPort()
+            .withPort(managementPort).withTargetPort(new IntOrString(managementPort)).endPort()
           .addNewPort().withName("shuffle").withProtocol("TCP")
-            .withPort(15551).withTargetPort(new IntOrString(15551)).endPort()
+            .withPort(shufflePort).withTargetPort(new IntOrString(shufflePort)).endPort()
           .addNewPort().withName("web").withProtocol("TCP")
-            .withPort(15002).withTargetPort(new IntOrString(15002)).endPort()
+            .withPort(webPort).withTargetPort(new IntOrString(webPort)).endPort()
           .endSpec();
     }
   }
