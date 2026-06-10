@@ -168,13 +168,15 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
 
         Table table = ts.getConf().getTableMetadata();
 
-        boolean nonEquiJoin = isNonEquiJoin(ctx.parent);
-        if (table != null && table.isNonNative() && !nonEquiJoin
-            && table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
+        boolean prunable = table != null && !isNonEquiJoin(ctx.parent);
+        // Dynamic partition pruning only applies to equi-joins against an actual table.
+        if (prunable && table.isNonNative() &&
+            table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
+          // Non-native tables (e.g. Iceberg): the storage handler decides whether the column is prunable.
           String columnType = table.getFieldSchemaByName(column).getType();
           generateEventOperatorPlan(ctx, parseContext, ts, column, columnType, ctx.parent);
-        } else if (table != null && table.isPartitionKey(column) && !nonEquiJoin
-            && !table.hasNonNativePartitionSupport()) {
+        } else if (prunable && table.isPartitionKey(column) && !table.hasNonNativePartitionSupport()) {
+          // Native partitioned table.
           String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
@@ -199,7 +201,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
         } else { // semijoin
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)
-                  && ts.getConf().getFilterExpr() != null && !nonEquiJoin) {
+                  && ts.getConf().getFilterExpr() != null && !isNonEquiJoin(ctx.parent)) {
             LOG.debug("Initiate semijoin reduction for " + column + " ("
                 + ts.getConf().getFilterExpr().getExprString());
 
