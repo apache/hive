@@ -58,7 +58,6 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCostImpl;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
-import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptTable;
@@ -110,7 +109,6 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.schema.SchemaPlus;
@@ -3265,8 +3263,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           outerNameToPosMap, outerRR, subqueryId).apply(filterExpression);
       RexNode factoredFilterExpression = RexUtil
           .pullFactors(cluster.getRexBuilder(), filterExpression);
-      factoredFilterExpression = new RexSimplify(cluster.getRexBuilder(), RelOptPredicateList.EMPTY, RexUtil.EXECUTOR)
-          .simplify(factoredFilterExpression);
       RelNode filterRel = new HiveFilter(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), srcRel,
           HiveCalciteUtil.fixNullability(cluster.getRexBuilder(),
               factoredFilterExpression, RelOptUtil.getFieldTypeList(srcRel.getRowType())));
