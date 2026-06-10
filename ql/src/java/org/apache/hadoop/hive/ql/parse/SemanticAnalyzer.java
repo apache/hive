@@ -285,6 +285,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.NoOpFetchFormatter;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
@@ -12022,35 +12023,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       final Deserializer deserializer = tab.getDeserializer();
-
       deserializer.handleJobLevelConfiguration(conf);
+      StructObjectInspector rowObjectInspector;
+      try {
+        rowObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
+      } catch (SerDeException e) {
+        throw new RuntimeException(e);
+      }
 
       int colCount = tab.getAllCols().size();
       List<ColumnInfo> colInfoList = new ArrayList<>(Collections.nCopies(colCount, null));
-      List<String> colNameList = new ArrayList<>(Collections.nCopies(colCount, null));
 
-      for (FieldSchema field : tab.getCols()) {
-        ColumnInfo colInfo = new ColumnInfo(field.getName(),
-            TypeInfoUtils.getTypeInfoFromObjectInspector(tab.getField(field.getName())
-                .getFieldObjectInspector()), alias, false);
-        colInfo.setSkewedCol(isSkewedCol(alias, qb, field.getName()));
-        Integer index = tab.getColumnIndexByName(field.getName());
-        colInfoList.set(index, colInfo);
-        colNameList.set(index, field.getName());
+      // Build column info from the SerDe row schema (authoritative names/types), placed by table column index.
+      for (StructField field : rowObjectInspector.getAllStructFieldRefs()) {
+        String fieldName = field.getFieldName();
+        ColumnInfo colInfo = new ColumnInfo(fieldName,
+            TypeInfoUtils.getTypeInfoFromObjectInspector(field.getFieldObjectInspector()), alias, false);
+        colInfo.setSkewedCol(isSkewedCol(alias, qb, fieldName));
+        colInfoList.set(tab.getColumnIndexByName(fieldName), colInfo);
       }
       for (FieldSchema partCol : tab.getPartCols()) {
         LOG.trace("Adding partition col: {} ", partCol);
         ColumnInfo colInfo = new ColumnInfo(partCol.getName(),
             TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true);
-        Integer index = tab.getColumnIndexByName(partCol.getName());
-        if (index != null) {
-          colInfoList.set(index, colInfo);
-          colNameList.set(index, partCol.getName());
-        }
+        colInfoList.set(tab.getColumnIndexByName(partCol.getName()), colInfo);
       }
 
-      for (int i = 0; i < colNameList.size(); i++) {
-        rwsch.put(alias, colNameList.get(i), colInfoList.get(i));
+      for (ColumnInfo colInfo : colInfoList) {
+        rwsch.put(alias, colInfo.getInternalName(), colInfo);
       }
 
       // put virtual columns into RowResolver.
