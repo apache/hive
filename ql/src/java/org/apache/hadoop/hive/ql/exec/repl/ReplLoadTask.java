@@ -547,8 +547,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // texts using new DB name. Currently it refers to the source database name.
     }
 
-    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getCols(), null, table.getParameters(),
-            table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
+    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getCols(), null, table.getParameters(), 
+        table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, 
+        table.getPartCols(), null);
 
     desc.setReplicationSpec(metaData.getReplicationSpec());
     desc.setOwnerName(table.getOwner());

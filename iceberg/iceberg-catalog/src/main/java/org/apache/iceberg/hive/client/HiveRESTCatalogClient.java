@@ -21,12 +21,15 @@ package org.apache.iceberg.hive.client;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
@@ -38,16 +41,20 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClient;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergTableProperties;
+import org.apache.iceberg.hive.IcebergViewSupport;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -119,10 +126,20 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     Pattern pattern = Pattern.compile(regex);
 
     // List tables from the specific database (namespace) and filter them.
-    return restCatalog.listTables(Namespace.of(dbName)).stream()
+    Set<String> names = new LinkedHashSet<>();
+    restCatalog.listTables(Namespace.of(dbName)).stream()
         .map(TableIdentifier::name)
         .filter(pattern.asPredicate())
-        .toList();
+        .forEach(names::add);
+
+    if (restCatalog instanceof ViewCatalog viewCatalog) {
+      viewCatalog
+          .listViews(Namespace.of(dbName)).stream()
+          .map(TableIdentifier::name)
+          .filter(pattern.asPredicate())
+          .forEach(names::add);
+    }
+    return Lists.newArrayList(names);
   }
 
   @Override
@@ -132,7 +149,12 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
   @Override
   public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) throws TException {
-    restCatalog.dropTable(TableIdentifier.of(table.getDbName(), table.getTableName()));
+    TableIdentifier id = TableIdentifier.of(table.getDbName(), table.getTableName());
+    if (restCatalog instanceof ViewCatalog viewCatalog && viewCatalog.viewExists(id)) {
+      viewCatalog.dropView(id);
+    } else {
+      restCatalog.dropTable(id);
+    }
   }
 
   private void validateCurrentCatalog(String catName) {
@@ -145,7 +167,11 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   @Override
   public boolean tableExists(String catName, String dbName, String tableName) {
     validateCurrentCatalog(catName);
-    return restCatalog.tableExists(TableIdentifier.of(dbName, tableName));
+    TableIdentifier id = TableIdentifier.of(dbName, tableName);
+    if (restCatalog.tableExists(id)) {
+      return true;
+    }
+    return restCatalog instanceof ViewCatalog viewCatalog && viewCatalog.viewExists(id);
   }
 
   @Override
@@ -174,25 +200,58 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   @Override
   public Table getTable(GetTableRequest tableRequest) throws TException {
     validateCurrentCatalog(tableRequest.getCatName());
-    org.apache.iceberg.Table icebergTable;
+    TableIdentifier id =
+        TableIdentifier.of(tableRequest.getDbName(), tableRequest.getTblName());
     try {
-      icebergTable = restCatalog.loadTable(TableIdentifier.of(tableRequest.getDbName(),
-          tableRequest.getTblName()));
-    } catch (NoSuchTableException exception) {
+      org.apache.iceberg.Table icebergTable = restCatalog.loadTable(id);
+      return MetastoreUtil.toHiveTable(icebergTable, conf);
+    } catch (NoSuchTableException tableMissing) {
+      if (restCatalog instanceof ViewCatalog viewCatalog) {
+        if (!viewCatalog.viewExists(id)) {
+          throw new NoSuchObjectException();
+        }
+        return MetastoreUtil.buildMinimalHMSView(
+            tableRequest.getCatName(), tableRequest.getDbName(), tableRequest.getTblName());
+      }
       throw new NoSuchObjectException();
     }
-    return MetastoreUtil.toHiveTable(icebergTable, conf);
+  }
+
+  private static boolean hasIcebergViewTableType(Table table) {
+    if (!TableType.VIRTUAL_VIEW.toString().equals(table.getTableType())) {
+      return false;
+    }
+    Map<String, String> params = table.getParameters();
+    if (params == null) {
+      return false;
+    }
+    return HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(
+        params.get(BaseMetastoreTableOperations.TABLE_TYPE_PROP));
+  }
+
+  @Override
+  public void alter_table(String catName, String dbName, String tblName, Table newTable,
+      EnvironmentContext envContext, String validWriteIdList) {
+    validateCurrentCatalog(catName);
+    if (hasIcebergViewTableType(newTable) && restCatalog instanceof ViewCatalog) {
+      createOrReplaceIcebergView(newTable, dbName, tblName);
+    }
   }
 
   @Override
   public void createTable(CreateTableRequest request) throws TException {
     Table table = request.getTable();
-    List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
-    if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
-      cols.addAll(table.getPartitionKeys());
+    if (hasIcebergViewTableType(table) && restCatalog instanceof ViewCatalog) {
+      createOrReplaceIcebergView(table, table.getDbName(), table.getTableName());
+    } else {
+      createIcebergTable(request);
     }
+  }
+
+  private void createIcebergTable(CreateTableRequest request) {
+    Table table = request.getTable();
     Properties tableProperties = IcebergTableProperties.getTableProperties(table, conf);
-    Schema schema = HiveSchemaUtil.convert(cols, Collections.emptyMap(), true);
+    Schema schema = HiveSchemaUtil.convert(hmsTableColumns(table), Collections.emptyMap(), true);
     Map<String, String> envCtxProps = Optional.ofNullable(request.getEnvContext())
         .map(EnvironmentContext::getProperties)
         .orElse(Collections.emptyMap());
@@ -200,12 +259,30 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
         HMSTablePropertyHelper.getPartitionSpec(envCtxProps, schema);
     SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(tableProperties, schema);
 
-    restCatalog.buildTable(TableIdentifier.of(table.getDbName(), table.getTableName()), schema)
+    restCatalog
+        .buildTable(TableIdentifier.of(table.getDbName(), table.getTableName()), schema)
         .withPartitionSpec(partitionSpec)
         .withLocation(tableProperties.getProperty(IcebergTableProperties.LOCATION))
         .withSortOrder(sortOrder)
         .withProperties(Maps.fromProperties(tableProperties))
         .create();
+  }
+
+  private void createOrReplaceIcebergView(Table table, String dbName, String tableName) {
+    Map<String, String> tblProps =
+        table.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(table.getParameters());
+    String comment = tblProps.get("comment");
+    List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
+    IcebergViewSupport.createOrReplaceView(
+        conf, dbName, tableName, cols, table.getViewExpandedText(), tblProps, comment);
+  }
+
+  private static List<FieldSchema> hmsTableColumns(Table table) {
+    List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
+    if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
+      cols.addAll(table.getPartitionKeys());
+    }
+    return cols;
   }
 
   @Override

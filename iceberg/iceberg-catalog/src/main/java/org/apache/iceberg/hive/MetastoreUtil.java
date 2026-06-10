@@ -36,8 +36,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.Schema;
@@ -46,6 +48,11 @@ import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.PropertyUtil;
+import org.apache.iceberg.view.BaseView;
+import org.apache.iceberg.view.SQLViewRepresentation;
+import org.apache.iceberg.view.View;
+import org.apache.iceberg.view.ViewMetadata;
 import org.apache.thrift.TException;
 
 public class MetastoreUtil {
@@ -134,7 +141,11 @@ public class MetastoreUtil {
     result.setDbName(tableName.getDb());
     result.setTableName(tableName.getTable());
     result.setTableType(TableType.EXTERNAL_TABLE.toString());
-    result.setPartitionKeys(getPartitionKeys(table, table.spec().specId()));
+
+    // TODO: Revert after HIVE-29633 is fixed
+    // result.setPartitionKeys(getPartitionKeys(table, table.spec().specId()));
+    result.setPartitionKeys(Lists.newArrayList());
+
     TableMetadata metadata = ((BaseTable) table).operations().current();
     long maxHiveTablePropertySize = conf.getLong(HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE,
         HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
@@ -142,10 +153,87 @@ public class MetastoreUtil {
         null, true, maxHiveTablePropertySize, null);
     String catalogType = IcebergCatalogProperties.getCatalogType(conf);
     if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {
-      result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, IcebergCatalogProperties.getCatalogType(conf));
+      result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, catalogType);
     }
     result.setSd(getHiveStorageDescriptor(table));
     return result;
+  }
+
+  /**
+   * Builds a minimal HMS {@link Table} shell for Iceberg view (identity, view type,
+   * and Iceberg storage-handler markers only). The storage handler {@code postGetTable} hook enriches
+   * this object via {@link IcebergViewSupport#enrichHmsTableFromIcebergView} (view SQL,
+   * schema, and Iceberg parameters).
+   */
+  public static Table buildMinimalHMSView(String catName, String dbName, String tableName) {
+    Table result = new Table();
+    result.setCatName(catName);
+    result.setDbName(dbName);
+    result.setTableName(tableName);
+    result.setTableType(TableType.VIRTUAL_VIEW.toString());
+
+    Map<String, String> parameters = Maps.newHashMap();
+    parameters.put(
+        BaseMetastoreTableOperations.TABLE_TYPE_PROP, HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE);
+    parameters.put(
+        hive_metastoreConstants.META_TABLE_STORAGE, HMSTablePropertyHelper.HIVE_ICEBERG_STORAGE_HANDLER);
+    result.setParameters(parameters);
+    return result;
+  }
+
+  /**
+   * Applies Iceberg view metadata (SQL, schema, params) onto an existing HMS {@link Table}.
+   */
+  public static void applyIcebergViewToHmsTable(Table hmsTable, View view, Configuration conf) {
+    ViewMetadata metadata = ((BaseView) view).operations().current();
+    String sqlText = viewSqlText(view, metadata);
+
+    boolean hiveEngineEnabled = false;
+    hmsTable.setSd(HiveOperationsBase.storageDescriptor(metadata.schema(), metadata.location(), hiveEngineEnabled));
+    StorageDescriptor sd = hmsTable.getSd();
+
+    if (sd.getBucketCols() == null) {
+      sd.setBucketCols(Lists.newArrayList());
+    }
+
+    if (sd.getSortCols() == null) {
+      sd.setSortCols(Lists.newArrayList());
+    }
+
+    long maxHiveTablePropertySize =
+        conf.getLong(
+            HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE,
+            HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
+    HMSTablePropertyHelper.updateHmsTableForIcebergView(
+        metadata.metadataFileLocation(),
+        hmsTable,
+        metadata,
+        Collections.emptySet(),
+        maxHiveTablePropertySize,
+        null);
+
+    hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
+    hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));
+    hmsTable.setOwner(
+        PropertyUtil.propertyAsString(
+            metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
+
+    // In-memory overlay for compile/describe: authoritative SQL comes from Iceberg metadata.
+    hmsTable.setViewOriginalText(sqlText);
+    hmsTable.setViewExpandedText(sqlText);
+
+    String catalogType = IcebergCatalogProperties.getCatalogType(conf);
+    if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {
+      hmsTable.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, IcebergCatalogProperties.getCatalogType(conf));
+    }
+  }
+
+  private static String viewSqlText(View view, ViewMetadata metadata) {
+    SQLViewRepresentation hiveRepr = view.sqlFor("hive");
+    if (hiveRepr != null) {
+      return hiveRepr.sql();
+    }
+    return HiveViewOperations.sqlFor(metadata);
   }
 
   private static StorageDescriptor getHiveStorageDescriptor(org.apache.iceberg.Table table) {

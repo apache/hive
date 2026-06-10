@@ -15,8 +15,6 @@
 --! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
--- Mask compaction id as they will be allocated in parallel threads
---! qt:replace:/^[0-9]/#Masked#/
 -- Mask removed file size
 --! qt:replace:/(\S\"removed-files-size\\\":\\\")(\d+)(\\\")/$1#Masked#$3/
 -- Mask iceberg version
@@ -47,7 +45,7 @@ partitioned by (company_id bigint)
 stored by iceberg stored as orc;
 
 -----------------------------------------------------------------------------
---! Creating  table with a valid catalog name in table properties
+--! Creating a table with a valid catalog name in table properties
 -----------------------------------------------------------------------------
 
 create table ice_orc2 (
@@ -68,6 +66,31 @@ VALUES ('fn1','ln1', 1, 10), ('fn2','ln2', 2, 20), ('fn3','ln3', 3, 30);
 
 describe formatted ice_orc2;
 select * from ice_orc2;
+
+-----------------------------------------------------------------------------------------------
+--! Iceberg view with TBLPROPERTIES ('view-format'='iceberg') on a REST catalog table
+-----------------------------------------------------------------------------------------------
+
+create view ice_v1 tblproperties ('view-format'='iceberg')
+as select first_name, last_name from ice_orc2 where dept_id in (1,2);
+
+select * from ice_v1;
+desc formatted ice_v1;
+drop view ice_v1;
+
+-----------------------------------------------------------------------------------------------
+--! Iceberg view: 'view-format' table properly omitted, Hive config 'hive.default.storage.handler.class' 
+--! set to 'HiveIcebergStorageHandler'
+-----------------------------------------------------------------------------------------------
+
+set hive.default.storage.handler.class=org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
+
+create view ice_v2
+as select dept_id, team_id from ice_orc2 where company_id = 100;
+
+select * from ice_v2;
+desc formatted ice_v2;
+drop view ice_v2;
 
 -----------------------------------------------------------------------------
 
