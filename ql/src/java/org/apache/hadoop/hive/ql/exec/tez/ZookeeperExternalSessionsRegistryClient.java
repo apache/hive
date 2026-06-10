@@ -127,30 +127,30 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
       this.claimsCache = CuratorCache.build(client, claimsPath);
       CuratorCacheListener claimsListener = CuratorCacheListener.builder().forCreates(
           childData -> {
-        if (childData == null) {
-          return;
-        }
-        String applicationId = getApplicationId(childData);
-        synchronized (lock) {
-          available.remove(applicationId);
-        }
-      }).forDeletes(
-          childData -> {
-        if (childData == null) {
-          return;
-        }
-        String applicationId = getApplicationId(childData);
-        synchronized (lock) {
-          if (!taken.contains(applicationId)) {
-            if (cache.get(sessionsPath + "/" + applicationId).isPresent()) {
-              available.add(applicationId);
-              lock.notifyAll();
-            } else {
-              LOG.info("Ignoring AM claim removal for {} because the base AM node no longer exists.", applicationId);
-            }
+          if (childData == null) {
+            return;
           }
-        }
-      }).build();
+          String applicationId = getApplicationId(childData);
+          synchronized (lock) {
+            available.remove(applicationId);
+          }
+        }).forDeletes(
+          childData -> {
+            if (childData == null) {
+              return;
+            }
+            String applicationId = getApplicationId(childData);
+            synchronized (lock) {
+              if (!taken.contains(applicationId)) {
+                if (cache.get(sessionsPath + "/" + applicationId).isPresent()) {  
+                  available.add(applicationId);
+                  lock.notifyAll();
+                } else {
+                  LOG.info("Ignoring AM claim removal for {} because the base AM node no longer exists.", applicationId);
+                }
+              }
+            }
+          }).build();
       claimsCache.listenable().addListener(claimsListener);
       claimsCache.start();
 
