@@ -336,6 +336,19 @@ public class HiveFunctionHelper implements FunctionHelper {
           RexUtil.flatten(call.getOperands(), call.getOperator()));
     }
 
+    // Avoid creating incorrect expressions like $1 < NULL or $1 = NULL or NULL = NULL
+    // which may be problematic for Calcite later on
+    if (expr.isA(SqlKind.BINARY_COMPARISON) && expr.getKind() != SqlKind.IS_DISTINCT_FROM
+        && expr.getKind() != SqlKind.IS_NOT_DISTINCT_FROM) {
+      RexCall call = (RexCall) expr;
+      RexNode op0 = call.getOperands().get(0);
+      RexNode op1 = call.getOperands().get(1);
+      if ((op0.getKind() == SqlKind.LITERAL && ((RexLiteral) op0).isNull()) ||
+          (op1.getKind() == SqlKind.LITERAL && ((RexLiteral) op1).isNull())) {
+        expr = rexBuilder.makeNullLiteral(expr.getType());
+      }
+    }
+
     return expr;
   }
 
