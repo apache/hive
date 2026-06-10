@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -240,10 +241,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                              List<String> values) {
       UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias,
           HiveUtils.unparseIdentifier(name, conf));
-      List<String> valuesToBeAdded = new ArrayList<>();
-      for (int i = 0; i < targetTable.getAllCols().size(); i++) {
-        valuesToBeAdded.add(null);
-      }
+      List valuesToBeAdded = new ArrayList<>(Collections.nCopies(targetTable.getAllCols().size(), null));
       for (FieldSchema fieldSchema : targetTable.getCols()) {
         setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, fieldSchema.getName(), true);
       }
@@ -260,11 +258,10 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
         boolean applyNewValues) {
       int index = targetTable.getColumnIndexByName(columnName);
       String formattedColumn = formatter.apply(columnName);
-      if (applyNewValues && newValues.containsKey(columnName)) {
-        valuesToBeAdded.set(index, getRhsExpValue(newValues.get(columnName), formattedColumn));
-      } else {
-        valuesToBeAdded.set(index, formattedColumn);
-      }
+      String value = applyNewValues && newValues.containsKey(columnName)
+          ? getRhsExpValue(newValues.get(columnName), formattedColumn)
+          : formattedColumn;
+      valuesToBeAdded.set(index, value);
     }
     
     protected String getRhsExpValue(String newValue, String alias) {
