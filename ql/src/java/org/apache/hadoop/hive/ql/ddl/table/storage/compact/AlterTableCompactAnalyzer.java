@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
-import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.tree.Tree;
