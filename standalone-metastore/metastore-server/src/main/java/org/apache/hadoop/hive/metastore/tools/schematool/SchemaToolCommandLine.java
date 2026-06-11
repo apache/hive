@@ -82,6 +82,8 @@ public class SchemaToolCommandLine {
       .hasArg()
       .withDescription("Create table for Hive warehouse/compute logs")
       .create("createLogsTable");
+    Option rebuildIndexesOpt = new Option("rebuildIndexes",
+        "Detect and rebuild corrupt indexes in the metastore backend DB (Postgres only).");
 
     OptionGroup optGroup = new OptionGroup();
     optGroup
@@ -100,7 +102,8 @@ public class SchemaToolCommandLine {
       .addOption(moveDatabase)
       .addOption(moveTable)
       .addOption(createUserOpt)
-      .addOption(createLogsTable);
+      .addOption(createLogsTable)
+      .addOption(rebuildIndexesOpt);
     optGroup.setRequired(true);
 
     Option userNameOpt = OptionBuilder.withArgName("user")
@@ -240,10 +243,10 @@ public class SchemaToolCommandLine {
 
   private static final Set<String> VALID_DB_TYPES = ImmutableSet.of(HiveSchemaHelper.DB_DERBY,
       HiveSchemaHelper.DB_HIVE, HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL,
-      HiveSchemaHelper.DB_POSTGRACE, HiveSchemaHelper.DB_ORACLE);
+      HiveSchemaHelper.DB_POSTGRES, HiveSchemaHelper.DB_ORACLE);
 
   private static final Set<String> VALID_META_DB_TYPES = ImmutableSet.of(HiveSchemaHelper.DB_DERBY,
-      HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL, HiveSchemaHelper.DB_POSTGRACE,
+      HiveSchemaHelper.DB_MSSQL, HiveSchemaHelper.DB_MYSQL, HiveSchemaHelper.DB_POSTGRES,
       HiveSchemaHelper.DB_ORACLE);
 
   private void validate() throws ParseException {

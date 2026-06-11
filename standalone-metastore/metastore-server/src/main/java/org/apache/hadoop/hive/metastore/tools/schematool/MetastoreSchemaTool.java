@@ -477,6 +477,8 @@ public class MetastoreSchemaTool {
         task = new SchemaToolTaskDrop();
       } else if (cmdLine.hasOption("createLogsTable")) {
         task = new SchemaToolTaskCreateLogsTable();
+      } else if (cmdLine.hasOption("rebuildIndexes")) {
+        task = new SchemaToolTaskRebuildIndexes();
       } else {
         throw new HiveMetaException("No task defined!");
       }
