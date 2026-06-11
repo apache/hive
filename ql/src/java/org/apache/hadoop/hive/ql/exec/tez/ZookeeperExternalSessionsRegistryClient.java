@@ -34,7 +34,6 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -49,6 +48,7 @@ import com.google.common.base.Preconditions;
 // TODO: tez should provide this registry
 public class ZookeeperExternalSessionsRegistryClient implements ExternalSessionsRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(ZookeeperExternalSessionsRegistryClient.class);
+  private static final String PATH_SEPARATOR = "/";
 
   private final HiveConf initConf;
   private final Set<String> available = new HashSet<>();
@@ -59,7 +59,6 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
   private CuratorCache cache;
   private CuratorCache claimsCache;
   private InterProcessMutex globalQueue;
-  private String sessionsPath;
   private String claimsPath;
   private volatile boolean isInitialized;
 
@@ -70,7 +69,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
   }
 
   private static String getApplicationId(final ChildData childData) {
-    return childData.getPath().substring(childData.getPath().lastIndexOf("/") + 1);
+    return childData.getPath().substring(childData.getPath().lastIndexOf(PATH_SEPARATOR) + 1);
   }
 
   private void init() {
@@ -83,8 +82,8 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
         TimeUnit.MILLISECONDS);
     int maxRetries = HiveConf.getIntVar(initConf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
     String zkNamespace = HiveConf.getVar(initConf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE);
-    this.sessionsPath = normalizeZkPath(zkNamespace);
-    this.claimsPath = this.sessionsPath + "-claims";
+    String effectivePath = normalizeZkPath(zkNamespace);
+    this.claimsPath = effectivePath + "-claims";
     // After connection state changes to SUSPENDED, the client has already consumed ~2/3 of the negotiated session
     // timeout. Use 33% of the remaining window so LOST aligns with when the ZK server expires the session and drops
     // ephemeral claim nodes. For Ref: Curator TN14 
@@ -99,27 +98,25 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
     synchronized (lock) {
       client.start();
 
-      client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
-        @Override
-        public void stateChanged(CuratorFramework client, ConnectionState newState) {
-          if (newState == ConnectionState.LOST) {
-            Set<String> sessionsToKill;
-            synchronized (lock) {
-              LOG.error("ZK connection state has changed to lost; killing running DAGs on claimed AMs: {}", taken);
-              sessionsToKill = new HashSet<>(taken);
-              taken.clear();
-            }
-            for (String appId : sessionsToKill) {
-              TezJobMonitor.killRunningDAGsForApplication(appId);
-            }
-          }
+      client.getConnectionStateListenable().addListener((client, newState) -> {
+        if (newState != ConnectionState.LOST) {
+          return;
+        }
+        Set<String> sessionsToKill;
+        synchronized (lock) {
+          LOG.error("ZK connection state has changed to lost; killing running DAGs on claimed AMs: {}", taken);
+          sessionsToKill = new HashSet<>(taken);
+          taken.clear();
+        }
+        for (String appId : sessionsToKill) {
+          TezJobMonitor.killRunningDAGsForApplication(appId);
         }
       });
 
-      this.globalQueue = new InterProcessMutex(client, sessionsPath + "-queue");
-      this.cache = CuratorCache.build(client, sessionsPath);
+      this.globalQueue = new InterProcessMutex(client, effectivePath + "-queue");
+      this.cache = CuratorCache.build(client, effectivePath);
       CuratorCacheListener listener = CuratorCacheListener.builder()
-          .forPathChildrenCache(sessionsPath, client, new ExternalSessionsPathListener())
+          .forPathChildrenCache(effectivePath, client, new ExternalSessionsPathListener())
           .build();
       cache.listenable().addListener(listener);
       cache.start();
@@ -142,11 +139,12 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
             String applicationId = getApplicationId(childData);
             synchronized (lock) {
               if (!taken.contains(applicationId)) {
-                if (cache.get(sessionsPath + "/" + applicationId).isPresent()) {  
+                if (cache.get(effectivePath + PATH_SEPARATOR + applicationId).isPresent()) {  
                   available.add(applicationId);
                   lock.notifyAll();
                 } else {
-                  LOG.info("Ignoring AM claim removal for {} because the base AM node no longer exists.", applicationId);
+                  LOG.info("Ignoring AM claim removal for {} because the base AM node no longer exists.",
+                      applicationId);
                 }
               }
             }
@@ -156,7 +154,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
 
       cache.stream()
           .filter(childData -> childData.getPath() != null
-              && childData.getPath().startsWith(sessionsPath + "/"))
+              && childData.getPath().startsWith(effectivePath + PATH_SEPARATOR))
           .forEach(childData -> available.add(getApplicationId(childData)));
       LOG.info("Initial external sessions: {}", available);
       isInitialized = true;
@@ -165,7 +163,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
 
   @VisibleForTesting
   static String normalizeZkPath(String zkNamespace) {
-    return (zkNamespace.startsWith("/") ? zkNamespace : "/" + zkNamespace);
+    return (zkNamespace.startsWith(PATH_SEPARATOR) ? zkNamespace : PATH_SEPARATOR + zkNamespace);
   }
 
   @Override
@@ -192,7 +190,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
           while (iter.hasNext()) {
             String appId = iter.next();
             try {
-              String claimNodePath = claimsPath + "/" + appId;
+              String claimNodePath = claimsPath + PATH_SEPARATOR + appId;
               client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(claimNodePath);
               iter.remove();
               taken.add(appId);
@@ -225,7 +223,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
       }
 
       try {
-        client.delete().guaranteed().forPath(claimsPath + "/" + appId);
+        client.delete().guaranteed().forPath(claimsPath + PATH_SEPARATOR + appId);
       } catch (KeeperException.NoNodeException e) {
         // If the claim Node has already been deleted, we can ignore it.
         LOG.debug("Claim Node has already been deleted for the session {}", appId, e);
@@ -270,7 +268,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
           if (available.contains(applicationId) || taken.contains(applicationId)) {
             return; // We do not expect updates to existing sessions; ignore them for now.
           }
-          if (claimsCache.get(claimsPath + "/" + applicationId).isPresent()) {
+          if (claimsCache.get(claimsPath + PATH_SEPARATOR + applicationId).isPresent()) {
             LOG.info("Ignoring newly added AM {} because it is already claimed by another session.", applicationId);
             return;
           }
