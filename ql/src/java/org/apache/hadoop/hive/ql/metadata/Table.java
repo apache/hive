@@ -766,7 +766,7 @@ public class Table implements Serializable {
     }
     Map<String, TableColumn> indexedColumns = new HashMap<>();
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
-    if (!hasNonNativePartitionSupport()) {
+    if (!hasNonNativePartitionSupport() || isView()) {
       fsList.addAll(getPartitionKeys());
     }
     for (int i = 0; i < fsList.size(); i++) {
@@ -837,7 +837,7 @@ public class Table implements Serializable {
    */
   public List<FieldSchema> getAllCols() {
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
-    if (!hasNonNativePartitionSupport()) {
+    if (!hasNonNativePartitionSupport() || isView()) {
       fsList.addAll(getPartitionKeys());
     }
     return fsList;
