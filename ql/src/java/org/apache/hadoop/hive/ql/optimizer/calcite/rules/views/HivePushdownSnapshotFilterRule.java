@@ -116,6 +116,11 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
       }
 
       Long snapshotId = literal.getValueAs(Long.class);
+      if (snapshotId != null && snapshotId == -1L) {
+        // HiveAugmentSnapshotMaterializationRule uses snapshotId -1 (instead of null) to avoid generating
+        // an incorrect predicate ($snapshotIdInputRef <= NULL), so replace it back here
+        snapshotId = null;
+      }
 
       RelOptTable relOptTable = getRelOptTableOf(op2);
       if (relOptTable == null) {
