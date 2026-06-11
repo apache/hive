@@ -146,6 +146,12 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
 
     final RelBuilder relBuilder = call.builder();
     relBuilder.push(tableScan);
+    if (snapshotId == null) {
+      // Avoid creating an incorrect expression $snapshotIdInputRef <= NULL
+      // which may be problematic for Calcite later on; instead use a special value -1,
+      // which will be later interpreted by HivePushdownSnapshotFilterRule (and removed)
+      snapshotId = -1L;
+    }
     final RexNode snapshotIdLiteral = rexBuilder.makeLiteral(
         snapshotId, snapshotIdType(relBuilder.getTypeFactory()), false);
     final RexNode predicateWithSnapShotId = rexBuilder.makeCall(
