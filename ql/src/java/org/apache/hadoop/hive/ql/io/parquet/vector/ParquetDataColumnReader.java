@@ -106,10 +106,10 @@ public interface ParquetDataColumnReader {
 
   /**
    * True when this reader can supply DECIMAL_64 values as raw unscaled longs at the column's scale,
-   * with no per-row HiveDecimal/byte[] conversion -- i.e. an INT32/INT64-backed decimal whose file
-   * scale equals the requested Hive scale. When true, the long-backed reader may call
-   * {@link #readDecimal64()} / {@link #readDecimal64(int)} instead of {@link #readDecimal()} /
-   * {@link #readDecimal(int)}.
+   * with no per-row HiveDecimal/byte[] conversion -- i.e. an INT32/INT64- or byte-array-backed decimal
+   * whose file scale equals the requested Hive scale and whose value fits a long. When true, the
+   * long-backed reader may call {@link #readDecimal64()} / {@link #readDecimal64(int)} instead of
+   * {@link #readDecimal()} / {@link #readDecimal(int)}.
    */
   default boolean isFastDecimal64() {
     return false;
