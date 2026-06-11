@@ -78,8 +78,8 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
       first = false;
     }
     List<FieldSchema> partCols = targetTable.getPartCols();
+    boolean appendToSelect = targetTable.hasNonNativePartitionSupport();
     for (int i = 0; i < partCols.size(); i++) {
-      boolean appendToSelect = targetTable.hasNonNativePartitionSupport();
       appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
           partCols.get(i).getName(), nonPartCols.size() + i, columnOffset, appendToSelect, !first);
       first = false;
@@ -127,6 +127,8 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     int index = updateBlock.getTargetTable().getColumnIndexByName(columnName);
     insertValues.set(index, sqlGenerator.qualify(identifier));
 
+    // Native tables: partition cols are already in the subquery SELECT (appendAcidSelectColumns).
+    // Non-native tables: appendAcidSelectColumns exposes only delete-prefixed aliases, so add plain names below (appendToSelect).
     if (!appendToSelect) {
       return;
     }

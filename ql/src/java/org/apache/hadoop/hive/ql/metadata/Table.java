@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -619,14 +618,9 @@ public class Table implements Serializable {
       List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
       for (FieldSchema partCol : partCols) {
         FieldSchema storageSchemaField = getFieldSchemaByName(partCol.getName());
-        String userComment = storageSchemaField.getComment();
-        String mergedComment = userComment;
-        // logical view for iceberg uses HMS backed partition keys with no transform info
-        if (!isView()) {
-          mergedComment = (userComment != null ? userComment : "") +
-              " (" + partCol.getComment() + ")";
+        if (storageSchemaField != null && storageSchemaField.getComment() != null) {
+          partCol.setComment(storageSchemaField.getComment());
         }
-        partCol.setComment(mergedComment);
       }
       tablePartCols = partCols;
     } else {
