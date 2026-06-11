@@ -241,7 +241,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                              List<String> values) {
       UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias,
           HiveUtils.unparseIdentifier(name, conf));
-      List valuesToBeAdded = new ArrayList<>(Collections.nCopies(targetTable.getAllCols().size(), null));
+      List<String> valuesToBeAdded = new ArrayList<>(Collections.nCopies(targetTable.getAllCols().size(), null));
       for (FieldSchema fieldSchema : targetTable.getCols()) {
         setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, fieldSchema.getName(), true);
       }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.slf4j.Logger;
@@ -562,10 +563,8 @@ public final class ColumnPrunerProcFactory {
     if (table == null || !table.hasNonNativePartitionSupport()) {
       return Set.of();
     }
-    Set<String> names = new HashSet<>();
-    for (FieldSchema partCol : table.getPartCols()) {
-      names.add(partCol.getName().toLowerCase());
-    }
+    Set<String> names = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    names.addAll(table.getPartColNames());
     return names;
   }
 
