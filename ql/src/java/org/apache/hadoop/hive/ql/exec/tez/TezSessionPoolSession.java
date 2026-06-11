@@ -34,7 +34,9 @@ import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.TezClient;
+import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.TezException;
+import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.DAGStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -335,6 +337,11 @@ public class TezSessionPoolSession implements TezSession {
   @Override
   public TezClient getTezClient() {
     return baseSession.getTezClient();
+  }
+
+  @Override
+  public DAGClient submitDAG(DAG dag) throws TezException, IOException {
+    return baseSession.submitDAG(dag);
   }
 
   @Override
