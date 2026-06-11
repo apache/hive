@@ -639,6 +639,18 @@ public class HiveAlterHandler implements AlterHandler {
     FileSystem destFs = null;
     boolean dataWasMoved = false;
     Database db;
+    Partition check_part;
+    try {
+      check_part = msdb.getPartition(catName, dbname, name, new_part.getValues());
+    } catch(NoSuchObjectException e) {
+      // this means there is no existing partition
+      check_part = null;
+    }
+
+    if (check_part != null) {
+      throw new AlreadyExistsException("Partition already exists:" + dbname + "." + name + "." +
+          new_part.getValues());
+    }
     try {
       msdb.openTransaction();
       Table tbl = msdb.getTable(catName, dbname, name, null);
@@ -653,19 +665,6 @@ public class HiveAlterHandler implements AlterHandler {
         // this means there is no existing partition
         throw new InvalidObjectException(
             "Unable to rename partition because old partition does not exist");
-      }
-
-      Partition check_part;
-      try {
-        check_part = msdb.getPartition(catName, dbname, name, new_part.getValues());
-      } catch(NoSuchObjectException e) {
-        // this means there is no existing partition
-        check_part = null;
-      }
-
-      if (check_part != null) {
-        throw new AlreadyExistsException("Partition already exists:" + dbname + "." + name + "." +
-            new_part.getValues());
       }
 
       // when renaming a partition, we should update

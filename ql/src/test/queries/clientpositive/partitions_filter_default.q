@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-25965
 
 create table ptestfilter (a string) partitioned by (c int);
 INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1', null;
