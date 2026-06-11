@@ -255,7 +255,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	13                  
 	numPartitions       	8                   
@@ -366,7 +365,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	8                   
 	numPartitions       	8                   

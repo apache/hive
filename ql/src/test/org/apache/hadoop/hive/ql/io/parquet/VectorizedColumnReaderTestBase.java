@@ -25,8 +25,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -60,9 +62,13 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.apache.parquet.hadoop.example.GroupWriteSupport;
 import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
+import org.apache.parquet.schema.Types;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
@@ -258,19 +264,36 @@ public class VectorizedColumnReaderTestBase {
 
   public static VectorizedParquetRecordReader createTestParquetReader(String schemaString, Configuration conf)
       throws IOException, InterruptedException, HiveException {
+    return createTestParquetReader(schemaString, conf, null);
+  }
+
+  public static VectorizedParquetRecordReader createTestParquetReader(String schemaString, Configuration conf,
+      DataTypePhysicalVariation[] rowDataTypePhysicalVariations)
+      throws IOException, InterruptedException, HiveException {
+    return createTestParquetReader(schemaString, conf, rowDataTypePhysicalVariations, file);
+  }
+
+  public static VectorizedParquetRecordReader createTestParquetReader(String schemaString, Configuration conf,
+      DataTypePhysicalVariation[] rowDataTypePhysicalVariations, Path inputFile)
+      throws IOException, InterruptedException, HiveException {
     conf.set(PARQUET_READ_SCHEMA, schemaString);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
     Job vectorJob = new Job(conf, "read vector");
-    ParquetInputFormat.setInputPaths(vectorJob, file);
-    initialVectorizedRowBatchCtx(conf);
-    return new VectorizedParquetRecordReader(getFileSplit(vectorJob), new JobConf(conf));
+    ParquetInputFormat.setInputPaths(vectorJob, inputFile);
+    initialVectorizedRowBatchCtx(conf, rowDataTypePhysicalVariations);
+    return new VectorizedParquetRecordReader(getFileSplit(vectorJob, inputFile), new JobConf(conf));
   }
 
   protected static FileSplit getFileSplit(Job vectorJob) throws IOException, InterruptedException {
+    return getFileSplit(vectorJob, file);
+  }
+
+  protected static FileSplit getFileSplit(Job vectorJob, Path inputFile)
+      throws IOException, InterruptedException {
     ParquetInputFormat parquetInputFormat = new ParquetInputFormat(GroupReadSupport.class);
     InputSplit split = (InputSplit) parquetInputFormat.getSplits(vectorJob).get(0);
-    FileSplit fsplit = new FileSplit(file, 0L, split.getLength(), split.getLocations());
+    FileSplit fsplit = new FileSplit(inputFile, 0L, split.getLength(), split.getLocations());
     return fsplit;
   }
 
@@ -344,12 +367,366 @@ public class VectorizedColumnReaderTestBase {
   }
 
   protected static void initialVectorizedRowBatchCtx(Configuration conf) throws HiveException {
+    initialVectorizedRowBatchCtx(conf, null);
+  }
+
+  protected static void initialVectorizedRowBatchCtx(Configuration conf,
+      DataTypePhysicalVariation[] rowDataTypePhysicalVariations) throws HiveException {
     MapWork mapWork = new MapWork();
     VectorizedRowBatchCtx rbCtx = new VectorizedRowBatchCtx();
     rbCtx.init(createStructObjectInspector(conf), new String[0]);
+    if (rowDataTypePhysicalVariations != null) {
+      rbCtx.setRowDataTypePhysicalVariations(rowDataTypePhysicalVariations);
+    }
     mapWork.setVectorMode(true);
     mapWork.setVectorizedRowBatchCtx(rbCtx);
     Utilities.setMapWork(conf, mapWork);
+  }
+
+  /**
+   * Verifies the Decimal64 read path: when the decimal column is tagged DECIMAL_64 (as the
+   * vectorizer does once {@code MapredParquetInputFormat} advertises it), the reader must fill a
+   * {@link Decimal64ColumnVector} (long-backed) with the correct unscaled values.
+   */
+  protected void decimal64Read(boolean isDictionaryEncoding) throws Exception {
+    Configuration readerConf = new Configuration();
+    readerConf.set(IOConstants.COLUMNS, "value");
+    readerConf.set(IOConstants.COLUMNS_TYPES, "decimal(5,2)");
+    readerConf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    readerConf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        "message hive_schema { required value (DECIMAL(5,2));}", readerConf,
+        new DataTypePhysicalVariation[] { DataTypePhysicalVariation.DECIMAL_64 });
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      int c = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        assertTrue("expected Decimal64ColumnVector but got " + previous.cols[0].getClass().getSimpleName(),
+            previous.cols[0] instanceof Decimal64ColumnVector);
+        Decimal64ColumnVector vector = (Decimal64ColumnVector) previous.cols[0];
+        assertTrue(vector.noNulls);
+        assertEquals((short) 5, vector.precision);
+        assertEquals((short) 2, vector.scale);
+        for (int i = 0; i < vector.vector.length; i++) {
+          if (c == nElements) {
+            break;
+          }
+          long expected =
+              new HiveDecimalWritable(getDecimal(isDictionaryEncoding, c).setScale(2)).serialize64(2);
+          assertEquals("Check failed at pos " + c, expected, vector.vector[i]);
+          assertFalse(vector.isNull[i]);
+          c++;
+        }
+      }
+      assertEquals(nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+  // Unscaled values (scale=2) used by the INT32/INT64-backed Decimal64 tests. The element at
+  // DECIMAL64_NULL_INDEX is ignored because those rows are written as null. 1001 -> 10.01,
+  // 1234 -> 12.34, -550 -> -5.50, 9999 -> 99.99. These would all decode WRONG (truncated integer
+  // part, e.g. 1001 -> 10) on the buggy readInteger()/readLong() path, and to the correct unscaled
+  // long on the fixed reader path. At scale 2 that equals the literal value, which is what the
+  // tests assert.
+  private static final long[] DECIMAL64_UNSCALED = { 1001L, 1234L, -550L, 0L, 9999L };
+  private static final int DECIMAL64_NULL_INDEX = 3;
+  private static final int DECIMAL64_ROWS = 200;
+  // Dedicated file so the per-test write never clobbers the class-level {@link #file} fixture that
+  // other @Test methods read via the @BeforeClass writeData(); JUnit @Test ordering is undefined.
+  private static final Path DECIMAL64_FILE =
+      new Path(System.getProperty("java.io.tmpdir"), "testDecimal64ParquetFile");
+
+  /**
+   * Writes a parquet file with a single DECIMAL(5,2) column physically stored as the given
+   * primitive ({@link PrimitiveTypeName#INT32} or {@link PrimitiveTypeName#INT64}), cycling
+   * through the unscaled values in {@link #DECIMAL64_UNSCALED} (index {@link #DECIMAL64_NULL_INDEX}
+   * is written as null), then reads it back tagged DECIMAL_64 and asserts the long-backed
+   * {@link Decimal64ColumnVector} holds the correct unscaled longs (NOT the truncated/zero values
+   * the buggy reader produced).
+   * <p>
+   * Runs with {@code dictionaryEncoding} both true and false so that BOTH reader paths are
+   * exercised: with dictionary encoding on (few distinct values, huge dictionary page) Parquet
+   * dictionary-encodes the column and the read goes through {@code decodeDictionaryIds}; with it off
+   * every value is plain-encoded and the read goes through {@code readDecimal64}. Both populate the
+   * {@link Decimal64ColumnVector} via {@link Decimal64ColumnVector#set(int, byte[], int)}.
+   */
+  protected void decimal64ReadFromPrimitive(PrimitiveTypeName physical, boolean dictionaryEncoding)
+      throws Exception {
+    final int scale = 2;
+    final int precision = 5;
+    MessageType writeSchema = Types.buildMessage()
+        .optional(physical).as(LogicalTypeAnnotation.decimalType(scale, precision)).named("value")
+        .named("hive_schema");
+
+    FileSystem fs = DECIMAL64_FILE.getFileSystem(conf);
+    if (fs.exists(DECIMAL64_FILE)) {
+      fs.delete(DECIMAL64_FILE, true);
+    }
+    GroupWriteSupport.setSchema(writeSchema, conf);
+    try (ParquetWriter<Group> writer = new ParquetWriter<>(
+        DECIMAL64_FILE, new GroupWriteSupport(), GZIP, 1024 * 1024, 1024, 1024 * 1024,
+        dictionaryEncoding, false, PARQUET_1_0, conf)) {
+      SimpleGroupFactory f = new SimpleGroupFactory(writeSchema);
+      for (int i = 0; i < DECIMAL64_ROWS; i++) {
+        int idx = i % DECIMAL64_UNSCALED.length;
+        Group group = f.newGroup();
+        if (idx != DECIMAL64_NULL_INDEX) {
+          if (physical == PrimitiveTypeName.INT32) {
+            group.append("value", (int) DECIMAL64_UNSCALED[idx]);
+          } else {
+            group.append("value", DECIMAL64_UNSCALED[idx]);
+          }
+        }
+        writer.write(group);
+      }
+    }
+
+    Configuration readerConf = new Configuration();
+    readerConf.set(IOConstants.COLUMNS, "value");
+    readerConf.set(IOConstants.COLUMNS_TYPES, "decimal(" + precision + "," + scale + ")");
+    readerConf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    readerConf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        writeSchema.toString(), readerConf,
+        new DataTypePhysicalVariation[] { DataTypePhysicalVariation.DECIMAL_64 }, DECIMAL64_FILE);
+    VectorizedRowBatch previous = reader.createValue();
+    String label = physical + (dictionaryEncoding ? " (dict)" : " (plain)");
+    try {
+      int c = 0;
+      boolean sawNull = false;
+      while (reader.next(NullWritable.get(), previous)) {
+        assertTrue("expected Decimal64ColumnVector but got " + previous.cols[0].getClass().getSimpleName(),
+            previous.cols[0] instanceof Decimal64ColumnVector);
+        Decimal64ColumnVector vector = (Decimal64ColumnVector) previous.cols[0];
+        assertEquals((short) precision, vector.precision);
+        assertEquals((short) scale, vector.scale);
+        for (int i = 0; i < previous.size; i++) {
+          if (c == DECIMAL64_ROWS) {
+            break;
+          }
+          int idx = c % DECIMAL64_UNSCALED.length;
+          if (idx == DECIMAL64_NULL_INDEX) {
+            assertTrue("Expected null at pos " + c + " for " + label, vector.isNull[i]);
+            sawNull = true;
+          } else {
+            assertFalse("Unexpected null at pos " + c + " for " + label, vector.isNull[i]);
+            // A Decimal64 vector must hold the FULL unscaled long: 10.01 -> 1001, not 10 or 0.
+            // For scale 2 the expected unscaled long is exactly DECIMAL64_UNSCALED[idx], so the
+            // buggy truncating reader (returning the integer part 10, or 0) cannot pass this.
+            assertEquals("Decimal64 must keep the full unscaled value at pos " + c + " for " + label,
+                DECIMAL64_UNSCALED[idx], vector.vector[i]);
+          }
+          c++;
+        }
+      }
+      assertEquals("Did not read all rows for " + label, DECIMAL64_ROWS, c);
+      assertTrue("Null row was never exercised for " + label, sawNull);
+    } finally {
+      reader.close();
+      if (fs.exists(DECIMAL64_FILE)) {
+        fs.delete(DECIMAL64_FILE, true);
+      }
+    }
+  }
+
+  protected void decimal64ReadInt32() throws Exception {
+    decimal64ReadFromPrimitive(PrimitiveTypeName.INT32, true);
+    decimal64ReadFromPrimitive(PrimitiveTypeName.INT32, false);
+  }
+
+  protected void decimal64ReadInt64() throws Exception {
+    decimal64ReadFromPrimitive(PrimitiveTypeName.INT64, true);
+    decimal64ReadFromPrimitive(PrimitiveTypeName.INT64, false);
+  }
+
+  /**
+   * Gate test for the Decimal64 identity fast path. When the Parquet file scale differs from the Hive
+   * table scale (schema evolution), the fast path must NOT engage: each value must be rescaled
+   * (rounded, or NULLed when it no longer fits) exactly as HiveDecimal would -- never copied verbatim,
+   * which would be off by a power of ten. Writes DECIMAL(9,4), reads as DECIMAL(6,2), and asserts every
+   * result against a HiveDecimal oracle. (The {@code decimal64Read*} tests cover the file==table-scale
+   * identity fast path; this covers the mismatched-scale fallback and proves the gate.)
+   */
+  protected void decimal64ReadScaleEvolution(PrimitiveTypeName physical, boolean dictionaryEncoding)
+      throws Exception {
+    final int fileScale = 4;
+    final int filePrecision = 9;
+    final int readScale = 2;
+    final int readPrecision = 6;
+    // Unscaled values at fileScale=4 (index DECIMAL64_NULL_INDEX is written as null):
+    //  1234567 -> 123.4567 (rounds to 123.46), 100 -> 0.0100, -98765 -> -9.8765 (-> -9.88),
+    //  99999999 -> 9999.9999 (rounds to 10000.00 -> exceeds DECIMAL(6,2) -> NULL).
+    long[] unscaled = { 1234567L, 100L, -98765L, 0L, 99999999L };
+
+    FileSystem fs = DECIMAL64_FILE.getFileSystem(conf);
+    if (fs.exists(DECIMAL64_FILE)) {
+      fs.delete(DECIMAL64_FILE, true);
+    }
+    MessageType writeSchema = Types.buildMessage()
+        .optional(physical).as(LogicalTypeAnnotation.decimalType(fileScale, filePrecision)).named("value")
+        .named("hive_schema");
+    GroupWriteSupport.setSchema(writeSchema, conf);
+    try (ParquetWriter<Group> writer = new ParquetWriter<>(
+        DECIMAL64_FILE, new GroupWriteSupport(), GZIP, 1024 * 1024, 1024, 1024 * 1024,
+        dictionaryEncoding, false, PARQUET_1_0, conf)) {
+      SimpleGroupFactory f = new SimpleGroupFactory(writeSchema);
+      for (int i = 0; i < DECIMAL64_ROWS; i++) {
+        int idx = i % unscaled.length;
+        Group group = f.newGroup();
+        if (idx != DECIMAL64_NULL_INDEX) {
+          if (physical == PrimitiveTypeName.INT32) {
+            group.append("value", (int) unscaled[idx]);
+          } else {
+            group.append("value", unscaled[idx]);
+          }
+        }
+        writer.write(group);
+      }
+    }
+
+    Configuration readerConf = new Configuration();
+    readerConf.set(IOConstants.COLUMNS, "value");
+    readerConf.set(IOConstants.COLUMNS_TYPES, "decimal(" + readPrecision + "," + readScale + ")");
+    readerConf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    readerConf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        writeSchema.toString(), readerConf,
+        new DataTypePhysicalVariation[] { DataTypePhysicalVariation.DECIMAL_64 }, DECIMAL64_FILE);
+    VectorizedRowBatch previous = reader.createValue();
+    String label = physical + (dictionaryEncoding ? " (dict)" : " (plain)") + " scale-evolution";
+    HiveDecimalWritable oracle = new HiveDecimalWritable();
+    try {
+      int c = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        Decimal64ColumnVector vector = (Decimal64ColumnVector) previous.cols[0];
+        // The long is stored at the Hive (table) scale, NOT the file scale -- proves the gate.
+        assertEquals((short) readScale, vector.scale);
+        for (int i = 0; i < previous.size; i++) {
+          if (c == DECIMAL64_ROWS) {
+            break;
+          }
+          int idx = c % unscaled.length;
+          if (idx == DECIMAL64_NULL_INDEX) {
+            assertTrue("Expected null at pos " + c + " for " + label, vector.isNull[i]);
+          } else {
+            // Oracle: interpret the unscaled value at the file scale, enforce to the read type.
+            oracle.set(HiveDecimal.create(BigInteger.valueOf(unscaled[idx]), fileScale));
+            oracle.mutateEnforcePrecisionScale(readPrecision, readScale);
+            if (!oracle.isSet()) {
+              assertTrue("Expected NULL (out of range) at pos " + c + " for " + label, vector.isNull[i]);
+            } else {
+              assertFalse("Unexpected null at pos " + c + " for " + label, vector.isNull[i]);
+              assertEquals("Scale-evolved Decimal64 must match HiveDecimal at pos " + c + " for " + label,
+                  oracle.serialize64(readScale), vector.vector[i]);
+            }
+          }
+          c++;
+        }
+      }
+      assertEquals("Did not read all rows for " + label, DECIMAL64_ROWS, c);
+    } finally {
+      reader.close();
+      if (fs.exists(DECIMAL64_FILE)) {
+        fs.delete(DECIMAL64_FILE, true);
+      }
+    }
+  }
+
+  protected void decimal64ReadScaleEvolution() throws Exception {
+    decimal64ReadScaleEvolution(PrimitiveTypeName.INT32, true);
+    decimal64ReadScaleEvolution(PrimitiveTypeName.INT32, false);
+    decimal64ReadScaleEvolution(PrimitiveTypeName.INT64, true);
+    decimal64ReadScaleEvolution(PrimitiveTypeName.INT64, false);
+  }
+
+  /**
+   * Bounds test for the Decimal64 identity fast path: file scale == table scale (so the fast path
+   * engages) but the file precision is wider than the table precision. Values outside the table
+   * precision -- and the pathological {@link Long#MIN_VALUE} -- must be NULLed by the fast path's
+   * bounds check, exactly as the enforced path would. Writes DECIMAL(filePrecision,2), reads DECIMAL(5,2).
+   */
+  protected void decimal64ReadPrecisionNarrowing(PrimitiveTypeName physical, boolean dictionaryEncoding)
+      throws Exception {
+    final int scale = 2;
+    final int filePrecision = (physical == PrimitiveTypeName.INT32) ? 9 : 18;
+    final int readPrecision = 5;                 // max abs unscaled value = 99999
+    final long absMax = 99999L;
+    // Unscaled @ scale 2: 1001 -> 10.01 (fits), 99999 -> 999.99 (boundary, fits),
+    // 100000 -> 1000.00 (precision 6 > 5 -> NULL), then an out-of-range negative -> NULL.
+    long[] unscaled = (physical == PrimitiveTypeName.INT32)
+        ? new long[] { 1001L, 99999L, 100000L, -100000L }
+        : new long[] { 1001L, 99999L, 100000L, Long.MIN_VALUE };
+
+    FileSystem fs = DECIMAL64_FILE.getFileSystem(conf);
+    if (fs.exists(DECIMAL64_FILE)) {
+      fs.delete(DECIMAL64_FILE, true);
+    }
+    MessageType writeSchema = Types.buildMessage()
+        .optional(physical).as(LogicalTypeAnnotation.decimalType(scale, filePrecision)).named("value")
+        .named("hive_schema");
+    GroupWriteSupport.setSchema(writeSchema, conf);
+    try (ParquetWriter<Group> writer = new ParquetWriter<>(
+        DECIMAL64_FILE, new GroupWriteSupport(), GZIP, 1024 * 1024, 1024, 1024 * 1024,
+        dictionaryEncoding, false, PARQUET_1_0, conf)) {
+      SimpleGroupFactory f = new SimpleGroupFactory(writeSchema);
+      for (int i = 0; i < DECIMAL64_ROWS; i++) {
+        long v = unscaled[i % unscaled.length];
+        Group group = f.newGroup();
+        if (physical == PrimitiveTypeName.INT32) {
+          group.append("value", (int) v);
+        } else {
+          group.append("value", v);
+        }
+        writer.write(group);
+      }
+    }
+
+    Configuration readerConf = new Configuration();
+    readerConf.set(IOConstants.COLUMNS, "value");
+    readerConf.set(IOConstants.COLUMNS_TYPES, "decimal(" + readPrecision + "," + scale + ")");
+    readerConf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    readerConf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        writeSchema.toString(), readerConf,
+        new DataTypePhysicalVariation[] { DataTypePhysicalVariation.DECIMAL_64 }, DECIMAL64_FILE);
+    VectorizedRowBatch previous = reader.createValue();
+    String label = physical + (dictionaryEncoding ? " (dict)" : " (plain)") + " precision-narrowing";
+    try {
+      int c = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        Decimal64ColumnVector vector = (Decimal64ColumnVector) previous.cols[0];
+        assertEquals((short) scale, vector.scale);
+        for (int i = 0; i < previous.size; i++) {
+          if (c == DECIMAL64_ROWS) {
+            break;
+          }
+          long v = unscaled[c % unscaled.length];
+          if (v < -absMax || v > absMax) {
+            assertTrue("Expected NULL (out of table precision) at pos " + c + " for " + label, vector.isNull[i]);
+          } else {
+            assertFalse("Unexpected null at pos " + c + " for " + label, vector.isNull[i]);
+            assertEquals("In-range Decimal64 must be stored verbatim at pos " + c + " for " + label,
+                v, vector.vector[i]);
+          }
+          c++;
+        }
+      }
+      assertEquals("Did not read all rows for " + label, DECIMAL64_ROWS, c);
+    } finally {
+      reader.close();
+      if (fs.exists(DECIMAL64_FILE)) {
+        fs.delete(DECIMAL64_FILE, true);
+      }
+    }
+  }
+
+  protected void decimal64ReadPrecisionNarrowing() throws Exception {
+    decimal64ReadPrecisionNarrowing(PrimitiveTypeName.INT32, true);
+    decimal64ReadPrecisionNarrowing(PrimitiveTypeName.INT32, false);
+    decimal64ReadPrecisionNarrowing(PrimitiveTypeName.INT64, true);
+    decimal64ReadPrecisionNarrowing(PrimitiveTypeName.INT64, false);
   }
 
   private static StructObjectInspector createStructObjectInspector(Configuration conf) {

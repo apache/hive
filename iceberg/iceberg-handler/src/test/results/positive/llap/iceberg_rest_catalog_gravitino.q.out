@@ -84,7 +84,6 @@ TBLPROPERTIES (
   'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company_id","transform":"identity","source-id":5,"field-id":1000}]}', 
   'format-version'='2', 
   'iceberg.catalog'='ice01', 
-  'iceberg.orc.files.only'='true', 
 #### A masked pattern was here ####
   'name'='ice_rest.ice_orc2', 
   'parquet.compression'='zstd', 
@@ -140,7 +139,6 @@ Table Parameters:
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000}]}
 	format-version      	2                   
 	iceberg.catalog     	ice01               
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	name                	ice_rest.ice_orc2   
 	numFiles            	1                   

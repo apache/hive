@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.vector;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -136,7 +137,11 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readFloats(num, (DoubleColumnVector) column, rowId);
       break;
     case DECIMAL:
-      readDecimal(num, (DecimalColumnVector) column, rowId);
+      if (column instanceof Decimal64ColumnVector) {
+        readDecimal64(num, (Decimal64ColumnVector) column, rowId);
+      } else {
+        readDecimal(num, (DecimalColumnVector) column, rowId);
+      }
       break;
     case TIMESTAMP:
       readTimestamp(num, (TimestampColumnVector) column, rowId);
@@ -153,10 +158,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     c.noNulls = false;
   }
 
-  private void readDictionaryIDs(
-      int total,
-      LongColumnVector c,
-      int rowId) throws IOException {
+  private void readDictionaryIDs(int total, LongColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -172,10 +174,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readIntegers(
-      int total,
-      LongColumnVector c,
-      int rowId) throws IOException {
+  private void readIntegers(int total, LongColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -196,10 +195,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readSmallInts(
-      int total,
-      LongColumnVector c,
-      int rowId) throws IOException {
+  private void readSmallInts(int total, LongColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -220,10 +216,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readTinyInts(
-      int total,
-      LongColumnVector c,
-      int rowId) throws IOException {
+  private void readTinyInts(int total, LongColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -244,10 +237,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readDoubles(
-      int total,
-      DoubleColumnVector c,
-      int rowId) throws IOException {
+  private void readDoubles(int total, DoubleColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -268,10 +258,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readBooleans(
-      int total,
-      LongColumnVector c,
-      int rowId) throws IOException {
+  private void readBooleans(int total, LongColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -287,10 +274,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readLongs(
-      int total,
-      LongColumnVector c,
-      int rowId) throws IOException {
+  private void readLongs(int total, LongColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -311,10 +295,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readFloats(
-      int total,
-      DoubleColumnVector c,
-      int rowId) throws IOException {
+  private void readFloats(int total, DoubleColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -335,17 +316,9 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readDecimal(
-      int total,
-      DecimalColumnVector c,
-      int rowId) throws IOException {
-
-    DecimalLogicalTypeAnnotation decimalLogicalType = null;
-    if (type.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation) {
-      decimalLogicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
-    }
-    byte[] decimalData = null;
-    fillDecimalPrecisionScale(decimalLogicalType, c);
+  private void readDecimal(int total, DecimalColumnVector c, int rowId) {
+    byte[] decimalData;
+    fillDecimalPrecisionScale(c);
 
     int left = total;
     while (left > 0) {
@@ -367,10 +340,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readString(
-      int total,
-      BytesColumnVector c,
-      int rowId) throws IOException {
+  private void readString(int total, BytesColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -387,10 +357,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readChar(
-      int total,
-      BytesColumnVector c,
-      int rowId) throws IOException {
+  private void readChar(int total, BytesColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -407,10 +374,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readVarchar(
-      int total,
-      BytesColumnVector c,
-      int rowId) throws IOException {
+  private void readVarchar(int total, BytesColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -427,10 +391,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readBinaries(
-      int total,
-      BytesColumnVector c,
-      int rowId) throws IOException {
+  private void readBinaries(int total, BytesColumnVector c, int rowId) {
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
@@ -447,10 +408,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
-  private void readDate(
-      int total,
-      DateColumnVector c,
-      int rowId) throws IOException {
+  private void readDate(int total, DateColumnVector c, int rowId) {
     c.setUsingProlepticCalendar(true);
     int left = total;
     while (left > 0) {
@@ -651,14 +609,42 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case DECIMAL:
-      DecimalLogicalTypeAnnotation decimalLogicalType = null;
-      if (type.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation) {
-        decimalLogicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+      if (column instanceof Decimal64ColumnVector dec64) {
+        fillDecimal64PrecisionScale(dec64);
+        boolean fast = dictionary.isFastDecimal64();
+        short valueScale = getEncodedDecimalScale();
+        for (int i = rowId; i < rowId + num; ++i) {
+          if (!column.isNull[i]) {
+            int id = (int) dictionaryIds.vector[i];
+            boolean stored;
+            if (fast) {
+              // Identity fast path: store the raw unscaled long directly.
+              long v = dictionary.readDecimal64(id);
+              stored = dictionary.isValid();
+              if (stored) {
+                dec64.vector[i] = v;
+              }
+            } else {
+              // set() enforces the column precision/scale and marks the entry NULL on overflow.
+              byte[] bytes = dictionary.readDecimal(id);
+              stored = dictionary.isValid();
+              if (stored) {
+                dec64.set(i, bytes, valueScale);
+                stored = !dec64.isNull[i];
+              }
+            }
+            if (!stored) {
+              setNullValue(column, i);
+              dec64.vector[i] = 0;
+            }
+          }
+        }
+        break;
       }
       DecimalColumnVector decimalColumnVector = ((DecimalColumnVector) column);
-      byte[] decimalData = null;
+      byte[] decimalData;
 
-      fillDecimalPrecisionScale(decimalLogicalType, decimalColumnVector);
+      fillDecimalPrecisionScale(decimalColumnVector);
 
       for (int i = rowId; i < rowId + num; ++i) {
         if (!column.isNull[i]) {
@@ -686,27 +672,100 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
+  private void fillDecimalPrecisionScale(DecimalColumnVector c) {
+    short[] ps = getDecimalPrecisionScale();
+    c.precision = ps[0];
+    c.scale = ps[1];
+  }
+
   /**
-   * The decimal precision and scale is filled into decimalColumnVector.  If the data in
-   * Parquet is in decimal, the precision and scale will come in from decimalLogicalType.  If parquet
-   * is not in decimal, then this call is made because HMS shows the type as decimal.  So, the
-   * precision and scale are picked from hiveType.
-   *
-   * @param decimalLogicalType
-   * @param decimalColumnVector
+   * Fill a long-backed {@link Decimal64ColumnVector} at the Hive (table) scale -- the scale every
+   * consumer reads {@code c.vector} at, and the only scale at which the unscaled value fits the long.
+   * NOT the Parquet file scale from {@link #getDecimalPrecisionScale()}: under schema evolution that
+   * scale can be larger (e.g. a DECIMAL(38,37) file read as DECIMAL(16,8)) and would overflow.
    */
-  private void fillDecimalPrecisionScale(DecimalLogicalTypeAnnotation decimalLogicalType,
-      DecimalColumnVector decimalColumnVector) {
-    if (decimalLogicalType != null) {
-      decimalColumnVector.precision = (short) decimalLogicalType.getPrecision();
-      decimalColumnVector.scale = (short) decimalLogicalType.getScale();
+  private void fillDecimal64PrecisionScale(Decimal64ColumnVector c) {
+    if (hiveType instanceof DecimalTypeInfo dti) {
+      c.precision = (short) dti.getPrecision();
+      c.scale = (short) dti.getScale();
+    } else {
+      short[] ps = getDecimalPrecisionScale();
+      c.precision = ps[0];
+      c.scale = ps[1];
+    }
+  }
+
+  /**
+   * Scale at which {@code dataColumn}/{@code dictionary}.readDecimal() encodes the unscaled bytes:
+   * the Parquet physical scale when stored as decimal, else the Hive scale. Pass this to
+   * {@link Decimal64ColumnVector#set(int, byte[], int)} so the bytes are read at the right scale
+   * before re-scaling to the column scale.
+   */
+  private short getEncodedDecimalScale() {
+    return getDecimalPrecisionScale()[1];
+  }
+
+  /**
+   * Precision/scale for this decimal column: from the Parquet decimal logical type when present,
+   * otherwise from the Hive type (Parquet stores it as a non-decimal physical type but HMS reports
+   * decimal).
+   */
+  private short[] getDecimalPrecisionScale() {
+    if (type.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation d) {
+      return new short[] { (short) d.getPrecision(), (short) d.getScale() };
     } else if (TypeInfoUtils.getBaseName(hiveType.getTypeName())
         .equalsIgnoreCase(serdeConstants.DECIMAL_TYPE_NAME)) {
-      decimalColumnVector.precision = (short) ((DecimalTypeInfo) hiveType).getPrecision();
-      decimalColumnVector.scale = (short) ((DecimalTypeInfo) hiveType).getScale();
-    } else {
-      throw new UnsupportedOperationException(
-          "The underlying Parquet type cannot be converted to Hive Decimal type: " + type);
+      DecimalTypeInfo dti = (DecimalTypeInfo) hiveType;
+      return new short[] { (short) dti.getPrecision(), (short) dti.getScale() };
+    }
+    throw new UnsupportedOperationException(
+        "The underlying Parquet type cannot be converted to Hive Decimal type: " + type);
+  }
+
+  /**
+   * Decimal64 fast path: read the unscaled value straight into the long-backed vector instead of
+   * materializing a HiveDecimal per row. Only for columns the vectorizer tagged DECIMAL_64
+   * (precision <= 18); higher precision uses {@link #readDecimal}.
+   */
+  private void readDecimal64(int total, Decimal64ColumnVector c, int rowId) {
+    fillDecimal64PrecisionScale(c);
+    boolean fast = dataColumn.isFastDecimal64();
+    short valueScale = getEncodedDecimalScale();
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        boolean stored;
+        if (fast) {
+          // Identity fast path: store the raw unscaled long directly (no HiveDecimal/byte[] per row).
+          long v = dataColumn.readDecimal64();
+          stored = dataColumn.isValid();
+          if (stored) {
+            c.vector[rowId] = v;
+          }
+        } else {
+          // set() enforces the column precision/scale and marks the entry NULL if the value does not
+          // fit (e.g. schema-evolved data whose larger file scale can't be held at the column scale).
+          byte[] bytes = dataColumn.readDecimal();
+          stored = dataColumn.isValid();
+          if (stored) {
+            c.isNull[rowId] = false;
+            c.set(rowId, bytes, valueScale);
+            stored = !c.isNull[rowId];
+          }
+        }
+        if (stored) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
+      } else {
+        setNullValue(c, rowId);
+      }
+      rowId++;
+      left--;
     }
   }
 }
