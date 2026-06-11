@@ -98,7 +98,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
     synchronized (lock) {
       client.start();
 
-      client.getConnectionStateListenable().addListener((client, newState) -> {
+      client.getConnectionStateListenable().addListener((curatorClient, newState) -> {
         if (newState != ConnectionState.LOST) {
           return;
         }
