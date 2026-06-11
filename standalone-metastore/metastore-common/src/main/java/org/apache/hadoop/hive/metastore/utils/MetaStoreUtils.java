@@ -296,7 +296,8 @@ public class MetaStoreUtils {
   }
 
   public static boolean isIcebergTable(Map<String, String> params) {
-    return HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
+    return params != null &&
+        HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
   }
 
   public static boolean isIcebergTable(Properties params) {

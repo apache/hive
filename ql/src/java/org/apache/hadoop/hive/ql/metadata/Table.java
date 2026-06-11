@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -609,34 +608,31 @@ public class Table implements Serializable {
 
 
   /**
-   * Returns partition columns, consulting the storage handler for non-native tables (e.g. Iceberg)
-   * where partition columns are not stored in the metastore.
+   * Returns partition columns for native tables, or from the
+   * storage handler when {@link #hasNonNativePartitionSupport()}.
    */
   public List<FieldSchema> getPartCols() {
     if (tablePartCols != null) {
       return tablePartCols;
     }
-    if (isTableTypeSet() && hasNonNativePartitionSupport()) {
+    if (hasNonNativePartitionSupport()) {
       List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
       for (FieldSchema partCol : partCols) {
         FieldSchema storageSchemaField = getFieldSchemaByName(partCol.getName());
-        if (storageSchemaField != null && storageSchemaField.getComment() != null) {
-          partCol.setComment(storageSchemaField.getComment());
+        String userComment = storageSchemaField.getComment();
+        String mergedComment = userComment;
+        // logical view for iceberg uses HMS backed partition keys with no transform info
+        if (!isView()) {
+          mergedComment = (userComment != null ? userComment : "") +
+              " (" + partCol.getComment() + ")";
         }
+        partCol.setComment(mergedComment);
       }
       tablePartCols = partCols;
     } else {
       tablePartCols = getPartitionKeys();
     }
     return tablePartCols;
-  }
-
-  private boolean isTableTypeSet() {
-    if (tTable.getParameters() == null) {
-      return false;
-    }
-    String tableType = tTable.getParameters().get(HiveMetaHook.TABLE_TYPE);
-    return tableType != null;
   }
 
   public FieldSchema getPartColByName(String colName) {
