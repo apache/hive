@@ -19,6 +19,9 @@ import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.parquet.convert.HiveSchemaConverter;
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 
 import org.apache.hive.common.util.HiveVersionInfo;
@@ -49,6 +52,14 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
   }
 
   public static MessageType getSchema(final Configuration configuration) {
+    String columnNames = configuration.get(IOConstants.COLUMNS);
+    String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
+    if (columnNames != null && !columnNames.isEmpty() && columnTypes != null && !columnTypes.isEmpty()) {
+      return HiveSchemaConverter.convert(
+          DataWritableReadSupport.getColumnNames(columnNames),
+          DataWritableReadSupport.getColumnTypes(columnTypes),
+          configuration);
+    }
     return MessageTypeParser.parseMessageType(configuration.get(PARQUET_HIVE_SCHEMA));
   }
 
