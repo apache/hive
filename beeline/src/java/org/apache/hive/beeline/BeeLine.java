@@ -110,6 +110,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.jline.builtins.Completers.FileNameCompleter;
 import org.jline.reader.Completer;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.History;
@@ -489,15 +490,14 @@ public class BeeLine implements Closeable {
         pack.getImplementationVersion() == null ? "" : pack.getImplementationVersion();
     String sep = System.lineSeparator();
     return new StringBuilder(512)
+        .append("    _   _ _____     _______").append(sep)
+        .append("   | | | |_ _\\ \\   / / ____|").append(sep)
+        .append("   | |_| || | \\ \\ / /|  _|").append(sep)
+        .append("   |  _  || |  \\ V / | |___").append(sep)
+        .append("   |_| |_|___|  \\_/  |_____|").append(sep)
         .append(sep)
-        .append("        _   _ _____     _______").append(sep)
-        .append("       | | | |_ _\\ \\   / / ____|").append(sep)
-        .append("       | |_| || | \\ \\ / /|  _|").append(sep)
-        .append("       |  _  || |  \\ V / | |___").append(sep)
-        .append("       |_| |_|___|  \\_/  |_____|").append(sep)
-        .append(sep)
-        .append("      Apache Hive " + version + "  —  Beeline").append(sep)
-        .append("      The Data Warehouse for Apache Iceberg").append(sep)
+        .append("Apache Hive " + version + " - Beeline").append(sep)
+        .append("The Open Data Warehouse for Modern Analytics").append(sep)
         .toString();
   }
 
@@ -1158,7 +1158,6 @@ public class BeeLine implements Closeable {
     }
     try {
       info(getApplicationBanner());
-      info(getApplicationTitle());
     } catch (Exception e) {
       // ignore
     }
