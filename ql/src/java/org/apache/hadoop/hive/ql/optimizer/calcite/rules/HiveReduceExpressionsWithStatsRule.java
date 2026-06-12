@@ -39,8 +39,10 @@ import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -189,10 +191,14 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
                 newOperands.add(operand);
               }
             }
-            if (newOperands.size() == 1) {
+            switch (newOperands.size()) {
+            case 1:
               return rexBuilder.makeLiteral(false);
+            case 2:
+              return rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, newOperands);
+            default:
+              return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
             }
-            return rexBuilder.makeCall(HiveIn.INSTANCE, newOperands);
           }
         } else if (call.getOperands().get(0).getKind() == SqlKind.ROW) {
           // Struct
@@ -269,6 +275,13 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
             }
           }
         }
+      } else if (call.getKind() == SqlKind.SEARCH) {
+        RexNode expanded = new SearchTransformer<>(rexBuilder, call, RexUnknownAs.UNKNOWN).transform();
+        RexNode processed = expanded.accept(this);
+        if (expanded != processed) {
+          return processed;
+        }
+        return call;
       }
 
       // If we did not reduce, check the children nodes
