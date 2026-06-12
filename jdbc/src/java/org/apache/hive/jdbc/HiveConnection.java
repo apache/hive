@@ -69,6 +69,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -82,6 +83,7 @@ import javax.security.sasl.SaslException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -155,6 +157,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -163,6 +166,14 @@ import java.util.function.Supplier;
  */
 public class HiveConnection implements java.sql.Connection {
   private static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class);
+
+  /**
+   * Last effective {@code hive.query.timeout.seconds} in seconds, or {@code -1} if not yet set.
+   * Seeded from the JDBC URL at connect time; a JDBC {@link java.sql.Connection} may be shared
+   * across threads with concurrent {@link org.apache.hive.jdbc.HiveStatement}s on one HS2 session,
+   * so this field uses an {@link AtomicLong} to keep updates well-defined.
+   */
+  private final AtomicLong sessionQueryTimeoutSeconds = new AtomicLong(-1L);
   private String jdbcUriString;
   private String host;
   private int port;
@@ -189,6 +200,48 @@ public class HiveConnection implements java.sql.Connection {
   private IJdbcBrowserClient browserClient;
 
   public TCLIService.Iface getClient() { return client; }
+
+  /**
+   * Updates the tracked {@code hive.query.timeout.seconds} value (in seconds) on this connection.
+   * Called at connect time from the JDBC URL hive-conf map, and may be called again later if needed.
+   */
+  void setSessionQueryTimeoutSeconds(long seconds) {
+    sessionQueryTimeoutSeconds.set(seconds);
+  }
+
+  /**
+   * If the JDBC URL supplied {@code hive.query.timeout.seconds} (via the {@code ?hive_conf_list}
+   * segment), parses and stores the value so that {@link #getSessionQueryTimeoutSeconds()} can
+   * return it for timeout error messages. This runs once at connect time and does not affect the
+   * server-side configuration, which is applied separately in {@link #openSession()}.
+   */
+  private void applySessionQueryTimeoutFromJdbcUrl() {
+    Map<String, String> hiveConfs = connParams.getHiveConfs();
+    if (hiveConfs == null || hiveConfs.isEmpty()) {
+      return;
+    }
+    String raw = hiveConfs.get(ConfVars.HIVE_QUERY_TIMEOUT_SECONDS.varname);
+    if (StringUtils.isBlank(raw)) {
+      return;
+    }
+    try {
+      HiveConf conf = new HiveConf();
+      conf.set(ConfVars.HIVE_QUERY_TIMEOUT_SECONDS.varname, raw.trim());
+      long sec = HiveConf.getTimeVar(conf, ConfVars.HIVE_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+      if (sec > 0) {
+        setSessionQueryTimeoutSeconds(sec);
+      }
+    } catch (Exception e) {
+      LOG.debug("Could not parse {} from JDBC URL: {}", ConfVars.HIVE_QUERY_TIMEOUT_SECONDS.varname, raw, e);
+    }
+  }
+
+  /**
+   * @return the tracked {@code hive.query.timeout.seconds} in seconds, or {@code -1} if not set
+   */
+  long getSessionQueryTimeoutSeconds() {
+    return sessionQueryTimeoutSeconds.get();
+  }
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -332,6 +385,7 @@ public class HiveConnection implements java.sql.Connection {
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
     sessConfMap = connParams.getSessionVars();
+    applySessionQueryTimeoutFromJdbcUrl();
     setupLoginTimeout();
     if (isKerberosAuthMode()) {
       // Ensure UserGroupInformation includes any authorized Kerberos principals.
@@ -396,18 +450,7 @@ public class HiveConnection implements java.sql.Connection {
         executeInitSql();
       }
     } else {
-      long retryInterval = 1000L;
-      try {
-        String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
-        if (StringUtils.isNotBlank(strRetries)) {
-          maxRetries = Integer.parseInt(strRetries);
-        }
-        String strRetryInterval = sessConfMap.get(JdbcConnectionParams.RETRY_INTERVAL);
-        if(StringUtils.isNotBlank(strRetryInterval)){
-          retryInterval = Long.parseLong(strRetryInterval);
-        }
-      } catch(NumberFormatException e) { // Ignore the exception
-      }
+      long retryInterval = readRetryIntervalMillis();
 
       for (int numRetries = 0;;) {
         try {
@@ -467,6 +510,27 @@ public class HiveConnection implements java.sql.Connection {
 
     // Wrap the client with a thread-safe proxy to serialize the RPC calls
     client = newSynchronizedClient(client);
+  }
+
+  /**
+   * Reads {@code retries} and {@code retryInterval} from the session configuration, updating
+   * {@link #maxRetries} as a side-effect, and returns the interval in milliseconds (default 1000).
+   * Extracted from the constructor to keep its length within Sonar's 150-line limit.
+   */
+  private long readRetryIntervalMillis() {
+    long retryInterval = 1000L;
+    try {
+      String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
+      if (StringUtils.isNotBlank(strRetries)) {
+        maxRetries = Integer.parseInt(strRetries);
+      }
+      String strRetryInterval = sessConfMap.get(JdbcConnectionParams.RETRY_INTERVAL);
+      if (StringUtils.isNotBlank(strRetryInterval)) {
+        retryInterval = Long.parseLong(strRetryInterval);
+      }
+    } catch (NumberFormatException e) { // Ignore — bad values are silently skipped
+    }
+    return retryInterval;
   }
 
   private void executeInitSql() throws SQLException {
