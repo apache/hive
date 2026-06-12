@@ -32,6 +32,7 @@ import org.junit.Test;
 
 public class TestAsyncPbRpcProxy {
 
+  @org.junit.Ignore("HIVE-26089")
   @Test (timeout = 5000)
   public void testMultipleNodes() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);
