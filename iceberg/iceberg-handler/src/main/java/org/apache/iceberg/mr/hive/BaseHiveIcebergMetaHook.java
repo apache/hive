@@ -34,13 +34,13 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
@@ -117,16 +117,6 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     this.conf = conf;
   }
 
-  public static boolean isIcebergView(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (hmsTable == null ||
-        hmsTable.getParameters() == null ||
-        !TableType.VIRTUAL_VIEW.toString().equals(hmsTable.getTableType())) {
-      return false;
-    }
-    String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
-    return HiveMetaHook.HIVE_ICEBERG_STORAGE_HANDLER.equals(storageHandler);
-  }
-
   @Override
   public void preCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     CreateTableRequest request = new CreateTableRequest(hmsTable);
@@ -139,7 +129,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable.isTemporary()) {
       throw new UnsupportedOperationException("Creation of temporary iceberg tables is not supported.");
     }
-    if (isIcebergView(hmsTable)) {
+    if (MetaStoreUtils.isIcebergView(hmsTable)) {
       preCreateIcebergView(request);
       return;
     }
@@ -522,7 +512,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
-        if (isIcebergView(hmsTable)) {
+        if (MetaStoreUtils.isIcebergView(hmsTable)) {
           IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
           return;
         }

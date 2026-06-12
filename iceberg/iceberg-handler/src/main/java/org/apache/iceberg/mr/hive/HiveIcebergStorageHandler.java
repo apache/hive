@@ -433,7 +433,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       return false;
     }
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (MetaStoreUtils.isIcebergView(hmsTable.getTTable())) {
       return false;
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -899,7 +899,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (MetaStoreUtils.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyList();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -916,7 +916,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public Map<Integer, List<TransformSpec>> getPartitionTransformSpecs(
       org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (MetaStoreUtils.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyMap();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -1584,7 +1584,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> sortColumns(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (MetaStoreUtils.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyList();
     }
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
@@ -2147,12 +2147,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable()) ||
-        !MetaStoreUtils.isIcebergTable(hmsTable.getParameters())) {
-      return !hmsTable.getPartitionKeys().isEmpty();
-    }
     if (hmsTable.getMetaTable() != null || !hmsTable.getTTable().isSetId()) {
       return false;
+    }
+    if (MetaStoreUtils.usesNativePartSpec(hmsTable.getTTable())) {
+      return !hmsTable.getPartitionKeys().isEmpty();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
@@ -2296,12 +2295,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable()) ||
-        !MetaStoreUtils.isIcebergTable(hmsTable.getParameters())) {
-      return hmsTable.getPartitionKeys();
-    }
     if (hmsTable.getMetaTable() != null || !hmsTable.getTTable().isSetId()) {
       return Collections.emptyList();
+    }
+    if (MetaStoreUtils.usesNativePartSpec(hmsTable.getTTable())) {
+      return hmsTable.getPartitionKeys();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return MetastoreUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
