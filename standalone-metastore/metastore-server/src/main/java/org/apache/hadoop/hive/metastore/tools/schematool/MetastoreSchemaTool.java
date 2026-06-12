@@ -21,7 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -37,16 +36,11 @@ import org.apache.hadoop.util.ExitUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sqlline.SqlLine;
-
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -258,7 +252,7 @@ public class MetastoreSchemaTool {
 
   protected NestedScriptParser getDbCommandParser(String dbType, String metaDbType) {
     return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-        passWord, conf, null, true);
+        passWord, conf, metaDbType, false);
   }
 
   protected MetaStoreConnectionInfo getConnectionInfo(boolean printInfo) {
@@ -305,33 +299,24 @@ public class MetastoreSchemaTool {
     execSql(scriptDir + File.separatorChar + scriptFile);
   }
 
-  // Generate the beeline args per hive conf and execute the given script
+  /**
+   * Executes the given SQL script file against the metastore database via {@link IdempotentDDLExecutor}.
+   * Each statement in the script is executed individually over a direct JDBC connection with
+   * auto-commit enabled. Errors that indicate an object already exists or is already gone are
+   * silently ignored according to the per-database {@link DbErrorCodes}; all other SQL errors are
+   * rethrown as {@link IOException}.
+   */
   protected void execSql(String sqlScriptFile) throws IOException {
-    CommandBuilder builder =
-        new CommandBuilder(conf, url, driver, userName, passWord, sqlScriptFile)
-            .setVerbose(verbose);
-
-    // run the script using SqlLine
-    SqlLine sqlLine = new SqlLine();
-    ByteArrayOutputStream outputForLog = null;
-    if (!verbose) {
-      OutputStream out;
-      if (LOG.isDebugEnabled()) {
-        out = outputForLog = new ByteArrayOutputStream();
-      } else {
-        out = new NullOutputStream();
-      }
-      sqlLine.setOutputStream(new PrintStream(out));
-      System.setProperty("sqlline.silent", "true");
-    }
-    LOG.info("Going to run command <" + builder.buildToLog() + ">");
-    SqlLine.Status status = sqlLine.begin(builder.buildToRun(), null, false);
-    if (LOG.isDebugEnabled() && outputForLog != null) {
-      LOG.debug("Received following output from Sqlline:");
-      LOG.debug(outputForLog.toString("UTF-8"));
-    }
-    if (status != SqlLine.Status.OK) {
-      throw new IOException("Schema script failed, errorcode " + status);
+    LOG.info("Going to run script <{}> via Idempotent JDBC Executor", sqlScriptFile);
+    try (Connection conn = getConnectionToMetastore(true)) {
+      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+      NestedScriptParser parser = getDbCommandParser(dbType, metaDbType);
+      IdempotentDDLExecutor idempotentExecutor =
+          new IdempotentDDLExecutor(conn, dbType, parser, metaDbType != null, verbose);
+      idempotentExecutor.executeScript(sqlScriptFile);
+      LOG.info("Script executed successfully.");
+    } catch (Exception e) {
+      throw new IOException("Schema script failed, error: " + e.getMessage(), e);
     }
   }
 

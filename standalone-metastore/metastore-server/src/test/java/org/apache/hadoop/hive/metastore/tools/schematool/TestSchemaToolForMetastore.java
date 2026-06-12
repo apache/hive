@@ -220,7 +220,7 @@ public class TestSchemaToolForMetastore {
 
     // Test invalid case
     String[] scripts = new String[] {
-        "update TBLS set SD_ID=null"
+        "update TBLS set SD_ID=null;"
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -308,7 +308,7 @@ public class TestSchemaToolForMetastore {
     boolean isValid = validator.validateSchemaVersions();
     // Test an invalid case with multiple versions
     String[] scripts = new String[] {
-        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0');"
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -316,7 +316,7 @@ public class TestSchemaToolForMetastore {
     Assert.assertFalse(isValid);
 
     scripts = new String[] {
-        "delete from VERSION where VER_ID = 100"
+        "delete from VERSION where VER_ID = 100;"
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -325,7 +325,7 @@ public class TestSchemaToolForMetastore {
 
     // Test an invalid case without version
     scripts = new String[] {
-        "delete from VERSION"
+        "delete from VERSION;"
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.execSql(scriptFile.getPath());
@@ -485,6 +485,163 @@ public class TestSchemaToolForMetastore {
     execute(new SchemaToolTaskUpgrade(), "-upgradeSchema");
     validateMetastoreDbPropertiesTable();
   }
+
+  /**
+   * Runs {@code ddlScripts} twice. The first run applies all DDL normally. The second run
+   * re-runs the same script from scratch — exactly as a re-run of a failed upgrade would —
+   * and must not throw, because {@link IdempotentDDLExecutor} swallows "already exists" and
+   * "already gone" errors via {@link DbErrorCodes}.
+   */
+  private void executeWithIdempotencyCheck(String testName, String[] ddlScripts) throws Exception {
+    File scriptFile = generateTestScript(ddlScripts);
+    try {
+      schemaTool.execSql(scriptFile.getPath());
+    } catch (Exception e) {
+      Assert.fail("[" + testName + "] First run failed for " + dbms.getDbType() + ": " + e.getMessage());
+    }
+    try {
+      schemaTool.execSql(scriptFile.getPath());
+    } catch (Exception e) {
+      Assert.fail("[" + testName + "] Idempotent retry failed for " + dbms.getDbType()
+          + " — possible missing DbErrorCodes mapping or underlying SQL/configuration issue. "
+          + "Exception: " + e + ", cause: " + e.getCause());
+    }
+  }
+
+  @Test
+  public void testIdempotentTableOperations() throws Exception {
+    String[] createScripts = new String[]{
+        "create table TEST_A (ID int);",
+        "create table TEST_B (ID int primary key, NAME varchar(50));"
+    };
+    String[] dropScripts = new String[]{
+        "drop table TEST_A;",
+        "drop table TEST_B;"
+    };
+    executeWithIdempotencyCheck("TableOperations-create", createScripts);
+    executeWithIdempotencyCheck("TableOperations-drop", dropScripts);
+  }
+
+  @Test
+  public void testIdempotentAddColumnOperations() throws Exception {
+    String addColumnStmt = switch (dbms.getDbType()) {
+    case "oracle" -> "alter table TEST_C add (NEW_COL integer);";
+    case "mssql" -> "alter table TEST_C add NEW_COL int;";
+    default -> "alter table TEST_C add column NEW_COL int;";
+    };
+    String[] addScripts = new String[]{
+        "create table TEST_C (ID int);",
+        addColumnStmt
+    };
+    String[] dropScripts = new String[]{
+        "alter table TEST_C drop column NEW_COL;"
+    };
+    executeWithIdempotencyCheck("AddColumnOperations-add", addScripts);
+    executeWithIdempotencyCheck("AddColumnOperations-drop", dropScripts);
+  }
+
+  @Test
+  public void testIdempotentIndexOperations() throws Exception {
+    String[] createScripts = new String[]{
+        "create table TEST_D (ID int, VAL int);",
+        "create index TEST_IDX on TEST_D (ID);"
+    };
+    String dropIndexStmt = switch (dbms.getDbType()) {
+    case "derby" -> "drop index \"APP\".\"TEST_IDX\";";
+    case "oracle", "postgres" -> "drop index TEST_IDX;";
+    default -> "drop index TEST_IDX on TEST_D;";
+    };
+    String[] dropScripts = new String[]{dropIndexStmt};
+    executeWithIdempotencyCheck("IndexOperations-create", createScripts);
+    executeWithIdempotencyCheck("IndexOperations-drop", dropScripts);
+  }
+
+  @Test
+  public void testIdempotentConstraintOperations() throws Exception {
+    String[] createScripts;
+    String[] dropScripts;
+    switch (dbms.getDbType()) {
+    case "mysql" -> {
+      createScripts = new String[] {
+          "create table TEST_E (ID int primary key, FK_COL int, "
+              + "constraint TEST_E_FK foreign key (FK_COL) references TEST_E(ID));"
+      };
+      dropScripts = new String[] {
+          "alter table TEST_E drop foreign key TEST_E_FK;",
+          "alter table TEST_E drop key TEST_E_FK;",
+          "alter table TEST_E drop column FK_COL;"
+      };
+    }
+    case "mssql" -> {
+      createScripts = new String[] {
+          "create table TEST_E (ID int primary key, FK_COL int, VAL int);",
+          "alter table TEST_E add constraint TEST_E_UQ unique (VAL);",
+          "alter table TEST_E add constraint TEST_E_FK foreign key (FK_COL) references TEST_E(ID);"
+      };
+      dropScripts = new String[] {
+          "create procedure #DROP_FK_HELPER as begin alter table TEST_E drop constraint TEST_E_FK end;",
+            "exec #DROP_FK_HELPER;",
+          "alter table TEST_E drop constraint TEST_E_UQ;"
+      };
+    }
+    default -> {
+      createScripts = new String[] {
+          "create table TEST_E (ID int, VAL int);",
+          "alter table TEST_E add constraint TEST_E_UQ unique (ID);"
+      };
+      dropScripts = new String[] {
+          "alter table TEST_E drop constraint TEST_E_UQ;"
+      };
+    }
+    }
+    executeWithIdempotencyCheck("ConstraintOperations-add", createScripts);
+    executeWithIdempotencyCheck("ConstraintOperations-drop", dropScripts);
+  }
+
+  /**
+   * Tests ALTER COLUMN type change and RENAME COLUMN — the same concept across all DBs
+   * with DB-specific syntax, matching heavy use of MODIFY/ALTER COLUMN/SET DATA TYPE
+   * and RENAME COLUMN in real upgrade scripts.
+   */
+  @Test
+  public void testIdempotentAlterColumnOperations() throws Exception {
+    String[] alterScripts;
+    String[] dropScripts = new String[]{"alter table TEST_F drop column COL_RENAMED;"};
+    switch (dbms.getDbType()) {
+    case "derby" -> {
+      alterScripts = new String[] {
+          "create table \"TEST_F\" (\"ID\" int, \"COL_MOD\" varchar(10), \"COL_RENAME\" varchar(10));",
+          "alter table \"TEST_F\" alter \"COL_MOD\" set data type varchar(50);",
+          "rename column \"APP\".\"TEST_F\".\"COL_RENAME\" to \"COL_RENAMED\";"
+      };
+      dropScripts = new String[] {"alter table \"TEST_F\" drop column \"COL_RENAMED\";"};
+    }
+    case "mssql" -> alterScripts = new String[] {
+        "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
+        "alter table TEST_F alter column COL_MOD varchar(50) not null;",
+        "exec sp_rename 'TEST_F.COL_RENAME', 'COL_RENAMED', 'COLUMN';"
+    };
+    case "oracle" -> alterScripts = new String[] {
+        "create table TEST_F (ID integer, COL_MOD varchar(10), COL_RENAME varchar(10));",
+        "alter table TEST_F modify (COL_MOD varchar(50));",
+        "alter table TEST_F rename column COL_RENAME to COL_RENAMED;"
+    };
+    case "postgres" -> alterScripts = new String[] {
+        "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
+        "alter table TEST_F alter column COL_MOD type varchar(50);",
+        "alter table TEST_F rename column COL_RENAME to COL_RENAMED;"
+    };
+    default -> // mysql: CHANGE COLUMN renames and redefines in one statement
+        alterScripts = new String[] {
+            "create table TEST_F (ID int, COL_MOD varchar(10), COL_RENAME varchar(10));",
+            "alter table TEST_F modify column COL_MOD varchar(50);",
+            "alter table TEST_F change column COL_RENAME COL_RENAMED varchar(10);"
+        };
+    }
+    executeWithIdempotencyCheck("AlterColumnOperations-alter", alterScripts);
+    executeWithIdempotencyCheck("AlterColumnOperations-drop", dropScripts);
+  }
+
 
   private File generateTestScript(String [] stmts) throws IOException {
     File testScriptFile = File.createTempFile("schematest", ".sql");
