@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.handler.BaseHandler;
@@ -55,6 +57,24 @@ public final class HMSHandlerContext {
 
   private Map<String, com.codahale.metrics.Timer.Context> timerContexts = new HashMap<>();
 
+  // Unique ID of current thrift call
+  private CallCtx callCtx;
+
+  public record CallCtx(String methodName, long startTime, AtomicLong totalTime) {
+    @Override
+    public boolean equals(Object o) {
+      if (o == null || getClass() != o.getClass())
+        return false;
+      CallCtx callCtx = (CallCtx) o;
+      return startTime == callCtx.startTime && Objects.equals(methodName, callCtx.methodName);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(methodName, startTime);
+    }
+  }
+
   private HMSHandlerContext() {
   }
 
@@ -87,6 +107,14 @@ public final class HMSHandlerContext {
 
   public static Map<String, com.codahale.metrics.Timer.Context> getTimerContexts() {
     return context.get().timerContexts;
+  }
+
+  public static Optional<CallCtx> getCallCtx() {
+    return Optional.ofNullable(context.get().callCtx);
+  }
+
+  public static void setCallCtx(CallCtx ctx) {
+    context.get().callCtx = ctx;
   }
 
   public static void setRawStore(RawStore rawStore) {
