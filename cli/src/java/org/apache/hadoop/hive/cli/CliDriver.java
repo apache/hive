@@ -295,7 +295,9 @@ public class CliDriver {
           console.printError("Failed with exception " + e.getClass().getName() + ":" + e.getMessage(),
               "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new CommandProcessorException(1);
-        } finally {
+        } catch (RuntimeException e) {
+          throw new CommandProcessorException(1);
+        }  finally {
           qp.close();
           ShimLoader.getHadoopShims()
               .setHadoopSessionContext(String.format(USER_ID, ss.getSessionId(), ss.getUserName()));
