@@ -261,14 +261,7 @@
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-admin-client</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <!-- Required by keycloak-admin-client/Resteasy for jakarta.annotation.Priority -->
-    <dependency>
-      <groupId>jakarta.annotation</groupId>
-      <artifactId>jakarta.annotation-api</artifactId>
-      <version>${jakarta.annotation.version}</version>
+      <artifactId>keycloak-admin-client-jee</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
