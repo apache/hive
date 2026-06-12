@@ -244,6 +244,7 @@ public class HiveTableUtil {
       table = readTableObjectFromFile(location, config);
     }
     checkAndSetIoConfig(config, table);
+    IcebergVendedCredentialUtil.applyFromJobConf(table, config);
 
     // For intra-txn read-after-write: if a metadata file was written for uncommitted in-txn state,
     // reconstruct a BaseTable from it so the Tez side sees changes from prior statements.

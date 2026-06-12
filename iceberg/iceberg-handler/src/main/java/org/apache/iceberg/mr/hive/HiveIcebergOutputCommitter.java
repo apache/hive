@@ -312,6 +312,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             // fall back to getting the serialized table from the config
             .orElseGet(() -> HiveTableUtil.deserializeTable(jobContext.getJobConf(), output));
         if (table != null) {
+          IcebergVendedCredentialUtil.applyFromJobConf(table, jobContext.getJobConf());
           String catalogName = catalogName(jobContext.getJobConf(), output);
           outputs.put(new OutputTable(catalogName, output, table), jobContext);
         } else {

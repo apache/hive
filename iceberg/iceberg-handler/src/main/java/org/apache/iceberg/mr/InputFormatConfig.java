@@ -80,6 +80,12 @@ public class InputFormatConfig {
 
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
 
+  /**
+   * Base64-serialized list of {@link org.apache.iceberg.io.StorageCredential} for Tez/LLAP executors.
+   * Stored in {@code TableDesc#jobSecrets} (HIVE-20651), not in job properties.
+   */
+  public static final String VENDED_STORAGE_CREDENTIALS = "iceberg.mr.vended.storage.credentials";
+
   public static final String SORT_ORDER = "sort.order";
   public static final String SORT_COLUMNS = "sort.columns";
   public static final String ZORDER = "ZORDER";
