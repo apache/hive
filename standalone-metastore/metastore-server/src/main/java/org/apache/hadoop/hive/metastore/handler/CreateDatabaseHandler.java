@@ -225,8 +225,8 @@ public class CreateDatabaseHandler
 
     String passedInURI = db.getLocationUri();
     String passedInManagedURI = db.getManagedLocationUri();
-    Path defaultDbExtPath = wh.getDefaultDatabasePath(db.getName(), true);
-    Path defaultDbMgdPath = wh.getDefaultDatabasePath(db.getName(), false);
+    Path defaultDbExtPath = wh.getDefaultDatabasePath(db, true);
+    Path defaultDbMgdPath = wh.getDefaultDatabasePath(db, false);
     Path dbExtPath = (passedInURI != null) ?
         wh.getDnsPath(new Path(passedInURI)) : wh.determineDatabasePath(cat, db);
     Path dbMgdPath = (passedInManagedURI != null) ? wh.getDnsPath(new Path(passedInManagedURI)) : null;

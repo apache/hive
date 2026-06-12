@@ -181,7 +181,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   private boolean isDefaultCatalog(String catName) {
-    return catName == null || catName.isEmpty() || getDefaultCatalog(conf).equals(catName);
+    return HiveUtils.isDefaultCatalog(catName, conf);
   }
 
   /**

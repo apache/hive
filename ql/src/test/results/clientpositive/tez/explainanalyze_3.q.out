@@ -93,7 +93,7 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:newDB
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Stage-0
-  Create Database{"name:":"newDB"}
+  Create Database{"catalogName:":"hive","name:":"newDB"}
 
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
