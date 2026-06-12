@@ -2703,7 +2703,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
                   Filter Operator
-                    predicate: UDFToLong(p_size) is not null (type: boolean)
+                    predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), UDFToLong(p_size) (type: bigint)
@@ -5142,10 +5142,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: emps_n4
-                  filterExpr: (name is not null and UDFToLong(empno) is not null) (type: boolean)
+                  filterExpr: (name is not null and empno is not null) (type: boolean)
                   Statistics: Num rows: 5 Data size: 1650 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (name is not null and UDFToLong(empno) is not null) (type: boolean)
+                    predicate: (name is not null and empno is not null) (type: boolean)
                     Statistics: Num rows: 5 Data size: 1650 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: empno (type: int), name (type: string), deptno (type: int), gender (type: string), city (type: string), empid (type: int), age (type: int), slacker (type: boolean), manager (type: boolean), joinedat (type: date), UDFToLong(deptno) (type: bigint)

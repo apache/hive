@@ -2771,19 +2771,19 @@
               "name": "$9"
             },
             {
-              "literal": "breakfast",
+              "literal": "breakfast           ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 9
+                "precision": 20
               }
             },
             {
-              "literal": "dinner",
+              "literal": "dinner              ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 6
+                "precision": 20
               }
             }
           ]

@@ -53,7 +53,7 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   public int getMaxScale(SqlTypeName typeName) {
     switch (typeName) {
     case DECIMAL:
-      return getMaxNumericScale();
+      return MAX_DECIMAL_SCALE;
     case INTERVAL_YEAR:
     case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH:
@@ -126,7 +126,7 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   public int getMaxPrecision(SqlTypeName typeName) {
     switch (typeName) {
     case DECIMAL:
-      return getMaxNumericPrecision();
+      return MAX_DECIMAL_PRECISION;
     case VARCHAR:
     case CHAR:
       return MAX_CHAR_PRECISION;
@@ -155,16 +155,6 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     default:
       return getDefaultPrecision(typeName);
     }
-  }
-
-  @Override
-  public int getMaxNumericScale() {
-    return MAX_DECIMAL_SCALE;
-  }
-
-  @Override
-  public int getMaxNumericPrecision() {
-    return MAX_DECIMAL_PRECISION;
   }
 
   @Override

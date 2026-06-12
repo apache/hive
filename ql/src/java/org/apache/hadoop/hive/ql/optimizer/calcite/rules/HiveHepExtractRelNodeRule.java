@@ -25,19 +25,32 @@ import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 
-
 /**
  * The goal of this rule is to extract the RelNode from the
  * HepRelVertex node so rules do tree traversal can be applied correctly.
  * @see HiveFieldTrimmerRule
  * @see org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule
  */
+// TODO remove
 public class HiveHepExtractRelNodeRule extends RelOptRule {
 
   public static RelNode execute(RelNode node) {
     final HepPlanner tmpPlanner = new HepPlanner(PROGRAM);
     tmpPlanner.setRoot(node);
     return tmpPlanner.findBestExp();
+
+    // TODO cleanup
+    /* RelNode res = node.accept(new RelShuttleImpl() {
+      @Override
+      public RelNode visit(RelNode other) {
+        RelNode innerNode = other.stripped();
+        if (other != innerNode) {
+          return innerNode.accept(this);
+        }
+        return super.visit(other);
+      }
+    });
+    return res; */
   }
 
   private static final HepProgram PROGRAM = new HepProgramBuilder()

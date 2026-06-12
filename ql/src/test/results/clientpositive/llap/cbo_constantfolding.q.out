@@ -31,7 +31,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_c0=[CAST(_UTF-16LE'2023-01-01 00:00:00':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+HiveProject(_c0=[CAST('2023-01-01 00:00:00':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: EXPLAIN CBO SELECT TO_UNIX_TIMESTAMP(DATE '2023-01-01')

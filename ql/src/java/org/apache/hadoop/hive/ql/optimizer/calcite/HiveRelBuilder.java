@@ -89,7 +89,8 @@ public class HiveRelBuilder extends RelBuilder {
     return new RelBuilderFactory() {
       @Override
       public RelBuilder create(RelOptCluster cluster, RelOptSchema schema) {
-        Context confContext = Contexts.of(Config.DEFAULT.withPruneInputOfAggregate(Bug.CALCITE_4513_FIXED));
+        Context confContext = Contexts.of(Config.DEFAULT.withPruneInputOfAggregate(Bug.CALCITE_4513_FIXED)
+            .withSimplifyValues(false)); // disabled to avoid simplifications that can create non-empty HiveValues
         return new HiveRelBuilder(Contexts.chain(context, confContext), cluster, schema);
       }
     };

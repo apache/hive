@@ -168,7 +168,7 @@ POSTHOOK: Input: default@antijoin3_t1
 POSTHOOK: Input: default@antijoin3_t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2], _c3=[_UTF-16LE'foo':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2], _c3=['foo':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
   HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
     HiveProject(t1id=[$0], t1notnull=[$1], t1nullable=[$2])
       HiveTableScan(table=[[default, antijoin3_t1]], table:alias=[t1])

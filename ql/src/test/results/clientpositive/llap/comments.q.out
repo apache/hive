@@ -82,10 +82,10 @@ POSTHOOK: Input: default@src
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c1`
 FROM (SELECT `key`
 FROM `default`.`src`
-WHERE `key` > 0) AS `t0`
+WHERE `key` > 0E0) AS `t0`
 INNER JOIN (SELECT `key`
 FROM `default`.`src`
-WHERE `key` > 0) AS `t2` ON `t0`.`key` = `t2`.`key`
+WHERE `key` > 0E0) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
