@@ -115,12 +115,6 @@ public final class ConfigUtils {
 
   public static final String HIVE_METASTORE_URIS_KEY = "hive.metastore.uris";
 
-  public static final String HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_KEY = "hive.server2.tez.sessions.per.default.queue";
-  public static final int HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_DEFAULT = 1;
-
-  public static final String HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS_KEY =
-      "hive.server2.tez.initialize.default.sessions";
-  public static final boolean HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS_DEFAULT = true;
 
   public static final String HIVE_SERVER2_THRIFT_PORT_KEY = "hive.server2.thrift.port";
   public static final int HIVE_SERVER2_THRIFT_PORT_DEFAULT = 10000;
