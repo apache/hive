@@ -102,6 +102,20 @@ cluster:
       #   readOnly: true
 
   # ---------------------------------------------------------------------------
+  # AUTO-SUSPEND — fully hibernates the cluster after idle timeout
+  # ---------------------------------------------------------------------------
+  # When enabled (requires autoscaling on all active components), the operator
+  # scales the entire cluster to 0 replicas after all components have been idle
+  # for idleTimeoutMinutes. Use kubectl patch to manually suspend/wake:
+  #   kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":true}}'
+  #   kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":false}}'
+  autoSuspend:
+    enabled: false
+    idleTimeoutMinutes: 15
+    # Set to false to keep HMS running during suspend (HMS autoscaling not required)
+    includeMetastore: true
+
+  # ---------------------------------------------------------------------------
   # METASTORE — defaults to enabled, 2 replicas (HA)
   # ---------------------------------------------------------------------------
   metastore:
@@ -112,6 +126,19 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (operator-driven, no external dependencies)
+    # The operator scrapes JMX Exporter metrics from pods directly.
+    # When enabled, 'replicas' above acts as the max replica ceiling.
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      scaleUpThreshold: 100
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 300
+      gracePeriodSeconds: 60
+      metricsScrapeIntervalSeconds: 10
+      cpuScaleUpThreshold: 90
+      cpuScaleDownThreshold: 30
     # Set to use an external Metastore instead of deploying one:
     # enabled: false
     # externalUri: "thrift://external-metastore:9083"
@@ -127,6 +154,18 @@ cluster:
     externalJars: []
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (operator-driven, no external dependencies)
+    # When enabled, 'replicas' above acts as the max replica ceiling
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      scaleUpThreshold: 100
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 600
+      gracePeriodSeconds: 300
+      metricsScrapeIntervalSeconds: 10
+      cpuScaleUpThreshold: 90
+      cpuScaleDownThreshold: 30
 
   # ---------------------------------------------------------------------------
   # LLAP — enabled by default for full-HA
@@ -141,6 +180,17 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (operator-driven, no external dependencies)
+    # minReplicas: 0 enables scale-to-zero — scales up when HS2 has active sessions
+    # When enabled, 'replicas' above acts as the max replica ceiling
+    autoscaling:
+      enabled: false
+      minReplicas: 0
+      scaleUpThreshold: 10
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 900
+      gracePeriodSeconds: 600
+      metricsScrapeIntervalSeconds: 10
 
   # ---------------------------------------------------------------------------
   # TEZ AM — enabled by default for full-HA
@@ -154,3 +204,15 @@ cluster:
     configOverrides: {}
     extraVolumes: []
     extraVolumeMounts: []
+    # Autoscaling (operator-driven, no external dependencies)
+    # minReplicas: 0 enables scale-to-zero — wakes when HS2 receives queries
+    # When enabled, 'replicas' above acts as the max replica ceiling
+    # TezAM scales demand-based: max(totalSessions, hs2Pods * sessionsPerQueue)
+    # No scaleUpThreshold needed — scaling is 1:1 with session demand
+    autoscaling:
+      enabled: false
+      minReplicas: 0
+      scaleUpStabilizationSeconds: 60
+      scaleDownStabilizationSeconds: 600
+      gracePeriodSeconds: 120
+      metricsScrapeIntervalSeconds: 10

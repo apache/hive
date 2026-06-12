@@ -28,6 +28,7 @@ import io.fabric8.generator.annotation.Required;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
+import org.apache.hive.kubernetes.operator.model.spec.AutoSuspendSpec;
 import org.apache.hive.kubernetes.operator.model.spec.HadoopSpec;
 import org.apache.hive.kubernetes.operator.model.spec.HiveServer2Spec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
@@ -73,14 +74,31 @@ public record HiveClusterSpec(
         "Volume mounts added to all component containers "
         + "(e.g., mounting a GCS key file at /etc/gcs/key.json)")
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
-    List<VolumeMount> volumeMounts) {
+    List<VolumeMount> volumeMounts,
+    @JsonPropertyDescription("Auto-suspend configuration. When enabled and all components "
+        + "are idle for the configured timeout, the cluster scales to 0 replicas.")
+    AutoSuspendSpec autoSuspend,
+    @JsonPropertyDescription("When true, the cluster is immediately suspended (all components "
+        + "scaled to 0). Set to false to wake a suspended cluster.")
+    Boolean suspend) {
 
   public HiveClusterSpec {
     Objects.requireNonNull(zookeeper,
         "zookeeper must be provided in the HiveCluster spec");
+    metastore = metastore != null ? metastore : new MetastoreSpec(
+        1, null, null, null, null, null, null, true, null, null, null, null);
+    hiveServer2 = hiveServer2 != null ? hiveServer2 : new HiveServer2Spec(
+        1, null, null, null, null, null, null, null, null, null);
+    llap = llap != null ? llap : new LlapSpec(
+        1, null, null, null, null, true, null, null, null, null, null);
+    tezAm = tezAm != null ? tezAm : new TezAmSpec(
+        1, null, null, null, null, true, null, null, null);
     envVars = envVars != null ? envVars : List.of();
     externalJars = externalJars != null ? externalJars : List.of();
     volumes = volumes != null ? volumes : List.of();
     volumeMounts = volumeMounts != null ? volumeMounts : List.of();
+    autoSuspend = autoSuspend != null ? autoSuspend : new AutoSuspendSpec(false, 15, true);
+    suspend = suspend != null ? suspend : false;
   }
+
 }

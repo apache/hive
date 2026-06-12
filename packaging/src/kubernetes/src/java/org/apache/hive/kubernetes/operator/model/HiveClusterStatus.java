@@ -21,6 +21,7 @@ package org.apache.hive.kubernetes.operator.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.fabric8.crd.generator.annotation.PrinterColumn;
 import io.fabric8.kubernetes.api.model.Condition;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
 
@@ -33,6 +34,13 @@ public class HiveClusterStatus {
   private ComponentStatus llap;
   private ComponentStatus tezAm;
   private Long observedGeneration;
+  @PrinterColumn(name = "Phase")
+  private String clusterPhase;
+  private String idleSince;
+  @PrinterColumn(name = "Idle (min)")
+  private Integer idleForMinutes;
+  @PrinterColumn(name = "Suspended Since", priority = 1)
+  private String suspendedSince;
 
   public List<Condition> getConditions() {
     return conditions;
@@ -82,6 +90,38 @@ public class HiveClusterStatus {
     this.observedGeneration = observedGeneration;
   }
 
+  public String getClusterPhase() {
+    return clusterPhase;
+  }
+
+  public void setClusterPhase(String clusterPhase) {
+    this.clusterPhase = clusterPhase;
+  }
+
+  public String getIdleSince() {
+    return idleSince;
+  }
+
+  public void setIdleSince(String idleSince) {
+    this.idleSince = idleSince;
+  }
+
+  public Integer getIdleForMinutes() {
+    return idleForMinutes;
+  }
+
+  public void setIdleForMinutes(Integer idleForMinutes) {
+    this.idleForMinutes = idleForMinutes;
+  }
+
+  public String getSuspendedSince() {
+    return suspendedSince;
+  }
+
+  public void setSuspendedSince(String suspendedSince) {
+    this.suspendedSince = suspendedSince;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -96,11 +136,16 @@ public class HiveClusterStatus {
            java.util.Objects.equals(metastore, that.metastore) &&
            java.util.Objects.equals(hiveServer2, that.hiveServer2) &&
            java.util.Objects.equals(llap, that.llap) &&
-           java.util.Objects.equals(tezAm, that.tezAm);
+           java.util.Objects.equals(tezAm, that.tezAm) &&
+           java.util.Objects.equals(clusterPhase, that.clusterPhase) &&
+           java.util.Objects.equals(idleSince, that.idleSince) &&
+           java.util.Objects.equals(idleForMinutes, that.idleForMinutes) &&
+           java.util.Objects.equals(suspendedSince, that.suspendedSince);
   }
 
   @Override
   public int hashCode() {
-    return java.util.Objects.hash(conditions, metastore, hiveServer2, llap, tezAm, observedGeneration);
+    return java.util.Objects.hash(conditions, metastore, hiveServer2, llap, tezAm,
+        observedGeneration, clusterPhase, idleSince, idleForMinutes, suspendedSince);
   }
 }

@@ -34,6 +34,7 @@ import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
+import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.HiveServer2Spec;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
@@ -48,11 +49,22 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class HiveServer2DeploymentDependent
     extends HiveDependentResource<Deployment, HiveCluster> {
 
-  public static final String COMPONENT = "hiveserver2";
+  public static final String COMPONENT = ConfigUtils.COMPONENT_HIVESERVER2;
   private static final String SCRATCH_MOUNT_PATH = "/opt/hive/scratch";
 
   public HiveServer2DeploymentDependent() {
     super(Deployment.class);
+  }
+
+  @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
+  protected String getComponentName() {
+    return COMPONENT;
   }
 
   @Override
@@ -64,7 +76,7 @@ public class HiveServer2DeploymentDependent
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "hiveserver2", null));
+    envVars.add(new EnvVar("SERVICE_NAME", COMPONENT, null));
     envVars.add(new EnvVar("IS_RESUME", "true", null));
     envVars.add(new EnvVar("TEZ_AM_EXTERNAL_ID",
         "tez-session-hs2", null));
@@ -125,21 +137,28 @@ public class HiveServer2DeploymentDependent
         hs2.configOverrides(),
         ConfigUtils.HIVE_SERVER2_THRIFT_PORT_KEY,
         null, ConfigUtils.HIVE_SERVER2_THRIFT_PORT_DEFAULT);
+    int hs2HttpPort = ConfigUtils.getInt(
+        hs2.configOverrides(),
+        ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_KEY,
+        null, ConfigUtils.HIVE_SERVER2_THRIFT_HTTP_PORT_DEFAULT);
     int hs2WebUiPort = ConfigUtils.getInt(
         hs2.configOverrides(),
         ConfigUtils.HIVE_SERVER2_WEBUI_PORT_KEY,
         null, ConfigUtils.HIVE_SERVER2_WEBUI_PORT_DEFAULT);
-    List<ContainerPort> ports = List.of(
-        new ContainerPortBuilder()
-            .withName("thrift")
-            .withContainerPort(hs2ThriftPort).build(),
-        new ContainerPortBuilder()
-            .withName("webui")
-            .withContainerPort(hs2WebUiPort).build()
-    );
+    List<ContainerPort> ports = new ArrayList<>();
+    ports.add(new ContainerPortBuilder()
+        .withName("thrift")
+        .withContainerPort(hs2ThriftPort).withProtocol("TCP").build());
+    ports.add(new ContainerPortBuilder()
+        .withName("http")
+        .withContainerPort(hs2HttpPort).withProtocol("TCP").build());
+    ports.add(new ContainerPortBuilder()
+        .withName("webui")
+        .withContainerPort(hs2WebUiPort).withProtocol("TCP").build());
 
-    Probe readinessProbe = buildTcpProbe(hs2ThriftPort, hs2.readinessProbe(), 15, 10, 3);
-    Probe livenessProbe = buildTcpProbe(hs2ThriftPort, hs2.livenessProbe(), 120, 30, 10);
+    // Probes target the HTTP transport port (default mode)
+    Probe readinessProbe = buildTcpProbe(hs2HttpPort, hs2.readinessProbe(), 15, 10, 3);
+    Probe livenessProbe = buildTcpProbe(hs2HttpPort, hs2.livenessProbe(), 120, 30, 10);
 
     boolean tezAmEnabled = spec.tezAm().isEnabled();
 
@@ -155,8 +174,8 @@ public class HiveServer2DeploymentDependent
     List<io.fabric8.kubernetes.api.model.Volume> volumes =
         new ArrayList<>();
     volumes.add(buildProjectedConfigVolume("hive-config",
-        HiveServer2ConfigMapDependent.resourceName(hiveCluster),
-        HadoopConfigMapDependent.resourceName(hiveCluster)));
+        HiveConfigMapDependent.HiveServer2.resourceName(hiveCluster),
+        HiveConfigMapDependent.Hadoop.resourceName(hiveCluster)));
 
     if (tezAmEnabled) {
       volumeMounts.add(
@@ -185,6 +204,13 @@ public class HiveServer2DeploymentDependent
     replaceConfMountWithSubPaths(volumeMounts, "hive-config",
         "hive-site.xml", "tez-site.xml", "core-site.xml");
 
+    // Add Prometheus JMX Exporter when autoscaling is enabled
+    AutoscalingSpec autoscaling = hs2.autoscaling();
+    if (autoscaling.isEnabled()) {
+      addJmxExporter(spec.image(), COMPONENT, autoscaling.metricsPort(),
+          initContainers, volumeMounts, volumes, envVars, ports);
+    }
+
     // Pre-compute config hash for the pod template annotation.
     // This ensures the Deployment is created with the correct hash
     // from the start (single ReplicaSet) and triggers rolling
@@ -194,6 +220,12 @@ public class HiveServer2DeploymentDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getTezSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
+    AutoscalingSpec hs2Autoscaling = hs2.autoscaling();
+    int initialReplicas = hs2Autoscaling != null && hs2Autoscaling.isEnabled()
+        ? Math.max(1, hs2Autoscaling.minReplicas()) : hs2.replicas();
+    Integer replicas = resolveReplicaCount(
+        hiveCluster, context, hs2Autoscaling, hs2.replicas(), initialReplicas);
+
     Deployment deployment = new DeploymentBuilder()
         .withNewMetadata()
           .withName(resourceName(hiveCluster))
@@ -201,20 +233,20 @@ public class HiveServer2DeploymentDependent
           .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
         .endMetadata()
         .withNewSpec()
-          .withReplicas(hs2.replicas())
+          .withReplicas(replicas)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
           .endSelector()
           .withNewTemplate()
             .withNewMetadata()
               .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
-              .addToAnnotations("kubectl.kubernetes.io/default-container", "hiveserver2")
+              .addToAnnotations("kubectl.kubernetes.io/default-container", COMPONENT)
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
               .withInitContainers(initContainers)
               .addNewContainer()
-                .withName("hiveserver2")
+                .withName(COMPONENT)
                 .withImage(spec.image())
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)
@@ -233,20 +265,27 @@ public class HiveServer2DeploymentDependent
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    if (spec.volumes() != null) {
-      deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());
+    // Graceful scale-down: deregister from ZK, then poll JMX Exporter (port 9404) for sessions.
+    if (autoscaling.isEnabled()) {
+      List<String> zkDeregister = List.of(
+          "echo '[preStop] Deregistering HiveServer2 from ZooKeeper...'",
+          "hive --service hiveserver2 --deregister $(hive --service version 2>/dev/null | head -1 || echo '4.0.0')"
+              + " || echo '[preStop] WARNING: ZK deregister failed'");
+      String preStopScript = buildDrainScript(
+          "Waiting for open sessions to drain",
+          "hs2_open_sessions", "SESSIONS",
+          "All sessions drained. Shutting down.",
+          5, 6, zkDeregister);
+      applyAutoscalingLifecycle(
+          deployment.getSpec().getTemplate().getSpec(),
+          deployment.getSpec().getTemplate().getMetadata(),
+          preStopScript, autoscaling.gracePeriodSeconds(),
+          autoscaling.metricsScrapeIntervalSeconds());
     }
-    if (spec.volumeMounts() != null) {
-      deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.volumeMounts());
-    }
-    if (hs2.extraVolumes() != null) {
-      deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(hs2.extraVolumes());
-    }
-    if (hs2.extraVolumeMounts() != null) {
-      deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(hs2.extraVolumeMounts());
-    }
+
+    appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
+        spec.volumes(), spec.volumeMounts(),
+        hs2.extraVolumes(), hs2.extraVolumeMounts());
 
     return deployment;
   }
