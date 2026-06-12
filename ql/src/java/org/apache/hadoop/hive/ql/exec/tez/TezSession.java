@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGStatus;
@@ -86,6 +87,7 @@ public interface TezSession {
 
   HiveConf getConf();
   TezClient getTezClient();
+  YarnClient getYarnClient();
   boolean isOpen();
   boolean isOpening();
   boolean getDoAsEnabled();

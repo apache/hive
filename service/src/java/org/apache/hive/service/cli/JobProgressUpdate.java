@@ -28,21 +28,23 @@ public class JobProgressUpdate {
   private final List<String> headers;
   private final List<List<String>> rows;
   public final String status;
+  private final String queueMetrics;
 
 
   JobProgressUpdate(ProgressMonitor monitor) {
     this(monitor.headers(), monitor.rows(), monitor.footerSummary(), monitor.progressedPercentage(),
-        monitor.startTime(), monitor.executionStatus());
+        monitor.startTime(), monitor.executionStatus(), monitor.queueMetrics());
   }
 
   private JobProgressUpdate(List<String> headers, List<List<String>> rows, String footerSummary,
-      double progressedPercentage, long startTimeMillis, String status) {
+      double progressedPercentage, long startTimeMillis, String status, String queueMetrics) {
     this.progressedPercentage = progressedPercentage;
     this.footerSummary = footerSummary;
     this.startTimeMillis = startTimeMillis;
     this.headers = headers;
     this.rows = rows;
     this.status = status;
+    this.queueMetrics = queueMetrics;
   }
 
   public List<String> headers() {
@@ -51,5 +53,9 @@ public class JobProgressUpdate {
 
   public List<List<String>> rows() {
     return rows;
+  }
+
+  public String queueMetrics() {
+    return queueMetrics;
   }
 }
