@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -239,7 +238,7 @@ public class DDLPlanUtils {
       + TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
       + COLUMN_NAME + "> BUT IT IS NOT SUPPORTED YET. THE BASE64 VALUE FOR THE HISTOGRAM IS <"
       + BASE_64_VALUE + "> ";
-  
+
   /**
    * Returns the create database query for a give database name.
    *
@@ -524,7 +523,7 @@ public class DDLPlanUtils {
     List<String> accessedColumns = getTableColumnNames(tbl);
     List<ColumnStatisticsObj> tableColumnStatistics = Hive.get().getTableColumnStatistics(
         tbl, accessedColumns, true);
-    
+
     ColumnStatisticsObj[] columnStatisticsObj = tableColumnStatistics.toArray(new ColumnStatisticsObj[0]);
     for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
       alterTblStmt.add(getAlterTableStmtCol(
@@ -910,7 +909,8 @@ public class DDLPlanUtils {
 
   private String getColumns(Table table) {
     List<String> columnDescs = new ArrayList<>();
-    for (FieldSchema column : table.getCols()) {
+    List<FieldSchema> colsToLookUp = table.hasNonNativePartitionSupport() ? table.getAllCols() : table.getCols();
+    for (FieldSchema column : colsToLookUp) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
       String columnDesc = "  " + unparseIdentifier(column.getName()) + " " + columnType;
       if (column.getComment() != null) {

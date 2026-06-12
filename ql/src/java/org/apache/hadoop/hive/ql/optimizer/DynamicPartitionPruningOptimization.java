@@ -168,8 +168,15 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
 
         Table table = ts.getConf().getTableMetadata();
 
-        boolean nonEquiJoin = isNonEquiJoin(ctx.parent);
-        if (table != null && table.isPartitionKey(column) && !nonEquiJoin) {
+        boolean prunable = table != null && !isNonEquiJoin(ctx.parent);
+        // Dynamic partition pruning only applies to equi-joins against an actual table.
+        if (prunable && table.isNonNative() &&
+            table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
+          // Non-native tables (e.g. Iceberg): the storage handler decides whether the column is prunable.
+          String columnType = table.getFieldSchemaByName(column).getType();
+          generateEventOperatorPlan(ctx, parseContext, ts, column, columnType, ctx.parent);
+        } else if (prunable && table.isPartitionKey(column) && !table.hasNonNativePartitionSupport()) {
+          // Native partitioned table.
           String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
@@ -191,15 +198,10 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
             // all partitions have been statically removed
             LOG.debug("No partition pruning necessary.");
           }
-        } else if (table.isNonNative() &&
-          table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
-          generateEventOperatorPlan(ctx, parseContext, ts, column,
-            table.getCols().stream().filter(e -> e.getName().equals(column)).
-          map(e -> e.getType()).findFirst().get(), ctx.parent);
         } else { // semijoin
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)
-                  && ts.getConf().getFilterExpr() != null && !nonEquiJoin) {
+                  && ts.getConf().getFilterExpr() != null && !isNonEquiJoin(ctx.parent)) {
             LOG.debug("Initiate semijoin reduction for " + column + " ("
                 + ts.getConf().getFilterExpr().getExprString());
 

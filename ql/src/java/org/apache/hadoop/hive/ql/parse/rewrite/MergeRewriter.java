@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -224,7 +225,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
       sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
-          targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
+          targetTable.getAllCols().size() + 1);
       valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys(Operation.MERGE));
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
@@ -238,20 +239,29 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
                              List<String> values) {
-      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias, 
+      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias,
           HiveUtils.unparseIdentifier(name, conf));
-      
+      List<String> valuesToBeAdded = new ArrayList<>(Collections.nCopies(targetTable.getAllCols().size(), null));
       for (FieldSchema fieldSchema : targetTable.getCols()) {
-        if (newValues.containsKey(fieldSchema.getName())) {
-          String rhsExp = newValues.get(fieldSchema.getName());
-          values.add(getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
-        } else {
-          values.add(formatter.apply(fieldSchema.getName()));
-        }
+        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, fieldSchema.getName(), true);
       }
-      
-      targetTable.getPartCols().forEach(fieldSchema -> values.add(
-          formatter.apply(fieldSchema.getName())));
+
+      for (FieldSchema partCol : targetTable.getPartCols()) {
+        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, partCol.getName(),
+            targetTable.hasNonNativePartitionSupport());
+      }
+      values.addAll(valuesToBeAdded);
+    }
+
+    protected void setColumnValue(Table targetTable, List<String> valuesToBeAdded,
+        Map<String, String> newValues, UnaryOperator<String> formatter, String columnName,
+        boolean applyNewValues) {
+      int index = targetTable.getColumnIndexByName(columnName);
+      String formattedColumn = formatter.apply(columnName);
+      String value = applyNewValues && newValues.containsKey(columnName)
+          ? getRhsExpValue(newValues.get(columnName), formattedColumn)
+          : formattedColumn;
+      valuesToBeAdded.set(index, value);
     }
     
     protected String getRhsExpValue(String newValue, String alias) {

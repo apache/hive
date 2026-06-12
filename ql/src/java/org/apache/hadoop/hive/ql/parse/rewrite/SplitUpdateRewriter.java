@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetClausePatcher;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,44 +67,24 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     List<String> deleteValues = sqlGenerator.getDeleteValues(OPERATION);
     int columnOffset = deleteValues.size();
 
-    List<String> insertValues = new ArrayList<>(updateBlock.getTargetTable().getCols().size());
+    Table targetTable = updateBlock.getTargetTable();
+    List<String> insertValues = new ArrayList<>(Collections.nCopies(targetTable.getAllCols().size(), null));
     boolean first = true;
 
-    List<FieldSchema> nonPartCols = updateBlock.getTargetTable().getCols();
+    List<FieldSchema> nonPartCols = targetTable.getCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
-      if (first) {
-        first = false;
-      } else {
-        sqlGenerator.append(",");
-      }
-
-      String name = nonPartCols.get(i).getName();
-      ASTNode setCol = updateBlock.getSetCols().get(name);
-      String identifier = HiveUtils.unparseIdentifier(name, this.conf);
-
-      if (setCol != null) {
-        if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
-            setCol.getChildCount() == 1 && setCol.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
-          sqlGenerator.append(updateBlock.getColNameToDefaultConstraint().get(name));
-        } else {
-          sqlGenerator.append(identifier);
-          // This is one of the columns we're setting, record it's position so we can come back
-          // later and patch it up. 0th is ROW_ID
-          setColExprs.put(i + columnOffset, setCol);
-        }
-      } else {
-        sqlGenerator.append(identifier);
-      }
-      sqlGenerator.append(" AS ");
-      sqlGenerator.append(identifier);
-
-      insertValues.add(sqlGenerator.qualify(identifier));
+      appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
+          nonPartCols.get(i).getName(), i, columnOffset, true, !first);
+      first = false;
     }
-    if (updateBlock.getTargetTable().getPartCols() != null) {
-      updateBlock.getTargetTable().getPartCols().forEach(
-          fieldSchema -> insertValues.add(sqlGenerator.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
+    List<FieldSchema> partCols = targetTable.getPartCols();
+    boolean appendToSelect = targetTable.hasNonNativePartitionSupport();
+    for (int i = 0; i < partCols.size(); i++) {
+      appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
+          partCols.get(i).getName(), nonPartCols.size() + i, columnOffset, appendToSelect, !first);
+      first = false;
     }
-    addRowLineageColumnsForUpdate(updateBlock.getTargetTable(), sqlGenerator, insertValues, conf);
+    addRowLineageColumnsForUpdate(targetTable, sqlGenerator, insertValues, conf);
 
     sqlGenerator.append(" FROM ").append(sqlGenerator.getTargetTableFullName()).append(") ");
     sqlGenerator.appendSubQueryAlias().append("\n");
@@ -133,5 +115,41 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     rewrittenCtx.setEnableUnparse(false);
 
     return rr;
+  }
+
+  private void appendUpdateColumn(UpdateStatement updateBlock,
+               MultiInsertSqlGenerator sqlGenerator, List<String> insertValues,
+               Map<Integer, ASTNode> setColExprs, String columnName, int setColExprIndex, int columnOffset,
+               boolean appendToSelect, boolean prependComma) {
+    String identifier = HiveUtils.unparseIdentifier(columnName, conf);
+
+    // The insert value is placed for every column (data and partition).
+    int index = updateBlock.getTargetTable().getColumnIndexByName(columnName);
+    insertValues.set(index, sqlGenerator.qualify(identifier));
+
+    // Native tables: partition cols are already in the subquery SELECT (appendAcidSelectColumns).
+    // Non-native tables: appendAcidSelectColumns exposes only delete-prefixed aliases, so add plain names below (appendToSelect).
+    if (!appendToSelect) {
+      return;
+    }
+    if (prependComma) {
+      sqlGenerator.append(",");
+    }
+    ASTNode setCol = updateBlock.getSetCols().get(columnName);
+    if (setCol != null) {
+      if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
+          setCol.getChildCount() == 1 && setCol.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
+        sqlGenerator.append(updateBlock.getColNameToDefaultConstraint().get(columnName));
+      } else {
+        sqlGenerator.append(identifier);
+        // This is one of the columns we're setting, record it's position so we can come back
+        // later and patch it up. 0th is ROW_ID
+        setColExprs.put(setColExprIndex + columnOffset, setCol);
+      }
+    } else {
+      sqlGenerator.append(identifier);
+    }
+    sqlGenerator.append(" AS ");
+    sqlGenerator.append(identifier);
   }
 }

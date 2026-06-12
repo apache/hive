@@ -89,8 +89,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -172,8 +170,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -263,8 +259,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -352,8 +346,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -427,8 +419,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

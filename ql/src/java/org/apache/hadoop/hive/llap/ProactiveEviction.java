@@ -158,13 +158,13 @@ public final class ProactiveEviction {
 
     // Holds a hierarchical structure of DBs, tables and partitions such as:
     // { testdb : { testtab0 : [], testtab1 : [ {pk0 : p0v0, pk1 : p0v1}, {pk0 : p1v0, pk1 : p1v1} ] }, testdb2 : {} }
-    private final Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities;
+    private final Map<String, Map<String, Set<Map<String, String>>>> entities;
 
-    private Request(Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities) {
+    private Request(Map<String, Map<String, Set<Map<String, String>>>> entities) {
       this.entities = entities;
     }
 
-    public Map<String, Map<String, Set<LinkedHashMap<String, String>>>> getEntities() {
+    public Map<String, Map<String, Set<Map<String, String>>>> getEntities() {
       return entities;
     }
 
@@ -191,21 +191,21 @@ public final class ProactiveEviction {
 
       List<LlapDaemonProtocolProtos.EvictEntityRequestProto> protoRequests = new LinkedList<>();
 
-      for (Map.Entry<String, Map<String, Set<LinkedHashMap<String, String>>>> dbEntry : entities.entrySet()) {
+      for (Map.Entry<String, Map<String, Set<Map<String, String>>>> dbEntry : entities.entrySet()) {
         String dbName = dbEntry.getKey();
-        Map<String, Set<LinkedHashMap<String, String>>> tables = dbEntry.getValue();
+        Map<String, Set<Map<String, String>>> tables = dbEntry.getValue();
 
         LlapDaemonProtocolProtos.EvictEntityRequestProto.Builder requestBuilder =
             LlapDaemonProtocolProtos.EvictEntityRequestProto.newBuilder();
         LlapDaemonProtocolProtos.TableProto.Builder tableBuilder = null;
 
         requestBuilder.setDbName(dbName.toLowerCase());
-        for (Map.Entry<String, Set<LinkedHashMap<String, String>>> tableEntry : tables.entrySet()) {
+        for (Map.Entry<String, Set<Map<String, String>>> tableEntry : tables.entrySet()) {
           String tableName = tableEntry.getKey();
           tableBuilder = LlapDaemonProtocolProtos.TableProto.newBuilder();
           tableBuilder.setTableName(tableName.toLowerCase());
 
-          Set<LinkedHashMap<String, String>> partitions = tableEntry.getValue();
+          Set<Map<String, String>> partitions = tableEntry.getValue();
           Set<String> partitionKeys = null;
 
           for (Map<String, String> partitionSpec : partitions) {
@@ -245,7 +245,7 @@ public final class ProactiveEviction {
         return false;
       }
 
-      Map<String, Set<LinkedHashMap<String, String>>> tables = entities.get(db);
+      Map<String, Set<Map<String, String>>> tables = entities.get(db);
 
       // If true, must be a drop DB event and this cacheTag matches.
       if (tables.isEmpty()) {
@@ -261,7 +261,7 @@ public final class ProactiveEviction {
       for (String tableAndDbName : tables.keySet()) {
         if (tableAndDbName.equals(tagTableName.getNotEmptyDbTable())) {
 
-          Set<LinkedHashMap<String, String>> partDescs = tables.get(tableAndDbName);
+          Set<Map<String, String>> partDescs = tables.get(tableAndDbName);
 
           // If true, must be a drop table event, and this cacheTag matches.
           if (partDescs == null) {
@@ -292,7 +292,7 @@ public final class ProactiveEviction {
      */
     public static final class Builder {
 
-      private final Map<String, Map<String, Set<LinkedHashMap<String, String>>>> entities;
+      private final Map<String, Map<String, Set<Map<String, String>>>> entities;
 
       private Builder() {
         this.entities = new HashMap<>();
@@ -302,7 +302,7 @@ public final class ProactiveEviction {
         return new Builder();
       }
 
-      public Builder addPartitionOfATable(String db, String tableName, LinkedHashMap<String, String> partSpec) {
+      public Builder addPartitionOfATable(String db, String tableName, Map<String, String> partSpec) {
         ensureDb(db);
         ensureTable(db, tableName);
         entities.get(db).get(tableName).add(partSpec);
@@ -325,7 +325,7 @@ public final class ProactiveEviction {
       }
 
       private void ensureDb(String dbName) {
-        Map<String, Set<LinkedHashMap<String, String>>> tables = entities.get(dbName);
+        Map<String, Set<Map<String, String>>> tables = entities.get(dbName);
         if (tables == null) {
           tables = new HashMap<>();
           entities.put(dbName, tables);
@@ -334,9 +334,9 @@ public final class ProactiveEviction {
 
       private void ensureTable(String dbName, String tableName) {
         ensureDb(dbName);
-        Map<String, Set<LinkedHashMap<String, String>>> tables = entities.get(dbName);
+        Map<String, Set<Map<String, String>>> tables = entities.get(dbName);
 
-        Set<LinkedHashMap<String, String>> partitions = tables.get(tableName);
+        Set<Map<String, String>> partitions = tables.get(tableName);
         if (partitions == null) {
           partitions = new HashSet<>();
           tables.put(tableName, partitions);
@@ -352,7 +352,7 @@ public final class ProactiveEviction {
         entities.clear();
         String dbName = protoRequest.getDbName().toLowerCase();
 
-        Map<String, Set<LinkedHashMap<String, String>>> entitiesInDb = new HashMap<>();
+        Map<String, Set<Map<String, String>>> entitiesInDb = new HashMap<>();
         List<LlapDaemonProtocolProtos.TableProto> tables = protoRequest.getTableList();
 
         if (tables != null && !tables.isEmpty()) {
@@ -364,7 +364,7 @@ public final class ProactiveEviction {
               entitiesInDb.put(dbAndTableName, null);
               continue;
             }
-            Set<LinkedHashMap<String, String>> partitions = new HashSet<>();
+            Set<Map<String, String>> partitions = new HashSet<>();
             LinkedHashMap<String, String> partDesc = new LinkedHashMap<>();
 
             for (int valIx = 0; valIx < table.getPartValCount(); ++valIx) {

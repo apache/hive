@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -101,6 +103,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
  */
 public class Table implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Table");
@@ -110,6 +113,10 @@ public class Table implements Serializable {
   /**
    * These fields are all cached fields.  The information comes from tTable.
    */
+  private List<FieldSchema> tablePartCols;
+  private record TableColumn(int index, FieldSchema field) {}
+  private transient Map<String, TableColumn> columnsByName;
+  private transient List<FieldSchema> tableNonPartCols;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
@@ -194,6 +201,9 @@ public class Table implements Serializable {
 
     newTab.setMetaTable(this.getMetaTable());
     newTab.setSnapshotRef(this.getSnapshotRef());
+    if (this.tablePartCols != null) {
+      newTab.tablePartCols = new ArrayList<>(this.tablePartCols);
+    }
     return newTab;
   }
 
@@ -226,11 +236,11 @@ public class Table implements Serializable {
     {
       sd.setSerdeInfo(new SerDeInfo());
       sd.setNumBuckets(-1);
-      sd.setBucketCols(new ArrayList<String>());
-      sd.setCols(new ArrayList<FieldSchema>());
-      sd.setParameters(new HashMap<String, String>());
-      sd.setSortCols(new ArrayList<Order>());
-      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.setBucketCols(new ArrayList<>());
+      sd.setCols(new ArrayList<>());
+      sd.setParameters(new HashMap<>());
+      sd.setSortCols(new ArrayList<>());
+      sd.getSerdeInfo().setParameters(new HashMap<>());
       // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does
       // not support a table with no columns.
       sd.getSerdeInfo().setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
@@ -240,17 +250,17 @@ public class Table implements Serializable {
       sd.setInputFormat(SequenceFileInputFormat.class.getName());
       sd.setOutputFormat(HiveSequenceFileOutputFormat.class.getName());
       SkewedInfo skewInfo = new SkewedInfo();
-      skewInfo.setSkewedColNames(new ArrayList<String>());
-      skewInfo.setSkewedColValues(new ArrayList<List<String>>());
-      skewInfo.setSkewedColValueLocationMaps(new HashMap<List<String>, String>());
+      skewInfo.setSkewedColNames(new ArrayList<>());
+      skewInfo.setSkewedColValues(new ArrayList<>());
+      skewInfo.setSkewedColValueLocationMaps(new HashMap<>());
       sd.setSkewedInfo(skewInfo);
     }
 
     org.apache.hadoop.hive.metastore.api.Table t = new org.apache.hadoop.hive.metastore.api.Table();
     {
       t.setSd(sd);
-      t.setPartitionKeys(new ArrayList<FieldSchema>());
-      t.setParameters(new HashMap<String, String>());
+      t.setPartitionKeys(new ArrayList<>());
+      t.setParameters(new HashMap<>());
       t.setTableType(TableType.MANAGED_TABLE.toString());
       t.setDbName(databaseName);
       t.setTableName(tableName);
@@ -403,7 +413,7 @@ public class Table implements Serializable {
     this.storageHandlerInfo = storageHandlerInfo;
   }
 
-  final public Class<? extends InputFormat> getInputFormatClass() {
+  public final Class<? extends InputFormat> getInputFormatClass() {
     if (inputFormatClass == null) {
       try {
         String className = tTable.getSd().getInputFormat();
@@ -423,7 +433,7 @@ public class Table implements Serializable {
     return inputFormatClass;
   }
 
-  final public Class<? extends OutputFormat> getOutputFormatClass() {
+  public final Class<? extends OutputFormat> getOutputFormatClass() {
     if (outputFormatClass == null) {
       try {
         String className = tTable.getSd().getOutputFormat();
@@ -457,7 +467,7 @@ public class Table implements Serializable {
    * Marker SemanticException, so that processing that allows for table validation failures
    * and appropriately handles them can recover from these types of SemanticExceptions
    */
-  public class ValidationFailureSemanticException extends SemanticException{
+  public static class ValidationFailureSemanticException extends SemanticException{
     public ValidationFailureSemanticException(String s) {
       super(s);
     }
@@ -527,9 +537,9 @@ public class Table implements Serializable {
     return Enum.valueOf(TableType.class, tTable.getTableType());
   }
 
-  public ArrayList<StructField> getFields() {
+  public List<StructField> getFields() {
 
-    ArrayList<StructField> fields = new ArrayList<StructField>();
+    List<StructField> fields = new ArrayList<>();
     try {
       Deserializer decoder = getDeserializer();
 
@@ -595,26 +605,38 @@ public class Table implements Serializable {
         && Objects.equals(snapshotRef, other.snapshotRef);
   }
 
+
+  /**
+   * Returns partition columns for native tables, or from the
+   * storage handler when {@link #hasNonNativePartitionSupport()}.
+   */
   public List<FieldSchema> getPartCols() {
-    List<FieldSchema> partKeys = tTable.getPartitionKeys();
-    if (partKeys == null) {
-      partKeys = new ArrayList<>();
-      tTable.setPartitionKeys(partKeys);
+    if (tablePartCols != null) {
+      return tablePartCols;
     }
-    return partKeys;
+    if (hasNonNativePartitionSupport()) {
+      List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
+      for (FieldSchema partCol : partCols) {
+        FieldSchema storageSchemaField = getFieldSchemaByName(partCol.getName());
+        if (storageSchemaField != null && storageSchemaField.getComment() != null) {
+          partCol.setComment(storageSchemaField.getComment());
+        }
+      }
+      tablePartCols = partCols;
+    } else {
+      tablePartCols = getPartitionKeys();
+    }
+    return tablePartCols;
   }
 
   public FieldSchema getPartColByName(String colName) {
     return getPartCols().stream()
-      .filter(key -> key.getName().toLowerCase().equals(colName))
-      .findFirst().orElse(null);
+        .filter(key -> key.getName().toLowerCase().equals(colName))
+        .findFirst().orElse(null);
   }
 
   public List<String> getPartColNames() {
-    List<FieldSchema> partCols = hasNonNativePartitionSupport() ?
-        getStorageHandler().getPartitionKeys(this) : getPartCols();
-    return partCols.stream().map(FieldSchema::getName)
-      .collect(Collectors.toList());
+    return getPartCols().stream().map(FieldSchema::getName).toList();
   }
 
   public boolean hasNonNativePartitionSupport() {
@@ -672,7 +694,7 @@ public class Table implements Serializable {
     Map<List<String>, String> mappings = tTable.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
-      mappings = new HashMap<List<String>, String>();
+      mappings = new HashMap<>();
       tTable.getSd().getSkewedInfo().setSkewedColValueLocationMaps(mappings);
     }
 
@@ -682,7 +704,7 @@ public class Table implements Serializable {
 
   public Map<List<String>, String> getSkewedColValueLocationMaps() {
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColValueLocationMaps() : new HashMap<List<String>, String>();
+        .getSkewedColValueLocationMaps() : new HashMap<>();
   }
 
   public void setSkewedColValues(List<List<String>> skewedValues) {
@@ -691,7 +713,7 @@ public class Table implements Serializable {
 
   public List<List<String>> getSkewedColValues(){
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColValues() : new ArrayList<List<String>>();
+        .getSkewedColValues() : new ArrayList<>();
   }
 
   public void setSkewedColNames(List<String> skewedColNames) {
@@ -700,7 +722,7 @@ public class Table implements Serializable {
 
   public List<String> getSkewedColNames() {
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColNames() : new ArrayList<String>();
+        .getSkewedColNames() : new ArrayList<>();
   }
 
   public SkewedInfo getSkewedInfo() {
@@ -728,8 +750,50 @@ public class Table implements Serializable {
     return false;
   }
 
+  private void  ensureColumnsIndexed() {
+    if (columnsByName != null) {
+      return;
+    }
+    Map<String, TableColumn> indexedColumns = new HashMap<>();
+    List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
+    if (!hasNonNativePartitionSupport() || isView()) {
+      fsList.addAll(getPartitionKeys());
+    }
+    for (int i = 0; i < fsList.size(); i++) {
+      indexedColumns.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
+    }
+    columnsByName = indexedColumns;
+  }
+
+  public Integer getColumnIndexByName(String colName) {
+    ensureColumnsIndexed();
+    TableColumn column = columnsByName.get(colName.toLowerCase());
+    return column != null ? column.index() : null;
+  }
+
+  public FieldSchema getFieldSchemaByName(String colName) {
+    ensureColumnsIndexed();
+    TableColumn column = columnsByName.get(colName.toLowerCase());
+    return column != null ? column.field() : null;
+  }
+
   public List<FieldSchema> getCols() {
-    return getColsInternal(false);
+    if (tableNonPartCols != null) {
+      return tableNonPartCols;
+    }
+    if (!hasNonNativePartitionSupport()) {
+      tableNonPartCols = getColsInternal(false);
+    } else {
+      List<FieldSchema> nonPartFields = new ArrayList<>();
+      Set<String> partFieldsName = getPartCols().stream().map(FieldSchema::getName).collect(Collectors.toSet());
+      for (FieldSchema field : getColsInternal(false)) {
+        if (!partFieldsName.contains(field.getName())) {
+          nonPartFields.add(field);
+        }
+      }
+      tableNonPartCols = nonPartFields;
+    }
+    return tableNonPartCols;
   }
 
   public List<FieldSchema> getColsForMetastore() {
@@ -762,14 +826,18 @@ public class Table implements Serializable {
    * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
-    ArrayList<FieldSchema> f_list = new ArrayList<FieldSchema>();
-    f_list.addAll(getCols());
-    f_list.addAll(getPartCols());
-    return f_list;
+    List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
+    if (!hasNonNativePartitionSupport() || isView()) {
+      fsList.addAll(getPartitionKeys());
+    }
+    return fsList;
   }
 
   public void setPartCols(List<FieldSchema> partCols) {
     tTable.setPartitionKeys(partCols);
+    tablePartCols = null;
+    tableNonPartCols = null;
+    columnsByName = null;
   }
 
   public String getCatName() {
@@ -813,12 +881,15 @@ public class Table implements Serializable {
   }
   
   public boolean isPartitioned() {
-    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) : 
+    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) :
         CollectionUtils.isNotEmpty(getPartCols());
   }
 
   public void setFields(List<FieldSchema> fields) {
     tTable.getSd().setCols(fields);
+    tableNonPartCols = null;
+    tablePartCols = null;
+    columnsByName = null;
   }
 
   public void setNumBuckets(int nb) {
@@ -916,6 +987,9 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getPartitionKeys() {
+    if (tTable.getPartitionKeys() == null) {
+      tTable.setPartitionKeys(new ArrayList<>());
+    }
     return tTable.getPartitionKeys();
   }
 
@@ -1009,12 +1083,12 @@ public class Table implements Serializable {
    *          Use the information from this partition.
    * @return Partition name to value mapping.
    */
-  public LinkedHashMap<String, String> createSpec(
+  public Map<String, String> createSpec(
       org.apache.hadoop.hive.metastore.api.Partition tp) {
 
     List<FieldSchema> fsl = getPartCols();
     List<String> tpl = tp.getValues();
-    LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>(fsl.size());
+    Map<String, String> spec = LinkedHashMap.newLinkedHashMap(fsl.size());
     for (int i = 0; i < fsl.size(); i++) {
       FieldSchema fs = fsl.get(i);
       String value = tpl.get(i);

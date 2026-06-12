@@ -179,7 +179,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (isIcebergView(hmsTable)) {
+    if (MetaStoreUtils.isIcebergView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       Map<String, String> tblProps =
           hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
@@ -266,7 +266,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable)) {
+    if (MetaStoreUtils.isIcebergView(hmsTable)) {
       currentAlterTableOp = null;
       if (commitLock == null) {
         commitLock = new NoLock();
@@ -503,7 +503,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     if (commitLock == null) {
       throw new IllegalStateException("Hive commit lock should already be set");
     }
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable)) {
+    if (MetaStoreUtils.isIcebergView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       Map<String, String> tblProps =
           hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());

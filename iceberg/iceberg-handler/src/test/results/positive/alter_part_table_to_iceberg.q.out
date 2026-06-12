@@ -137,7 +137,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -415,7 +414,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -770,7 +768,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet_int
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1125,7 +1122,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet_double
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1426,7 +1422,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

@@ -5171,7 +5171,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     List<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
     colListPos = 0;
-    List<FieldSchema> targetTableCols = target != null ? target.getCols() : partition.getCols();
+    List<FieldSchema> targetTableCols;
+    if (target != null) {
+      targetTableCols = target.hasNonNativePartitionSupport() ? target.getAllCols() : target.getCols();
+    } else {
+      targetTableCols = partition.getCols();
+    }
     List<String> targetTableColNames = new ArrayList<String>();
     List<TypeInfo> targetTableColTypes = new ArrayList<TypeInfo>();
     for(FieldSchema fs : targetTableCols) {
@@ -12008,47 +12013,44 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Determine row schema for TSOP.
       // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
+      // Including parameters passed in the query
+      if (properties != null) {
+        for (Entry<String, String> prop : properties.entrySet()) {
+          if (tab.getSerdeParam(prop.getKey()) != null) {
+            LOG.warn("SerDe property in input query overrides stored SerDe property");
+          }
+          tab.setSerdeParam(prop.getKey(), prop.getValue());
+        }
+      }
+      final Deserializer deserializer = tab.getDeserializer();
+      deserializer.handleJobLevelConfiguration(conf);
+      StructObjectInspector rowObjectInspector;
       try {
-        // Including parameters passed in the query
-        if (properties != null) {
-          for (Entry<String, String> prop : properties.entrySet()) {
-            if (tab.getSerdeParam(prop.getKey()) != null) {
-              LOG.warn("SerDe property in input query overrides stored SerDe property");
-            }
-            tab.setSerdeParam(prop.getKey(), prop.getValue());
-          }
-        }
-        // Obtain inspector for schema
-        final Deserializer deserializer = tab.getDeserializer();
-        StructObjectInspector rowObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
-
-        deserializer.handleJobLevelConfiguration(conf);
-        List<? extends StructField> fields = rowObjectInspector
-            .getAllStructFieldRefs();
-        Set<String> partCols = tab.hasNonNativePartitionSupport() ?
-            Sets.newHashSet(tab.getPartColNames()) : Collections.emptySet();
-        for (int i = 0; i < fields.size(); i++) {
-          /**
-           * if the column is a skewed column, use ColumnInfo accordingly
-           */
-          ColumnInfo colInfo = new ColumnInfo(fields.get(i).getFieldName(),
-              TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
-                  .getFieldObjectInspector()), alias, false);
-          if (partCols.contains(colInfo.getInternalName())) {
-            colInfo.setHiddenPartitionCol(true);
-          }
-          colInfo.setSkewedCol(isSkewedCol(alias, qb, fields.get(i).getFieldName()));
-          rwsch.put(alias, fields.get(i).getFieldName(), colInfo);
-        }
+        rowObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
       } catch (SerDeException e) {
         throw new RuntimeException(e);
       }
-      // Hack!! - refactor once the metadata APIs with types are ready
-      // Finally add the partitioning columns
-      for (FieldSchema part_col : tab.getPartCols()) {
-        LOG.trace("Adding partition col: " + part_col);
-        rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
-            TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
+
+      int colCount = tab.getAllCols().size();
+      List<ColumnInfo> colInfoList = new ArrayList<>(Collections.nCopies(colCount, null));
+
+      // Build column info from the SerDe row schema (authoritative names/types), placed by table column index.
+      for (StructField field : rowObjectInspector.getAllStructFieldRefs()) {
+        String fieldName = field.getFieldName();
+        ColumnInfo colInfo = new ColumnInfo(fieldName,
+            TypeInfoUtils.getTypeInfoFromObjectInspector(field.getFieldObjectInspector()), alias, false);
+        colInfo.setSkewedCol(isSkewedCol(alias, qb, fieldName));
+        colInfoList.set(tab.getColumnIndexByName(fieldName), colInfo);
+      }
+      for (FieldSchema partCol : tab.getPartCols()) {
+        LOG.trace("Adding partition col: {} ", partCol);
+        ColumnInfo colInfo = new ColumnInfo(partCol.getName(),
+            TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()), alias, true);
+        colInfoList.set(tab.getColumnIndexByName(partCol.getName()), colInfo);
+      }
+
+      for (ColumnInfo colInfo : colInfoList) {
+        rwsch.put(alias, colInfo.getInternalName(), colInfo);
       }
 
       // put virtual columns into RowResolver.
