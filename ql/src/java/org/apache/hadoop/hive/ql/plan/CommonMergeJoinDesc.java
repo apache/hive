@@ -30,6 +30,18 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
   private int numBuckets;
   private int mapJoinConversionPos;
 
+  /**
+   * Human-readable key column names per join position (indexed by alias/tag).
+   * Populated at compile time so they are available at task runtime for skew monitoring.
+   */
+  private String[] skewJoinKeyNames;
+
+  /**
+   * Human-readable table names per join position (indexed by alias/tag).
+   * Populated at compile time so they are available at task runtime for skew monitoring.
+   */
+  private String[] skewJoinTableAliases;
+
   CommonMergeJoinDesc() {
   }
 
@@ -58,6 +70,22 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
 
   public void setBigTablePosition(int pos) {
     mapJoinConversionPos = pos;
+  }
+
+  public String[] getSkewJoinKeyNames() {
+    return skewJoinKeyNames;
+  }
+
+  public void setSkewJoinKeyNames(String[] skewJoinKeyNames) {
+    this.skewJoinKeyNames = skewJoinKeyNames;
+  }
+
+  public String[] getSkewJoinTableAliases() {
+    return skewJoinTableAliases;
+  }
+
+  public void setSkewJoinTableAliases(String[] skewJoinTableAliases) {
+    this.skewJoinTableAliases = skewJoinTableAliases;
   }
 
   @Override
