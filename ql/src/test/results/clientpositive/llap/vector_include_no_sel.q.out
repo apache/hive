@@ -162,7 +162,7 @@ POSTHOOK: Lineage: customer_demographics.cd_education_status SIMPLE [(customer_d
 POSTHOOK: Lineage: customer_demographics.cd_gender SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_gender, type:string, comment:null), ]
 POSTHOOK: Lineage: customer_demographics.cd_marital_status SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_marital_status, type:string, comment:null), ]
 POSTHOOK: Lineage: customer_demographics.cd_purchase_estimate SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_purchase_estimate, type:int, comment:null), ]
-Warning: Shuffle Join MERGEJOIN[13][tables = [customer_demographics, store_sales_n1]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=store_sales_n1] in task 'Map 2' is a cross product
 PREHOOK: query: explain vectorization expression
 select count(1) from customer_demographics,store_sales_n1
 where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
@@ -192,8 +192,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -224,23 +224,64 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Map 4 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: store_sales_n1
                   Statistics: Num rows: 1000 Data size: 3796 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkOperator
-                        native: false
-                        nativeConditionsMet: hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false
-                    Statistics: Num rows: 1000 Data size: 3796 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: ss_cdemo_sk (type: int)
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 
+                      1 
+                    Map Join Vectorization:
+                        className: VectorMapJoinInnerMultiKeyOperator
+                        native: true
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        hashTableImplementationType: OPTIMIZED
+                    outputColumnNames: _col0, _col2, _col17
+                    input vertices:
+                      0 Map 1
+                    Statistics: Num rows: 200000 Data size: 18599796 Basic stats: COMPLETE Column stats: COMPLETE
+                    Filter Operator
+                      Filter Vectorization:
+                          className: VectorFilterOperator
+                          native: true
+                          predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 25:int, col 4:int), FilterStringGroupColEqualStringScalar(col 26:string, val M)), FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 25:int, col 4:int), FilterStringGroupColEqualStringScalar(col 26:string, val U)))
+                      predicate: (((_col0 = _col17) and (_col2 = 'M')) or ((_col0 = _col17) and (_col2 = 'U'))) (type: boolean)
+                      Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: []
+                        Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count(1)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 27:int) -> bigint
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0]
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkOperator
+                                native: false
+                                nativeConditionsMet: hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -252,36 +293,6 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: _col0, _col2, _col17
-                Statistics: Num rows: 200000 Data size: 18599796 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (((_col0 = _col17) and (_col2 = 'M')) or ((_col0 = _col17) and (_col2 = 'U'))) (type: boolean)
-                  Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count(1)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            MergeJoin Vectorization:
-                enabled: false
-                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -320,7 +331,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[13][tables = [customer_demographics, store_sales_n1]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[13][bigTable=store_sales_n1] in task 'Map 2' is a cross product
 PREHOOK: query: select count(1) from customer_demographics,store_sales_n1
 where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
        (customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
