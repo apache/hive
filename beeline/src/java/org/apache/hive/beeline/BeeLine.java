@@ -483,6 +483,24 @@ public class BeeLine implements Closeable {
     });
   }
 
+  String getApplicationBanner() {
+    Package pack = BeeLine.class.getPackage();
+    String version =
+        pack.getImplementationVersion() == null ? "" : pack.getImplementationVersion();
+    String sep = System.lineSeparator();
+    return new StringBuilder(512)
+        .append(sep)
+        .append("        _   _ _____     _______").append(sep)
+        .append("       | | | |_ _\\ \\   / / ____|").append(sep)
+        .append("       | |_| || | \\ \\ / /|  _|").append(sep)
+        .append("       |  _  || |  \\ V / | |___").append(sep)
+        .append("       |_| |_|___|  \\_/  |_____|").append(sep)
+        .append(sep)
+        .append("      Apache Hive " + version + "  —  Beeline").append(sep)
+        .append("      The Data Warehouse for Apache Iceberg").append(sep)
+        .toString();
+  }
+
   String getApplicationContactInformation() {
     return getManifestAttribute("Implementation-Vendor");
   }
@@ -1139,6 +1157,7 @@ public class BeeLine implements Closeable {
       return executeFile(getOpts().getScriptFile());
     }
     try {
+      info(getApplicationBanner());
       info(getApplicationTitle());
     } catch (Exception e) {
       // ignore
