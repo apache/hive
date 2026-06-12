@@ -22,16 +22,12 @@ import java.util.List;
 
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
-import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Scaling strategy for Tez Application Master.
- * TezAM scaling tracks HS2 session demand:
- * - Trigger 1 (concurrent): sum(hs2_open_sessions) — each session may need a TezAM
- * - Trigger 2 (pre-warm): count(hs2_pods_with_sessions) * sessions_per_queue
- * desired = max(trigger1, trigger2)
+ * TezAM scaling tracks HS2 session demand: desired = ceil(sum(hs2_open_sessions)).
  * <p>
  * Activation gate: only scale if HS2 has open sessions.
  */
@@ -63,14 +59,9 @@ public class TezAmScalingStrategy implements ScalingStrategy {
     }
 
     double totalSessions = 0;
-    int podsWithSessions = 0;
     for (PodMetrics pm : hs2Metrics) {
-      double sessions = pm.metrics().getOrDefault(
+      totalSessions += pm.metrics().getOrDefault(
           HiveServer2ScalingStrategy.METRIC_OPEN_SESSIONS, 0.0);
-      totalSessions += sessions;
-      if (sessions > 0) {
-        podsWithSessions++;
-      }
     }
 
     if (totalSessions <= 0) {
@@ -81,31 +72,11 @@ public class TezAmScalingStrategy implements ScalingStrategy {
 
     lastMetric = (int) totalSessions;
 
-    // Trigger 1: concurrent demand — total open sessions (1 TezAM per session)
-    int concurrentDemand = (int) Math.ceil(totalSessions);
+    // Scale based on concurrent demand — one TezAM per open HS2 session
+    int desired = (int) Math.ceil(totalSessions);
+    desired = Math.min(desired, maxReplicas);
 
-    // Trigger 2: pre-warm — only if hive.server2.tez.initialize.default.sessions is true.
-    // When true, each HS2 pod pre-warms sessionsPerQueue TezAMs at startup.
-    // When false, no pre-warming happens — scale purely on concurrent session demand.
-    int prewarmDemand = 0;
-    boolean initSessions = ConfigUtils.getBoolean(
-        cluster.getSpec().hiveServer2().configOverrides(),
-        ConfigUtils.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS_KEY,
-        ConfigUtils.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS_DEFAULT);
-    if (initSessions) {
-      int sessionsPerQueue = ConfigUtils.getInt(
-          cluster.getSpec().hiveServer2().configOverrides(),
-          ConfigUtils.HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_KEY,
-          null, ConfigUtils.HIVE_SERVER2_TEZ_SESSIONS_PER_QUEUE_DEFAULT);
-      prewarmDemand = podsWithSessions * sessionsPerQueue;
-    }
-
-    int desired = Math.max(concurrentDemand, prewarmDemand);
-
-    LOG.debug("[tezam] totalSessions={}, podsWithSessions={}, initDefaultSessions={}, "
-            + "concurrent={}, prewarm={}, desired={}",
-        totalSessions, podsWithSessions, initSessions,
-        concurrentDemand, prewarmDemand, desired);
+    LOG.debug("[tezam] totalSessions={}, desired={}", totalSessions, desired);
 
     return Math.max(desired, autoscaling.minReplicas());
   }
