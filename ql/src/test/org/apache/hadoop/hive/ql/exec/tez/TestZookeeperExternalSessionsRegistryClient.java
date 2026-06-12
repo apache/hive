@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -29,9 +30,11 @@ import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.zookeeper.KeeperException;
 import org.junit.Test;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -221,34 +224,17 @@ public class TestZookeeperExternalSessionsRegistryClient {
       ZookeeperExternalSessionsRegistryClient registry2 = new ZookeeperExternalSessionsRegistryClient(conf);
       ZookeeperExternalSessionsRegistryClient registry3 = new ZookeeperExternalSessionsRegistryClient(conf);
       try {
-        // Each registry does a lazy initialization on its first getSession() call, which is time-consuming and
-        // completion time of the same can vary amongst the registries. CountDownLatch only confirms the worker thread
-        // has started, not that session request has reached the globalQueue, so the warmup initializes all three
-        // registry clients upfront and lets the latches reliably enforce queue ordering avoiding flakiness.
-        client.create().creatingParentsIfNeeded().forPath(effectivePath + "/warmup");
-        for (ZookeeperExternalSessionsRegistryClient registry :
-            new ZookeeperExternalSessionsRegistryClient[] {registry1, registry2, registry3}) {
-          String session = registry.getSession();
-          registry.returnSession(session);
-        }
-        client.delete().forPath(effectivePath + "/warmup");
+        // Submit getSession() for one registry at a time and wait for each to reach globalQueue which is visible
+        // as a sequential lock znode, before starting the next, so FIFO order matches registry1→2→3.
+        String queuePath = effectivePath + "-queue";
+        Future<String> future1 = executor.submit(registry1::getSession);
+        awaitMutexQueueSize(client, queuePath, 1);
 
-        CountDownLatch r1Started = new CountDownLatch(1);
-        CountDownLatch r2Started = new CountDownLatch(1);
-
-        Future<String> future1 = executor.submit(() -> {
-          r1Started.countDown();
-          return registry1.getSession();
-        });
-        r1Started.await();
-
-        Future<String> future2 = executor.submit(() -> {
-          r2Started.countDown();
-          return registry2.getSession();
-        });
-        r2Started.await();
+        Future<String> future2 = executor.submit(registry2::getSession);
+        awaitMutexQueueSize(client, queuePath, 2);
 
         Future<String> future3 = executor.submit(registry3::getSession);
+        awaitMutexQueueSize(client, queuePath, 3);
 
         client.create().creatingParentsIfNeeded().forPath(effectivePath + "/app_first");
         assertEquals("Registry 1 should get the first AM", "app_first", future1.get(5, TimeUnit.SECONDS));
@@ -268,6 +254,25 @@ public class TestZookeeperExternalSessionsRegistryClient {
         executor.shutdownNow();
       }
     }
+  }
+
+  private static void awaitMutexQueueSize(CuratorFramework client, String queuePath, int expectedSize)
+      throws Exception {
+    long startTimeNs = System.nanoTime();
+    long timeoutNs = TimeUnit.SECONDS.toNanos(30);
+    while (System.nanoTime() - startTimeNs < timeoutNs) {
+      List<String> childQueueNodes;
+      try {
+        childQueueNodes = client.getChildren().forPath(queuePath);
+      } catch (KeeperException.NoNodeException e) {
+        childQueueNodes = Collections.emptyList();
+      }
+      if (childQueueNodes.size() >= expectedSize) {
+        return;
+      }
+      Thread.sleep(100);
+    }
+    fail("Timed out waiting for " + expectedSize + " mutex queue participants under " + queuePath);
   }
 }
 
