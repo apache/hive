@@ -1,0 +1,139 @@
+PREHOOK: query: CREATE TABLE emp (eid INT, ename STRING) partitioned by (bdate INT, location STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp
+POSTHOOK: query: CREATE TABLE emp (eid INT, ename STRING) partitioned by (bdate INT, location STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp
+PREHOOK: query: INSERT INTO emp
+VALUES (1, 'Bob', 20200101, 'Paris'),
+       (2, 'Alice', 20200102, 'Paris'),
+       (3, 'Sam', 20200103, null),
+       (4, 'John', null, 'New York'),
+       (5, 'Jane', null, null),
+       (6, 'Tom', null, 'New York'),
+       (7, null, 20200103, 'New York'),
+       (8, null, 20200103, 'Paris'),
+       (null, 'Tom', 20200109, null),
+       (null, 'Jane', 20200110, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emp
+POSTHOOK: query: INSERT INTO emp
+VALUES (1, 'Bob', 20200101, 'Paris'),
+       (2, 'Alice', 20200102, 'Paris'),
+       (3, 'Sam', 20200103, null),
+       (4, 'John', null, 'New York'),
+       (5, 'Jane', null, null),
+       (6, 'Tom', null, 'New York'),
+       (7, null, 20200103, 'New York'),
+       (8, null, 20200103, 'Paris'),
+       (null, 'Tom', 20200109, null),
+       (null, 'Jane', 20200110, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emp
+POSTHOOK: Output: default@emp@bdate=20200101/location=Paris
+POSTHOOK: Output: default@emp@bdate=20200102/location=Paris
+POSTHOOK: Output: default@emp@bdate=20200103/location=New York
+POSTHOOK: Output: default@emp@bdate=20200103/location=Paris
+POSTHOOK: Output: default@emp@bdate=20200103/location=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@emp@bdate=20200109/location=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@emp@bdate=20200110/location=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@emp@bdate=__HIVE_DEFAULT_PARTITION__/location=New York
+POSTHOOK: Output: default@emp@bdate=__HIVE_DEFAULT_PARTITION__/location=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: emp PARTITION(bdate=20200101,location=Paris).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200101,location=Paris).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200102,location=Paris).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200102,location=Paris).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200103,location=New York).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200103,location=New York).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200103,location=Paris).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200103,location=Paris).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200103,location=__HIVE_DEFAULT_PARTITION__).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200103,location=__HIVE_DEFAULT_PARTITION__).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200109,location=__HIVE_DEFAULT_PARTITION__).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200109,location=__HIVE_DEFAULT_PARTITION__).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200110,location=__HIVE_DEFAULT_PARTITION__).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=20200110,location=__HIVE_DEFAULT_PARTITION__).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=__HIVE_DEFAULT_PARTITION__,location=New York).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=__HIVE_DEFAULT_PARTITION__,location=New York).ename SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=__HIVE_DEFAULT_PARTITION__,location=__HIVE_DEFAULT_PARTITION__).eid SCRIPT []
+POSTHOOK: Lineage: emp PARTITION(bdate=__HIVE_DEFAULT_PARTITION__,location=__HIVE_DEFAULT_PARTITION__).ename SCRIPT []
+PREHOOK: query: DESCRIBE FORMATTED emp eid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@emp
+POSTHOOK: query: DESCRIBE FORMATTED emp eid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@emp
+col_name            	eid                 
+data_type           	int                 
+min                 	1                   
+max                 	8                   
+num_nulls           	2                   
+distinct_count      	8                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"eid\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED emp ename
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@emp
+POSTHOOK: query: DESCRIBE FORMATTED emp ename
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@emp
+col_name            	ename               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	2                   
+distinct_count      	6                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ename\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED emp bdate
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@emp
+POSTHOOK: query: DESCRIBE FORMATTED emp bdate
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@emp
+col_name            	bdate               
+data_type           	int                 
+min                 	20200101            
+max                 	20200110            
+num_nulls           	3                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bdate\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED emp location
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@emp
+POSTHOOK: query: DESCRIBE FORMATTED emp location
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@emp
+col_name            	location            
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	4                   
+distinct_count      	3                   
+avg_col_len         	100.0               
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"location\":\"true\"}}

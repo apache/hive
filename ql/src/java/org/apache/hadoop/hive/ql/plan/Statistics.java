@@ -258,7 +258,7 @@ public class Statistics implements Serializable {
         if (cs.getNumNulls() < 0 || existing.getNumNulls() < 0) {
           existing.setNumNulls(-1);
         } else {
-          existing.setNumNulls(StatsUtils.safeAdd(existing.getNumNulls(), cs.getNumNulls()));
+          existing.setNumNulls(Math.max(existing.getNumNulls(), cs.getNumNulls()));
         }
         existing.setCountDistint(Math.max(existing.getCountDistint(), cs.getCountDistint()));
       }
