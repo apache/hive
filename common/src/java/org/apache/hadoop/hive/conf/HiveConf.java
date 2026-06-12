@@ -4890,7 +4890,7 @@ public class HiveConf extends Configuration {
     LLAP_IO_NONVECTOR_WRAPPER_ENABLED("hive.llap.io.nonvector.wrapper.enabled", true,
         "Whether the LLAP IO layer is enabled for non-vectorized queries that read inputs\n" +
         "that can be vectorized"),
-    LLAP_IO_MEMORY_MODE("hive.llap.io.memory.mode", "cache",
+    LLAP_IO_MEMORY_MODE("hive.llap.io.memory.mode", "none",
         new StringSet("cache", "none"),
         "LLAP IO memory usage; 'cache' (the default) uses data and metadata cache with a\n" +
         "custom off-heap allocator, 'none' doesn't use either (this mode may result in\n" +
