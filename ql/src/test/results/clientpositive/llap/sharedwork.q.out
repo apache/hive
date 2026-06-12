@@ -607,7 +607,7 @@ INNER JOIN (SELECT `p_size` + 1 AS `$f0`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
 GROUP BY `p_size` + 1) AS `t15` ON `t11`.`$f1` = `t15`.`$f0`) AS `t16` ON `t`.`p_type` = `t16`.`p_type` AND `t`.`size` = `t16`.`size`) AS `t17`
-WHERE (`t17`.`$f2` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0) AND (`t17`.`p_type` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`ck` < `t17`.`c` IS NOT TRUE OR `t17`.`$f2` IS NOT NULL) AND (`t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`p_type` IS NOT NULL OR `t17`.`$f2` IS NOT NULL)
+WHERE (`t17`.`$f2` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0) AND (`t17`.`p_type` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0 OR (`t17`.`ck` < `t17`.`c` IS NULL OR NOT `t17`.`ck` < `t17`.`c`) OR `t17`.`$f2` IS NOT NULL) AND (`t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`p_type` IS NOT NULL OR `t17`.`$f2` IS NOT NULL)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
