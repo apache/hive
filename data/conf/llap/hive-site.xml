@@ -330,6 +330,11 @@
   <value>true</value>
 </property>
 
+<property>
+  <name>hive.llap.io.memory.mode</name>
+  <value>none</value>
+</property>
+
 <!-- hadoop IPC options -->
 <property>
   <name>ipc.client.low-latency</name>
