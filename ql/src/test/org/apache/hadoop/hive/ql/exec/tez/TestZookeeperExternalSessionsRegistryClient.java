@@ -229,7 +229,6 @@ public class TestZookeeperExternalSessionsRegistryClient {
         for (ZookeeperExternalSessionsRegistryClient registry :
             new ZookeeperExternalSessionsRegistryClient[] {registry1, registry2, registry3}) {
           String session = registry.getSession();
-          System.out.println("warmup session: " + session);
           registry.returnSession(session);
         }
         client.delete().forPath(effectivePath + "/warmup");
