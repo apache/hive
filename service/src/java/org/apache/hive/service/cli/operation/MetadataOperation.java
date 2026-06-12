@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.operation;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -28,9 +29,11 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.ColumnDescriptor;
+import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationType;
+import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 
@@ -167,5 +170,15 @@ public abstract class MetadataOperation extends Operation {
       firstColumn = false;
     }
     return debugMessage.toString();
+  }
+
+  protected RowSet extractSubsetRowSet(
+      FetchOrientation orientation, long maxRows, RowSet rowSet) throws HiveSQLException {
+    assertState(Collections.singleton(OperationState.FINISHED));
+    validateDefaultFetchOrientation(orientation);
+    if (orientation.equals(FetchOrientation.FETCH_FIRST)) {
+      rowSet.setStartOffset(0);
+    }
+    return rowSet.extractSubset((int) maxRows);
   }
 }
