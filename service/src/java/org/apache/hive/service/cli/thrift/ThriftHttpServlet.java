@@ -382,7 +382,7 @@ public class ThriftHttpServlet extends TServlet {
     LOG.info("Successfully validated the token for user {}", user);
     // token is valid; now confirm if the client identifier matches with the relay state.
     Map<String, String> keyValues = new HashMap<>();
-    String decodedToken = new String(Base64.getDecoder().decode(token));
+    String decodedToken = new String(Base64.getDecoder().decode(token), java.nio.charset.StandardCharsets.UTF_8);
     if (HiveSamlAuthTokenGenerator.parse(decodedToken, keyValues)) {
       String relayStateKey = keyValues.get(HiveSamlAuthTokenGenerator.RELAY_STATE);
       if (!HiveSamlRelayStateStore.get()
