@@ -101,18 +101,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: int), col2 (type: string), col3 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: string), _col2 (type: int)
             Execution mode: llap
             LLAP IO: no inputs
@@ -122,10 +122,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                       output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -134,7 +134,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int)
                   outputColumnNames: id, name, age
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(id), max(id), count(1), count(id), compute_bit_vector_hll(id), max(length(name)), avg(COALESCE(length(name),0)), count(name), compute_bit_vector_hll(name), min(age), max(age), count(age), compute_bit_vector_hll(age)
                     minReductionHashAggr: 0.4
@@ -345,18 +345,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: int), UDFToLong(col2) (type: bigint), col3 (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: bigint)
                           null sort order: aa
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: bigint)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col2 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -366,10 +366,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                       output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -378,7 +378,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string)
                   outputColumnNames: customer_id, order_id, product
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(customer_id), max(customer_id), count(1), count(customer_id), compute_bit_vector_hll(customer_id), min(order_id), max(order_id), count(order_id), compute_bit_vector_hll(order_id), max(length(product)), avg(COALESCE(length(product),0)), count(product), compute_bit_vector_hll(product)
                     minReductionHashAggr: 0.4
@@ -567,18 +567,18 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 216 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: int), col2 (type: string), CAST( col3 AS decimal(10,2)) (type: decimal(10,2))
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: a
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: string), _col2 (type: decimal(10,2))
             Execution mode: llap
             LLAP IO: no inputs
@@ -588,10 +588,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: decimal(10,2))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                       output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -600,7 +600,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col2 (type: decimal(10,2))
                   outputColumnNames: product_id, category, price
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(product_id), max(product_id), count(1), count(product_id), compute_bit_vector_hll(product_id), max(length(category)), avg(COALESCE(length(category),0)), count(category), compute_bit_vector_hll(category), min(price), max(price), count(price), compute_bit_vector_hll(price)
                     minReductionHashAggr: 0.4

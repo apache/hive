@@ -105,7 +105,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Lateral View Join Operator
                         outputColumnNames: _col6
-                        Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
@@ -124,11 +124,11 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
                       UDTF Operator
-                        Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                         function name: explode
                         Lateral View Join Operator
                           outputColumnNames: _col6
-                          Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                             Select Operator

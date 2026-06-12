@@ -2977,26 +2977,39 @@ public class StatsRulesProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
+      HiveConf conf = aspCtx.getConf();
       UDTFOperator uop = (UDTFOperator) nd;
 
       Operator<? extends OperatorDesc> parent = uop.getParentOperators().get(0);
-
       Statistics parentStats = parent.getStatistics();
 
       if (parentStats != null) {
-        Statistics st = parentStats.clone();
-
-        float udtfFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
+        float udtfFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_UDTF_FACTOR);
         long numRows = Math.max(StatsUtils.safeMult(parentStats.getNumRows(), udtfFactor), 1);
         long dataSize = StatsUtils.safeMult(parentStats.getDataSize(), udtfFactor);
-        st.setNumRows(numRows);
-        st.setDataSize(dataSize);
 
-        List<ColStatistics> colStatsList = st.getColumnStats();
-        if(colStatsList != null) {
-          StatsUtils.scaleColStatistics(colStatsList, udtfFactor);
-          st.setColumnStats(colStatsList);
+        List<ColStatistics> outputColStats = new ArrayList<>();
+        RowSchema outputSchema = uop.getSchema();
+        if (outputSchema != null && outputSchema.getSignature() != null) {
+          long totalAvgColLen = 0;
+          for (ColumnInfo ci : outputSchema.getSignature()) {
+            ColStatistics cs = new ColStatistics(ci.getInternalName(), ci.getTypeName());
+            cs.setCountDistint(0);
+            cs.setNumNulls(-1);
+            long colLen = StatsUtils.getAvgColLenOf(conf, ci.getObjectInspector(), ci.getTypeName());
+            cs.setAvgColLen(colLen);
+            cs.setIsEstimated(true);
+            totalAvgColLen += colLen;
+            outputColStats.add(cs);
+          }
+          if (totalAvgColLen > 0) {
+            dataSize = StatsUtils.safeMult(numRows, totalAvgColLen);
+          }
         }
+
+        Statistics st = new Statistics(numRows, dataSize, 0, 0);
+        st.setColumnStatsState(Statistics.State.COMPLETE);
+        st.setColumnStats(outputColStats);
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("[0] STATS-" + uop.toString() + ": " + st.extendedToString());
