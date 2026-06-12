@@ -692,7 +692,7 @@ public class TezTask extends Task<TezWork> {
 
   private DAGClient submitInternal(DAG dag, TezSession sessionState) throws TezException, IOException {
     runtimeContext.init(sessionState);
-    return sessionState.getTezClient().submitDAG(dag);
+    return sessionState.submitDAG(dag);
   }
 
   private void sessionDestroyOrReturnToPool(Ref<TezSession> sessionStateRef,

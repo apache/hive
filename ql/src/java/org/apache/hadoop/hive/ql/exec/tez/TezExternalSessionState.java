@@ -24,12 +24,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.tez.client.TezClient;
+import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
+import org.apache.tez.dag.api.client.DAGClient;
+import org.apache.tez.dag.api.client.rpc.DAGClientAMProtocolBlockingPB;
+import org.apache.tez.dag.api.client.rpc.DAGClientAMProtocolRPC;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 
 /**
@@ -133,6 +138,11 @@ public class TezExternalSessionState extends TezSessionState {
     // We never close external sessions that don't have errors.
     try {
       if (externalAppId != null) {
+        LOG.debug("Returning external session with appID: {}", externalAppId);
+        SessionState sessionState = SessionState.get();
+        if (sessionState != null) {
+          sessionState.setTezSession(null);
+        }
         registry.returnSession(externalAppId);
       }
     } catch (Exception e) {
@@ -180,5 +190,36 @@ public class TezExternalSessionState extends TezSessionState {
     LOG.info("Killing the query {}: {}", queryId, reason);
     killQuery.killQuery(queryId, reason, conf, false);
     return true;
+  }
+
+  @Override
+  public DAGClient submitDAG(DAG dag) throws TezException, IOException {
+    try {
+      return getTezClient().submitDAG(dag);
+    } catch (TezException e) {
+      if (e.getMessage() == null || !e.getMessage().contains("App master already running a DAG")) {
+        throw e;
+      }
+      tryKillRunningDAGs(getTezClient());
+      return getTezClient().submitDAG(dag);
+    }
+  }
+
+  private void tryKillRunningDAGs(TezClient session) throws TezException {
+    LOG.info("External session has an AM which is already running a DAG on app ID {}", externalAppId);
+    DAGClientAMProtocolBlockingPB proxy = session.sendAMHeartbeat(null);
+    if (proxy == null) {
+      throw new TezException("Error while trying to connect to AM for app ID " + externalAppId);
+    }
+    try {
+      DAGClientAMProtocolRPC.GetAllDAGsResponseProto allDAGSResponse =
+          proxy.getAllDAGs(null, DAGClientAMProtocolRPC.GetAllDAGsRequestProto.newBuilder().build());
+      for (String dagId : allDAGSResponse.getDagIdList()) {
+        LOG.info("External session: attempting to kill dagId {} on app ID {}", dagId, externalAppId);
+        proxy.tryKillDAG(null, DAGClientAMProtocolRPC.TryKillDAGRequestProto.newBuilder().setDagId(dagId).build());
+      }
+    } catch (Exception e) {
+      throw new TezException("Error while trying to kill existing DAG running on app ID " + externalAppId, e);
+    }
   }
 }
