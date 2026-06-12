@@ -40,6 +40,11 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
   static final String HIKARI = "hikaricp";
+  static final long DEFAULT_CONNECTION_TIMEOUT_MS = 60000;
+
+  private static final Map<String, Long> TIME_DURATION_CONFIGS = Map.of(
+      "connectionTimeout", DEFAULT_CONNECTION_TIMEOUT_MS
+  );
 
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
@@ -50,8 +55,9 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
 
-    Properties properties = replacePrefix(DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
-
+    Properties properties = replacePrefix(
+        DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI, TIME_DURATION_CONFIGS));
+    
     HikariConfig config;
     try {
       config = new HikariConfig(properties);

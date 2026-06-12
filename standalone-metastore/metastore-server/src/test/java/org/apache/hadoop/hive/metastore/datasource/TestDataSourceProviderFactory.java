@@ -72,7 +72,7 @@ public class TestDataSourceProviderFactory {
     DataSource ds = dsp.create(conf);
     Assert.assertTrue(ds instanceof HikariDataSource);
     HikariDataSource hds = (HikariDataSource) ds;
-    Assert.assertEquals(30000L, hds.getConnectionTimeout());
+    Assert.assertEquals(60000L, hds.getConnectionTimeout());
     Assert.assertEquals(1800000L, hds.getMaxLifetime());
     Assert.assertEquals(0L, hds.getLeakDetectionThreshold());
     Assert.assertEquals(1L, hds.getInitializationFailTimeout());
@@ -97,6 +97,32 @@ public class TestDataSourceProviderFactory {
     Assert.assertEquals(50000L, hds.getMaxLifetime());
     Assert.assertEquals(3600L, hds.getLeakDetectionThreshold());
     Assert.assertEquals(-1L, hds.getInitializationFailTimeout());
+  }
+
+  @Test
+  public void testHikariCpConnectionTimeout() throws SQLException {
+    Object[][] timeoutConfigs = {
+        {"90000", 90000L},
+        {"60s", 60000L},
+        {"90000ms", 90000L}
+    };
+
+    for (Object[] config : timeoutConfigs) {
+      String timeoutValue = (String) config[0];
+      long expectedValue = (long) config[1];
+
+      MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+      conf.set(HikariCPDataSourceProvider.HIKARI + ".connectionTimeout", timeoutValue);
+      conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+      
+      DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+      Assert.assertNotNull(dsp);
+
+      DataSource ds = dsp.create(conf);
+      Assert.assertTrue(ds instanceof HikariDataSource);
+      HikariDataSource hds = (HikariDataSource) ds;
+      Assert.assertEquals(expectedValue, hds.getConnectionTimeout());
+    }
   }
 
   @Test

@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.metastore.datasource;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 import com.google.common.collect.Iterables;
@@ -51,16 +53,36 @@ public interface DataSourceProvider {
    * @return The pooling type string associated with the data source.
    */
   String getPoolingType();
-
+  
   /**
-   * @param hdpConfig
+   * @param hdpConfig Hadoop configuration object
+   * @param prefix the prefix for connection pool specific properties
+   * @param timeDurationConfigs map of property names (without prefix) to their default values in milliseconds.
    * @return subset of properties prefixed by a connection pool specific substring
    */
-  static Properties getPrefixedProperties(Configuration hdpConfig, String factoryPrefix) {
+  static Properties getPrefixedProperties(Configuration hdpConfig, String prefix,
+      Map<String, Long> timeDurationConfigs) {
     Properties dataSourceProps = new Properties();
     Iterables.filter(
-        hdpConfig, (entry -> entry.getKey() != null && entry.getKey().startsWith(factoryPrefix)))
-        .forEach(entry -> dataSourceProps.put(entry.getKey(), entry.getValue()));
+        hdpConfig, (entry -> entry.getKey() != null && entry.getKey().startsWith(prefix)))
+        .forEach(entry -> {
+          String fullKey = entry.getKey();
+          String keyName = fullKey.substring(prefix.length() + 1);
+          Long defaultVal = timeDurationConfigs.get(keyName);
+          if (defaultVal != null) {
+            long timeMs = hdpConfig.getTimeDuration(fullKey, defaultVal, TimeUnit.MILLISECONDS);
+            dataSourceProps.setProperty(fullKey, String.valueOf(timeMs));
+          } else {
+            dataSourceProps.setProperty(fullKey, entry.getValue());
+          }
+        });
+    
+    // Setting defaults for time duration configs if not set already
+    timeDurationConfigs.forEach((keyName, defaultVal) -> {
+      String fullKey = prefix + "." + keyName;
+      dataSourceProps.putIfAbsent(fullKey, String.valueOf(defaultVal));
+    });
+    
     return dataSourceProps;
   }
 
