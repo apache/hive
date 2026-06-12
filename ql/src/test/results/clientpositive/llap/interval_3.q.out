@@ -159,10 +159,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: CAST( d_date AS DATE) is not null (type: boolean)
+                  filterExpr: (((((((CAST( d_date AS DATE) + INTERVAL'1-0') + INTERVAL'0-2') + INTERVAL'5 00:00:00.000000000') + INTERVAL'0 04:00:00.000000000') + INTERVAL'0 00:10:00.000000000') + INTERVAL'0 00:00:09.000000000') is not null and (CAST( d_date AS DATE) + INTERVAL'1-2') is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: CAST( d_date AS DATE) is not null (type: boolean)
+                    predicate: (((((((CAST( d_date AS DATE) + INTERVAL'1-0') + INTERVAL'0-2') + INTERVAL'5 00:00:00.000000000') + INTERVAL'0 04:00:00.000000000') + INTERVAL'0 00:10:00.000000000') + INTERVAL'0 00:00:09.000000000') is not null and (CAST( d_date AS DATE) + INTERVAL'1-2') is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_week_seq (type: int), ((((((CAST( d_date AS DATE) + INTERVAL'1-0') + INTERVAL'0-2') + INTERVAL'5 00:00:00.000000000') + INTERVAL'0 04:00:00.000000000') + INTERVAL'0 00:10:00.000000000') + INTERVAL'0 00:00:09.000000000') (type: timestamp), (CAST( d_date AS DATE) + INTERVAL'1-2') (type: date)
