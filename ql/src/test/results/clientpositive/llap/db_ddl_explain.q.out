@@ -159,6 +159,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop Database
+      catalog: hive
       database: d
       if exists: false
 

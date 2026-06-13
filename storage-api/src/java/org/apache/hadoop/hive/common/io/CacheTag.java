@@ -30,17 +30,19 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Used for identifying the related object of the buffer stored in cache.
  * Comes in 3 flavours to optimize for minimal memory overhead:
- * - TableCacheTag for tables without partitions: DB/table level
- * - SinglePartitionCacheTag for tables with 1 partition level: DB/table/1st_partition
+ * - TableCacheTag for tables without partitions: catalog.DB.table level
+ * - SinglePartitionCacheTag for tables with 1 partition level: catalog.DB.table/1st_partition
  * - MultiPartitionCacheTag for tables with &gt; 1 partition levels:
- *     DB/table/1st_partition/.../nth_partition .
+ *     catalog.DB.table/1st_partition/.../nth_partition .
  */
 public abstract class CacheTag implements Comparable<CacheTag> {
 
   private static final String ENCODING = "UTF-8";
 
   /**
-   * Prepended by DB name and '.' .
+   * Catalog-qualified, DB-qualified table name.  Stored as {@code catalog.db.table}, e.g.
+   * {@code hive.salesdb.orders}.  For DB-level parent tags produced by
+   * {@link #createParentCacheTag} this is just {@code catalog.db}.
    */
   protected final String tableName;
 
@@ -48,6 +50,9 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     this.tableName = tableName.intern();
   }
 
+  /**
+   * Returns the full catalog-qualified, DB-qualified name, i.e. {@code catalog.db.table}.
+   */
   public String getTableName() {
     return tableName;
   }
@@ -71,8 +76,7 @@ public abstract class CacheTag implements Comparable<CacheTag> {
 
   @Override
   public int hashCode() {
-    int res = tableName.hashCode();
-    return res;
+    return tableName.hashCode();
   }
 
   public static final CacheTag build(String tableName) {
@@ -82,8 +86,16 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     return new TableCacheTag(tableName);
   }
 
-  public static final CacheTag build(String tableName, LinkedHashMap<String, String> partDescMap) {
-    if (StringUtils.isEmpty(tableName) || partDescMap == null || partDescMap.isEmpty()) {
+  public static final CacheTag build(String catalogName, String dbAndTableName) {
+    return build(catalogName + "." + dbAndTableName);
+  }
+
+  public static final CacheTag build(String catalogName, String dbAndTableName, LinkedHashMap<String, String> partDescMap) {
+    return build(catalogName + "." + dbAndTableName, partDescMap);
+  }
+
+  public static final CacheTag build(String fullTableName, LinkedHashMap<String, String> partDescMap) {
+    if (StringUtils.isEmpty(fullTableName) || partDescMap == null || partDescMap.isEmpty()) {
       throw new IllegalArgumentException();
     }
 
@@ -95,10 +107,10 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     }
 
     if (partDescs.length == 1) {
-      return new SinglePartitionCacheTag(tableName, partDescs[0]);
+      return new SinglePartitionCacheTag(fullTableName, partDescs[0]);
     } else {
       // In this case it must be >1
-      return new MultiPartitionCacheTag(tableName, partDescs);
+      return new MultiPartitionCacheTag(fullTableName, partDescs);
     }
   }
 
@@ -118,7 +130,10 @@ public abstract class CacheTag implements Comparable<CacheTag> {
   /**
    * Constructs a (fake) parent CacheTag instance by walking back in the hierarchy i.e. stepping
    * from inner to outer partition levels, then producing a CacheTag for the table and finally
-   * the DB.
+   * the DB.  The catalog prefix is preserved throughout the walk.
+   *
+   * <p>The walk terminates at the DB level: a tag whose {@code tableName} contains exactly one
+   * dot (i.e. {@code catalog.db}) has no parent, so {@code null} is returned.
    */
   public static final CacheTag createParentCacheTag(CacheTag tag) {
     if (tag == null) {
@@ -134,20 +149,18 @@ public abstract class CacheTag implements Comparable<CacheTag> {
         }
         return new MultiPartitionCacheTag(multiPartitionCacheTag.tableName, subList);
       } else {
-        return new SinglePartitionCacheTag(multiPartitionCacheTag.tableName,
-            multiPartitionCacheTag.partitionDesc[0]);
+        return new SinglePartitionCacheTag(
+            multiPartitionCacheTag.tableName, multiPartitionCacheTag.partitionDesc[0]);
       }
     }
 
     if (tag instanceof SinglePartitionCacheTag) {
       return new TableCacheTag(tag.tableName);
     } else {
-      // DB level
-      int ix = tag.tableName.indexOf(".");
-      if (ix <= 0) {
+      if (tag.tableName.split("\\.", 3).length < 3) {
         return null;
       }
-      return new TableCacheTag(tag.tableName.substring(0, ix));
+      return new TableCacheTag(tag.tableName.substring(0, tag.tableName.lastIndexOf('.')));
     }
 
   }
@@ -381,4 +394,3 @@ public abstract class CacheTag implements Comparable<CacheTag> {
   }
 
 }
-

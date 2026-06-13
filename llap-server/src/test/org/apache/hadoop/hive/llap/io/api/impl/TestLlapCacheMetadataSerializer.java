@@ -107,7 +107,7 @@ public class TestLlapCacheMetadataSerializer {
     LlapDaemonProtocolProtos.CacheEntryRange re2 =
         LlapDaemonProtocolProtos.CacheEntryRange.newBuilder().setStart(14L).setEnd(38L).build();
     LlapDaemonProtocolProtos.CacheTag ct =
-        LlapDaemonProtocolProtos.CacheTag.newBuilder().setTableName("dummyTable").build();
+        LlapDaemonProtocolProtos.CacheTag.newBuilder().setTableName("hive.default.dummyTable").build();
 
     Path path = new Path(TEST_PATH);
     SyntheticFileId syntheticFileId = fileId(path);
