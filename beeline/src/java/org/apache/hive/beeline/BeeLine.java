@@ -470,16 +470,34 @@ public class BeeLine implements Closeable {
     String version =
         pack.getImplementationVersion() == null ? "" : pack.getImplementationVersion();
     String sep = System.lineSeparator();
+    boolean color = bannerColorEnabled();
+    String yellow = color ? "\u001b[1;33m" : "";
+    String reset = color ? "\u001b[0m" : "";
     return new StringBuilder(512)
+        .append(yellow)
         .append("    _   _ _____     _______").append(sep)
         .append("   | | | |_ _\\ \\   / / ____|").append(sep)
         .append("   | |_| || | \\ \\ / /|  _|").append(sep)
         .append("   |  _  || |  \\ V / | |___").append(sep)
-        .append("   |_| |_|___|  \\_/  |_____|").append(sep)
+        .append("   |_| |_|___|  \\_/  |_____|").append(reset).append(sep)
         .append(sep)
         .append("Apache Hive " + version + " - Beeline").append(sep)
         .append("The Open Data Warehouse for Modern Analytics").append(sep)
         .toString();
+  }
+
+  /** True when the active terminal can display ANSI colors (not dumb/redirected). */
+  private boolean bannerColorEnabled() {
+    try {
+      LineReader lr = getLineReader();
+      if (lr != null && lr.getTerminal() != null) {
+        String type = lr.getTerminal().getType();
+        return type != null && !Terminal.TYPE_DUMB.equals(type);
+      }
+    } catch (Exception e) {
+      // no usable terminal -> stay monochrome
+    }
+    return false;
   }
 
   String getApplicationContactInformation() {
