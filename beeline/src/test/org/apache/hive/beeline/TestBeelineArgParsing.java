@@ -132,6 +132,32 @@ public class TestBeelineArgParsing {
   }
 
   @Test
+  public void testSyntaxHighlightingDefaultsOn() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String[] args = new String[] {"-u", "url", "-n", "name", "-p", "password", "-d", "driver"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.getOpts().getSyntaxHighlighting());
+  }
+
+  @Test
+  public void testSyntaxHighlightingDisabledByArg() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String[] args = new String[] {"--syntaxHighlighting=false", "-u", "url", "-n", "name",
+      "-p", "password", "-d", "driver"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertFalse(bl.getOpts().getSyntaxHighlighting());
+  }
+
+  @Test
+  public void testSyntaxHighlightingArgIsCaseInsensitive() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String[] args = new String[] {"--syntaxhighlighting=false", "-u", "url", "-n", "name",
+      "-p", "password", "-d", "driver"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertFalse(bl.getOpts().getSyntaxHighlighting());
+  }
+
+  @Test
   public void testEmptyHiveConfVariable() throws Exception {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream ops = new PrintStream(os);
