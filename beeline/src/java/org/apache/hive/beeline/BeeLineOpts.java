@@ -223,7 +223,6 @@ public class BeeLineOpts implements Completer {
       // don't save maxwidth: it is automatically set based on
       // the terminal configuration
       props.remove(PROPERTY_PREFIX + "maxwidth");
-      props.store(out, beeLine.getApplicationTitle());
     } catch (Exception e) {
       beeLine.handleException(e);
     }
