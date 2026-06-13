@@ -39,7 +39,6 @@ String uptime = (up / 86400) + "d " + ((up % 86400) / 3600) + "h " + ((up % 3600
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <script><%= THEME_BOOT %></script>
   <link href="/static/css/hive.tw.css?v=<%= startcode %>" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="/static/css/json.human.css">
   <script src="/static/js/jquery.min.js?v=<%= startcode %>"></script>
   <script src="/static/js/json.human.js?v=<%= startcode %>"></script>
   <script src="/static/js/llap.js?v=<%= startcode %>"></script>
