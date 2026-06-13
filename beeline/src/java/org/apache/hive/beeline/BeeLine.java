@@ -122,25 +122,6 @@ import org.jline.reader.impl.history.DefaultHistory;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
-import static org.jline.builtins.Completers.FileNameCompleter;
-
-
-/**
- * A console SQL shell with command completion.
- * <p>
- * TODO:
- * <ul>
- * <li>User-friendly connection prompts</li>
- * <li>Page results</li>
- * <li>Handle binary data (blob fields)</li>
- * <li>Implement command aliases</li>
- * <li>Stored procedure execution</li>
- * <li>Binding parameters to prepared statements</li>
- * <li>Scripting language</li>
- * <li>XA transactions</li>
- * </ul>
- *
- */
 @SuppressWarnings("static-access")
 public class BeeLine implements Closeable {
   private static final ResourceBundle resourceBundle =
