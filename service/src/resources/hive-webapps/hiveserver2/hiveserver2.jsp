@@ -19,239 +19,168 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8"
   import="org.apache.hadoop.conf.Configuration"
-  import="org.apache.hadoop.hive.conf.HiveConf"
   import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
   import="org.apache.hive.common.util.HiveVersionInfo"
   import="org.apache.hive.http.HttpServer"
-  import="org.apache.hive.service.cli.operation.Operation"
-  import="org.apache.hive.service.cli.operation.SQLOperation"
   import="org.apache.hadoop.hive.ql.QueryInfo"
   import="org.apache.hive.service.cli.session.SessionManager"
   import="org.apache.hive.service.cli.session.HiveSession"
   import="javax.servlet.ServletContext"
-  import="java.util.Collection"
+  import="java.util.ArrayList"
   import="java.util.Date"
   import="java.util.List"
   import="jodd.net.HtmlEncoder"
 %>
-
+<%@ include file="ui-common.jspf" %>
 <%
 ServletContext ctx = getServletContext();
-Configuration conf = (Configuration)ctx.getAttribute("hive.conf");
+Configuration conf = (Configuration) ctx.getAttribute("hive.conf");
 long startcode = conf.getLong("startcode", System.currentTimeMillis());
-SessionManager sessionManager =
-  (SessionManager)ctx.getAttribute("hive.sm");
+SessionManager sessionManager = (SessionManager) ctx.getAttribute("hive.sm");
 String remoteUser = request.getRemoteUser();
-%>
+long now = System.currentTimeMillis();
 
-<!--[if IE]>
-<!DOCTYPE html>
-<![endif]-->
-<?xml version="1.0" encoding="UTF-8" ?>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>HiveServer2</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="/static/css/hive.css" rel="stylesheet">
-  </head>
-
-  <body>
-  <div class="navbar  navbar-fixed-top navbar-default">
-      <div class="container">
-          <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="/hiveserver2.jsp"><img src="/static/hive_logo.jpeg" alt="Hive Logo"/></a>
-          </div>
-          <div class="collapse navbar-collapse">
-              <ul class="nav navbar-nav">
-                <li class="active"><a href="/">Home</a></li>
-                <li><a href="/logs/">Local logs</a></li>
-                <li><a href="/jmx">Metrics Dump</a></li>
-                <li><a href="/conf">Hive Configuration</a></li>
-                <li><a href="/stacks">Stack Trace</a></li>
-                <li><a href="/llap.html">Llap Daemons</a></li>
-                <li><a href="/logconf.jsp">Configure logging</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
-      </div>
-    </div>
-
-<div class="container">
-    <div class="row inner_header">
-        <div class="page-header">
-            <h1>HiveServer2</h1>
-        </div>
-    </div>
-    <div class="row">
-
-<%
-if (sessionManager != null) { 
-  long currentTime = System.currentTimeMillis();
-%> 
-
-<section>
-<h2>Active Sessions</h2>
-<table class="table table-striped">
-    <tr>
-        <th>User Name</th>
-        <th>IP Address</th>
-        <th>Operation Count</th>
-        <th>Active Time (s)</th>
-        <th>Idle Time (s)</th>
-    </tr>
-<%
-Collection<HiveSession> hiveSessions = sessionManager.getSessions();
-int sessionCount = 0;
-for (HiveSession hiveSession: hiveSessions) {
-    // Permission check
-    if (!HttpServer.hasAccess(remoteUser, hiveSession.getUserName(), ctx, request)) {
-        continue;
-    }
-    sessionCount++;
-%>
-    <tr>
-        <td><%= hiveSession.getUserName() %></td>
-        <td><%= hiveSession.getIpAddress() %></td>
-        <td><%= hiveSession.getOpenOperationCount() %></td>
-        <td><%= (currentTime - hiveSession.getCreationTime())/1000 %></td>
-        <td><%= (currentTime - hiveSession.getLastAccessTime())/1000 %></td>
-    </tr>
-<%
+List<HiveSession> sessions = new ArrayList<HiveSession>();
+List<QueryInfo> open = new ArrayList<QueryInfo>();
+List<QueryInfo> closed = new ArrayList<QueryInfo>();
+if (sessionManager != null) {
+  for (HiveSession s : sessionManager.getSessions())
+    if (HttpServer.hasAccess(remoteUser, s.getUserName(), ctx, request)) sessions.add(s);
+  for (QueryInfo q : sessionManager.getOperationManager().getLiveQueryInfos())
+    if (HttpServer.hasAccess(remoteUser, q.getUserName(), ctx, request)) open.add(q);
+  for (QueryInfo q : sessionManager.getOperationManager().getHistoricalQueryInfos())
+    if (HttpServer.hasAccess(remoteUser, q.getUserName(), ctx, request)) closed.add(q);
 }
+long up = (now - startcode) / 1000;
+String uptime = (up / 86400) + "d " + ((up % 86400) / 3600) + "h " + ((up % 3600) / 60) + "m";
+String maxClosed = conf.get(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES.varname);
+
+String rev = HiveVersionInfo.getRevision();
+if (rev != null && rev.length() > 8) rev = rev.substring(0, 8);
+String host; try { host = java.net.InetAddress.getLocalHost().getHostName(); } catch (Exception e) { host = "unknown"; }
+String javaInfo = System.getProperty("java.version") + " &middot; " + System.getProperty("java.vm.name");
+String osInfo = System.getProperty("os.name") + " " + System.getProperty("os.version");
+String engine = conf.get("hive.execution.engine", "?");
+String msUris = conf.get("hive.metastore.uris", "");
+String metastore = (msUris == null || msUris.trim().isEmpty()) ? "embedded" : msUris;
+int cores = Runtime.getRuntime().availableProcessors();
 %>
-<tr>
-  <td colspan="5">Total number of sessions: <%= sessionCount %></td>
-</tr>
-</table>
-</section>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard &middot; Hive WebUI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <script><%= THEME_BOOT %></script>
+  <link href="/static/css/hive.tw.css?v=<%= startcode %>" rel="stylesheet">
+  <script src="/static/js/hive-ui.js?v=<%= startcode %>"></script>
+</head>
+<body class="font-sans bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 antialiased">
+<div class="flex min-h-screen">
+  <%= sidebar("dashboard", HiveVersionInfo.getVersion(), uptime) %>
+  <div class="flex-1 min-w-0 flex flex-col">
+    <header class="sticky top-0 z-10 h-14 flex items-center gap-4 px-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+      <div>
+        <h1 class="text-base font-semibold leading-tight text-slate-900 dark:text-slate-100">Dashboard</h1>
+        <p class="text-xs text-slate-400">Live overview of this HiveServer2 instance</p>
+      </div>
+      <%= topbarTools() %>
+    </header>
+    <main class="p-6 w-full max-w-[1400px] stagger">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <%= kpi("Active sessions", String.valueOf(sessions.size()), "connected clients", true) %>
+        <%= kpi("Open queries", String.valueOf(open.size()), "currently executing", false) %>
+        <%= kpi("Closed (last " + maxClosed + ")", String.valueOf(closed.size()), "recent history", false) %>
+        <%= kpi("Uptime", uptime, "since " + new Date(startcode), false) %>
+      </div>
 
-<section>
-<h2>Open Queries</h2>
-<table class="table table-striped">
-    <tr>
-        <th>User Name</th>
-        <th>Query</th>
-        <th>Execution Engine</th>
-        <th>State</th>
-        <th>Opened Timestamp</th>
-        <th>Opened (s)</th>
-        <th>Latency (s)</th>
-        <th>Drilldown Link</th>
-    </tr>
-    <%
-      int queries = 0;
-      Collection<QueryInfo> operations = sessionManager.getOperationManager().getLiveQueryInfos();
-      for (QueryInfo operation : operations) {
-          if (!HttpServer.hasAccess(remoteUser, operation.getUserName(), ctx, request)) {
-              continue;
-          }
-          queries++;
-    %>
-    <tr>
-        <td><%= operation.getUserName() %></td>
-        <td><%= HtmlEncoder.text(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
-        <td><%= operation.getExecutionEngine() %>
-        <td><%= operation.getState() %></td>
-        <td><%= new Date(operation.getBeginTime()) %></td>
-        <td><%= operation.getElapsedTime()/1000 %></td>
-        <td><%= operation.getRuntime() == null ? "Not finished" : operation.getRuntime()/1000 %></td>
-        <% String link = "/query_page.html?operationId=" + operation.getOperationId(); %>
-        <td>  <a href= <%= link %>>Drilldown</a> </td>
-    </tr>
+      <%= panelOpen("Active sessions", "sessions", sessions.size()) %>
+        <thead><tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <th class="px-5 py-2.5 font-medium">User</th><th class="px-5 py-2.5 font-medium">IP address</th>
+          <th class="px-5 py-2.5 font-medium text-right">Operations</th><th class="px-5 py-2.5 font-medium text-right">Active (s)</th>
+          <th class="px-5 py-2.5 font-medium text-right">Idle (s)</th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<% for (HiveSession s : sessions) { %>
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+            <td class="px-5 py-2.5 font-mono"><%= HtmlEncoder.text(s.getUserName()) %></td>
+            <td class="px-5 py-2.5 font-mono text-slate-500 dark:text-slate-400"><%= HtmlEncoder.text(s.getIpAddress()) %></td>
+            <td class="px-5 py-2.5 text-right tabular-nums font-mono text-slate-500"><%= s.getOpenOperationCount() %></td>
+            <td class="px-5 py-2.5 text-right tabular-nums font-mono text-slate-500"><%= (now - s.getCreationTime()) / 1000 %></td>
+            <td class="px-5 py-2.5 text-right tabular-nums font-mono text-slate-500"><%= (now - s.getLastAccessTime()) / 1000 %></td>
+          </tr>
+<% } if (sessions.isEmpty()) { %>
+          <tr><td colspan="5" class="px-5 py-8 text-center text-slate-400">No active sessions</td></tr>
+<% } %>
+        </tbody></table></div></section>
 
-<%
-  }
-%>
-<tr>
-  <td colspan="8">Total number of queries: <%= queries %></td>
-</tr>
-</table>
-</section>
+      <%= panelOpen("Open queries", "open", open.size()) %>
+        <thead><tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <th class="px-5 py-2.5 font-medium">User</th><th class="px-5 py-2.5 font-medium">Query</th>
+          <th class="px-5 py-2.5 font-medium">Engine</th><th class="px-5 py-2.5 font-medium">State</th>
+          <th class="px-5 py-2.5 font-medium">Opened</th><th class="px-5 py-2.5 font-medium text-right">Elapsed (s)</th><th class="px-5 py-2.5"></th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<% for (QueryInfo q : open) {
+     String qs = q.getQueryDisplay() == null ? "Unknown" : q.getQueryDisplay().getQueryString();
+     String st = String.valueOf(q.getState()); %>
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+            <td class="px-5 py-2.5 font-mono"><%= HtmlEncoder.text(q.getUserName()) %></td>
+            <td class="px-5 py-2.5"><span class="block font-mono text-xs max-w-[420px] truncate text-slate-600 dark:text-slate-300" title="<%= HtmlEncoder.text(qs) %>"><%= HtmlEncoder.text(qs) %></span></td>
+            <td class="px-5 py-2.5 font-mono text-slate-500"><%= HtmlEncoder.text(String.valueOf(q.getExecutionEngine())) %></td>
+            <td class="px-5 py-2.5"><span class="<%= pill(st) %>"><%= HtmlEncoder.text(st) %></span></td>
+            <td class="px-5 py-2.5 font-mono text-xs text-slate-500"><%= new Date(q.getBeginTime()) %></td>
+            <td class="px-5 py-2.5 text-right tabular-nums font-mono text-slate-500"><%= q.getElapsedTime() / 1000 %></td>
+            <td class="px-5 py-2.5"><a class="text-brand-600 dark:text-brand hover:underline" href="/query_page.html?operationId=<%= q.getOperationId() %>">Details</a></td>
+          </tr>
+<% } if (open.isEmpty()) { %>
+          <tr><td colspan="7" class="px-5 py-8 text-center text-slate-400">No queries currently executing</td></tr>
+<% } %>
+        </tbody></table></div></section>
 
+      <%= panelOpen("Closed queries", "closed", closed.size()) %>
+        <thead><tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <th class="px-5 py-2.5 font-medium">User</th><th class="px-5 py-2.5 font-medium">Query</th>
+          <th class="px-5 py-2.5 font-medium">Engine</th><th class="px-5 py-2.5 font-medium">State</th>
+          <th class="px-5 py-2.5 font-medium">Closed</th><th class="px-5 py-2.5 font-medium text-right">Latency (s)</th><th class="px-5 py-2.5"></th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<% for (QueryInfo q : closed) {
+     String qs = q.getQueryDisplay() == null ? "Unknown" : q.getQueryDisplay().getQueryString();
+     String st = String.valueOf(q.getState()); %>
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+            <td class="px-5 py-2.5 font-mono"><%= HtmlEncoder.text(q.getUserName()) %></td>
+            <td class="px-5 py-2.5"><span class="block font-mono text-xs max-w-[420px] truncate text-slate-600 dark:text-slate-300" title="<%= HtmlEncoder.text(qs) %>"><%= HtmlEncoder.text(qs) %></span></td>
+            <td class="px-5 py-2.5 font-mono text-slate-500"><%= HtmlEncoder.text(String.valueOf(q.getExecutionEngine())) %></td>
+            <td class="px-5 py-2.5"><span class="<%= pill(st) %>"><%= HtmlEncoder.text(st) %></span></td>
+            <td class="px-5 py-2.5 font-mono text-xs text-slate-500"><%= q.getEndTime() == null ? "In progress" : new Date(q.getEndTime()) %></td>
+            <td class="px-5 py-2.5 text-right tabular-nums font-mono text-slate-500"><%= q.getRuntime() == null ? "n/a" : (q.getRuntime() / 1000) %></td>
+            <td class="px-5 py-2.5"><a class="text-brand-600 dark:text-brand hover:underline" href="/query_page.html?operationId=<%= q.getOperationId() %>">Details</a></td>
+          </tr>
+<% } if (closed.isEmpty()) { %>
+          <tr><td colspan="7" class="px-5 py-8 text-center text-slate-400">No closed queries yet</td></tr>
+<% } %>
+        </tbody></table></div></section>
 
-<section>
-<h2>Last Max <%= conf.get(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES.varname) %> Closed Queries</h2>
-<table class="table table-striped">
-    <tr>
-        <th>User Name</th>
-        <th>Query</th>
-        <th>Execution Engine</th>
-        <th>State</th>
-        <th>Opened (s)</th>
-        <th>Closed Timestamp</th>
-        <th>Latency (s)</th>
-        <th>Drilldown Link</th>
-    </tr>
-    <%
-      queries = 0;
-      operations = sessionManager.getOperationManager().getHistoricalQueryInfos();
-      for (QueryInfo operation : operations) {
-          if (!HttpServer.hasAccess(remoteUser, operation.getUserName(), ctx, request)) {
-              continue;
-          }
-          queries++;
-    %>
-    <tr>
-        <td><%= operation.getUserName() %></td>
-        <td><%= HtmlEncoder.text(operation.getQueryDisplay() == null ? "Unknown" : operation.getQueryDisplay().getQueryString()) %></td>
-        <td><%= operation.getExecutionEngine() %>
-        <td><%= operation.getState() %></td>
-        <td><%= operation.getElapsedTime()/1000 %></td>
-        <td><%= operation.getEndTime() == null ? "In Progress" : new Date(operation.getEndTime()) %></td>
-        <td><%= operation.getRuntime() == null ? "n/a" : operation.getRuntime()/1000 %></td>
-        <% String link = "/query_page.html?operationId=" + operation.getOperationId(); %>
-        <td>  <a href= <%= link %>>Drilldown</a> </td>
-    </tr>
-
-<%
-  }
-%>
-<tr>
-  <td colspan="8">Total number of queries: <%= queries %></td>
-</tr>
-</table>
-</section>
-
-<%
- }
-%>
-
-    <section>
-    <h2>Software Attributes</h2>
-    <table class="table table-striped">
-        <tr>
-            <th>Attribute Name</th>
-            <th>Value</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td>Hive Version</td>
-            <td><%= HiveVersionInfo.getVersion() %>, r<%= HiveVersionInfo.getRevision() %></td>
-            <td>Hive version and revision</td>
-        </tr>
-        <tr>
-            <td>Hive Compiled</td>
-            <td><%= HiveVersionInfo.getDate() %>, <%= HiveVersionInfo.getUser() %></td>
-            <td>When Hive was compiled and by whom</td>
-        </tr>
-        <tr>
-            <td>HiveServer2 Start Time</td>
-            <td><%= new Date(startcode) %></td>
-            <td>Date stamp of when this HiveServer2 was started</td>
-        </tr>
-    </table>
-    </section>
-    </div>
+      <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mb-6 overflow-hidden">
+        <div class="flex items-center gap-3 px-5 h-12 border-b border-slate-200 dark:border-slate-800"><h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">System information</h2></div>
+        <div class="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <%= attrCard("Hive version", HiveVersionInfo.getVersion() + " (r" + rev + ")") %>
+          <%= attrCard("Built", HiveVersionInfo.getDate()) %>
+          <%= attrCard("Built by", HiveVersionInfo.getUser()) %>
+          <%= attrCard("HS2 started", new Date(startcode).toString()) %>
+          <%= attrCard("Uptime", uptime) %>
+          <%= attrCard("Host", HtmlEncoder.text(host)) %>
+          <%= attrCard("Java", javaInfo) %>
+          <%= attrCard("Operating system", osInfo) %>
+          <%= attrCard("CPU cores", String.valueOf(cores)) %>
+          <%= attrCard("Execution engine", HtmlEncoder.text(engine)) %>
+          <%= attrCard("Metastore", HtmlEncoder.text(metastore)) %>
+        </div>
+      </section>
+    </main>
+  </div>
 </div>
 </body>
 </html>

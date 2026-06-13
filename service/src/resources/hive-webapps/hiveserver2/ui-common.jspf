@@ -1,0 +1,66 @@
+<%--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Shared UI helpers (sidebar, KPI/panel/pill builders, theme boot) for the
+  modernized HiveServer2 Web UI. Included statically by the page JSPs.
+--%>
+<%!
+  // Chrome shared with the Jamon-rendered query page lives in WebUiLayout so
+  // both render an identical sidebar/theme. (KPI/panel/attr builders below are
+  // JSP-only and stay here.)
+  static final String THEME_BOOT = org.apache.hive.service.servlet.WebUiLayout.themeBoot();
+
+  String pill(String s) {
+    return org.apache.hive.service.servlet.WebUiLayout.pill(s);
+  }
+
+  String sidebar(String active, String version, String uptime) {
+    return org.apache.hive.service.servlet.WebUiLayout.sidebar(active, version, uptime);
+  }
+
+  String topbarTools() {
+    return "<div class=\"ml-auto flex items-center gap-2\">"
+      + "<button id=\"refreshBtn\" class=\"inline-flex items-center gap-2 h-8 px-3 rounded-lg text-sm border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100\">"
+      + "<svg class=\"w-4 h-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d='M21 12a9 9 0 1 1-3-6.7L21 8'/><path d='M21 3v5h-5'/></svg>"
+      + "<span id=\"refreshLbl\">Off</span></button>"
+      + "<button onclick=\"toggleTheme()\" aria-label=\"Toggle theme\" class=\"inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100\"><span id=\"themeIcon\">&#9728;</span></button></div>";
+  }
+
+  String kpi(String label, String value, String sub, boolean accent) {
+    String v = accent ? "mt-1 text-3xl font-semibold tabular-nums text-brand-600 dark:text-brand"
+                      : "mt-1 text-3xl font-semibold tabular-nums text-slate-900 dark:text-slate-100";
+    String dc = value.matches("\\d+") ? " data-count=\"" + value + "\"" : "";
+    return "<div class=\"rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-colors hover:border-slate-300 dark:hover:border-slate-700\">"
+      + "<div class=\"text-xs font-medium uppercase tracking-wide text-slate-400\">" + label + "</div>"
+      + "<div class=\"" + v + "\"" + dc + " style=\"font-size:" + (value.length() > 7 ? "20px" : "30px") + "\">" + value + "</div>"
+      + "<div class=\"mt-1 text-xs text-slate-400\">" + sub + "</div></div>";
+  }
+
+  String panelOpen(String title, String id, int count) {
+    return "<section class=\"rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mb-6 overflow-hidden\">"
+      + "<div class=\"flex items-center gap-3 px-5 h-12 border-b border-slate-200 dark:border-slate-800\">"
+      + "<h2 class=\"text-sm font-semibold text-slate-900 dark:text-slate-100\">" + title + "</h2>"
+      + "<span class=\"text-xs text-slate-400\"><span id=\"" + id + "-count\">" + count + "</span> total</span>"
+      + "<div class=\"ml-auto\"><input data-search=\"" + id + "\" placeholder=\"Filter&hellip;\" class=\"h-8 w-52 px-3 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand/40\"></div></div>"
+      + "<div class=\"overflow-x-auto\"><table class=\"w-full text-sm\" id=\"" + id + "\">";
+  }
+
+  String attrCard(String label, String value) {
+    return "<div class=\"rounded-lg border border-slate-200 dark:border-slate-800 p-3\">"
+      + "<div class=\"text-[10px] font-semibold uppercase tracking-wider text-slate-400\">" + label + "</div>"
+      + "<div class=\"mt-1 text-sm font-mono text-slate-700 dark:text-slate-200 break-all\">" + value + "</div></div>";
+  }
+%>
