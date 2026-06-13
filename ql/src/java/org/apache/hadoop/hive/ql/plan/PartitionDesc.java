@@ -258,6 +258,13 @@ public class PartitionDesc implements Serializable, Cloneable {
     return tableName;
   }
 
+  /**
+   * Returns the catalog name for this partition's table.
+   */
+  public String getCatalogName() {
+    return tableDesc.getCatalogName();
+  }
+
   @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getInputFileFormatClassName() {
     return getInputFileFormatClass().getName();
