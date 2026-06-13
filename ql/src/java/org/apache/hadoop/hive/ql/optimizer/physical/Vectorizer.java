@@ -40,6 +40,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
@@ -5096,18 +5097,18 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (int outputIdx = evaluatorCount; outputIdx < outputSize && idx < count; outputIdx++) {
       final int outputColumn = outputColumnProjectionMap[outputIdx];
       final String colName = outputSignature.get(outputIdx).getInternalName();
-      int matchedPartitionIdx = -1;
-      for (int partitionIdx = 0; partitionIdx < count; partitionIdx++) {
-        if (!placed[partitionIdx]) {
-          if (partitionExprNodeDescs[partitionIdx] instanceof ExprNodeColumnDesc &&
-              ((ExprNodeColumnDesc) partitionExprNodeDescs[partitionIdx]).getColumn().equals(colName)) {
-            matchedPartitionIdx = partitionIdx;
-            break;
-          }
-          if (matchedPartitionIdx == -1 && partitionColumnMap[partitionIdx] == outputColumn) {
-            matchedPartitionIdx = partitionIdx;
-          }
-        }
+      int matchedPartitionIdx = IntStream.range(0, count)
+          .filter(p -> !placed[p])
+          .filter(p -> partitionExprNodeDescs[p] instanceof ExprNodeColumnDesc colDesc &&
+              colDesc.getColumn().equals(colName))
+          .findFirst()
+          .orElse(-1);
+      
+      if (matchedPartitionIdx == -1) {
+        matchedPartitionIdx = IntStream.range(0, count)
+            .filter(p -> !placed[p] && partitionColumnMap[p] == outputColumn)
+            .findFirst()
+            .orElse(-1);
       }
 
       if (matchedPartitionIdx != -1 && !ArrayUtils.contains(orderColumnMap, outputColumn)) {
