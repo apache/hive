@@ -26,6 +26,8 @@
 module.exports = {
   content: [
     "service/src/resources/hive-webapps/**/*.{jsp,jspf,html,js}",
+    "service/src/jamon/**/*.jamon",
+    "service/src/java/org/apache/hive/service/servlet/WebUiLayout.java",
   ],
   darkMode: "class",
   theme: {
