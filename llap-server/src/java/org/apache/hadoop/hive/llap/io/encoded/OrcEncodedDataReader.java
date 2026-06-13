@@ -377,7 +377,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // TODO: I/O threadpool could be here - one thread per stripe; for now, linear.
     boolean hasFileId = this.fileKey != null;
     OrcBatchKey stripeKey = hasFileId ? new OrcBatchKey(fileKey, -1, 0) : null;
-    pathCache.touch(fileKey, split.getPath().toUri().toString());
+    if (pathCache != null) {
+      pathCache.touch(fileKey, split.getPath().toUri().toString()); 
+    }
     for (int stripeIxMod = 0; stripeIxMod < stripeRgs.length; ++stripeIxMod) {
       if (processStop()) {
         return;
