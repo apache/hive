@@ -5077,23 +5077,22 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   /**
-   * Reorders partitionColumnMap, partitionColumnVectorTypes, and partitionExpressions in-place
-   * so that projected partition-only columns come first in SELECT output order. Any partition
-   * columns not found in the output are appended at the end in their original plan order.
+   * Reorders partitionColumnMap and partitionColumnVectorTypes in-place so that projected
+   * partition-only columns come first in SELECT output order. Any partition columns not found in
+   * the output are appended at the end in their original plan order.
    */
   private static void reorderPartitionColumnsToMatchOutputOrder(List<ColumnInfo> outputSignature,
       int evaluatorCount, int[] outputColumnProjectionMap, int[] orderColumnMap,
       ExprNodeDesc[] partitionExprNodeDescs, int[] partitionColumnMap,
-      Type[] partitionColumnVectorTypes, VectorExpression[] partitionExpressions) {
+      Type[] partitionColumnVectorTypes) {
     final int count = partitionColumnMap.length;
     final int[] orderedMap = new int[count];
     final Type[] orderedTypes = new Type[count];
-    final VectorExpression[] orderedExprs = new VectorExpression[count];
     final boolean[] placed = new boolean[count];
 
     int idx = 0;
     final int outputSize = outputSignature.size();
-    
+
     for (int outputIdx = evaluatorCount; outputIdx < outputSize && idx < count; outputIdx++) {
       final int outputColumn = outputColumnProjectionMap[outputIdx];
       final String colName = outputSignature.get(outputIdx).getInternalName();
@@ -5110,11 +5109,10 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         }
       }
-      
+
       if (matchedPartitionIdx != -1 && !ArrayUtils.contains(orderColumnMap, outputColumn)) {
         orderedMap[idx] = outputColumn;
         orderedTypes[idx] = partitionColumnVectorTypes[matchedPartitionIdx];
-        orderedExprs[idx] = partitionExpressions[matchedPartitionIdx];
         placed[matchedPartitionIdx] = true;
         idx++;
       }
@@ -5124,13 +5122,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (!placed[p]) {
         orderedMap[idx] = partitionColumnMap[p];
         orderedTypes[idx] = partitionColumnVectorTypes[p];
-        orderedExprs[idx] = partitionExpressions[p];
         idx++;
       }
     }
     System.arraycopy(orderedMap, 0, partitionColumnMap, 0, count);
     System.arraycopy(orderedTypes, 0, partitionColumnVectorTypes, 0, count);
-    System.arraycopy(orderedExprs, 0, partitionExpressions, 0, count);
   }
 
   private static void determineKeyAndNonKeyInputColumnMap(int[] outputColumnProjectionMap,
@@ -5249,8 +5245,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     if (isPartitionOrderBy && partitionKeyCount > 1) {
       reorderPartitionColumnsToMatchOutputOrder(outputSignature, evaluatorCount, outputColumnProjectionMap,
-          orderColumnMap, partitionExprNodeDescs, partitionColumnMap,
-          partitionColumnVectorTypes, partitionExpressions);
+          orderColumnMap, partitionExprNodeDescs, partitionColumnMap, partitionColumnVectorTypes);
     }
 
     VectorExpression[][] evaluatorInputExpressions = new VectorExpression[evaluatorCount][];
