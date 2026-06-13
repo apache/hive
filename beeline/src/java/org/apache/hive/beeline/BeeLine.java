@@ -450,21 +450,6 @@ public class BeeLine implements Closeable {
     }
   }
 
-
-  String getApplicationTitle() {
-    Package pack = BeeLine.class.getPackage();
-
-    return loc("app-introduction", new Object[] { "Beeline",
-        pack.getImplementationVersion() == null ? "???" : pack.getImplementationVersion(),
-        "Apache Hive",
-        // getManifestAttribute ("Specification-Title"),
-        // getManifestAttribute ("Implementation-Version"),
-        // getManifestAttribute ("Implementation-ReleaseDate"),
-        // getManifestAttribute ("Implementation-Vendor"),
-        // getManifestAttribute ("Implementation-License"),
-    });
-  }
-
   String getApplicationBanner() {
     Package pack = BeeLine.class.getPackage();
     String version =
