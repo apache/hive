@@ -18,128 +18,80 @@
  */
 --%>
 <%@ page contentType="text/html;charset=UTF-8"
-         import="org.apache.hadoop.conf.Configuration"
-         import="org.apache.hadoop.hive.conf.HiveConf"
-         import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
-         import="org.apache.hive.common.util.HiveVersionInfo"
-         import="org.apache.hive.http.HttpServer"
-         import="org.apache.hive.service.cli.operation.Operation"
-         import="org.apache.hive.service.cli.operation.SQLOperation"
-         import="org.apache.hadoop.hive.ql.QueryInfo"
-         import="org.apache.hive.service.cli.session.SessionManager"
-         import="org.apache.hive.service.cli.session.HiveSession"
-         import="javax.servlet.ServletContext"
-         import="java.util.Collection"
-         import="java.util.Date"
-         import="java.util.List"
-         import="jodd.net.HtmlEncoder"
+  import="org.apache.hadoop.conf.Configuration"
+  import="org.apache.hive.common.util.HiveVersionInfo"
+  import="javax.servlet.ServletContext"
 %>
-
+<%@ include file="ui-common.jspf" %>
 <%
-    ServletContext ctx = getServletContext();
-    Configuration conf = (Configuration)ctx.getAttribute("hive.conf");
-    long startcode = conf.getLong("startcode", System.currentTimeMillis());
-    SessionManager sessionManager =
-            (SessionManager)ctx.getAttribute("hive.sm");
-    String remoteUser = request.getRemoteUser();
+ServletContext ctx = getServletContext();
+Configuration conf = (Configuration) ctx.getAttribute("hive.conf");
+long startcode = conf != null ? conf.getLong("startcode", System.currentTimeMillis()) : System.currentTimeMillis();
+long up = (System.currentTimeMillis() - startcode) / 1000;
+String uptime = (up / 86400) + "d " + ((up % 86400) / 3600) + "h " + ((up % 3600) / 60) + "m";
 %>
-
-<!--[if IE]>
 <!DOCTYPE html>
-<![endif]-->
-<?xml version="1.0" encoding="UTF-8" ?>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-    <meta charset="utf-8">
-    <title>HiveServer2</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="/static/css/hive.css" rel="stylesheet">
-
-    <link rel="stylesheet" type="text/css" href="/static/css/json.human.css">
-    <script src="/static/js/jquery.min.js"></script>
-    <script src="/static/js/json.human.js"></script>
-    <script src="/static/js/logconf.js"></script>
+  <meta charset="utf-8">
+  <title>Logging &middot; Hive WebUI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <script><%= THEME_BOOT %></script>
+  <link href="/static/css/hive.tw.css?v=<%= startcode %>" rel="stylesheet">
+  <script src="/static/js/jquery.min.js?v=<%= startcode %>"></script>
+  <script src="/static/js/json.human.js?v=<%= startcode %>"></script>
+  <script src="/static/js/logconf.js?v=<%= startcode %>"></script>
+  <script src="/static/js/hive-ui.js?v=<%= startcode %>"></script>
 </head>
+<body class="font-sans bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 antialiased">
+<div class="flex min-h-screen">
+  <%= sidebar("logging", HiveVersionInfo.getVersion(), uptime) %>
+  <div class="flex-1 min-w-0 flex flex-col">
+    <header class="sticky top-0 z-10 h-14 flex items-center gap-4 px-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+      <div>
+        <h1 class="text-base font-semibold leading-tight text-slate-900 dark:text-slate-100">Logging</h1>
+        <p class="text-xs text-slate-400">Inspect and adjust runtime log levels</p>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <button onclick="loadLoggers()" class="inline-flex items-center gap-2 h-8 px-3 rounded-lg text-sm border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">&#10227; Reload</button>
+        <button onclick="toggleTheme()" aria-label="Toggle theme" class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"><span id="themeIcon">&#9728;</span></button>
+      </div>
+    </header>
+    <main class="p-6 w-full max-w-[1100px] stagger">
+      <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mb-6 overflow-hidden">
+        <div class="flex items-center gap-3 px-5 h-12 border-b border-slate-200 dark:border-slate-800"><h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Current loggers</h2></div>
+        <div class="overflow-x-auto"><table id="current-logs-table" class="w-full text-sm">
+          <thead><tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200 dark:border-slate-800">
+            <th class="px-6 py-3 font-medium">Logger name</th><th class="px-6 py-3 font-medium w-40">Level</th>
+          </tr></thead>
+          <tbody id="current-logs" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+        </table></div>
+      </section>
 
-<body>
-    <div class="navbar  navbar-fixed-top navbar-default">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/hiveserver2.jsp"><img src="/static/hive_logo.jpeg" alt="Hive Logo"/></a>
-            </div>
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li class="active"><a href="/">Home</a></li>
-                    <li><a href="/logs/">Local logs</a></li>
-                    <li><a href="/jmx">Metrics Dump</a></li>
-                    <li><a href="/conf">Hive Configuration</a></li>
-                    <li><a href="/stacks">Stack Trace</a></li>
-                    <li><a href="/llap.html">Llap Daemons</a></li>
-                    <li><a href="/logconf.jsp">Configure logging</a></li>
-                </ul>
-            </div><!--/.nav-collapse -->
+      <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+        <div class="flex items-center gap-3 px-5 h-12 border-b border-slate-200 dark:border-slate-800"><h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Set log level</h2></div>
+        <div class="p-5 flex flex-wrap items-end gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Logger name</label>
+            <select id="logger-name" class="h-9 w-80 px-3 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand/40">
+              <option value="">Loading loggers&hellip;</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Level</label>
+            <select id="log-level" class="h-9 px-3 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand/40">
+              <option value="TRACE">TRACE</option><option value="DEBUG">DEBUG</option>
+              <option value="INFO">INFO</option><option value="WARN">WARN</option>
+              <option value="ERROR">ERROR</option><option value="FATAL">FATAL</option>
+            </select>
+          </div>
+          <button id="log-level-submit" type="button" class="h-9 px-4 rounded-lg text-sm font-medium bg-brand text-slate-900 hover:bg-brand-500 transition-colors">Apply</button>
         </div>
-    </div>
-
-
-    <div class="container">
-        <div class="row inner_header">
-            <div class="page-header">
-                <h2>Configure HiveServer2 logging</h2>
-            </div>
-        </div>
-        <div class="row">
-
-            <div id="current-logs-container">
-                <table id="current-logs-table" class="table">
-                    <thead>
-                        <tr>
-                            <th>Logger name</th>
-                            <th>Log level</th>
-                        </tr>
-                    </thead>
-                    <tbody id="current-logs">
-
-                    </tbody>
-                </table>
-            </div>
-            <% Collection<HiveSession> hiveSessions = sessionManager.getSessions();
-            for (HiveSession hiveSession: hiveSessions) {
-            if( hiveSessions.size() > 0 && HttpServer.hasAccess(remoteUser, hiveSession.getUserName(), ctx, request) ) { %>
-            <h2>Set new logging rules</h2>
-
-            <form class="form-inline">
-                <div class="form-group">
-                    <input type="text" id="logger-name" class="form-control" placeholder="Logger name">
-                </div>
-                <div class="form-group">
-                    <select id="log-level" class="form-control">
-                        <option value="TRACE">TRACE</option>
-                        <option value="DEBUG">DEBUG</option>
-                        <option value="INFO">INFO</option>
-                        <option value="WARN">WARN</option>
-                        <option value="ERROR">ERROR</option>
-                        <option value="FATAL">FATAL</option>
-                    </select>
-                </div>
-
-                <button id="log-level-submit" type="button" class="btn btn-primary">Submit</button>
-            </form>
-            <% } else {%>
-                <p>Cannot configure logging rules unless user <%= hiveSession.getUserName() %> has admin privileges</p>
-            <% }
-             } %>
-        </div>
-    </div>
-
+        <p class="px-5 pb-5 -mt-2 text-xs text-slate-400">Requires administrator privileges; changes take effect immediately and are not persisted across restarts.</p>
+      </section>
+    </main>
+  </div>
+</div>
 </body>
 </html>
