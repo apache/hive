@@ -51,9 +51,30 @@ if (sessionManager != null) {
   for (QueryInfo q : sessionManager.getOperationManager().getHistoricalQueryInfos())
     if (HttpServer.hasAccess(remoteUser, q.getUserName(), ctx, request)) closed.add(q);
 }
+// Finished queries: most recently closed first (in-progress entries last).
+closed.sort((a, b) -> Long.compare(
+    b.getEndTime() == null ? Long.MIN_VALUE : b.getEndTime(),
+    a.getEndTime() == null ? Long.MIN_VALUE : a.getEndTime()));
+// Query metrics by OperationState, counted across live + historical queries.
+int pendingQ = 0, runningQ = 0, closedQ = 0, errorQ = 0;
+List<QueryInfo> allQ = new ArrayList<QueryInfo>(open);
+allQ.addAll(closed);
+for (QueryInfo q : allQ) {
+  String st = String.valueOf(q.getState());
+  if ("PENDING".equals(st)) pendingQ++;
+  else if ("RUNNING".equals(st)) runningQ++;
+  else if ("CLOSED".equals(st)) closedQ++;
+  else if ("ERROR".equals(st)) errorQ++;
+}
+// Live queries split into pending (queued) and active (everything else live).
+List<QueryInfo> pendingList = new ArrayList<QueryInfo>();
+List<QueryInfo> activeList = new ArrayList<QueryInfo>();
+for (QueryInfo q : open) {
+  if ("PENDING".equals(String.valueOf(q.getState()))) pendingList.add(q);
+  else activeList.add(q);
+}
 long up = (now - startcode) / 1000;
 String uptime = (up / 86400) + "d " + ((up % 86400) / 3600) + "h " + ((up % 3600) / 60) + "m";
-String maxClosed = conf.get(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES.varname);
 
 String rev = HiveVersionInfo.getRevision();
 if (rev != null && rev.length() > 8) rev = rev.substring(0, 8);
@@ -88,10 +109,12 @@ int cores = Runtime.getRuntime().availableProcessors();
       <%= topbarTools() %>
     </header>
     <main class="p-6 w-full max-w-[1400px] stagger">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         <%= kpi("Active sessions", String.valueOf(sessions.size()), "connected clients", true) %>
-        <%= kpi("Open queries", String.valueOf(open.size()), "currently executing", false) %>
-        <%= kpi("Closed (last " + maxClosed + ")", String.valueOf(closed.size()), "recent history", false) %>
+        <%= kpi("Pending queries", String.valueOf(pendingQ), "queued", "text-blue-600 dark:text-blue-400", null) %>
+        <%= kpi("Active queries", String.valueOf(runningQ), "running now", "text-cyan-600 dark:text-cyan-300", null) %>
+        <%= kpi("Finished queries", String.valueOf(closedQ), "completed", "text-emerald-600 dark:text-emerald-400", "Queries in CLOSED state (client finished; results released).") %>
+        <%= kpi("Failed queries", String.valueOf(errorQ), "errored", "text-red-600 dark:text-red-400", null) %>
         <%= kpi("Uptime", uptime, "since " + new Date(startcode), false) %>
       </div>
 
@@ -115,14 +138,36 @@ int cores = Runtime.getRuntime().availableProcessors();
 <% } %>
         </tbody></table></div></section>
 
-      <%= panelOpen("Open queries", "open", open.size()) %>
+      <%= panelOpen("Pending queries", "pending", pendingList.size()) %>
+        <thead><tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <th class="px-5 py-2.5 font-medium">User</th><th class="px-5 py-2.5 font-medium">Query</th>
+          <th class="px-5 py-2.5 font-medium">Engine</th>
+          <th class="px-5 py-2.5 font-medium">Submitted</th><th class="px-5 py-2.5 font-medium text-right">Waiting (s)</th><th class="px-5 py-2.5"></th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<% for (QueryInfo q : pendingList) {
+     String qs = q.getQueryDisplay() == null ? "Unknown" : q.getQueryDisplay().getQueryString(); %>
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+            <td class="px-5 py-2.5 font-mono"><%= HtmlEncoder.text(q.getUserName()) %></td>
+            <td class="px-5 py-2.5"><span class="block font-mono text-xs max-w-[420px] truncate text-slate-600 dark:text-slate-300" title="<%= HtmlEncoder.text(qs) %>"><%= HtmlEncoder.text(qs) %></span></td>
+            <td class="px-5 py-2.5 font-mono text-slate-500"><%= HtmlEncoder.text(String.valueOf(q.getExecutionEngine())) %></td>
+            <td class="px-5 py-2.5 font-mono text-xs text-slate-500"><%= new Date(q.getBeginTime()) %></td>
+            <td class="px-5 py-2.5 text-right tabular-nums font-mono text-slate-500"><%= q.getElapsedTime() / 1000 %></td>
+            <td class="px-5 py-2.5"><a class="text-brand-600 dark:text-brand hover:underline" href="/query_page.html?operationId=<%= q.getOperationId() %>">Details</a></td>
+          </tr>
+<% } if (pendingList.isEmpty()) { %>
+          <tr><td colspan="6" class="px-5 py-8 text-center text-slate-400">No pending queries</td></tr>
+<% } %>
+        </tbody></table></div><div data-pager="pending" data-page-size="25"></div></section>
+
+      <%= panelOpen("Active queries", "open", activeList.size()) %>
         <thead><tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200 dark:border-slate-800">
           <th class="px-5 py-2.5 font-medium">User</th><th class="px-5 py-2.5 font-medium">Query</th>
           <th class="px-5 py-2.5 font-medium">Engine</th><th class="px-5 py-2.5 font-medium">State</th>
           <th class="px-5 py-2.5 font-medium">Opened</th><th class="px-5 py-2.5 font-medium text-right">Elapsed (s)</th><th class="px-5 py-2.5"></th>
         </tr></thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-<% for (QueryInfo q : open) {
+<% for (QueryInfo q : activeList) {
      String qs = q.getQueryDisplay() == null ? "Unknown" : q.getQueryDisplay().getQueryString();
      String st = String.valueOf(q.getState()); %>
           <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
@@ -134,12 +179,12 @@ int cores = Runtime.getRuntime().availableProcessors();
             <td class="px-5 py-2.5 text-right tabular-nums font-mono text-slate-500"><%= q.getElapsedTime() / 1000 %></td>
             <td class="px-5 py-2.5"><a class="text-brand-600 dark:text-brand hover:underline" href="/query_page.html?operationId=<%= q.getOperationId() %>">Details</a></td>
           </tr>
-<% } if (open.isEmpty()) { %>
+<% } if (activeList.isEmpty()) { %>
           <tr><td colspan="7" class="px-5 py-8 text-center text-slate-400">No queries currently executing</td></tr>
 <% } %>
-        </tbody></table></div></section>
+        </tbody></table></div><div data-pager="open" data-page-size="25"></div></section>
 
-      <%= panelOpen("Closed queries", "closed", closed.size()) %>
+      <%= panelOpen("Finished queries", "closed", closed.size()) %>
         <thead><tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-200 dark:border-slate-800">
           <th class="px-5 py-2.5 font-medium">User</th><th class="px-5 py-2.5 font-medium">Query</th>
           <th class="px-5 py-2.5 font-medium">Engine</th><th class="px-5 py-2.5 font-medium">State</th>
@@ -159,9 +204,9 @@ int cores = Runtime.getRuntime().availableProcessors();
             <td class="px-5 py-2.5"><a class="text-brand-600 dark:text-brand hover:underline" href="/query_page.html?operationId=<%= q.getOperationId() %>">Details</a></td>
           </tr>
 <% } if (closed.isEmpty()) { %>
-          <tr><td colspan="7" class="px-5 py-8 text-center text-slate-400">No closed queries yet</td></tr>
+          <tr><td colspan="7" class="px-5 py-8 text-center text-slate-400">No finished queries yet</td></tr>
 <% } %>
-        </tbody></table></div></section>
+        </tbody></table></div><div data-pager="closed" data-page-size="25"></div></section>
 
       <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mb-6 overflow-hidden">
         <div class="flex items-center gap-3 px-5 h-12 border-b border-slate-200 dark:border-slate-800"><h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">System information</h2></div>

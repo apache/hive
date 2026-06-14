@@ -40,12 +40,20 @@
   }
 
   String kpi(String label, String value, String sub, boolean accent) {
-    String v = accent ? "mt-1 text-3xl font-semibold tabular-nums text-brand-600 dark:text-brand"
-                      : "mt-1 text-3xl font-semibold tabular-nums text-slate-900 dark:text-slate-100";
+    return kpi(label, value, sub,
+        accent ? "text-brand-600 dark:text-brand" : "text-slate-900 dark:text-slate-100", null);
+  }
+
+  // Colored-number KPI with an optional info tooltip (hover title + small icon).
+  String kpi(String label, String value, String sub, String numColor, String tooltip) {
     String dc = value.matches("\\d+") ? " data-count=\"" + value + "\"" : "";
-    return "<div class=\"rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-colors hover:border-slate-300 dark:hover:border-slate-700\">"
-      + "<div class=\"text-xs font-medium uppercase tracking-wide text-slate-400\">" + label + "</div>"
-      + "<div class=\"" + v + "\"" + dc + " style=\"font-size:" + (value.length() > 7 ? "20px" : "30px") + "\">" + value + "</div>"
+    String labelRow = tooltip == null ? label
+        : label + " <span class=\"cursor-help text-slate-300 dark:text-slate-600\" title=\""
+            + tooltip + "\">&#9432;</span>";
+    String cardTitle = tooltip == null ? "" : " title=\"" + tooltip + "\"";
+    return "<div class=\"rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-colors hover:border-slate-300 dark:hover:border-slate-700\"" + cardTitle + ">"
+      + "<div class=\"text-xs font-medium uppercase tracking-wide text-slate-400\">" + labelRow + "</div>"
+      + "<div class=\"mt-1 text-3xl font-semibold tabular-nums " + numColor + "\"" + dc + " style=\"font-size:" + (value.length() > 7 ? "20px" : "30px") + "\">" + value + "</div>"
       + "<div class=\"mt-1 text-xs text-slate-400\">" + sub + "</div></div>";
   }
 

@@ -59,9 +59,12 @@
 
   function tableSearch() {
     document.querySelectorAll("input[data-search]").forEach(function (inp) {
+      var id = inp.getAttribute("data-search");
+      // Paginated tables run their own filter+paging in pagedTables().
+      if (document.querySelector('[data-pager="' + id + '"]')) return;
       inp.addEventListener("input", function () {
         var q = inp.value.toLowerCase();
-        var tbl = document.getElementById(inp.getAttribute("data-search"));
+        var tbl = document.getElementById(id);
         if (!tbl) return;
         var shown = 0;
         tbl.querySelectorAll("tbody tr").forEach(function (tr) {
@@ -69,9 +72,72 @@
           tr.style.display = hit ? "" : "none";
           if (hit) shown++;
         });
-        var c = document.getElementById(inp.getAttribute("data-search") + "-count");
+        var c = document.getElementById(id + "-count");
         if (c) c.textContent = shown;
       });
+    });
+  }
+
+  // Client-side pagination for large tables (e.g. Active/Finished queries):
+  // shows PAGE_SIZE rows at a time with Prev/Next, and cooperates with the
+  // table's search box so filtering re-pages the matching rows.
+  function pagedTables() {
+    document.querySelectorAll("[data-pager]").forEach(function (pager) {
+      var id = pager.getAttribute("data-pager");
+      var size = parseInt(pager.getAttribute("data-page-size") || "25", 10);
+      var tbl = document.getElementById(id);
+      if (!tbl) return;
+      var search = document.querySelector('input[data-search="' + id + '"]');
+      var page = 0;
+
+      function dataRows() {
+        return Array.prototype.slice.call(tbl.querySelectorAll("tbody tr")).filter(function (tr) {
+          return !tr.querySelector("td[colspan]"); // skip the empty-state row
+        });
+      }
+
+      function render() {
+        var q = search ? search.value.toLowerCase() : "";
+        var rows = dataRows();
+        var matching = rows.filter(function (tr) {
+          return tr.textContent.toLowerCase().indexOf(q) !== -1;
+        });
+        var pages = Math.max(1, Math.ceil(matching.length / size));
+        if (page >= pages) page = pages - 1;
+        if (page < 0) page = 0;
+        rows.forEach(function (tr) { tr.style.display = "none"; });
+        var from = page * size;
+        matching.slice(from, from + size).forEach(function (tr) { tr.style.display = ""; });
+        var cnt = document.getElementById(id + "-count");
+        if (cnt) cnt.textContent = matching.length;
+        controls(matching.length, pages);
+      }
+
+      function controls(total, pages) {
+        if (total <= size) { pager.innerHTML = ""; return; }
+        var from = page * size + 1;
+        var to = Math.min((page + 1) * size, total);
+        var btn = "h-7 px-2.5 rounded-md border border-slate-200 dark:border-slate-700 " +
+          "hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none";
+        pager.innerHTML =
+          '<div class="flex items-center justify-between px-5 py-3 border-t border-slate-200 ' +
+          'dark:border-slate-800 text-xs text-slate-500">' +
+          "<span>Showing " + from + "\u2013" + to + " of " + total + "</span>" +
+          '<div class="flex items-center gap-1">' +
+          '<button type="button" data-pg="prev" class="' + btn + '"' + (page === 0 ? " disabled" : "") + '>Prev</button>' +
+          '<span class="px-2">Page ' + (page + 1) + " of " + pages + "</span>" +
+          '<button type="button" data-pg="next" class="' + btn + '"' + (page >= pages - 1 ? " disabled" : "") + '>Next</button>' +
+          "</div></div>";
+        var prev = pager.querySelector('[data-pg="prev"]');
+        var next = pager.querySelector('[data-pg="next"]');
+        if (prev) prev.addEventListener("click", function () { page--; render(); });
+        if (next) next.addEventListener("click", function () { page++; render(); });
+      }
+
+      if (search) {
+        search.addEventListener("input", function () { page = 0; render(); });
+      }
+      render();
     });
   }
 
@@ -135,6 +201,6 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     syncThemeLabel(document.documentElement.classList.contains("dark"));
-    tableSearch(); autoRefresh(); configFilter(); countUp();
+    tableSearch(); pagedTables(); autoRefresh(); configFilter(); countUp();
   });
 })();
