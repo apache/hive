@@ -142,78 +142,72 @@ public class HiveSqlHighlighter implements Highlighter {
 
   AttributedString highlight(String buffer) {
     AttributedStringBuilder sb = new AttributedStringBuilder();
+    Context ctx = new Context();
     int n = buffer.length();
     int i = 0;
-
-    String prevKw = "";
     while (i < n) {
-      char c = buffer.charAt(i);
-
-      if (c == '-' && i + 1 < n && buffer.charAt(i + 1) == '-') {
-        int end = buffer.indexOf('\n', i);
-        if (end < 0) {
-          end = n;
-        }
-        sb.append(buffer.substring(i, end), COMMENT_STYLE);
-        i = end;
-        continue;
-      }
-
-      if (c == '/' && i + 1 < n && buffer.charAt(i + 1) == '*') {
-        int end = buffer.indexOf("*/", i + 2);
-        end = (end < 0) ? n : end + 2;
-        sb.append(buffer.substring(i, end), COMMENT_STYLE);
-        i = end;
-        continue;
-      }
-
-      if (c == '\'' || c == '"') {
-        int end = scanString(buffer, i, c);
-        sb.append(buffer.substring(i, end), STRING_STYLE);
-        i = end;
-        continue;
-      }
-
-      if (c == '`') {
-        int end = i + 1;
-        while (end < n && buffer.charAt(end) != '`') {
-          end++;
-        }
-        end = Math.min(end + 1, n);
-        sb.append(buffer.substring(i, end), DEFAULT_STYLE);
-        i = end;
-        continue;
-      }
-
-      if (isDigit(c) || (c == '.' && i + 1 < n && isDigit(buffer.charAt(i + 1)))) {
-        int end = scanNumber(buffer, i);
-        sb.append(buffer.substring(i, end), NUMBER_STYLE);
-        i = end;
-        continue;
-      }
-
-      if (isIdentStart(c)) {
-        int end = i + 1;
-        while (end < n && isIdentPart(buffer.charAt(end))) {
-          end++;
-        }
-        String word = buffer.substring(i, end);
-        String upper = word.toUpperCase();
-        sb.append(word, styleForWord(upper, buffer, end, prevKw));
-        if (KEYWORDS.contains(upper)) {
-          prevKw = upper;
-        }
-        i = end;
-        continue;
-      }
-
-      sb.append(c);
-      if (c == '(' || c == ';') {
-        prevKw = "";
-      }
-      i++;
+      i = scanToken(sb, buffer, i, ctx);
     }
     return sb.toAttributedString();
+  }
+
+  /** Carry-over state between tokens: the last structural keyword seen. */
+  private static final class Context {
+    private String prevKw = "";
+  }
+
+  /** Append the single token starting at {@code i}; returns the index just past it. */
+  private int scanToken(AttributedStringBuilder sb, String buf, int i, Context ctx) {
+    char c = buf.charAt(i);
+    if (isLineCommentAt(buf, i)) {
+      int end = lineCommentEnd(buf, i);
+      sb.append(buf.substring(i, end), COMMENT_STYLE);
+      return end;
+    }
+    if (isBlockCommentAt(buf, i)) {
+      int end = blockCommentEnd(buf, i);
+      sb.append(buf.substring(i, end), COMMENT_STYLE);
+      return end;
+    }
+    if (c == '\'' || c == '"') {
+      int end = scanString(buf, i, c);
+      sb.append(buf.substring(i, end), STRING_STYLE);
+      return end;
+    }
+    if (c == '`') {
+      int end = scanQuotedIdentifier(buf, i);
+      sb.append(buf.substring(i, end), DEFAULT_STYLE);
+      return end;
+    }
+    if (isNumberStartAt(buf, i)) {
+      int end = scanNumber(buf, i);
+      sb.append(buf.substring(i, end), NUMBER_STYLE);
+      return end;
+    }
+    if (isIdentStart(c)) {
+      return scanWord(sb, buf, i, ctx);
+    }
+    sb.append(c);
+    if (c == '(' || c == ';') {
+      ctx.prevKw = "";
+    }
+    return i + 1;
+  }
+
+  /** Append an identifier/keyword token, update table-context, and return the end index. */
+  private int scanWord(AttributedStringBuilder sb, String buf, int i, Context ctx) {
+    int n = buf.length();
+    int end = i + 1;
+    while (end < n && isIdentPart(buf.charAt(end))) {
+      end++;
+    }
+    String word = buf.substring(i, end);
+    String upper = word.toUpperCase();
+    sb.append(word, styleForWord(upper, buf, end, ctx.prevKw));
+    if (KEYWORDS.contains(upper)) {
+      ctx.prevKw = upper;
+    }
+    return end;
   }
 
   private AttributedStyle styleForWord(String upper, String buffer, int wordEnd, String prevKw) {
@@ -286,6 +280,38 @@ public class HiveSqlHighlighter implements Highlighter {
     return i;
   }
 
+  private static boolean isLineCommentAt(String s, int i) {
+    return s.charAt(i) == '-' && i + 1 < s.length() && s.charAt(i + 1) == '-';
+  }
+
+  private static boolean isBlockCommentAt(String s, int i) {
+    return s.charAt(i) == '/' && i + 1 < s.length() && s.charAt(i + 1) == '*';
+  }
+
+  private static boolean isNumberStartAt(String s, int i) {
+    char c = s.charAt(i);
+    return isDigit(c) || (c == '.' && i + 1 < s.length() && isDigit(s.charAt(i + 1)));
+  }
+
+  private static int lineCommentEnd(String s, int i) {
+    int end = s.indexOf('\n', i);
+    return end < 0 ? s.length() : end;
+  }
+
+  private static int blockCommentEnd(String s, int i) {
+    int end = s.indexOf("*/", i + 2);
+    return end < 0 ? s.length() : end + 2;
+  }
+
+  private static int scanQuotedIdentifier(String s, int start) {
+    int n = s.length();
+    int end = start + 1;
+    while (end < n && s.charAt(end) != '`') {
+      end++;
+    }
+    return Math.min(end + 1, n);
+  }
+
   private static boolean isDigit(char c) {
     return c >= '0' && c <= '9';
   }
@@ -306,12 +332,14 @@ public class HiveSqlHighlighter implements Highlighter {
     return Collections.unmodifiableSet(s);
   }
 
-  // We do our own coloring; JLine's parser-error highlighting hooks are unused.
   @Override
   public void setErrorPattern(Pattern errorPattern) {
+    // No-op: this highlighter colorizes tokens itself and does not use JLine's
+    // parser-error highlighting hooks.
   }
 
   @Override
   public void setErrorIndex(int errorIndex) {
+    // No-op: see setErrorPattern.
   }
 }

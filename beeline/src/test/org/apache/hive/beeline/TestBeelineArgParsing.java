@@ -132,7 +132,7 @@ public class TestBeelineArgParsing {
   }
 
   @Test
-  public void testSyntaxHighlightingDefaultsOn() throws Exception {
+  public void testSyntaxHighlightingDefaultsOn() {
     TestBeeline bl = new TestBeeline();
     String[] args = new String[] {"-u", "url", "-n", "name", "-p", "password", "-d", "driver"};
     Assert.assertEquals(0, bl.initArgs(args));
@@ -140,19 +140,19 @@ public class TestBeelineArgParsing {
   }
 
   @Test
-  public void testSyntaxHighlightingDisabledByArg() throws Exception {
+  public void testSyntaxHighlightingDisabledByArg() {
     TestBeeline bl = new TestBeeline();
     String[] args = new String[] {"--syntaxHighlighting=false", "-u", "url", "-n", "name",
-      "-p", "password", "-d", "driver"};
+        "-p", "password", "-d", "driver"};
     Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertFalse(bl.getOpts().getSyntaxHighlighting());
   }
 
   @Test
-  public void testSyntaxHighlightingArgIsCaseInsensitive() throws Exception {
+  public void testSyntaxHighlightingArgIsCaseInsensitive() {
     TestBeeline bl = new TestBeeline();
     String[] args = new String[] {"--syntaxhighlighting=false", "-u", "url", "-n", "name",
-      "-p", "password", "-d", "driver"};
+        "-p", "password", "-d", "driver"};
     Assert.assertEquals(0, bl.initArgs(args));
     Assert.assertFalse(bl.getOpts().getSyntaxHighlighting());
   }
