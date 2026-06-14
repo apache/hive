@@ -110,6 +110,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.jline.builtins.Completers.FileNameCompleter;
 import org.jline.reader.Completer;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.History;
@@ -121,25 +122,6 @@ import org.jline.reader.impl.history.DefaultHistory;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
-import static org.jline.builtins.Completers.FileNameCompleter;
-
-
-/**
- * A console SQL shell with command completion.
- * <p>
- * TODO:
- * <ul>
- * <li>User-friendly connection prompts</li>
- * <li>Page results</li>
- * <li>Handle binary data (blob fields)</li>
- * <li>Implement command aliases</li>
- * <li>Stored procedure execution</li>
- * <li>Binding parameters to prepared statements</li>
- * <li>Scripting language</li>
- * <li>XA transactions</li>
- * </ul>
- *
- */
 @SuppressWarnings("static-access")
 public class BeeLine implements Closeable {
   private static final ResourceBundle resourceBundle =
@@ -468,19 +450,48 @@ public class BeeLine implements Closeable {
     }
   }
 
+  String getApplicationBanner() {
+    Package pack = BeeLine.class.getPackage();
+    String version =
+        pack.getImplementationVersion() == null ? "" : pack.getImplementationVersion();
+    String sep = System.lineSeparator();
+    boolean color = bannerColorEnabled();
+    String yellow = color ? "\u001b[1;33m" : "";
+    String reset = color ? "\u001b[0m" : "";
+    return new StringBuilder(512)
+        .append(yellow)
+        .append("    _   _ _____     _______").append(sep)
+        .append("   | | | |_ _\\ \\   / / ____|").append(sep)
+        .append("   | |_| || | \\ \\ / /|  _|").append(sep)
+        .append("   |  _  || |  \\ V / | |___").append(sep)
+        .append("   |_| |_|___|  \\_/  |_____|").append(reset).append(sep)
+        .append(sep)
+        .append("Apache Hive " + version + " - Beeline").append(sep)
+        .append("The Open Data Warehouse for Modern Analytics").append(sep)
+        .toString();
+  }
 
+  
   String getApplicationTitle() {
     Package pack = BeeLine.class.getPackage();
-
     return loc("app-introduction", new Object[] { "Beeline",
         pack.getImplementationVersion() == null ? "???" : pack.getImplementationVersion(),
         "Apache Hive",
-        // getManifestAttribute ("Specification-Title"),
-        // getManifestAttribute ("Implementation-Version"),
-        // getManifestAttribute ("Implementation-ReleaseDate"),
-        // getManifestAttribute ("Implementation-Vendor"),
-        // getManifestAttribute ("Implementation-License"),
     });
+  }
+
+  /** True when the active terminal can display ANSI colors (not dumb/redirected). */
+  private boolean bannerColorEnabled() {
+    try {
+      LineReader lr = getLineReader();
+      if (lr != null && lr.getTerminal() != null) {
+        String type = lr.getTerminal().getType();
+        return type != null && !Terminal.TYPE_DUMB.equals(type);
+      }
+    } catch (Exception e) {
+      // no usable terminal -> stay monochrome
+    }
+    return false;
   }
 
   String getApplicationContactInformation() {
@@ -1139,7 +1150,7 @@ public class BeeLine implements Closeable {
       return executeFile(getOpts().getScriptFile());
     }
     try {
-      info(getApplicationTitle());
+      info(getApplicationBanner());
     } catch (Exception e) {
       // ignore
     }
