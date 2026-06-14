@@ -471,6 +471,15 @@ public class BeeLine implements Closeable {
         .toString();
   }
 
+  
+  String getApplicationTitle() {
+    Package pack = BeeLine.class.getPackage();
+    return loc("app-introduction", new Object[] { "Beeline",
+        pack.getImplementationVersion() == null ? "???" : pack.getImplementationVersion(),
+        "Apache Hive",
+    });
+  }
+
   /** True when the active terminal can display ANSI colors (not dumb/redirected). */
   private boolean bannerColorEnabled() {
     try {
