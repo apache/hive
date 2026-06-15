@@ -119,6 +119,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
   final boolean storagePolicy;
+  private final String DEFAULT = "default";
+  private final String MAPRED_JOB_QUEUE_NAME = "mapred.job.queue.name";
 
   public Hadoop23Shims() {
     // in-memory HDFS
@@ -1238,6 +1240,13 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    * of these details.
    */
   protected void ensureMapReduceQueue(Configuration conf) {
+    String mapredQueue = conf.getRaw(MAPRED_JOB_QUEUE_NAME);
+    if (StringUtils.isNotEmpty(mapredQueue) && !DEFAULT.equals(mapredQueue)) {
+      LOG.info("DistCp: setting mapreduce.job.queuename to '{}' from mapred.job.queue.name", mapredQueue);
+      conf.set(MRJobConfig.QUEUE_NAME, mapredQueue);
+      return;
+    }
+
     String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
     boolean isTez = "tez".equalsIgnoreCase(conf.get("hive.execution.engine"));
     boolean shouldMapredJobsFollowTezQueue = conf.getBoolean("hive.mapred.job.follow.tez.queue", false);
