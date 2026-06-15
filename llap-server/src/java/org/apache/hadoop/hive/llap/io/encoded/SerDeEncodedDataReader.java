@@ -225,7 +225,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
     fileKey = determineCacheKey(fs, split, partitionDesc, daemonConf);
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
-        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, partitionDesc) : null;
+        ? LlapHiveUtils.getCacheTag(split.getPath(), true, partitionDesc) : null;
     this.sourceInputFormat = sourceInputFormat;
     this.sourceSerDe = sourceSerDe;
     this.reporter = reporter;

@@ -67,6 +67,9 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     if (database == null) {
       return;
     }
+    if (catalogName == null) {
+      catalogName = database.getCatalogName();
+    }
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
     boolean isDbLevelLock = true;
     if (cascade) {

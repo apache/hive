@@ -770,8 +770,7 @@ public final class Utilities {
     if (tbl.getSnapshotRef() != null) {
       props.put(SNAPSHOT_REF, tbl.getSnapshotRef());
     }
-    return (new TableDesc(tbl.getInputFormatClass(), tbl
-        .getOutputFormatClass(), props));
+    return new TableDesc(tbl.getInputFormatClass(), tbl.getOutputFormatClass(), props, tbl.getCatName());
   }
 
   // column names and column types are all delimited by comma

@@ -343,7 +343,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       return null;
     }
     PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(path, mapWork.getPathToPartitionInfo());
-    return LlapHiveUtils.getDbAndTableNameForMetrics(path, true, partitionDesc);
+    return LlapHiveUtils.getCacheTag(path, true, partitionDesc);
   }
 
 
