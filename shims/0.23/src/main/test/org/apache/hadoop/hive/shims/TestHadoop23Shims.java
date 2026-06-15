@@ -196,6 +196,7 @@ public class TestHadoop23Shims {
   @Test
   public void testMapReduceQueueIsSetToTezQueue() throws Exception {
     Configuration conf = new Configuration();
+
     // mapred.job.queue.name set by replication policy
     conf = new Configuration();
     conf.set("mapred.job.queue.name", "testqueue");
