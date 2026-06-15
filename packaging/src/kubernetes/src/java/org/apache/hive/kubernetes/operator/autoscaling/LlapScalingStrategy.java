@@ -73,9 +73,10 @@ public class LlapScalingStrategy implements ScalingStrategy {
 
     // HS2 has sessions but LLAP has no pods yet — scale up to at least 1
     if (podMetrics.isEmpty()) {
-      LOG.debug("[llap] HS2 has sessions but LLAP has 0 pods, scaling to 1");
+      int minReplica = Math.max(1, autoscaling.minReplicas());
+      LOG.debug("[llap] HS2 has sessions but LLAP has 0 pods, scaling to {}", minReplica);
       lastMetric = 0;
-      return Math.max(1, autoscaling.minReplicas());
+      return minReplica;
     }
 
     // Compute average busy slots across all LLAP pods
