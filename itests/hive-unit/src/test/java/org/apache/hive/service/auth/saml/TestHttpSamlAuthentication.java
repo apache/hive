@@ -575,7 +575,8 @@ public class TestHttpSamlAuthentication {
     ISAMLAuthTokenGenerator tokenGenerator = createTokenGenerator("30s");
     String forgedPayload = "u=alice;id=1337;time=" + System.currentTimeMillis()
         + ";rs=deadbeef;sg=bogus";
-    String forgedToken = Base64.getEncoder().encodeToString(forgedPayload.getBytes(StandardCharsets.UTF_8));
+    try {
+      String forgedToken = Base64.getEncoder().encodeToString(forgedPayload.getBytes(StandardCharsets.UTF_8));
       tokenGenerator.validate(forgedToken);
       fail("Expected forged token to be rejected");
     } catch (HttpSamlAuthenticationException e) {
