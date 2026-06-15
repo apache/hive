@@ -340,6 +340,9 @@ public class HiveClusterAutoscaler {
       try {
         client.pods().inNamespace(namespace).withName(pm.podName())
             .edit(pod -> {
+              if (pod.getMetadata().getAnnotations() == null) {
+                pod.getMetadata().setAnnotations(new java.util.HashMap<>());
+              }
               pod.getMetadata().getAnnotations()
                   .put("controller.kubernetes.io/pod-deletion-cost", String.valueOf(sessions));
               return pod;

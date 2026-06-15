@@ -50,10 +50,12 @@ public class BackgroundMetricsScraper {
   private final ConcurrentHashMap<String, Integer> registeredIntervals =
       new ConcurrentHashMap<>();
 
+  private static final int SCRAPER_THREAD_POOL_SIZE = 4;
+
   public BackgroundMetricsScraper(MetricsScraper scraper, MetricsCache cache) {
     this.scraper = scraper;
     this.cache = cache;
-    this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+    this.scheduler = Executors.newScheduledThreadPool(SCRAPER_THREAD_POOL_SIZE, r -> {
       Thread t = new Thread(r, "hive-metrics-scraper");
       t.setDaemon(true);
       return t;

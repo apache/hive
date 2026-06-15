@@ -52,7 +52,8 @@ public class HiveServer2ScalingStrategy implements ScalingStrategy {
       return safeMinReplicas;
     }
 
-    int desired = (int) Math.ceil(totalSessions / autoscaling.scaleUpThreshold());
+    int threshold = Math.max(1, autoscaling.scaleUpThreshold());
+    int desired = (int) Math.ceil(totalSessions / threshold);
     return Math.max(desired, safeMinReplicas);
   }
 

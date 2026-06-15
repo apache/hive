@@ -26,6 +26,10 @@
   <description>Kubernetes operator for managing Apache Hive clusters</description>
   <properties>
     <hive.path.to.root>../../..</hive.path.to.root>
+    <!-- The operator is a standalone shaded JAR and requires SLF4J 2.x
+         for the log4j-slf4j2-impl binding. This overrides the parent's
+         slf4j.version (1.7.x) intentionally. -->
+    <slf4j2.version>2.0.16</slf4j2.version>
   </properties>
   <dependencies>
     <dependency>
@@ -68,7 +72,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>2.0.16</version>
+      <version>${slf4j2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>

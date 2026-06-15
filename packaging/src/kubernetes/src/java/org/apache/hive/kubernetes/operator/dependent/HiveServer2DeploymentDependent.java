@@ -265,7 +265,7 @@ public class HiveServer2DeploymentDependent
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    // Graceful scale-down: deregister from ZK, then poll JMX Exporter (port 9404) for sessions.
+    // Graceful scale-down: deregister from ZK, then poll JMX Exporter for sessions.
     if (autoscaling.isEnabled()) {
       List<String> zkDeregister = List.of(
           "echo '[preStop] Deregistering HiveServer2 from ZooKeeper...'",
@@ -275,7 +275,7 @@ public class HiveServer2DeploymentDependent
           "Waiting for open sessions to drain",
           "hs2_open_sessions", "SESSIONS",
           "All sessions drained. Shutting down.",
-          5, 6, zkDeregister);
+          5, 6, zkDeregister, autoscaling.metricsPort());
       applyAutoscalingLifecycle(
           deployment.getSpec().getTemplate().getSpec(),
           deployment.getSpec().getTemplate().getMetadata(),

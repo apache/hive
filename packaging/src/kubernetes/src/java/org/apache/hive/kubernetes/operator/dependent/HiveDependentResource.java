@@ -226,20 +226,20 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   protected static String buildDrainScript(
       String startupMessage, String metricName, String varName,
       String idleMessage, int sleepSeconds, int maxRetries,
-      List<String> prefixCommands) {
+      List<String> prefixCommands, int metricsPort) {
     List<String> lines = new ArrayList<>();
     lines.add("#!/bin/bash");
     if (prefixCommands != null) {
       lines.addAll(prefixCommands);
     }
     lines.add("echo '[preStop] " + startupMessage
-        + " (polling localhost:9404/metrics)...'");
+        + " (polling localhost:" + metricsPort + "/metrics)...'");
     lines.add("RETRIES=0");
     lines.add("while true; do");
-    lines.add("  RESPONSE=$(curl -sf http://localhost:9404/metrics)");
+    lines.add("  RESPONSE=$(curl -sf http://localhost:" + metricsPort + "/metrics)");
     lines.add("  if [ $? -ne 0 ]; then");
     lines.add("    RETRIES=$((RETRIES+1))");
-    lines.add("    echo \"[preStop] ERROR: JMX Exporter unreachable on port 9404 (attempt $RETRIES)\"");
+    lines.add("    echo \"[preStop] ERROR: JMX Exporter unreachable on port " + metricsPort + " (attempt $RETRIES)\"");
     lines.add("    if [ $RETRIES -ge " + maxRetries + " ]; then");
     lines.add("      echo '[preStop] JMX Exporter not responding after "
         + (maxRetries * sleepSeconds) + "s. Proceeding with shutdown.'");
@@ -292,17 +292,18 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       String metricGrepA, String varNameA,
       String metricGrepB, String varNameB,
       String notFoundWarning, String idleMessage,
-      String waitingFormat, int sleepSeconds, int maxRetries) {
+      String waitingFormat, int sleepSeconds, int maxRetries,
+      int metricsPort) {
     List<String> lines = new ArrayList<>();
     lines.add("#!/bin/bash");
     lines.add("echo '[preStop] " + startupMessage
-        + " (polling localhost:9404/metrics)...'");
+        + " (polling localhost:" + metricsPort + "/metrics)...'");
     lines.add("RETRIES=0");
     lines.add("while true; do");
-    lines.add("  RESPONSE=$(curl -sf http://localhost:9404/metrics)");
+    lines.add("  RESPONSE=$(curl -sf http://localhost:" + metricsPort + "/metrics)");
     lines.add("  if [ $? -ne 0 ]; then");
     lines.add("    RETRIES=$((RETRIES+1))");
-    lines.add("    echo \"[preStop] ERROR: JMX Exporter unreachable on port 9404 (attempt $RETRIES)\"");
+    lines.add("    echo \"[preStop] ERROR: JMX Exporter unreachable on port " + metricsPort + " (attempt $RETRIES)\"");
     lines.add("    if [ $RETRIES -ge " + maxRetries + " ]; then");
     lines.add("      echo '[preStop] JMX Exporter not responding after "
         + (maxRetries * sleepSeconds) + "s. Proceeding with shutdown.'");
@@ -667,6 +668,9 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   private static void applyPrometheusScrapeAnnotations(
       io.fabric8.kubernetes.api.model.ObjectMeta podMetadata,
       int scrapeIntervalSeconds) {
+    if (podMetadata.getAnnotations() == null) {
+      podMetadata.setAnnotations(new java.util.HashMap<>());
+    }
     podMetadata.getAnnotations().put("prometheus.io/scrape", "true");
     podMetadata.getAnnotations().put("prometheus.io/port",
         String.valueOf(ConfigUtils.PROMETHEUS_JMX_EXPORTER_PORT));

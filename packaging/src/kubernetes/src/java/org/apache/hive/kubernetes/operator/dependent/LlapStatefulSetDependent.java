@@ -199,7 +199,7 @@ public class LlapStatefulSetDependent
     applySpreadAffinityIfAbsent(
         statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    // Graceful scale-down: poll JMX Exporter (port 9404) until all executors idle.
+    // Graceful scale-down: poll JMX Exporter until all executors idle.
     if (autoscaling.isEnabled()) {
       String preStopScript = buildDualMetricDrainScript(
           "Waiting for LLAP executors to become idle",
@@ -208,7 +208,7 @@ public class LlapStatefulSetDependent
           "LLAP executor metrics not found. JMX Exporter may not be configured.",
           "All executors idle. Shutting down.",
           "Executors available=$AVAILABLE / total=$TOTAL \u2014 waiting...",
-          10, 6);
+          10, 6, autoscaling.metricsPort());
       applyAutoscalingLifecycle(
           statefulSet.getSpec().getTemplate().getSpec(),
           statefulSet.getSpec().getTemplate().getMetadata(),

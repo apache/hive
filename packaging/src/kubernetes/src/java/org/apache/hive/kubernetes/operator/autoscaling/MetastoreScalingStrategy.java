@@ -90,7 +90,8 @@ public class MetastoreScalingStrategy implements ScalingStrategy {
     LOG.debug("[metastore] API request rate: {}/s, threshold: {}",
         String.format("%.2f", rate), autoscaling.scaleUpThreshold());
 
-    int desired = (int) Math.ceil(rate / autoscaling.scaleUpThreshold());
+    int threshold = Math.max(1, autoscaling.scaleUpThreshold());
+    int desired = (int) Math.ceil(rate / threshold);
     return Math.max(desired, autoscaling.minReplicas());
   }
 
