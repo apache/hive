@@ -168,6 +168,7 @@ public class LlapStatefulSetDependent
         .endMetadata()
         .withNewSpec()
           .withReplicas(replicas)
+          .withPodManagementPolicy("Parallel")
           .withServiceName(headlessServiceName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)

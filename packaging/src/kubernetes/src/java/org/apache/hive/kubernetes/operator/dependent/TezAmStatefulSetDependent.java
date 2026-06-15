@@ -149,6 +149,7 @@ public class TezAmStatefulSetDependent
         .endMetadata()
         .withNewSpec()
           .withReplicas(replicas)
+          .withPodManagementPolicy("Parallel")
           .withServiceName(headlessServiceName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
