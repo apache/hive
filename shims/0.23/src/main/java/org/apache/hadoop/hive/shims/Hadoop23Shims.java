@@ -119,8 +119,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   HadoopShims.MiniDFSShim cluster = null;
   final boolean storagePolicy;
-  private final String DEFAULT = "default";
-  private final String MAPRED_JOB_QUEUE_NAME = "mapred.job.queue.name";
+  private static final String DEFAULT = "default";
+  private static final String MAPRED_JOB_QUEUE_NAME = "mapred.job.queue.name";
 
   public Hadoop23Shims() {
     // in-memory HDFS
