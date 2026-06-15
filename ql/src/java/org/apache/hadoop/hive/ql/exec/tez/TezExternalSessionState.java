@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -35,6 +37,7 @@ import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.rpc.DAGClientAMProtocolBlockingPB;
 import org.apache.tez.dag.api.client.rpc.DAGClientAMProtocolRPC;
+import org.apache.tez.dag.api.records.DAGProtos;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 
 /**
@@ -211,15 +214,47 @@ public class TezExternalSessionState extends TezSessionState {
     if (proxy == null) {
       throw new TezException("Error while trying to connect to AM for app ID " + externalAppId);
     }
+    long killTimeoutMs = TimeUnit.SECONDS.toMillis(
+        HiveConf.getIntVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS));
     try {
       DAGClientAMProtocolRPC.GetAllDAGsResponseProto allDAGSResponse =
           proxy.getAllDAGs(null, DAGClientAMProtocolRPC.GetAllDAGsRequestProto.newBuilder().build());
       for (String dagId : allDAGSResponse.getDagIdList()) {
         LOG.info("External session: attempting to kill dagId {} on app ID {}", dagId, externalAppId);
         proxy.tryKillDAG(null, DAGClientAMProtocolRPC.TryKillDAGRequestProto.newBuilder().setDagId(dagId).build());
+        waitForDagTerminal(proxy, dagId, killTimeoutMs);
       }
     } catch (Exception e) {
       throw new TezException("Error while trying to kill existing DAG running on app ID " + externalAppId, e);
     }
+  }
+
+  private void waitForDagTerminal(DAGClientAMProtocolBlockingPB proxy, String dagId, long timeoutMs)
+      throws Exception {
+    long startTimeMs = System.currentTimeMillis();
+    long pollIntervalMs = conf.getTimeVar(ConfVars.TEZ_DAG_STATUS_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
+    while (System.currentTimeMillis() - startTimeMs < timeoutMs) {
+      long remainingMs = timeoutMs - (System.currentTimeMillis() - startTimeMs);
+      DAGClientAMProtocolRPC.GetDAGStatusResponseProto response = proxy.getDAGStatus(null,
+          DAGClientAMProtocolRPC.GetDAGStatusRequestProto.newBuilder()
+              .setDagId(dagId)
+              .setTimeout(Math.min(pollIntervalMs, remainingMs))
+              .build());
+      if (response.hasDagStatus() && response.getDagStatus().hasState()
+          && isTerminalDagState(response.getDagStatus().getState())) {
+        LOG.info("External session: dagId {} on app ID {} reached terminal state {}", dagId, externalAppId,
+            response.getDagStatus().getState());
+        return;
+      }
+    }
+    throw new TezException("Timed out after " + timeoutMs + " ms waiting for orphan DAG " + dagId
+        + " on app ID " + externalAppId + " to reach terminal state after kill");
+  }
+
+  private static boolean isTerminalDagState(DAGProtos.DAGStatusStateProto state) {
+    return switch (state) {
+      case DAG_SUCCEEDED, DAG_KILLED, DAG_FAILED, DAG_ERROR -> true;
+      default -> false;
+    };
   }
 }
