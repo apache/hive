@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.BoundType;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -35,8 +38,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A class that transforms a call to the internal {@link SqlStdOperatorTable#SEARCH} operator into an equivalent
@@ -92,6 +97,16 @@ public class SearchTransformer<C extends Comparable<C>> {
           range -> rexBuilder.makeCall(SqlStdOperatorTable.NOT_EQUALS, ref,
               rexBuilder.makeLiteral(range.lowerEndpoint(), operandType, true, true))).toList();
       orList.add(RexUtil.composeConjunction(rexBuilder, list));
+    } else if (isNotBetween(sarg.rangeSet)) {
+      Iterator<Range<C>> iterator = sarg.rangeSet.asRanges().iterator();
+      C lower = iterator.next().upperEndpoint();
+      C upper = iterator.next().lowerEndpoint();
+      RexNode notBetween = rexBuilder.makeCall(HiveBetween.INSTANCE,
+          rexBuilder.makeLiteral(true), // inverse flag enabled, i.e. 'NOT BETWEEN'
+          ref,
+          rexBuilder.makeLiteral(lower, operandType, true, true),
+          rexBuilder.makeLiteral(upper, operandType, true, true));
+      orList.add(notBetween);
     } else {
       RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);
       RangeSets.forEach(sarg.rangeSet, consumer);
@@ -123,6 +138,19 @@ public class SearchTransformer<C extends Comparable<C>> {
     }
 
     return x;
+  }
+
+  // Identifies a NOT BETWEEN expression: x < 10 OR x > 20 => x NOT BETWEEN 10, 20
+  private boolean isNotBetween(RangeSet<C> rangeSet) {
+    Set<Range<C>> ranges = rangeSet.asRanges();
+    if (ranges.size() == 2) {
+      Iterator<Range<C>> iterator = ranges.iterator();
+      Range<C> first = iterator.next();
+      Range<C> second = iterator.next();
+      return !first.hasLowerBound() && first.hasUpperBound() && first.upperBoundType() == BoundType.OPEN
+          && !second.hasUpperBound() && second.hasLowerBound() && second.lowerBoundType() == BoundType.OPEN;
+    }
+    return false;
   }
 
   public static class Shuttle extends RexShuttle {
