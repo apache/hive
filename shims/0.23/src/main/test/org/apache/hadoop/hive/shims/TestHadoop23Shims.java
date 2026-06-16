@@ -198,7 +198,6 @@ public class TestHadoop23Shims {
     Configuration conf = new Configuration();
 
     // mapred.job.queue.name set by replication policy
-    conf = new Configuration();
     conf.set("mapred.job.queue.name", "testqueue");
     conf.set("hive.execution.engine", "tez");
     DistCp distCp = runMockDistCp(conf);
