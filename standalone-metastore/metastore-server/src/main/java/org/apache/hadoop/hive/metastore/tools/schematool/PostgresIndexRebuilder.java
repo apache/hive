@@ -118,7 +118,30 @@ private static final String QUERY_INDEX_COLUMNS = """
   @Override
   public void rebuildIndex(IndexInfo index) throws HiveMetaException {
     PgDdl ddl = ddlMap.get(index.indexName());
-    executeRebuild(index, ddl.dropDdl(), ddl.createDdl());
+    boolean prevAutoCommit;
+    try {
+      prevAutoCommit = conn.getAutoCommit();
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to get autocommit state", e);
+    }
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
+      executeRebuild(index, ddl.dropDdl(), ddl.createDdl());
+      conn.commit();
+      success = true;
+    } catch (SQLException e) {
+      throw new HiveMetaException("Transaction error rebuilding index \"" + index.indexName() + "\"", e);
+    } finally {
+      if (!success) {
+        try {
+          conn.rollback(); 
+        } catch (SQLException ignored) {}
+      }
+      try {
+        conn.setAutoCommit(prevAutoCommit);
+      } catch (SQLException ignored) {}
+    }
   }
 
   @Override

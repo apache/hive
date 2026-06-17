@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Record for a DB index, used by {@link IndexRebuilder}.
@@ -35,7 +34,7 @@ public record IndexInfo(
   }
 
   @Override
-  public @NotNull String toString() {
+  public String toString() {
     return (constraintBacked ? "CONSTRAINT" : "INDEX")
         + " \"" + indexName + "\" ON \"" + tableName + "\"";
   }

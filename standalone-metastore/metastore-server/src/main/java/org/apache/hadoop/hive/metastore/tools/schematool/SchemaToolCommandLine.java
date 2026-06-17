@@ -83,7 +83,7 @@ public class SchemaToolCommandLine {
       .withDescription("Create table for Hive warehouse/compute logs")
       .create("createLogsTable");
     Option rebuildIndexesOpt = new Option("rebuildIndexes",
-        "Detect and rebuild corrupt indexes in the metastore backend DB (Postgres only).");
+        "Rebuild indexes in the metastore backend database.");
 
     OptionGroup optGroup = new OptionGroup();
     optGroup
