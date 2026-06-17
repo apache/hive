@@ -54,7 +54,7 @@ import static org.junit.Assert.assertTrue;
 public class TestMSSQLIndexRebuilder {
 
   @ClassRule
-  public static final Mssql mssql = new Mssql();
+  public static final Mssql MSSQL = new Mssql();
 
   private static final String TEST_DB = "idx_rebuild_test";
 
@@ -83,19 +83,19 @@ public class TestMSSQLIndexRebuilder {
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    Class.forName(mssql.getJdbcDriver());
+    Class.forName(MSSQL.getJdbcDriver());
 
     try (Connection masterConn = DriverManager.getConnection(
-        mssql.getInitialJdbcUrl(), mssql.getDbRootUser(), mssql.getDbRootPassword());
+        MSSQL.getInitialJdbcUrl(), MSSQL.getDbRootUser(), MSSQL.getDbRootPassword());
         Statement stmt = masterConn.createStatement()) {
       stmt.execute("IF DB_ID('" + TEST_DB + "') IS NOT NULL DROP DATABASE " + TEST_DB);
       stmt.execute("CREATE DATABASE " + TEST_DB);
     }
 
     // Reconnect to the test database.
-    String testDbUrl = mssql.getInitialJdbcUrl()
+    String testDbUrl = MSSQL.getInitialJdbcUrl()
         .replace("DatabaseName=master", "DatabaseName=" + TEST_DB);
-    conn = DriverManager.getConnection(testDbUrl, mssql.getDbRootUser(), mssql.getDbRootPassword());
+    conn = DriverManager.getConnection(testDbUrl, MSSQL.getDbRootUser(), MSSQL.getDbRootPassword());
     conn.setAutoCommit(false);
 
     for (String ddl : DDL_CREATE_TABLES) {
@@ -112,7 +112,7 @@ public class TestMSSQLIndexRebuilder {
       conn.close();
     }
     try (Connection masterConn = DriverManager.getConnection(
-        mssql.getInitialJdbcUrl(), mssql.getDbRootUser(), mssql.getDbRootPassword());
+        MSSQL.getInitialJdbcUrl(), MSSQL.getDbRootUser(), MSSQL.getDbRootPassword());
         Statement stmt = masterConn.createStatement()) {
       stmt.execute("IF DB_ID('" + TEST_DB + "') IS NOT NULL DROP DATABASE " + TEST_DB);
     }
@@ -247,10 +247,10 @@ public class TestMSSQLIndexRebuilder {
 
   @Test
   public void findDuplicatesNonUniqueIndexReturnsZeroWithoutQueryingDb() throws Exception {
-    String testDbUrl = mssql.getInitialJdbcUrl()
+    String testDbUrl = MSSQL.getInitialJdbcUrl()
         .replace("DatabaseName=master", "DatabaseName=" + TEST_DB);
     Connection closedConn = DriverManager.getConnection(
-        testDbUrl, mssql.getDbRootUser(), mssql.getDbRootPassword());
+        testDbUrl, MSSQL.getDbRootUser(), MSSQL.getDbRootPassword());
     closedConn.close();
     MSSQLIndexRebuilder localRebuilder = new MSSQLIndexRebuilder(closedConn, false, "\"");
     IndexInfo nonUnique = new IndexInfo("idx_plain_name", "plain_table", false, false,

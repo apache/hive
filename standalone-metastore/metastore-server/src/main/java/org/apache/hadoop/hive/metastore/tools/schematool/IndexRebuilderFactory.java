@@ -33,16 +33,16 @@ public final class IndexRebuilderFactory {
   public static IndexRebuilder create(String dbType, Connection conn,
       MetastoreSchemaTool schemaTool) throws HiveMetaException {
     return switch (dbType.toLowerCase()) {
-      case HiveSchemaHelper.DB_POSTGRES ->
-          new PostgresIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
-      case HiveSchemaHelper.DB_MYSQL ->
-          new MySQLIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
-      case HiveSchemaHelper.DB_ORACLE ->
-          new OracleIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
-      case HiveSchemaHelper.DB_MSSQL ->
-          new MSSQLIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
-      default -> throw new HiveMetaException(
-          "-rebuildIndexes is not supported for -dbType " + dbType + ".");
+    case HiveSchemaHelper.DB_POSTGRES ->
+        new PostgresIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
+    case HiveSchemaHelper.DB_MYSQL ->
+        new MySQLIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
+    case HiveSchemaHelper.DB_ORACLE ->
+        new OracleIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
+    case HiveSchemaHelper.DB_MSSQL ->
+        new MSSQLIndexRebuilder(conn, schemaTool.needsQuotedIdentifier, schemaTool.quoteCharacter);
+    default -> throw new HiveMetaException(
+        "-rebuildIndexes is not supported for -dbType " + dbType + ".");
     };
   }
 }

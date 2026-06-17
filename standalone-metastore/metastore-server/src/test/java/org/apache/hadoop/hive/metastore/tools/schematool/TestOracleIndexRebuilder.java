@@ -55,7 +55,7 @@ import static org.junit.Assert.assertTrue;
 public class TestOracleIndexRebuilder {
 
   @ClassRule
-  public static final Oracle oracle = new Oracle();
+  public static final Oracle ORACLE = new Oracle();
 
   // Dedicated test user keeps USER_INDEXES scoped to test objects.
   private static final String TEST_USER = "IDX_TEST_USER";
@@ -114,10 +114,10 @@ public class TestOracleIndexRebuilder {
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    Class.forName(oracle.getJdbcDriver());
+    Class.forName(ORACLE.getJdbcDriver());
 
     try (Connection sysConn = DriverManager.getConnection(
-        oracle.getInitialJdbcUrl(), oracle.getDbRootUser(), oracle.getDbRootPassword());
+        ORACLE.getInitialJdbcUrl(), ORACLE.getDbRootUser(), ORACLE.getDbRootPassword());
         Statement stmt = sysConn.createStatement()) {
       try {
         stmt.execute("DROP USER " + TEST_USER + " CASCADE");
@@ -130,7 +130,7 @@ public class TestOracleIndexRebuilder {
     }
 
     // Reconnect as test user.
-    String userUrl = oracle.getInitialJdbcUrl();
+    String userUrl = ORACLE.getInitialJdbcUrl();
     conn = DriverManager.getConnection(userUrl, TEST_USER, TEST_PASSWORD);
     conn.setAutoCommit(false);
 
@@ -147,7 +147,7 @@ public class TestOracleIndexRebuilder {
       conn.close();
     }
     try (Connection sysConn = DriverManager.getConnection(
-        oracle.getInitialJdbcUrl(), oracle.getDbRootUser(), oracle.getDbRootPassword());
+        ORACLE.getInitialJdbcUrl(), ORACLE.getDbRootUser(), ORACLE.getDbRootPassword());
         Statement stmt = sysConn.createStatement()) {
       stmt.execute("DROP USER " + TEST_USER + " CASCADE");
     }
@@ -305,7 +305,7 @@ public class TestOracleIndexRebuilder {
   @Test
   public void findDuplicatesNonUniqueIndexReturnsZeroWithoutQueryingDb() throws Exception {
     Connection closedConn = DriverManager.getConnection(
-        oracle.getInitialJdbcUrl(), TEST_USER, TEST_PASSWORD);
+        ORACLE.getInitialJdbcUrl(), TEST_USER, TEST_PASSWORD);
     closedConn.close();
     OracleIndexRebuilder localRebuilder = new OracleIndexRebuilder(closedConn, true, "\"");
     IndexInfo nonUnique = new IndexInfo("IDX_PLAIN_NAME", "PLAIN_TABLE", false, false,

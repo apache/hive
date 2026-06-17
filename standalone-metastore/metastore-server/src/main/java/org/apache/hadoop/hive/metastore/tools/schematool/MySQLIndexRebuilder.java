@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -86,7 +87,7 @@ class MySQLIndexRebuilder extends AbstractIndexRebuilder {
   @Override
   public List<IndexInfo> loadIndexes() throws HiveMetaException {
     // STATISTICS returns one row per index column; accumulate rows into one index object.
-    LinkedHashMap<String, IndexAccumulator> byKey = new LinkedHashMap<>();
+    Map<String, IndexAccumulator> byKey = new LinkedHashMap<>();
     try (Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(QUERY_INDEXES)) {
       while (rs.next()) {

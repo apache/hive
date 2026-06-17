@@ -54,7 +54,7 @@ import static org.junit.Assert.assertTrue;
 public class TestMySQLIndexRebuilder {
 
   @ClassRule
-  public static final Mysql mysql = new Mysql();
+  public static final Mysql MYSQL = new Mysql();
 
   private static final String TEST_DB = "test_idx_rebuild";
 
@@ -79,9 +79,9 @@ public class TestMySQLIndexRebuilder {
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    Class.forName(mysql.getJdbcDriver());
+    Class.forName(MYSQL.getJdbcDriver());
     conn = DriverManager.getConnection(
-        mysql.getInitialJdbcUrl(), mysql.getDbRootUser(), mysql.getDbRootPassword());
+        MYSQL.getInitialJdbcUrl(), MYSQL.getDbRootUser(), MYSQL.getDbRootPassword());
     try (Statement stmt = conn.createStatement()) {
       stmt.execute("CREATE DATABASE IF NOT EXISTS " + TEST_DB);
       stmt.execute("USE " + TEST_DB);
@@ -239,7 +239,7 @@ public class TestMySQLIndexRebuilder {
   @Test
   public void findDuplicatesNonUniqueIndexReturnsZeroWithoutQueryingDb() throws Exception {
     Connection closedConn = DriverManager.getConnection(
-        mysql.getInitialJdbcUrl(), mysql.getDbRootUser(), mysql.getDbRootPassword());
+        MYSQL.getInitialJdbcUrl(), MYSQL.getDbRootUser(), MYSQL.getDbRootPassword());
     closedConn.close();
     MySQLIndexRebuilder localRebuilder = new MySQLIndexRebuilder(closedConn, true, "`");
     IndexInfo nonUnique = new IndexInfo("idx", "plain_table", false, false, List.of("name"));

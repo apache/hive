@@ -41,6 +41,7 @@ class SchemaToolTaskRebuildIndexes extends SchemaToolTask {
 
   @Override
   void setCommandLineArguments(SchemaToolCommandLine cl) {
+    // No arguments needed.
   }
 
   @Override
@@ -82,8 +83,10 @@ class SchemaToolTaskRebuildIndexes extends SchemaToolTask {
     }
 
     for (IndexInfo index : indexes) {
-      LOG.info("Rebuilding: {}", index);
-      LOG.info(rebuilder.describeRebuildDDL(index));
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Rebuilding: {}", index);
+        LOG.info(rebuilder.describeRebuildDDL(index));
+      }
       if (!schemaTool.isDryRun()) {
         rebuilder.rebuildIndex(index);
         LOG.info("Done.");

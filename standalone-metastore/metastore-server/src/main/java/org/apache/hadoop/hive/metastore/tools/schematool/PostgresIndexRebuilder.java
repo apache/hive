@@ -52,18 +52,18 @@ class PostgresIndexRebuilder extends AbstractIndexRebuilder {
       JOIN pg_am am    ON am.oid = ic.relam      AND am.amname = 'btree'  -- restrict to btree indexes only
  LEFT JOIN pg_constraint con ON con.conindid = ic.oid  -- links index to PK/UNIQUE constraint when present
      WHERE ic.relnamespace = current_schema()::regnamespace  -- only objects in the active schema
-    """;
+      """;
 
-private static final String QUERY_INDEX_COLUMNS = """
-    SELECT a.attname
-      FROM pg_index ix
-      JOIN pg_class ic    ON ic.oid = ix.indexrelid AND ic.relkind = 'i'
-      JOIN pg_attribute a ON a.attrelid = ix.indrelid  -- read columns from the base table of the index
-                         AND a.attnum = ANY(ix.indkey) -- keep attrs whose attnum appears in index key vector
-                         AND a.attnum > 0  -- system columns have negative attnum; exclude them
-     WHERE ic.relname = ? AND ic.relnamespace = current_schema()::regnamespace  -- scope name lookup to active schema
-     ORDER BY array_position(ix.indkey, a.attnum)  -- ix.indkey stores attr numbers in key order
-    """;
+  private static final String QUERY_INDEX_COLUMNS = """
+      SELECT a.attname
+        FROM pg_index ix
+        JOIN pg_class ic    ON ic.oid = ix.indexrelid AND ic.relkind = 'i'
+        JOIN pg_attribute a ON a.attrelid = ix.indrelid  -- read columns from the base table of the index
+                           AND a.attnum = ANY(ix.indkey) -- keep attrs whose attnum appears in index key vector
+                           AND a.attnum > 0  -- system columns have negative attnum; exclude them
+       WHERE ic.relname = ? AND ic.relnamespace = current_schema()::regnamespace  -- scope name lookup to active schema
+       ORDER BY array_position(ix.indkey, a.attnum)  -- ix.indkey stores attr numbers in key order
+      """;
 
   private record PgDdl(String dropDdl, String createDdl) {}
 

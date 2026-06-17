@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
 public class TestPostgresIndexRebuilder {
 
   @ClassRule
-  public static final Postgres postgres = new Postgres();
+  public static final Postgres POSTGRES = new Postgres();
 
   private static Connection conn;
 
@@ -77,9 +77,9 @@ public class TestPostgresIndexRebuilder {
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    Class.forName(postgres.getJdbcDriver());
+    Class.forName(POSTGRES.getJdbcDriver());
     conn = DriverManager.getConnection(
-        postgres.getInitialJdbcUrl(), postgres.getDbRootUser(), postgres.getDbRootPassword());
+        POSTGRES.getInitialJdbcUrl(), POSTGRES.getDbRootUser(), POSTGRES.getDbRootPassword());
     conn.setAutoCommit(false);
     for (String ddl : DDL_CREATE_TABLES.split(";")) {
       String sql = ddl.trim();
@@ -250,7 +250,7 @@ public class TestPostgresIndexRebuilder {
   @Test
   public void findDuplicatesNonUniqueIndexReturnsZeroWithoutQueryingDb() throws Exception {
     Connection closedConn = DriverManager.getConnection(
-        postgres.getInitialJdbcUrl(), postgres.getDbRootUser(), postgres.getDbRootPassword());
+        POSTGRES.getInitialJdbcUrl(), POSTGRES.getDbRootUser(), POSTGRES.getDbRootPassword());
     closedConn.close();
     PostgresIndexRebuilder localRebuilder = new PostgresIndexRebuilder(closedConn, true, "\"");
     IndexInfo nonUnique = new IndexInfo("idx", "plain_table", false, false, List.of("name"));
@@ -308,11 +308,6 @@ public class TestPostgresIndexRebuilder {
         .orElse(null);
   }
 
-  private void execute(String sql) throws SQLException {
-    try (Statement stmt = conn.createStatement()) {
-      stmt.execute(sql);
-    }
-  }
 
   private boolean indexExists(String indexName) throws SQLException {
     try (PreparedStatement ps = conn.prepareStatement(
