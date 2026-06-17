@@ -78,7 +78,7 @@ public class MetastoreScalingStrategy implements ScalingStrategy {
 
     // Store current state for next evaluation
     previousCounters.clear();
-    previousCounters.put("_total", currentTotal);
+    previousCounters.put(API_COUNTER_SUFFIX, currentTotal);
     previousTimestampMs = now;
 
     lastMetric = (int) Math.round(rate);
@@ -87,8 +87,10 @@ public class MetastoreScalingStrategy implements ScalingStrategy {
       return autoscaling.minReplicas();
     }
 
-    LOG.debug("[metastore] API request rate: {}/s, threshold: {}",
-        String.format("%.2f", rate), autoscaling.scaleUpThreshold());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("[metastore] API request rate: {}/s, threshold: {}",
+          String.format("%.2f", rate), autoscaling.scaleUpThreshold());
+    }
 
     int threshold = Math.max(1, autoscaling.scaleUpThreshold());
     int desired = (int) Math.ceil(rate / threshold);

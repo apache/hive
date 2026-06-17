@@ -101,8 +101,10 @@ public class LlapScalingStrategy implements ScalingStrategy {
       return Math.max(1, autoscaling.minReplicas());
     }
 
-    LOG.debug("[llap] avgBusy={}, threshold={}", String.format("%.2f", avgBusy),
-        autoscaling.scaleUpThreshold());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("[llap] avgBusy={}, threshold={}", String.format("%.2f", avgBusy),
+          autoscaling.scaleUpThreshold());
+    }
 
     int threshold = Math.max(1, autoscaling.scaleUpThreshold());
     int desired = (int) Math.ceil(avgBusy / threshold);

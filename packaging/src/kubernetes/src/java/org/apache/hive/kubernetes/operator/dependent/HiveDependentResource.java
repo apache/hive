@@ -840,16 +840,17 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       // causing CPU spikes and GC pressure on the LLAP JVM.
       // Internal format: Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics-<pod>><>Attribute
       // Separate rules per attribute — JMX Exporter 1.x caches per-bean, not per-attribute.
-      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumQueuedRequests'\n");
+      String llapBean = "Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>";
+      sb.append("- pattern: '").append(llapBean).append("ExecutorNumQueuedRequests'\n");
       sb.append("  name: hadoop_llapdaemon_executornumqueuedrequests\n");
       sb.append("  type: GAUGE\n");
-      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsConfigured'\n");
+      sb.append("- pattern: '").append(llapBean).append("ExecutorNumExecutorsConfigured'\n");
       sb.append("  name: hadoop_llapdaemon_executornumexecutorsconfigured\n");
       sb.append("  type: GAUGE\n");
-      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutorsAvailable'\n");
+      sb.append("- pattern: '").append(llapBean).append("ExecutorNumExecutorsAvailable'\n");
       sb.append("  name: hadoop_llapdaemon_executornumexecutorsavailable\n");
       sb.append("  type: GAUGE\n");
-      sb.append("- pattern: 'Hadoop<service=LlapDaemon, name=LlapDaemonExecutorMetrics.+><>ExecutorNumExecutors'\n");
+      sb.append("- pattern: '").append(llapBean).append("ExecutorNumExecutors'\n");
       sb.append("  name: hadoop_llapdaemon_executornumexecutors\n");
       sb.append("  type: GAUGE\n");
       break;

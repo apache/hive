@@ -75,7 +75,6 @@ public class HiveClusterAutoscaler {
 
   private record PendingScaleDown(int targetReplicas, Instant annotatedAt) {}
 
-  private final MetricsScraper scraper;
   private final BackgroundMetricsScraper bgScraper;
   private final MetricsCache metricsCache;
   // Key: "namespace/clusterName/component"
@@ -90,7 +89,6 @@ public class HiveClusterAutoscaler {
 
   public HiveClusterAutoscaler(MetricsScraper scraper,
       BackgroundMetricsScraper bgScraper, MetricsCache metricsCache) {
-    this.scraper = scraper;
     this.bgScraper = bgScraper;
     this.metricsCache = metricsCache;
   }

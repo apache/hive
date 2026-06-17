@@ -98,7 +98,7 @@ public record HiveClusterSpec(
     volumes = volumes != null ? volumes : List.of();
     volumeMounts = volumeMounts != null ? volumeMounts : List.of();
     autoSuspend = autoSuspend != null ? autoSuspend : new AutoSuspendSpec(false, 15, true);
-    suspend = suspend != null ? suspend : false;
+    suspend = suspend != null && suspend;
   }
 
 }

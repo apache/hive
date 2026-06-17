@@ -43,9 +43,9 @@ public record AutoSuspendSpec(
     Boolean includeMetastore) {
 
   public AutoSuspendSpec {
-    enabled = enabled != null ? enabled : false;
+    enabled = enabled != null && enabled;
     idleTimeoutMinutes = idleTimeoutMinutes != null ? idleTimeoutMinutes : 15;
-    includeMetastore = includeMetastore != null ? includeMetastore : true;
+    includeMetastore = includeMetastore == null || includeMetastore;
   }
 
   public boolean isEnabled() {
