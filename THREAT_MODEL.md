@@ -56,24 +56,29 @@ and a KDC for Kerberos *(inferred — §14 Q3)*.
 
 ## §3 — Adversaries in and out of scope
 
-**In scope** *(inferred — §14 Q4)*:
+**In scope**:
 
 1. A **SQL client** connecting to HiveServer2 with valid or attempted-invalid
    credentials, trying to read/modify data outside their authorization, or to
-   reach the host through query features.
+   reach the host through query features. *(inferred — §14 Q4)*
 2. A **network adversary** between client and HS2 / between HS2 and HMS, where
-   transport security is not configured.
+   transport security is not configured. *(inferred — §14 Q4)*
+3. A **direct Metastore (HMS) client.** Some external services (e.g. Apache
+   Spark) connect to the Hive Metastore directly, so HMS is expected to enforce
+   caller authorization at the **application level** — it is not merely an
+   intra-cluster service shielded by a network perimeter. A client reaching HMS
+   outside its authorization is in-model. *(maintainer — okumin, §14 Q1.)*
 
 **Out of scope** *(inferred — §14 Q5)*:
 
-3. **An operator with `root` / the Hadoop superuser / direct HDFS or metastore-DB
+4. **An operator with `root` / the Hadoop superuser / direct HDFS or metastore-DB
    access.** Anyone who already controls the storage layer or the cluster
    processes is not an adversary Hive defends against → `OUT-OF-MODEL:
    adversary-not-in-scope`.
-4. **A trusted authenticated admin** performing an authorized action (creating a
+5. **A trusted authenticated admin** performing an authorized action (creating a
    function, changing config, granting a role). A new path to a privilege the
    principal already holds is `OUT-OF-MODEL: equivalent-harm`.
-5. **Bugs in the dependencies Hive orchestrates** — Hadoop/HDFS, YARN, Tez,
+6. **Bugs in the dependencies Hive orchestrates** — Hadoop/HDFS, YARN, Tez,
    the metastore RDBMS, Ranger, the KDC, the JVM. Report upstream →
    `OUT-OF-MODEL: unsupported-component`.
 
@@ -86,8 +91,11 @@ and a KDC for Kerberos *(inferred — §14 Q3)*.
   treated as untrusted at this boundary is the load-bearing question for
   triage.
 - **HiveServer2 → Metastore** and **HS2 → execution engine / HDFS** are
-  intra-cluster boundaries assumed to run inside an operator-controlled,
-  network-isolated perimeter *(inferred — §14 Q3)*.
+  intra-cluster boundaries. The Metastore is protected at the **application
+  level** (it enforces caller authorization), because external services such as
+  Spark talk to HMS directly (§3.3); network isolation is defense-in-depth, not
+  the primary control *(maintainer — okumin, §14 Q1)*. The HS2 → engine / HDFS
+  path is assumed inside an operator-controlled perimeter *(inferred — §14 Q3)*.
 - **`doAs` impersonation:** when enabled, HS2 executes work as the connected
   end user against HDFS rather than as the Hive service principal; when
   disabled, all access runs as the Hive principal and authorization is fully
@@ -129,9 +137,30 @@ and a KDC for Kerberos *(inferred — §14 Q3)*.
 - **A sandbox around UDFs, SerDes, custom InputFormats, or `TRANSFORM`/script
   operators.** Code a principal is authorized to register or invoke runs with
   the privileges of the execution process; this is a feature, not a
-  containment boundary. `BY-DESIGN: property-disclaimed`.
+  containment boundary. `BY-DESIGN: property-disclaimed`. The model assumes
+  authentication and authorization are configured; against that baseline
+  *(maintainer — okumin)*:
+    - **Built-in UDFs** are generally safe, but Hive ships a few that allow
+      arbitrary code execution (`reflect`, `reflect2`, `java_method`,
+      `in_file`). A Hive administrator must block these via
+      `hive.server2.builtin.udf.blacklist` (directly or through the
+      authorization plugin); major plugins such as the Ranger authorizer
+      configure this blacklist properly.
+    - **Custom UDFs** — the administrator must restrict, via access policies
+      (e.g. Ranger), who may add UDF jars or register UDFs. Those trusted users
+      are responsible for safe UDFs; Hive cannot guarantee safety when a
+      trusted user adds a compromised UDF.
+    - **SerDe / InputFormat / OutputFormat** — only administrators can install
+      the jars; they are responsible for deploying safe implementations, and
+      Hive trusts them. Hive cannot guarantee safety against a compromised one
+      an admin installs.
+    - **`TRANSFORM`** — in a secure deployment it must be prohibited. Major
+      authorization plugins add
+      `org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransformHook`
+      to `hive.exec.pre.hooks`; administrators are responsible for using such a
+      plugin or configuring the hook themselves.
 - **Protection against an operator who controls the underlying storage,
-  metastore DB, or cluster processes** (see §3 item 3).
+  metastore DB, or cluster processes** (see §3 item 4).
 - **Resource fairness / DoS protection as a hard guarantee.** A sufficiently
   expensive query can exhaust cluster resources; per-pool/queue limits
   (YARN, HS2 query limits) are the operator's lever, not an engine invariant
@@ -148,6 +177,8 @@ and a KDC for Kerberos *(inferred — §14 Q3)*.
 | `doAs` (`hive.server2.enable.doAs`) | decides whether HDFS access runs as the end user or the Hive principal. |
 | TLS on HS2 / HMS transports | decides whether sessions + metadata are on the wire in clear. |
 | UDF/SerDe allow-listing, `hive.security.authorization.sqlstd.confwhitelist` | decides which session config + functions an untrusted client may set/use. |
+| Built-in UDF blacklist (`hive.server2.builtin.udf.blacklist`) | blocks code-exec built-ins (`reflect`, `reflect2`, `java_method`, `in_file`); Ranger configures it *(maintainer — okumin)*. |
+| `TRANSFORM` disable (`DisallowTransformHook` in `hive.exec.pre.hooks`) | prohibits `TRANSFORM`/script operators in secure deployments *(maintainer — okumin)*. |
 
 ## §11a — Known non-findings (seed for scanner/AI triage)
 
@@ -160,10 +191,17 @@ extend *(inferred — §14 Q13)*:
 - **"HiveServer2 with `authentication=NONE` accepts anyone."** That is a
   non-default / operator-chosen insecure configuration, not a Hive defect.
   `OUT-OF-MODEL: non-default-build` (confirm the shipped default).
-- **"The Metastore Thrift port has no authorization."** In-model only if the
-  PMC asserts HMS is meant to enforce caller authorization; if HMS is an
-  intra-cluster trusted service behind the perimeter, reports against direct
-  HMS access are `OUT-OF-MODEL: adversary-not-in-scope`. (§14 Q1/Q3.)
+- **"The Metastore Thrift port has no authorization."** **In-model.** The PMC
+  confirms HMS is expected to enforce caller authorization at the application
+  level (external services such as Spark access HMS directly — §3.3), so a
+  genuine missing-authorization path on HMS is a **VALID** finding, not
+  out-of-scope. *(maintainer — okumin, §14 Q1.)*
+- **"A built-in UDF (`reflect`/`reflect2`/`java_method`/`in_file`) enables code
+  execution."** By design — these are blocked by the administrator via
+  `hive.server2.builtin.udf.blacklist` (Ranger does this). Reachable only when
+  the operator has not configured the blacklist → `OUT-OF-MODEL:
+  non-default-build` / operator responsibility, unless the report shows a
+  *bypass* of a configured blacklist. *(maintainer — okumin.)*
 - **Dependency-tail CVEs** (Hadoop, Log4j, a transitive JAR) surfaced by an
   SCA scanner against Hive's build — triage upstream unless Hive's own code
   reaches the vulnerable path with untrusted input.
@@ -183,11 +221,17 @@ Grouped in waves; answer inline (a few at a time is fine). Each promotes an
 *(inferred)* tag to *(maintainer)* once confirmed.
 
 **Wave 1 — scope & intended use**
-1. Is the in-scope surface "HiveServer2 (the SQL front door) + the artifacts it
-   compiles/executes", with the Metastore treated as an intra-cluster trusted
-   service? Or is direct Metastore access in scope?
-2. Are UDFs / SerDes / custom InputFormats / `TRANSFORM` scripts in scope as
-   *code-execution-by-design* (not a sandbox), per §7?
+1. *(Answered — okumin: direct Metastore access **is** in scope; HMS enforces
+   caller authorization at the application level, since external services like
+   Spark talk to it directly. Folded into §3.3 / §4 / §11a.)* ~~Is the in-scope
+   surface "HiveServer2 + the artifacts it compiles/executes", with the
+   Metastore treated as intra-cluster trusted? Or is direct Metastore access in
+   scope?~~
+2. *(Answered — okumin: yes, in scope as code-execution-by-design, with detail
+   on built-in UDF blacklist, custom UDF/SerDe admin trust, and `TRANSFORM`
+   disable via `DisallowTransformHook`. Folded into §7 / §8 / §11a.)* ~~Are
+   UDFs / SerDes / custom InputFormats / `TRANSFORM` scripts in scope as
+   code-execution-by-design (not a sandbox), per §7?~~
 3. Confirm the assumed deployment: clustered, behind an operator-controlled
    perimeter, with Hadoop + a metastore RDBMS + (Ranger or SQL-std auth) + KDC
    as trusted dependencies.
@@ -200,18 +244,26 @@ Grouped in waves; answer inline (a few at a time is fine). Each promotes an
 6. At the client→HS2 boundary, are SQL text, JDBC connection properties, and
    session-config overrides all treated as untrusted (subject to the conf
    whitelist)?
-7. Which `doAs` posture is the supported/recommended one, and how does it
-   change the authorization story?
+7. *(PMC reviewing — okumin expects `hive.server2.enable.doAs=false` is the
+   intended posture, since HiveServer2 can enforce policies itself; asked for a
+   second PMC member to double-check before we finalize.)* Which `doAs` posture
+   is the supported/recommended one, and how does it change the authorization
+   story?
 8. What properties does Hive claim to uphold given valid input (auth, authz
    scoping, others)?
 
 **Wave 3 — disclaimed properties & defaults**
-9. Confirm the operator-owned list in §6 (TLS, authz-model choice, network
+9. *(Partially — okumin notes HMS is protected at the application level rather
+   than the network level (reflected in §3.3/§4), and is still considering
+   whether to treat Ranger as the only supported authorization system.)*
+   Confirm the operator-owned list in §6 (TLS, authz-model choice, network
    isolation, UDF vetting). Anything mis-assigned?
 10. Confirm the by-design non-guarantees in §7.
 11. Is super-linear resource use / a hang on a pathological query a bug, or is
     bounding it the operator's job (YARN queues / HS2 limits)?
-12. Confirm the real names + shipped defaults of the §8 levers (especially
+12. *(PMC reviewing — okumin is checking the exact TLS configuration parameter
+    names on the Hive side; §8 TLS lever left unnamed pending that.)* Confirm
+    the real names + shipped defaults of the §8 levers (especially
     `hive.server2.authentication` and the default authorization model).
 13. What do scanners/fuzzers/researchers most often report that you consider a
     non-finding? (Feeds §11a.)
