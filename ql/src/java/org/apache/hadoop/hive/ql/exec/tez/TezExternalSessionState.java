@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -230,7 +231,7 @@ public class TezExternalSessionState extends TezSessionState {
   }
 
   private void waitForDagTerminal(DAGClientAMProtocolBlockingPB proxy, String dagId, long timeoutMs)
-      throws Exception {
+      throws TezException, ServiceException {
     long startTimeMs = System.currentTimeMillis();
     long pollIntervalMs = conf.getTimeVar(ConfVars.TEZ_DAG_STATUS_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     while (System.currentTimeMillis() - startTimeMs < timeoutMs) {
@@ -253,8 +254,8 @@ public class TezExternalSessionState extends TezSessionState {
 
   private static boolean isTerminalDagState(DAGProtos.DAGStatusStateProto state) {
     return switch (state) {
-      case DAG_SUCCEEDED, DAG_KILLED, DAG_FAILED, DAG_ERROR -> true;
-      default -> false;
+    case DAG_SUCCEEDED, DAG_KILLED, DAG_FAILED, DAG_ERROR -> true;
+    default -> false;
     };
   }
 }
