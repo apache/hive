@@ -94,16 +94,6 @@ import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 import static org.apache.hadoop.hive.serde.serdeConstants.UNION_TYPE_NAME;
 
 public class DDLPlanUtils {
-  private final HiveConf conf;
-
-  public DDLPlanUtils() {
-    this(null);
-  }
-
-  public DDLPlanUtils(HiveConf conf) {
-    this.conf = conf;
-  }
-
   private static final String EXTERNAL = "external";
   private static final String TEMPORARY = "temporary";
   private static final String LIST_COLUMNS = "columns";
@@ -527,9 +517,10 @@ public class DDLPlanUtils {
    * Parses the ColumnStatistics for all the columns in a given table and adds the alter table update
    * statistics command for each column.
    *
+   * @param conf
    * @param tbl
    */
-  public List<String> getAlterTableStmtTableStatsColsAll(Table tbl)
+  public List<String> getAlterTableStmtTableStatsColsAll(HiveConf conf, Table tbl)
     throws HiveException {
     List<String> alterTblStmt = new ArrayList<>();
     List<String> accessedColumns = getTableColumnNames(tbl);
@@ -659,17 +650,17 @@ public class DDLPlanUtils {
     return command.render();
   }
 
-  public List<String> getDDLPlanForPartitionWithStats(Table table,
+  public List<String> getDDLPlanForPartitionWithStats(HiveConf conf, Table table,
                                                       Map<String, List<Partition>> tableToPartitionList
   ) throws HiveException {
-    List<String> alterTableStmt = new ArrayList<String>();
+    List<String> alterTableStmt = new ArrayList<>();
     String tableName = table.getTableName();
     for (Partition pt : tableToPartitionList.get(tableName)) {
       alterTableStmt.add(getAlterTableAddPartition(pt));
       alterTableStmt.add(getAlterTableStmtPartitionStatsBasic(pt));
     }
     String databaseName = table.getDbName();
-    List<String> partNames = new ArrayList<String>();
+    List<String> partNames = new ArrayList<>();
     //TODO : Check if only Accessed Column Statistics Can be Retrieved From the HMS.
     List<String> columnNames = getTableColumnNames(table);
     tableToPartitionList.get(tableName).forEach(p -> partNames.add(p.getName()));
