@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -27,20 +25,13 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,39 +80,39 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
 
     // Populate expected data
-    Set<RowData> expectedData = new HashSet<>();
+    List<RowData> expectedData = new ArrayList<>();
 
     expectedData.addAll(List.of(
-        new RowData("17", 17L),
-        new RowData("16", 16L),
-        new RowData("15", 15L),
-        new RowData("14", 14L),
-        new RowData("13", 13L),
-        new RowData("12", 12L)
+        new RowData("17", "17"),
+        new RowData("16", "16"),
+        new RowData("15", "15"),
+        new RowData("14", "14"),
+        new RowData("13", "13"),
+        new RowData("12", "12")
     ));
 
     // Adding the '4' group
     expectedData.addAll(List.of(
-        new RowData("6", 4L),
-        new RowData("3", 4L),
-        new RowData("4", 4L),
-        new RowData("2", 4L),
-        new RowData("5", 4L)
+        new RowData("6", "4"),
+        new RowData("3", "4"),
+        new RowData("4", "4"),
+        new RowData("2", "4"),
+        new RowData("5", "4")
     ));
 
     // Adding the '3' group
     expectedData.addAll(List.of(
-        new RowData("2", 3L),
-        new RowData("3", 3L),
-        new RowData("6", 3L),
-        new RowData("4", 3L),
-        new RowData("5", 3L)
+        new RowData("2", "3"),
+        new RowData("3", "3"),
+        new RowData("6", "3"),
+        new RowData("4", "3"),
+        new RowData("5", "3")
     ));
 
     // Adding the '2' group
     expectedData.addAll(List.of(
-        new RowData("6", 2L),
-        new RowData("5", 2L)
+        new RowData("6", "2"),
+        new RowData("5", "2")
     ));
 
     verifyDataAfterCompaction(expectedData, testDataProvider);
@@ -152,37 +143,40 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     // Check if the compaction succeed
     verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
 
-    String[][] expectedBuckets = new String[][] {
-        {
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t5\t4",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t6\t2",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t6\t3",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t6\t4",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":4}\t5\t2",
-        },
-        {
+    // Populate expected data
+    List<RowData> expectedData = new ArrayList<>();
 
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":5}\t5\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":6}\t2\t4",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":7}\t3\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":9}\t4\t3",
-        },
-        {
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":10}\t2\t3",
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":11}\t3\t4",
-            "{\"writeid\":2,\"bucketid\":537001984,\"rowid\":12}\t12\t12",
-            "{\"writeid\":3,\"bucketid\":537001984,\"rowid\":13}\t13\t13",
-            "{\"writeid\":4,\"bucketid\":537001984,\"rowid\":14}\t14\t14",
-        },
-        {
-            "{\"writeid\":5,\"bucketid\":537067520,\"rowid\":15}\t15\t15",
-            "{\"writeid\":6,\"bucketid\":537067520,\"rowid\":16}\t16\t16",
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t17\t17",
-        },
-    };
-    verifyRebalance(testDataProvider, null, expectedBuckets,
-        new String[] {"bucket_00000", "bucket_00001", "bucket_00002","bucket_00003"});
+    expectedData.addAll(List.of(
+        new RowData("5", "4"),
+        new RowData("6", "2"),
+        new RowData("6", "3"),
+        new RowData("6", "4"),
+        new RowData("5", "2")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("5", "3"),
+        new RowData("2", "4"),
+        new RowData("3", "3"),
+        new RowData("4", "4"),
+        new RowData("4", "3")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("2", "3"),
+        new RowData("3", "4"),
+        new RowData("12", "12"),
+        new RowData("13", "13"),
+        new RowData("14", "14")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("15", "15"),
+        new RowData("16", "16"),
+        new RowData("17", "17")
+    ));
+
+    verifyDataAfterCompaction(expectedData, testDataProvider, null, false);
   }
 
   @Test
@@ -195,7 +189,6 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
 
     final String stageTableName = "stage_rebalance_test";
     final String tableName = "rebalance_test";
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
 
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(stageTableName, true, false);
@@ -221,42 +214,12 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('17',17,'tomorrow')", driver);
 
     // Verify buckets and their content before rebalance in partition ds=tomorrow
-    GetTableRequest getTableRequest = new GetTableRequest("default", tableName);
-    Table table = msClient.getTable(getTableRequest);
-    FileSystem fs = FileSystem.get(conf);
-    assertEquals("Test setup does not match the expected: different buckets",
-        Arrays.asList("bucket_00000_0", "bucket_00001_0", "bucket_00002_0"),
-        CompactorTestUtil.getBucketFileNames(fs, table, "ds=tomorrow", "base_0000001"));
-    String[][] expectedBuckets = new String[][] {
-        {
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\t1\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t2\t2\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t3\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t2\t4\ttomorrow",
-            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t12\t12\ttomorrow",
-            "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t13\t13\ttomorrow",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t14\t14\ttomorrow",
-            "{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t15\t15\ttomorrow",
-            "{\"writeid\":6,\"bucketid\":536870912,\"rowid\":0}\t16\t16\ttomorrow",
-            "{\"writeid\":7,\"bucketid\":536870912,\"rowid\":0}\t17\t17\ttomorrow",
-        },
-        {
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t3\t1\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t3\t2\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":2}\t3\t3\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":3}\t3\t4\ttomorrow",
-        },
-        {
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":0}\t1\t1\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":1}\t1\t2\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":2}\t1\t3\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":3}\t1\t4\ttomorrow",
-        },
-    };
-    for(int i = 0; i < 3; i++) {
-      assertEquals("rebalanced bucket " + i, Arrays.asList(expectedBuckets[i]),
-          testDataProvider.getBucketData(tableName, BucketCodec.V1.encode(options.bucket(i)) + ""));
-    }
+    // Make sure we have all the records persisted
+    List<String> allRecords = execSelectAndDumpData(
+        "SELECT * FROM " + tableName, driver, "Dumping data from test table, " + tableName);
+    Assert.assertEquals(18, allRecords.size());
+
+    Assert.assertFalse(isBalanced(testDataProvider, "ds=tomorrow"));
 
     //Try to do a rebalancing compaction
     executeStatementOnDriver("ALTER TABLE " + tableName + " PARTITION (ds='tomorrow') COMPACT 'rebalance'", driver);
@@ -265,34 +228,36 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     //Check if the compaction succeed
     verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
 
-    expectedBuckets = new String[][] {
-        {
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t2\t1\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t2\t2\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t3\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t2\t4\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":4}\t3\t1\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":5}\t3\t2\ttomorrow",
-        },
-        {
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":6}\t3\t3\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":7}\t3\t4\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":8}\t1\t1\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":9}\t1\t2\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":10}\t1\t3\ttomorrow",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":11}\t1\t4\ttomorrow",
-        },
-        {
-            "{\"writeid\":2,\"bucketid\":537001984,\"rowid\":12}\t12\t12\ttomorrow",
-            "{\"writeid\":3,\"bucketid\":537001984,\"rowid\":13}\t13\t13\ttomorrow",
-            "{\"writeid\":4,\"bucketid\":537001984,\"rowid\":14}\t14\t14\ttomorrow",
-            "{\"writeid\":5,\"bucketid\":537001984,\"rowid\":15}\t15\t15\ttomorrow",
-            "{\"writeid\":6,\"bucketid\":537001984,\"rowid\":16}\t16\t16\ttomorrow",
-            "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":17}\t17\t17\ttomorrow",
-        },
-    };
-    verifyRebalance(testDataProvider, "ds=tomorrow", expectedBuckets,
-        new String[] {"bucket_00000", "bucket_00001", "bucket_00002"});
+    List<RowData> expectedData = new ArrayList<>();
+
+    expectedData.addAll(List.of(
+      new RowData("2", "1", "tomorrow"),
+      new RowData("2", "2", "tomorrow"),
+      new RowData("2", "3", "tomorrow"),
+      new RowData("2", "4", "tomorrow"),
+      new RowData("3", "1", "tomorrow"),
+      new RowData("3", "2", "tomorrow")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("3", "3", "tomorrow"),
+        new RowData("3", "4", "tomorrow"),
+        new RowData("1", "1", "tomorrow"),
+        new RowData("1", "2", "tomorrow"),
+        new RowData("1", "3", "tomorrow"),
+        new RowData("1", "4", "tomorrow")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("12", "12", "tomorrow"),
+        new RowData("13", "13", "tomorrow"),
+        new RowData("14", "14", "tomorrow"),
+        new RowData("15", "15", "tomorrow"),
+        new RowData("16", "16", "tomorrow"),
+        new RowData("17", "17", "tomorrow")
+    ));
+
+    verifyDataAfterCompaction(expectedData, testDataProvider, "ds=tomorrow", false);
   }
 
   @Test
@@ -337,36 +302,38 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
 
     verifyCompaction(1,  TxnStore.CLEANING_RESPONSE);
 
-    String[][] expectedBuckets = new String[][] {
-        {
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t5\t4",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t6\t2",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t6\t3",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t6\t4",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":4}\t5\t2",
-        },
-        {
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":5}\t5\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":6}\t2\t4",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":7}\t3\t3",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":8}\t4\t4",
-            "{\"writeid\":1,\"bucketid\":536936448,\"rowid\":9}\t4\t3",
-        },
-        {
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":10}\t2\t3",
-            "{\"writeid\":1,\"bucketid\":537001984,\"rowid\":11}\t3\t4",
-            "{\"writeid\":2,\"bucketid\":537001984,\"rowid\":12}\t12\t12",
-            "{\"writeid\":3,\"bucketid\":537001984,\"rowid\":13}\t13\t13",
-            "{\"writeid\":4,\"bucketid\":537001984,\"rowid\":14}\t14\t14",
-        },
-        {
-            "{\"writeid\":5,\"bucketid\":537067520,\"rowid\":15}\t15\t15",
-            "{\"writeid\":6,\"bucketid\":537067520,\"rowid\":16}\t16\t16",
-            "{\"writeid\":7,\"bucketid\":537067520,\"rowid\":17}\t17\t17",
-        },
-    };
-    verifyRebalance(testDataProvider, null, expectedBuckets,
-        new String[] {"bucket_00000", "bucket_00001", "bucket_00002", "bucket_00003"});
+    List<RowData> expectedData = new ArrayList<>();
+    expectedData.addAll(List.of(
+        new RowData("5", "4"),
+        new RowData("6", "2"),
+        new RowData("6", "3"),
+        new RowData("6", "4"),
+        new RowData("5", "2")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("5", "3"),
+        new RowData("2", "4"),
+        new RowData("3", "3"),
+        new RowData("4", "4"),
+        new RowData("4", "3")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("2", "3"),
+        new RowData("3", "4"),
+        new RowData("12", "12"),
+        new RowData("13", "13"),
+        new RowData("14", "14")
+    ));
+
+    expectedData.addAll(List.of(
+        new RowData("15", "15"),
+        new RowData("16", "16"),
+        new RowData("17", "17")
+    ));
+
+    verifyDataAfterCompaction(expectedData, testDataProvider, null, false);
   }
 
   @SuppressWarnings("java:S2925")
@@ -437,65 +404,96 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
 
     // Populate expected data
-    Set<RowData> expectedData = new HashSet<>();
+    List<RowData> expectedData = new ArrayList<>();
 
     expectedData.addAll(List.of(
-        new RowData("17", 17L),
-        new RowData("16", 16L),
-        new RowData("15", 15L),
-        new RowData("14", 14L),
-        new RowData("13", 13L)
+        new RowData("17", "17"),
+        new RowData("16", "16"),
+        new RowData("15", "15"),
+        new RowData("14", "14"),
+        new RowData("13", "13")
     ));
 
     // Adding the '4' group
     expectedData.addAll(List.of(
-        new RowData("6", 4L),
-        new RowData("3", 4L),
-        new RowData("4", 4L),
-        new RowData("2", 4L),
-        new RowData("5", 4L)
+        new RowData("6", "4"),
+        new RowData("3", "4"),
+        new RowData("4", "4"),
+        new RowData("2", "4"),
+        new RowData("5", "4")
     ));
 
     // Adding the '3' group
     expectedData.addAll(List.of(
-        new RowData("2", 3L),
-        new RowData("3", 3L),
-        new RowData("6", 3L),
-        new RowData("4", 3L),
-        new RowData("5", 3L)
+        new RowData("2", "3"),
+        new RowData("3", "3"),
+        new RowData("6", "3"),
+        new RowData("4", "3"),
+        new RowData("5", "3")
     ));
 
     // Adding the '2' group
     expectedData.addAll(List.of(
-        new RowData("6", 2L),
-        new RowData("5", 2L)
+        new RowData("6", "2"),
+        new RowData("5", "2")
     ));
 
     verifyDataAfterCompaction(expectedData, testDataProvider);
   }
 
-  record RowData(String colA, Long colB) {}
+  record RowData(String... columns) {
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof RowData(String[] otherColumns)) {
+        return Arrays.equals(otherColumns, this.columns);
+      }
+
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(columns);
+    }
+  }
 
   /**
    * Validate the data after rebalance compaction
    * - the table is balanced (or if not, only numberOfDeletedRows amount of rows are missing
    * - there is only one writeId
    * - buckets has unique bucketId and the bucketId doesn't change inside a bucket
-   * - data is sorted by column b (so the order of column a is not predictable)
+   * - all the required value present
+   * - rowId must be strictly monotonic
+   *
+   * @param expectedData     Expected row data
+   * @param testDataProvider Test data provider
+   * @throws Exception Any exception that occurs during the execution
+   */
+  private void verifyDataAfterCompaction(List<RowData> expectedData, TestDataProvider testDataProvider)
+      throws Exception {
+    verifyDataAfterCompaction(expectedData, testDataProvider, (String) null, true);
+  }
+  /**
+   * Validate the data after rebalance compaction
+   * - the table is balanced (or if not, only numberOfDeletedRows amount of rows are missing
+   * - writeId must be strictly monotonic
+   * - buckets has unique bucketId and the bucketId doesn't change inside a bucket
+   * - if we expect the output sorted, data is sorted by column b (so the order of column a is not predictable)
    * - all the required value present
    * - rowId must be strictly monotonic
    *
    * @param expectedData      Expected row data
    * @param testDataProvider  Test data provider
+   * @param sorted            True if the data must be sorted
    * @throws Exception        Any exception that occurs during the execution
    */
-  private void verifyDataAfterCompaction(Set<RowData> expectedData, TestDataProvider testDataProvider)
+  private void verifyDataAfterCompaction(List<RowData> expectedData, TestDataProvider testDataProvider, String partition, boolean sorted)
       throws Exception {
     FileSystem fs = FileSystem.get(conf);
     GetTableRequest getTableRequest = new GetTableRequest("default", "rebalance_test");
     Table table = msClient.getTable(getTableRequest);
     List<String> bucketFilenames = CompactorTestUtil.getBucketFileNames(
-        fs, table, null, "base_0000001");
+        fs, table, partition, "base_0000001");
 
     int bucketCount = bucketFilenames.size();
     assertTrue(bucketCount > 0);
@@ -514,7 +512,8 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
       assertTrue(bucketSize <= upperBound);
 
       long bucketId = -1L;
-      long writeId = -1L;
+
+      long previousWriteId = -1L;
 
       for (TestDataProvider.RowInfo rowInfo : bucket) {
 
@@ -524,12 +523,13 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
           rowInfo.rowId() > previousRowId);
         previousRowId = rowInfo.rowId();
 
-        // Check if writeId doesn't change
-        if (writeId == -1L) {
+        // Check if writeId is strictly monotonic
+        if (previousWriteId == -1L) {
           // we are at the first element
-          writeId = rowInfo.writeId();
+          previousWriteId = rowInfo.writeId();
         } else {
-          assertEquals(writeId, rowInfo.writeId());
+          assertTrue(previousWriteId <= rowInfo.writeId());
+          previousWriteId = rowInfo.writeId();
         }
 
         // Check if bucketId doesn't change inside the bucket
@@ -540,14 +540,17 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
           assertEquals(bucketId, rowInfo.bucketId());
         }
 
-        // Check if the data is sorted by colB desc
-        RowData rowData = rowInfo.rowData();
-        assertTrue(rowData.colB <= previousValueForColB);
-        previousValueForColB = rowData.colB;
-
         // Check if all the necessary data persist
+        RowData rowData = rowInfo.rowData();
         assertTrue(expectedData.contains(rowData));
         expectedData.remove(rowData);
+
+        // Check if the data is sorted by colB desc
+        if (sorted) {
+          long colB = Long.parseLong(rowData.columns()[1]);
+          assertTrue(colB <= previousValueForColB);
+          previousValueForColB = colB;
+        }
       }
     }
 
@@ -580,27 +583,27 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
         "SELECT * FROM " + "rebalance_test", driver, "Dumping data from test table, " + "rebalance_test");
     Assert.assertEquals(18, allRecords.size());
 
-    /*
-     check if the test data is unbalanced
-     Balanced if all the buckets contain between n / bucket count and n / bucket count + bucket count rows,
-     where n is the number of rows in the table.
-     In our test case, we inserted 6 extra rows into the first bucket so, we can say it is properly unbalanced
-     if the first bucket has 6 more elements than the second one.
-    */
-    Assert.assertFalse(isBalanced(testDataProvider));
+    Assert.assertFalse(isBalanced(testDataProvider, null));
 
     // Please note, as the test tests rebalance compaction, not insert overwrite, it is not necessary to test if
     // we have the exact same data after preparing the test data as we had at the source table.
     return testDataProvider;
   }
 
-  private boolean isBalanced(TestDataProvider testDataProvider) throws Exception {
+  /**
+   * checks if the test data is unbalanced
+   * Balanced if all the buckets contain between n / bucket count and n / bucket count + bucket count rows,
+   * where n is the number of rows in the table.
+   * In our test case, we inserted 6 extra rows into the first bucket so, we can say it is properly unbalanced
+   * if the first bucket has 6 more elements than the second one.
+   **/
+  private boolean isBalanced(TestDataProvider testDataProvider, String partition) throws Exception {
     FileSystem fs = FileSystem.get(conf);
     GetTableRequest getTableRequest = new GetTableRequest("default", "rebalance_test");
     Table table = msClient.getTable(getTableRequest);
 
     // Assert that we have multiple buckets
-    List<String> bucketFilenames = CompactorTestUtil.getBucketFileNames(fs, table, null, "base_0000001");
+    List<String> bucketFilenames = CompactorTestUtil.getBucketFileNames(fs, table, partition, "base_0000001");
     assertTrue(bucketFilenames.size() > 1);
 
     int bucketCount = bucketFilenames.size();
@@ -626,32 +629,5 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     }
 
     return true;
-  }
-
-  private void verifyRebalance(TestDataProvider testDataProvider, String partitionName,
-      String[][] expectedBucketContent, String[] bucketNames) throws Exception {
-    // Verify buckets and their content after rebalance
-    GetTableRequest getTableRequest = new GetTableRequest("default", "rebalance_test");
-    Table table = msClient.getTable(getTableRequest);
-    FileSystem fs = FileSystem.get(conf);
-    assertEquals("Buckets does not match after compaction", Arrays.asList(bucketNames),
-        CompactorTestUtil.getBucketFileNames(fs, table, partitionName, findTheBaseFolder(table, partitionName, fs)));
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
-    for (int i = 0; i < expectedBucketContent.length; i++) {
-      assertEquals("rebalanced bucket " + i, Arrays.asList(expectedBucketContent[i]),
-          testDataProvider.getBucketData("rebalance_test", BucketCodec.V1.encode(options.bucket(i)) + ""));
-    }
-  }
-
-  private String findTheBaseFolder(Table table, String partitionName, FileSystem fs) throws IOException {
-    Path searchPath = partitionName == null ? new Path(table.getSd().getLocation(), "base_*_v*") : new Path(
-        new Path(table.getSd().getLocation()), new Path(partitionName,  "base_*_v*"));
-
-    return Arrays.stream(
-        fs.globStatus(searchPath, AcidUtils.baseFileFilter))
-        .map(FileStatus::getPath)
-        .map(Path::getName)
-        .sorted()
-        .findFirst().orElse(null);
   }
 }

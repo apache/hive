@@ -52,6 +52,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -188,7 +189,8 @@ public abstract class CompactorOnTezTest {
   protected HiveHookEvents.HiveHookEventProto getRelatedTezEvent(String dbTableName) throws Exception {
     int retryCount = 3;
     while (retryCount-- > 0) {
-      List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>>
+          readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
       for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
         do {
           HiveHookEvents.HiveHookEventProto event;
@@ -566,7 +568,7 @@ public abstract class CompactorOnTezTest {
       static RowInfo fromRawString(String row) throws JsonProcessingException {
         // Example row data to parse: "{\"writeid\":7,\"bucketid\":537001984,\"rowid\":10}\t5\t4",
 
-        String[] parts = row.split("\t", 3);
+        String[] parts = row.split("\t");
 
         JsonNode json = MAPPER.readTree(parts[0]);
 
@@ -574,10 +576,8 @@ public abstract class CompactorOnTezTest {
             json.get("writeid").asLong(),
             json.get("bucketid").asLong(),
             json.get("rowid").asLong(),
-            new TestRebalanceCompactor.RowData(
-                parts[1], // colA
-                Long.parseLong(parts[2])  // colB
-            )
+
+            new TestRebalanceCompactor.RowData(Arrays.copyOfRange(parts, 1, parts.length))
         );
       }
     }
