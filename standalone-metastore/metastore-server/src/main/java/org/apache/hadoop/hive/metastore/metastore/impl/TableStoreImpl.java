@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.metastore.impl;
 
 import com.google.common.base.Joiner;
 
+import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,10 +122,6 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.convertToMTable;
 import static org.apache.hadoop.hive.metastore.ObjectStore.convertToPart;
 import static org.apache.hadoop.hive.metastore.ObjectStore.convertToParts;
 import static org.apache.hadoop.hive.metastore.ObjectStore.convertToTable;
-import static org.apache.hadoop.hive.metastore.ObjectStore.getJDOFilterStrForPartitionNames;
-import static org.apache.hadoop.hive.metastore.ObjectStore.getPartQueryWithParams;
-import static org.apache.hadoop.hive.metastore.ObjectStore.makeParameterDeclarationString;
-import static org.apache.hadoop.hive.metastore.ObjectStore.putPersistentPrivObjects;
 import static org.apache.hadoop.hive.metastore.ObjectStore.verifyStatsChangeCtx;
 import static org.apache.hadoop.hive.metastore.metastore.impl.PrivilegeStoreImpl.getPrincipalTypeFromStr;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -2963,4 +2960,75 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     }
     return ret;
   }
+
+  /**
+   * Convert PrivilegeGrantInfo from privMap to MTablePrivilege, and add all of
+   * them to the toPersistPrivObjs. These privilege objects will be persisted as
+   * part of createTable.
+   */
+  private void putPersistentPrivObjects(MTable mtbl, List<Object> toPersistPrivObjs,
+      int now, Map<String, List<PrivilegeGrantInfo>> privMap, PrincipalType type, String authorizer) {
+    if (privMap != null) {
+      for (Map.Entry<String, List<PrivilegeGrantInfo>> entry : privMap
+          .entrySet()) {
+        String principalName = entry.getKey();
+        List<PrivilegeGrantInfo> privs = entry.getValue();
+        for (int i = 0; i < privs.size(); i++) {
+          PrivilegeGrantInfo priv = privs.get(i);
+          if (priv == null) {
+            continue;
+          }
+          MTablePrivilege mTblSec = new MTablePrivilege(
+              principalName, type.toString(), mtbl, priv.getPrivilege(),
+              now, priv.getGrantor(), priv.getGrantorType().toString(), priv
+              .isGrantOption(), authorizer);
+          toPersistPrivObjs.add(mTblSec);
+        }
+      }
+    }
+  }
+
+  private Pair<Query, Map<String, String>> getPartQueryWithParams(
+      PersistenceManager pm,
+      String catName, String dbName, String tblName,
+      List<String> partNames) {
+    Query query = pm.newQuery();
+    Map<String, String> params = new HashMap<>();
+    String filterStr = getJDOFilterStrForPartitionNames(catName, dbName, tblName, partNames, params);
+    query.setFilter(filterStr);
+    LOG.debug(" JDOQL filter is {}", filterStr);
+    query.declareParameters(makeParameterDeclarationString(params));
+    return Pair.of(query, params);
+  }
+
+  private String getJDOFilterStrForPartitionNames(String catName, String dbName, String tblName,
+      List<String> partNames, Map params) {
+    StringBuilder sb = new StringBuilder(
+        "table.tableName == t1 && table.database.name == t2 &&" + " table.database.catalogName == t3 && (");
+    params.put("t1", normalizeIdentifier(tblName));
+    params.put("t2", normalizeIdentifier(dbName));
+    params.put("t3", normalizeIdentifier(catName));
+    int n = 0;
+    for (Iterator<String> itr = partNames.iterator(); itr.hasNext(); ) {
+      String pn = "p" + n;
+      n++;
+      String part = itr.next();
+      params.put(pn, part);
+      sb.append("partitionName == ").append(pn);
+      sb.append(" || ");
+    }
+    sb.setLength(sb.length() - 4); // remove the last " || "
+    sb.append(')');
+    return sb.toString();
+  }
+
+  private String makeParameterDeclarationString(Map<String, String> params) {
+    //Create the parameter declaration string
+    StringBuilder paramDecl = new StringBuilder();
+    for (String key : params.keySet()) {
+      paramDecl.append(", java.lang.String ").append(key);
+    }
+    return paramDecl.toString();
+  }
+
 }

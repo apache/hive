@@ -118,6 +118,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
+import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -1280,8 +1281,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
    */
-  Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+  default Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).updateTableColumnStatistics(colStats, validWriteIds, writeId);
+  }
 
   /** Persists the given column statistics object to the metastore
    * @deprecated Use {@link #updatePartitionColumnStatistics(Table, MTable, ColumnStatistics, List, String, long)} instead
@@ -1298,10 +1301,12 @@ public interface RawStore extends Configurable {
       List<String> partVals, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
-  Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable,
+  default Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable,
       ColumnStatistics statsObj, List<String> partVals,
       String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).updatePartitionColumnStatistics(table, mTable, statsObj, partVals, validWriteIds, writeId);
+  }
 
   /**
    * Returns the relevant column statistics for a given column in a given table in a given database
