@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.NonNullableReturnTypeUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -135,12 +136,20 @@ public class HiveFunctionHelper implements FunctionHelper {
       inputsOIs[i] = createObjectInspector(inputs.get(i));
     }
     // 2) Initialize and obtain return type
-    ObjectInspector oi = fi.getGenericUDF() != null ?
-        fi.getGenericUDF().initializeAndFoldConstants(inputsOIs) :
+    GenericUDF genericUDF = fi.getGenericUDF();
+    ObjectInspector oi = genericUDF != null ?
+        genericUDF.initializeAndFoldConstants(inputsOIs) :
         fi.getGenericUDTF().initialize(inputsOIs);
     // 3) Convert to RelDataType
-    return TypeConverter.convert(
+    RelDataType returnType = TypeConverter.convert(
         TypeInfoUtils.getTypeInfoFromObjectInspector(oi), rexBuilder.getTypeFactory());
+    // Hive has no concept of non-nullable types, but some UDFs (e.g. IS NULL) always return
+    // non-nullable BOOLEAN, which Calcite's RexSimplify asserts via validateStrongPolicy.
+    if (genericUDF instanceof NonNullableReturnTypeUDF) {
+      returnType = rexBuilder.getTypeFactory().createTypeWithNullability(returnType, false);
+    }
+    
+    return returnType;
   }
 
   /**

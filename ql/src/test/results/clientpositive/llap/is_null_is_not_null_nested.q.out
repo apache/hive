@@ -1,0 +1,80 @@
+PREHOOK: query: CREATE TABLE t_is_null_nested (id INT, name STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_is_null_nested
+POSTHOOK: query: CREATE TABLE t_is_null_nested (id INT, name STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_is_null_nested
+PREHOOK: query: INSERT INTO t_is_null_nested VALUES
+  (1, 'alice'),
+  (2, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_is_null_nested
+POSTHOOK: query: INSERT INTO t_is_null_nested VALUES
+  (1, 'alice'),
+  (2, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_is_null_nested
+POSTHOOK: Lineage: t_is_null_nested.id SCRIPT []
+POSTHOOK: Lineage: t_is_null_nested.name SCRIPT []
+PREHOOK: query: SELECT id, (name IS NULL) IS NULL FROM t_is_null_nested ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, (name IS NULL) IS NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+1	false
+2	false
+PREHOOK: query: SELECT id, (name IS NOT NULL) IS NULL FROM t_is_null_nested ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, (name IS NOT NULL) IS NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+1	false
+2	false
+PREHOOK: query: SELECT id, (name IS NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, (name IS NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+1	true
+2	true
+PREHOOK: query: SELECT id, (name IS NOT NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, (name IS NOT NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+1	true
+2	true
+PREHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NOT NULL ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NOT NULL ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NULL ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NULL ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_is_null_nested
+#### A masked pattern was here ####

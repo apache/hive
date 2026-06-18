@@ -37,7 +37,7 @@ import org.apache.hadoop.io.BooleanWritable;
     value = "_FUNC_ a - Returns true if a is not NULL and false otherwise")
 @VectorizedExpressions({IsNotNull.class, SelectColumnIsNotNull.class})
 @NDV(maxNdv = 2)
-public class GenericUDFOPNotNull extends GenericUDF {
+public class GenericUDFOPNotNull extends GenericUDF implements NonNullableReturnTypeUDF {
   private final BooleanWritable result = new BooleanWritable();
 
   @Override
