@@ -14,9 +14,11 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
@@ -37,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.metastore.iface.ConstraintStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -47,40 +50,35 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStore {
 
+  private Configuration conf;
+
   @Override
   public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints)
       throws InvalidObjectException, MetaException {
-    boolean success = false;
-    try {
-      openTransaction();
-      createTable(tbl);
-      // Add constraints.
-      // We need not do a deep retrieval of the Table Column Descriptor while persisting the
-      // constraints since this transaction involving create table is not yet committed.
-      if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
-        constraints.setForeignKeys(addForeignKeys(constraints.getForeignKeys(), false, constraints.getPrimaryKeys(),
-            constraints.getUniqueConstraints()));
-      }
-      if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
-        constraints.setPrimaryKeys(addPrimaryKeys(constraints.getPrimaryKeys(), false));
-      }
-      if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
-        constraints.setUniqueConstraints(addUniqueConstraints(constraints.getUniqueConstraints(), false));
-      }
-      if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
-        constraints.setNotNullConstraints(addNotNullConstraints(constraints.getNotNullConstraints(), false));
-      }
-      if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
-        constraints.setDefaultConstraints(addDefaultConstraints(constraints.getDefaultConstraints(), false));
-      }
-      if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
-        constraints.setCheckConstraints(addCheckConstraints(constraints.getCheckConstraints(), false));
-      }
-      success = commitTransaction();
-      return constraints;
-    } finally {
-      rollbackAndCleanup(success, null);
+    baseStore.unwrap(TableStore.class).createTable(tbl);
+    // Add constraints.
+    // We need not do a deep retrieval of the Table Column Descriptor while persisting the
+    // constraints since this transaction involving create table is not yet committed.
+    if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
+      constraints.setForeignKeys(addForeignKeys(constraints.getForeignKeys(), false, constraints.getPrimaryKeys(),
+          constraints.getUniqueConstraints()));
     }
+    if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
+      constraints.setPrimaryKeys(addPrimaryKeys(constraints.getPrimaryKeys(), false));
+    }
+    if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
+      constraints.setUniqueConstraints(addUniqueConstraints(constraints.getUniqueConstraints(), false));
+    }
+    if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
+      constraints.setNotNullConstraints(addNotNullConstraints(constraints.getNotNullConstraints(), false));
+    }
+    if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
+      constraints.setDefaultConstraints(addDefaultConstraints(constraints.getDefaultConstraints(), false));
+    }
+    if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
+      constraints.setCheckConstraints(addCheckConstraints(constraints.getCheckConstraints(), false));
+    }
+    return constraints;
   }
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName(
@@ -92,7 +90,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     List<MConstraint> mConstraints = null;
     List<String> constraintNames = new ArrayList<>();
 
-    try (QueryWrapper queryForConstraintName = new QueryWrapper(pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
+    try (QueryWrapper queryForConstraintName =
+             new QueryWrapper(pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
         + "((parentTable.tableName == ptblname && parentTable.database.name == pdbname && " +
         "parentTable.database.catalogName == pcatname) || "
         + "(childTable != null && childTable.tableName == ctblname &&" +
@@ -127,23 +126,15 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     return mConstraints;
   }
 
-  private  boolean constraintNameAlreadyExists(MTable table, String constraintName) {
-    boolean commited = false;
+  private boolean constraintNameAlreadyExists(MTable table, String constraintName) {
     Query<MConstraint> constraintExistsQuery = null;
-    String constraintNameIfExists = null;
-    try {
-      openTransaction();
-      constraintName = normalizeIdentifier(constraintName);
-      constraintExistsQuery = pm.newQuery(MConstraint.class,
-          "parentTable == parentTableP && constraintName == constraintNameP");
-      constraintExistsQuery.declareParameters("MTable parentTableP, java.lang.String constraintNameP");
-      constraintExistsQuery.setUnique(true);
-      constraintExistsQuery.setResult("constraintName");
-      constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table, constraintName);
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, constraintExistsQuery);
-    }
+    constraintName = normalizeIdentifier(constraintName);
+    constraintExistsQuery = pm.newQuery(MConstraint.class,
+        "parentTable == parentTableP && constraintName == constraintNameP");
+    constraintExistsQuery.declareParameters("MTable parentTableP, java.lang.String constraintNameP");
+    constraintExistsQuery.setUnique(true);
+    constraintExistsQuery.setResult("constraintName");
+    String constraintNameIfExists = (String) constraintExistsQuery.executeWithArray(table, constraintName);
     return constraintNameIfExists != null && !constraintNameIfExists.isEmpty();
   }
 
@@ -806,66 +797,49 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   }
 
   private List<SQLPrimaryKey> getPrimaryKeysViaJdo(String catName, String dbName, String tblName) {
-    boolean commited = false;
     List<SQLPrimaryKey> primaryKeys = null;
-    Query query = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MConstraint.class,
-          "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
-              + " parentTable.database.catalogName == cat_name &&"
-              + " constraintType == MConstraint.PRIMARY_KEY_CONSTRAINT");
-      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, " +
-          "java.lang.String cat_name");
-      Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
-      pm.retrieveAll(constraints);
-      primaryKeys = new ArrayList<>();
-      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currPK = (MConstraint) i.next();
-        List<MFieldSchema> cols = currPK.getParentColumn() != null ?
-            currPK.getParentColumn().getCols() : currPK.getParentTable().getPartitionKeys();
-        int enableValidateRely = currPK.getEnableValidateRely();
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        SQLPrimaryKey keyCol = new SQLPrimaryKey(dbName,
-            tblName,
-            cols.get(currPK.getParentIntegerIndex()).getName(),
-            currPK.getPosition(),
-            currPK.getConstraintName(), enable, validate, rely);
-        keyCol.setCatName(catName);
-        primaryKeys.add(keyCol);
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    Query query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+            + " parentTable.database.catalogName == cat_name &&"
+            + " constraintType == MConstraint.PRIMARY_KEY_CONSTRAINT");
+    query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, " +
+        "java.lang.String cat_name");
+    Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
+    pm.retrieveAll(constraints);
+    primaryKeys = new ArrayList<>();
+    for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+      MConstraint currPK = (MConstraint) i.next();
+      List<MFieldSchema> cols = currPK.getParentColumn() != null ?
+          currPK.getParentColumn().getCols() : currPK.getParentTable().getPartitionKeys();
+      int enableValidateRely = currPK.getEnableValidateRely();
+      boolean enable = (enableValidateRely & 4) != 0;
+      boolean validate = (enableValidateRely & 2) != 0;
+      boolean rely = (enableValidateRely & 1) != 0;
+      SQLPrimaryKey keyCol = new SQLPrimaryKey(dbName,
+          tblName,
+          cols.get(currPK.getParentIntegerIndex()).getName(),
+          currPK.getPosition(),
+          currPK.getConstraintName(), enable, validate, rely);
+      keyCol.setCatName(catName);
+      primaryKeys.add(keyCol);
     }
     return primaryKeys;
   }
 
   private String getPrimaryKeyConstraintName(String catName, String dbName, String tblName) {
-    boolean commited = false;
     String ret = null;
-    Query query = null;
-
-    try {
-      openTransaction();
-      query = pm.newQuery(MConstraint.class,
-          "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
-              + " parentTable.database.catalogName == catName &&"
-              + " constraintType == MConstraint.PRIMARY_KEY_CONSTRAINT");
-      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, " +
-          "java.lang.String catName");
-      Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
-      pm.retrieveAll(constraints);
-      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currPK = (MConstraint) i.next();
-        ret = currPK.getConstraintName();
-        break;
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    Query query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+            + " parentTable.database.catalogName == catName &&"
+            + " constraintType == MConstraint.PRIMARY_KEY_CONSTRAINT");
+    query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, " +
+        "java.lang.String catName");
+    Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
+    pm.retrieveAll(constraints);
+    for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+      MConstraint currPK = (MConstraint) i.next();
+      ret = currPK.getConstraintName();
+      break;
     }
     return ret;
   }
@@ -920,86 +894,78 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
 
   private List<SQLForeignKey> getForeignKeysViaJdo(String catName, String parentDbName,
       String parentTblName, String foreignDbName, String foreignTblName) {
-    boolean commited = false;
     List<SQLForeignKey> foreignKeys = null;
     Collection<?> constraints = null;
-    Query query = null;
     Map<String, String> tblToConstraint = new HashMap<>();
-    try {
-      openTransaction();
-      String queryText =
-          " parentTable.database.catalogName == catName1 &&" + "childTable.database.catalogName == catName2 && " + (
-              parentTblName != null ? "parentTable.tableName == parent_tbl_name && " : "") + (
-              parentDbName != null ? " parentTable.database.name == parent_db_name && " : "") + (
-              foreignTblName != null ? " childTable.tableName == foreign_tbl_name && " : "") + (
-              foreignDbName != null ? " childTable.database.name == foreign_db_name && " : "")
-              + " constraintType == MConstraint.FOREIGN_KEY_CONSTRAINT";
-      queryText = queryText.trim();
-      query = pm.newQuery(MConstraint.class, queryText);
-      String paramText = "java.lang.String catName1, java.lang.String catName2" + (
-          parentTblName == null ? "" : ", java.lang.String parent_tbl_name") + (
-          parentDbName == null ? "" : " , java.lang.String parent_db_name") + (
-          foreignTblName == null ? "" : ", java.lang.String foreign_tbl_name") + (
-          foreignDbName == null ? "" : " , java.lang.String foreign_db_name");
-      query.declareParameters(paramText);
-      List<String> params = new ArrayList<>();
-      params.add(catName);
-      params.add(catName); // This is not a mistake, catName is in the where clause twice
-      if (parentTblName != null) {
-        params.add(parentTblName);
-      }
-      if (parentDbName != null) {
-        params.add(parentDbName);
-      }
-      if (foreignTblName != null) {
-        params.add(foreignTblName);
-      }
-      if (foreignDbName != null) {
-        params.add(foreignDbName);
-      }
-      constraints = (Collection<?>) query.executeWithArray(params.toArray(new String[0]));
+    String queryText =
+        " parentTable.database.catalogName == catName1 &&" + "childTable.database.catalogName == catName2 && " + (
+            parentTblName != null ? "parentTable.tableName == parent_tbl_name && " : "") + (
+            parentDbName != null ? " parentTable.database.name == parent_db_name && " : "") + (
+            foreignTblName != null ? " childTable.tableName == foreign_tbl_name && " : "") + (
+            foreignDbName != null ? " childTable.database.name == foreign_db_name && " : "")
+            + " constraintType == MConstraint.FOREIGN_KEY_CONSTRAINT";
+    queryText = queryText.trim();
+    Query query = pm.newQuery(MConstraint.class, queryText);
+    String paramText = "java.lang.String catName1, java.lang.String catName2" + (
+        parentTblName == null ? "" : ", java.lang.String parent_tbl_name") + (
+        parentDbName == null ? "" : " , java.lang.String parent_db_name") + (
+        foreignTblName == null ? "" : ", java.lang.String foreign_tbl_name") + (
+        foreignDbName == null ? "" : " , java.lang.String foreign_db_name");
+    query.declareParameters(paramText);
+    List<String> params = new ArrayList<>();
+    params.add(catName);
+    params.add(catName); // This is not a mistake, catName is in the where clause twice
+    if (parentTblName != null) {
+      params.add(parentTblName);
+    }
+    if (parentDbName != null) {
+      params.add(parentDbName);
+    }
+    if (foreignTblName != null) {
+      params.add(foreignTblName);
+    }
+    if (foreignDbName != null) {
+      params.add(foreignDbName);
+    }
+    constraints = (Collection<?>) query.executeWithArray(params.toArray(new String[0]));
 
-      pm.retrieveAll(constraints);
-      foreignKeys = new ArrayList<>();
-      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currPKFK = (MConstraint) i.next();
-        List<MFieldSchema> parentCols = currPKFK.getParentColumn() != null ?
-            currPKFK.getParentColumn().getCols() : currPKFK.getParentTable().getPartitionKeys();
-        List<MFieldSchema> childCols = currPKFK.getChildColumn() != null ?
-            currPKFK.getChildColumn().getCols() : currPKFK.getChildTable().getPartitionKeys();
-        int enableValidateRely = currPKFK.getEnableValidateRely();
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        String consolidatedtblName =
-            currPKFK.getParentTable().getDatabase().getName() + "." +
-                currPKFK.getParentTable().getTableName();
-        String pkName;
-        if (tblToConstraint.containsKey(consolidatedtblName)) {
-          pkName = tblToConstraint.get(consolidatedtblName);
-        } else {
-          pkName = getPrimaryKeyConstraintName(currPKFK.getParentTable().getDatabase().getCatalogName(),
-              currPKFK.getParentTable().getDatabase().getName(),
-              currPKFK.getParentTable().getTableName());
-          tblToConstraint.put(consolidatedtblName, pkName);
-        }
-        SQLForeignKey fk = new SQLForeignKey(
+    pm.retrieveAll(constraints);
+    foreignKeys = new ArrayList<>();
+    for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+      MConstraint currPKFK = (MConstraint) i.next();
+      List<MFieldSchema> parentCols = currPKFK.getParentColumn() != null ?
+          currPKFK.getParentColumn().getCols() : currPKFK.getParentTable().getPartitionKeys();
+      List<MFieldSchema> childCols = currPKFK.getChildColumn() != null ?
+          currPKFK.getChildColumn().getCols() : currPKFK.getChildTable().getPartitionKeys();
+      int enableValidateRely = currPKFK.getEnableValidateRely();
+      boolean enable = (enableValidateRely & 4) != 0;
+      boolean validate = (enableValidateRely & 2) != 0;
+      boolean rely = (enableValidateRely & 1) != 0;
+      String consolidatedtblName =
+          currPKFK.getParentTable().getDatabase().getName() + "." +
+              currPKFK.getParentTable().getTableName();
+      String pkName;
+      if (tblToConstraint.containsKey(consolidatedtblName)) {
+        pkName = tblToConstraint.get(consolidatedtblName);
+      } else {
+        pkName = getPrimaryKeyConstraintName(currPKFK.getParentTable().getDatabase().getCatalogName(),
             currPKFK.getParentTable().getDatabase().getName(),
-            currPKFK.getParentTable().getTableName(),
-            parentCols.get(currPKFK.getParentIntegerIndex()).getName(),
-            currPKFK.getChildTable().getDatabase().getName(),
-            currPKFK.getChildTable().getTableName(),
-            childCols.get(currPKFK.getChildIntegerIndex()).getName(),
-            currPKFK.getPosition(),
-            currPKFK.getUpdateRule(),
-            currPKFK.getDeleteRule(),
-            currPKFK.getConstraintName(), pkName, enable, validate, rely);
-        fk.setCatName(catName);
-        foreignKeys.add(fk);
+            currPKFK.getParentTable().getTableName());
+        tblToConstraint.put(consolidatedtblName, pkName);
       }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+      SQLForeignKey fk = new SQLForeignKey(
+          currPKFK.getParentTable().getDatabase().getName(),
+          currPKFK.getParentTable().getTableName(),
+          parentCols.get(currPKFK.getParentIntegerIndex()).getName(),
+          currPKFK.getChildTable().getDatabase().getName(),
+          currPKFK.getChildTable().getTableName(),
+          childCols.get(currPKFK.getChildIntegerIndex()).getName(),
+          currPKFK.getPosition(),
+          currPKFK.getUpdateRule(),
+          currPKFK.getDeleteRule(),
+          currPKFK.getConstraintName(), pkName, enable, validate, rely);
+      fk.setCatName(catName);
+      foreignKeys.add(fk);
     }
     return foreignKeys;
   }
@@ -1037,33 +1003,25 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   }
 
   private List<SQLUniqueConstraint> getUniqueConstraintsViaJdo(String catName, String dbName, String tblName) {
-    boolean commited = false;
     List<SQLUniqueConstraint> uniqueConstraints = null;
-    Query query = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MConstraint.class,
-          "parentTable.tableName == tbl_name && parentTable.database.name == db_name && parentTable.database.catalogName == catName &&"
-              + " constraintType == MConstraint.UNIQUE_CONSTRAINT");
-      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
-      Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
-      pm.retrieveAll(constraints);
-      uniqueConstraints = new ArrayList<>();
-      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currConstraint = (MConstraint) i.next();
-        List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
-            currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
-        int enableValidateRely = currConstraint.getEnableValidateRely();
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        uniqueConstraints.add(new SQLUniqueConstraint(catName, dbName, tblName,
-            cols.get(currConstraint.getParentIntegerIndex()).getName(), currConstraint.getPosition(),
-            currConstraint.getConstraintName(), enable, validate, rely));
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    Query query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name && parentTable.database.catalogName == catName &&"
+            + " constraintType == MConstraint.UNIQUE_CONSTRAINT");
+    query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
+    Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
+    pm.retrieveAll(constraints);
+    uniqueConstraints = new ArrayList<>();
+    for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+      MConstraint currConstraint = (MConstraint) i.next();
+      List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
+          currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
+      int enableValidateRely = currConstraint.getEnableValidateRely();
+      boolean enable = (enableValidateRely & 4) != 0;
+      boolean validate = (enableValidateRely & 2) != 0;
+      boolean rely = (enableValidateRely & 1) != 0;
+      uniqueConstraints.add(new SQLUniqueConstraint(catName, dbName, tblName,
+          cols.get(currConstraint.getParentIntegerIndex()).getName(), currConstraint.getPosition(),
+          currConstraint.getConstraintName(), enable, validate, rely));
     }
     return uniqueConstraints;
   }
@@ -1141,68 +1099,52 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   }
 
   private List<SQLCheckConstraint> getCheckConstraintsViaJdo(String catName, String dbName, String tblName) {
-    boolean commited = false;
     List<SQLCheckConstraint> checkConstraints= null;
-    Query query = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MConstraint.class,
-          "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
-              + " parentTable.database.catalogName == catName && constraintType == MConstraint.CHECK_CONSTRAINT");
-      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
-      Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
-      pm.retrieveAll(constraints);
-      checkConstraints = new ArrayList<>();
-      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currConstraint = (MConstraint) i.next();
-        List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
-            currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
-        int enableValidateRely = currConstraint.getEnableValidateRely();
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        checkConstraints.add(new SQLCheckConstraint(catName, dbName, tblName,
-            cols.get(currConstraint.getParentIntegerIndex()).getName(),
-            currConstraint.getDefaultValue(),
-            currConstraint.getConstraintName(), enable, validate, rely));
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    Query query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+            + " parentTable.database.catalogName == catName && constraintType == MConstraint.CHECK_CONSTRAINT");
+    query.declareParameters("java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
+    Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
+    pm.retrieveAll(constraints);
+    checkConstraints = new ArrayList<>();
+    for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+      MConstraint currConstraint = (MConstraint) i.next();
+      List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
+          currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
+      int enableValidateRely = currConstraint.getEnableValidateRely();
+      boolean enable = (enableValidateRely & 4) != 0;
+      boolean validate = (enableValidateRely & 2) != 0;
+      boolean rely = (enableValidateRely & 1) != 0;
+      checkConstraints.add(new SQLCheckConstraint(catName, dbName, tblName,
+          cols.get(currConstraint.getParentIntegerIndex()).getName(),
+          currConstraint.getDefaultValue(),
+          currConstraint.getConstraintName(), enable, validate, rely));
     }
     return checkConstraints;
   }
 
   private List<SQLDefaultConstraint> getDefaultConstraintsViaJdo(String catName, String dbName, String tblName) {
-    boolean commited = false;
     List<SQLDefaultConstraint> defaultConstraints= null;
-    Query query = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MConstraint.class,
-          "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
-              + " parentTable.database.catalogName == catName &&"
-              + " constraintType == MConstraint.DEFAULT_CONSTRAINT");
-      query.declareParameters(
-          "java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
-      Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
-      pm.retrieveAll(constraints);
-      defaultConstraints = new ArrayList<>();
-      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currConstraint = (MConstraint) i.next();
-        List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
-            currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
-        int enableValidateRely = currConstraint.getEnableValidateRely();
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        defaultConstraints.add(new SQLDefaultConstraint(catName, dbName, tblName,
-            cols.get(currConstraint.getParentIntegerIndex()).getName(), currConstraint.getDefaultValue(),
-            currConstraint.getConstraintName(), enable, validate, rely));
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    Query query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+            + " parentTable.database.catalogName == catName &&"
+            + " constraintType == MConstraint.DEFAULT_CONSTRAINT");
+    query.declareParameters(
+        "java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
+    Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
+    pm.retrieveAll(constraints);
+    defaultConstraints = new ArrayList<>();
+    for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+      MConstraint currConstraint = (MConstraint) i.next();
+      List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
+          currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
+      int enableValidateRely = currConstraint.getEnableValidateRely();
+      boolean enable = (enableValidateRely & 4) != 0;
+      boolean validate = (enableValidateRely & 2) != 0;
+      boolean rely = (enableValidateRely & 1) != 0;
+      defaultConstraints.add(new SQLDefaultConstraint(catName, dbName, tblName,
+          cols.get(currConstraint.getParentIntegerIndex()).getName(), currConstraint.getDefaultValue(),
+          currConstraint.getConstraintName(), enable, validate, rely));
     }
     return defaultConstraints;
   }
@@ -1230,35 +1172,27 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   }
 
   private List<SQLNotNullConstraint> getNotNullConstraintsViaJdo(String catName, String dbName, String tblName) {
-    boolean commited = false;
     List<SQLNotNullConstraint> notNullConstraints = null;
-    Query query = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MConstraint.class,
-          "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
-              + " parentTable.database.catalogName == catName && constraintType == MConstraint.NOT_NULL_CONSTRAINT");
-      query.declareParameters(
-          "java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
-      Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
-      pm.retrieveAll(constraints);
-      notNullConstraints = new ArrayList<>();
-      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currConstraint = (MConstraint) i.next();
-        List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
-            currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
-        int enableValidateRely = currConstraint.getEnableValidateRely();
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        notNullConstraints.add(new SQLNotNullConstraint(catName, dbName,
-            tblName,
-            cols.get(currConstraint.getParentIntegerIndex()).getName(),
-            currConstraint.getConstraintName(), enable, validate, rely));
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    Query query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+            + " parentTable.database.catalogName == catName && constraintType == MConstraint.NOT_NULL_CONSTRAINT");
+    query.declareParameters(
+        "java.lang.String tbl_name, java.lang.String db_name, java.lang.String catName");
+    Collection<?> constraints = (Collection<?>) query.execute(tblName, dbName, catName);
+    pm.retrieveAll(constraints);
+    notNullConstraints = new ArrayList<>();
+    for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+      MConstraint currConstraint = (MConstraint) i.next();
+      List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
+          currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
+      int enableValidateRely = currConstraint.getEnableValidateRely();
+      boolean enable = (enableValidateRely & 4) != 0;
+      boolean validate = (enableValidateRely & 2) != 0;
+      boolean rely = (enableValidateRely & 1) != 0;
+      notNullConstraints.add(new SQLNotNullConstraint(catName, dbName,
+          tblName,
+          cols.get(currConstraint.getParentIntegerIndex()).getName(),
+          currConstraint.getConstraintName(), enable, validate, rely));
     }
     return notNullConstraints;
   }
@@ -1276,8 +1210,6 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     String catName = request.getCatName();
     String dbName = request.getDbName();
     String tblName = request.getTblName();
-    debugLog("Get all table constraints for the table - " + catName + "." + dbName + "." + tblName
-        + " in class ObjectStore.java");
     SQLAllTableConstraints sqlAllTableConstraints = new SQLAllTableConstraints();
     PrimaryKeysRequest primaryKeysRequest = new PrimaryKeysRequest(dbName, tblName);
     primaryKeysRequest.setCatName(catName);
@@ -1298,24 +1230,18 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   }
 
   @Override
-  public void dropConstraint(String catName, String dbName, String tableName,
-      String constraintName, boolean missingOk)
+  public void dropConstraint(TableName tableName, String constraintName, boolean missingOk)
       throws NoSuchObjectException {
-    boolean success = false;
-    try {
-      openTransaction();
-
-      List<MConstraint> tabConstraints =
-          listAllTableConstraintsWithOptionalConstraintName(catName,  dbName, tableName, constraintName);
-      if (CollectionUtils.isNotEmpty(tabConstraints)) {
-        pm.deletePersistentAll(tabConstraints);
-      } else if (!missingOk) {
-        throw new NoSuchObjectException("The constraint: " + constraintName +
-            " does not exist for the associated table: " + dbName + "." + tableName);
-      }
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, null);
+    String catName = normalizeIdentifier(tableName.getCat());
+    String dbName = normalizeIdentifier(tableName.getDb());
+    String tblName = normalizeIdentifier(tableName.getTable());
+    List<MConstraint> tabConstraints =
+        listAllTableConstraintsWithOptionalConstraintName(catName,  dbName, tblName, constraintName);
+    if (CollectionUtils.isNotEmpty(tabConstraints)) {
+      pm.deletePersistentAll(tabConstraints);
+    } else if (!missingOk) {
+      throw new NoSuchObjectException("The constraint: " + constraintName +
+          " does not exist for the associated table: " + dbName + "." + tblName);
     }
   }
 
@@ -1342,6 +1268,12 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
       }
     }
     return -1;
+  }
+
+  @Override
+  public void setBaseStore(RawStore store) {
+    super.setBaseStore(store);
+    this.conf = store.getConf();
   }
 
   class AttachedMTableInfo {

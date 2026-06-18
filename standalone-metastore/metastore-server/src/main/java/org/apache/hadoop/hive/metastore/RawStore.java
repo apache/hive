@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.ConstraintStore;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -1865,8 +1866,10 @@ public interface RawStore extends Configurable {
    * @return list of primary key columns or an empty list if the table does not have a primary key
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
-      throws MetaException;
+  default List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
+      throws MetaException {
+    return unwrap(ConstraintStore.class).getPrimaryKeys(request);
+  }
 
   /**
    * SQLForeignKey represents a single foreign key column.
@@ -1877,8 +1880,10 @@ public interface RawStore extends Configurable {
    * matches the arguments the results here will be all mixed together into a single list.
    * @throws MetaException error access the RDBMS.
    */
-  List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request)
-      throws MetaException;
+  default List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request)
+      throws MetaException {
+    return unwrap(ConstraintStore.class).getForeignKeys(request);
+  }
 
   /**
    * SQLUniqueConstraint represents a single unique constraint column.
@@ -1888,7 +1893,9 @@ public interface RawStore extends Configurable {
    * @return list of unique constraints
    * @throws MetaException error access the RDBMS.
    */
-  List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException;
+  default List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getUniqueConstraints(request);
+  }
 
   /**
    * SQLNotNullConstraint represents a single not null constraint column.
@@ -1898,7 +1905,9 @@ public interface RawStore extends Configurable {
    * @return list of not null constraints
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException;
+  default List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getNotNullConstraints(request);
+  }
 
   /**
    * SQLDefaultConstraint represents a single default constraint column.
@@ -1908,7 +1917,9 @@ public interface RawStore extends Configurable {
    * @return list of default values defined on the table.
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException;
+  default List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getDefaultConstraints(request);
+  }
 
   /**
    * SQLCheckConstraint represents a single check constraint column.
@@ -1918,7 +1929,9 @@ public interface RawStore extends Configurable {
    * @return ccheck constraints for this table
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException;
+  default List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getCheckConstraints(request);
+  }
 
   /**
    * Get table constraints
@@ -1927,8 +1940,10 @@ public interface RawStore extends Configurable {
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
-      throws MetaException, NoSuchObjectException;
+  default SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ConstraintStore.class).getAllTableConstraints(request);
+  }
 
   /**
    * Create a table with constraints
@@ -1938,7 +1953,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException one of the provided objects is malformed.
    * @throws MetaException error accessing the RDBMS
    */
-  SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints) throws InvalidObjectException, MetaException;
+  default SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).createTableWithConstraints(tbl, constraints);
+  }
 
   /**
    * Drop a constraint, any constraint.  I have no idea why add and get each have separate
@@ -1965,8 +1983,10 @@ public interface RawStore extends Configurable {
    *                  false and there is no constraint of this name an exception will be thrown.
    * @throws NoSuchObjectException no constraint of this name exists and missingOk = false
    */
-  void dropConstraint(String catName, String dbName, String tableName, String constraintName,
-                      boolean missingOk) throws NoSuchObjectException;
+  default void dropConstraint(String catName, String dbName, String tableName, String constraintName,
+                      boolean missingOk) throws NoSuchObjectException {
+    unwrap(ConstraintStore.class).dropConstraint(new TableName(catName, dbName, tableName), constraintName, missingOk);
+  }
 
   /**
    * Add a primary key to a table.
@@ -1975,7 +1995,9 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException The SQLPrimaryKeys list is malformed
    * @throws MetaException error accessing the RDMBS
    */
-  List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
+  default List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addPrimaryKeys(pks);
+  }
 
   /**
    * Add a foreign key to a table.
@@ -1984,7 +2006,9 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+  default List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addForeignKeys(fks);
+  }
 
   /**
    * Add unique constraints to a table.
@@ -1993,7 +2017,9 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
+  default List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addUniqueConstraints(uks);
+  }
 
   /**
    * Add not null constraints to a table.
@@ -2002,7 +2028,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
+  default List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addNotNullConstraints(nns);
+  }
 
   /**
    * Add default values to a table definition.
@@ -2011,8 +2040,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dv)
-      throws InvalidObjectException, MetaException;
+  default List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dv)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addDefaultConstraints(dv);
+  }
 
   /**
    * Add check constraints to a table.
@@ -2021,7 +2052,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
+  default List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> cc)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addCheckConstraints(cc);
+  }
 
   /**
    * Gets the unique id of the backing datastore for the metadata.
