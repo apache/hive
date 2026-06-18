@@ -354,7 +354,7 @@ public class TezSessionPoolManager extends AbstractTriggerValidator
         defaultSessionPool.returnSession((TezSessionPoolSession)tezSessionState);
       }
 
-      if (useExternalSessions) {
+      if (useExternalSessions && !tezSessionState.isDefault()) {
         if (tezSessionState.getTezClient() != null
             && tezSessionState.getTezClient().getAppMasterApplicationId() != null) {
           try {

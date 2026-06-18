@@ -61,6 +61,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
   private InterProcessMutex globalQueue;
   private String claimsPath;
   private volatile boolean isInitialized;
+  private volatile boolean zkConnectionHealthy = false;
 
 
   public ZookeeperExternalSessionsRegistryClient(final HiveConf initConf) {
@@ -99,17 +100,17 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
       client.start();
 
       client.getConnectionStateListenable().addListener((curatorClient, newState) -> {
-        if (newState != ConnectionState.LOST) {
-          return;
-        }
-        Set<String> sessionsToKill;
-        synchronized (lock) {
-          LOG.error("ZK connection state has changed to lost; killing running DAGs on claimed AMs: {}", taken);
-          sessionsToKill = new HashSet<>(taken);
-          taken.clear();
-        }
-        for (String appId : sessionsToKill) {
-          TezJobMonitor.killRunningDAGsForApplication(appId);
+        if (newState == ConnectionState.CONNECTED || newState == ConnectionState.RECONNECTED) {
+          zkConnectionHealthy = true;
+        } else if (newState == ConnectionState.LOST) {
+          zkConnectionHealthy = false;
+          Set<String> sessionsToKill;
+          synchronized (lock) {
+            LOG.error("ZK connection state has changed to lost; killing running DAGs on claimed AMs: {}", taken);
+            sessionsToKill = new HashSet<>(taken);
+            taken.clear();
+          }
+          sessionsToKill.forEach(TezJobMonitor::killRunningDAGsForApplication);
         }
       });
 
@@ -201,7 +202,9 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
           }
           long remainingTimeNs = timeoutNs - (System.nanoTime() - startTimeNs);
           if (remainingTimeNs > 0) {
-            long waitTimeMs = Math.min(1000L, remainingTimeNs / 1_000_000L);
+            // Add one to remainingTime milliseconds computation to prevent the case where
+            // (remainingTimeNs / 1000000L) can return 0 causing the lock to be held indefinitely.
+            long waitTimeMs = Math.min(1000L, (remainingTimeNs / 1000000L) + 1);
             lock.wait(waitTimeMs);
           }
         }
@@ -286,6 +289,16 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
           // Ignore all the other events; logged above.
         }
       }
+    }
+  }
+
+  @Override
+  public boolean isClaimed(String appId) {
+    if (!zkConnectionHealthy) {
+      return false;
+    }
+    synchronized (lock) {
+      return taken.contains(appId);
     }
   }
 }

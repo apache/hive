@@ -198,6 +198,9 @@ public class TezExternalSessionState extends TezSessionState {
 
   @Override
   public DAGClient submitDAG(DAG dag) throws TezException, IOException {
+    if (!registry.isClaimed(externalAppId)) {
+      throw new TezException("Cannot submit DAG as the Tez Session no-longer owns the AM: " + externalAppId);
+    }
     try {
       return getTezClient().submitDAG(dag);
     } catch (TezException e) {
@@ -210,6 +213,9 @@ public class TezExternalSessionState extends TezSessionState {
   }
 
   private void tryKillRunningDAGs(TezClient session) throws TezException {
+    if (!registry.isClaimed(externalAppId)) {
+      throw new TezException("Cannot kill running DAG as the Tez Session no-longer owns the AM: " + externalAppId);
+    }
     LOG.info("External session has an AM which is already running a DAG on app ID {}", externalAppId);
     DAGClientAMProtocolBlockingPB proxy = session.sendAMHeartbeat(null);
     if (proxy == null) {

@@ -507,7 +507,7 @@ public class TezJobMonitor {
             c.tryKillDAG();
           }
         } catch (Exception e) {
-          LOG.error("Error while trying to kill running DAG on tez session {}", applicationId);
+          LOG.error("Error while trying to kill running DAG on tez session {}", applicationId, e);
         }
       }
     }
