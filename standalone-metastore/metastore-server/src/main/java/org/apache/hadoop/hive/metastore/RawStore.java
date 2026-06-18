@@ -1298,9 +1298,11 @@ public interface RawStore extends Configurable {
    * @throws InvalidInputException unable to record the stats for the table
    */
   @Deprecated
-  Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
+  default Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
       List<String> partVals, String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    throw new UnsupportedOperationException();
+  }
 
   default Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable,
       ColumnStatistics statsObj, List<String> partVals,
@@ -1321,8 +1323,10 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    *
    */
-  List<ColumnStatistics> getTableColumnStatistics(String catName, String dbName, String tableName,
-    List<String> colName) throws MetaException, NoSuchObjectException;
+  default List<ColumnStatistics> getTableColumnStatistics(String catName, String dbName, String tableName,
+    List<String> colName) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getTableColumnStatistics(new TableName(catName, dbName, tableName), colName);
+  }
 
   /**
    * Returns the relevant column statistics for a given column in a given table in a given database
@@ -1337,8 +1341,11 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    *
    */
-  ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
-    List<String> colName, String engine) throws MetaException, NoSuchObjectException;
+  default ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
+    List<String> colName, String engine) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getTableColumnStatistics(new TableName(catName, dbName, tableName), colName, engine);
+  }
 
   /**
    * Returns the relevant column statistics for a given column in a given table in a given database
@@ -1354,10 +1361,13 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    *
    */
-  ColumnStatistics getTableColumnStatistics(
+  default ColumnStatistics getTableColumnStatistics(
     String catName, String dbName, String tableName,
     List<String> colName, String engine, String writeIdList)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getTableColumnStatistics(new TableName(catName, dbName, tableName), colName, engine, writeIdList);
+  }
 
   /**
    * Get statistics for a partition for a set of columns.
@@ -1370,9 +1380,12 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    * @throws NoSuchObjectException no such partition.
    */
-  List<List<ColumnStatistics>> getPartitionColumnStatistics(
+  default List<List<ColumnStatistics>> getPartitionColumnStatistics(
       String catName, String dbName, String tblName, List<String> partNames, List<String> colNames)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getPartitionColumnStatistics(new TableName(catName, dbName, tblName), partNames, colNames);
+  }
 
   /**
    * Get statistics for a partition for a set of columns.
@@ -1386,9 +1399,12 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    * @throws NoSuchObjectException no such partition.
    */
-  List<ColumnStatistics> getPartitionColumnStatistics(
+  default List<ColumnStatistics> getPartitionColumnStatistics(
      String catName, String dbName, String tblName, List<String> partNames, List<String> colNames,
-     String engine) throws MetaException, NoSuchObjectException;
+     String engine) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getPartitionColumnStatistics(new TableName(catName, dbName, tblName), partNames, colNames, engine);
+  }
 
   /**
    * Get statistics for a partition for a set of columns.
@@ -1403,11 +1419,14 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    * @throws NoSuchObjectException no such partition.
    */
-  List<ColumnStatistics> getPartitionColumnStatistics(
+  default List<ColumnStatistics> getPartitionColumnStatistics(
       String catName, String dbName, String tblName,
       List<String> partNames, List<String> colNames,
       String engine, String writeIdList)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getPartitionColumnStatistics(new TableName(catName, dbName, tblName), partNames, colNames, engine, writeIdList);
+  }
 
   /**
    * Deletes column statistics if present associated with a given db, table, partition and a list of cols. If
@@ -1425,9 +1444,12 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad input, such as null table or database name.
    */
-  boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
+  default boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
     List<String> partNames, List<String> colNames, String engine)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class)
+        .deletePartitionColumnStatistics(new TableName(catName, dbName, tableName), partNames, colNames, engine);
+  }
 
   /**
    * Delete statistics for a single column, a list of columns or all columns in a table.
@@ -1442,9 +1464,11 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad inputs, such as null table name.
    */
-  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
+  default boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
     List<String> colNames, String engine)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).deleteTableColumnStatistics(new TableName(catName, dbName, tableName), colNames, engine);
+  }
 
   long cleanupEvents();
 
@@ -1697,8 +1721,11 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing RDBMS
    * @throws NoSuchObjectException no such table or partition
    */
-  AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
-    List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException;
+  default AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+    List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .get_aggr_stats_for(new TableName(catName, dbName, tblName), partNames, colNames, engine);
+  }
 
   /**
    * Get aggregated stats for a table or partition(s).
@@ -1714,10 +1741,13 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing RDBMS
    * @throws NoSuchObjectException no such table or partition
    */
-  AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+  default AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
     List<String> partNames, List<String> colNames,
     String engine, String writeIdList)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .get_aggr_stats_for(new TableName(catName, dbName, tblName), partNames, colNames, engine, writeIdList);
+  }
 
   /**
    * Get column stats for all partitions of all tables in the database
@@ -1727,8 +1757,10 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing RDBMS
    * @throws NoSuchObjectException no such database
    */
-  List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
-      throws MetaException, NoSuchObjectException;
+  default List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getPartitionColStatsForDatabase(catName, dbName);
+  }
 
     /**
    * Get the next notification event.
@@ -2260,12 +2292,18 @@ public interface RawStore extends Configurable {
   /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
 
-  List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException;
+  default List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getTableNamesWithStats();
+  }
 
-  List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
+  default List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getAllTableNamesForStats();
+  }
 
-  Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
-      String tableName) throws MetaException, NoSuchObjectException;
+  default Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
+      String tableName) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getPartitionColsWithStats(new TableName(catName, dbName, tableName));
+  }
 
   /**
    * Remove older notification events.
@@ -2334,11 +2372,13 @@ public interface RawStore extends Configurable {
    */
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest);
 
-  Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+  default Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
           Map<String, ColumnStatistics> partColStatsMap,
           Table tbl, List<TransactionalMetaStoreEventListener> listeners,
           String validWriteIds, long writeId)
-          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
+  }
 
   int deleteReplicationMetrics(int maxRetainSecs);
 

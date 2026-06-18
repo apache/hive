@@ -67,6 +67,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -4914,6 +4915,11 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       rollbackAndCleanup(committed, q);
     }
+  }
+
+  @Override
+  public void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList) {
+
   }
 
   private void recoverInvalidScheduledQueryState(int timeoutSecs) {
