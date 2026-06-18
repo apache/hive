@@ -296,22 +296,7 @@ public class MetaStoreUtils {
   }
 
   public static boolean isIcebergTable(Map<String, String> params) {
-    return params != null &&
-        HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
-  }
-
-  public static boolean isIcebergView(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (hmsTable == null ||
-        hmsTable.getParameters() == null ||
-        !TableType.VIRTUAL_VIEW.toString().equals(hmsTable.getTableType())) {
-      return false;
-    }
-    String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
-    return HiveMetaHook.HIVE_ICEBERG_STORAGE_HANDLER.equals(storageHandler);
-  }
-
-  public static boolean usesNativePartSpec(org.apache.hadoop.hive.metastore.api.Table table) {
-    return isIcebergView(table) || !isIcebergTable(table.getParameters());
+    return HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
   }
 
   public static boolean isIcebergTable(Properties params) {
