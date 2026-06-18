@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
+import static org.apache.hadoop.hive.metastore.metastore.impl.TableStoreImpl.convertToFieldSchemas;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -64,12 +65,11 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
@@ -88,9 +88,7 @@ import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Package;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.QueryState;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -113,9 +111,6 @@ import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
@@ -135,11 +130,11 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.directsql.DirectSqlAggrStats;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MCatalog;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
-import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDataConnector;
 import org.apache.hadoop.hive.metastore.model.MDCPrivilege;
@@ -148,12 +143,9 @@ import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MISchema;
-import org.apache.hadoop.hive.metastore.model.MMVSource;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
-import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPackage;
-import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRuntimeStat;
@@ -161,10 +153,7 @@ import org.apache.hadoop.hive.metastore.model.MScheduledExecution;
 import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
-import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MStoredProc;
-import org.apache.hadoop.hive.metastore.model.MStringList;
-import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.model.MWMMapping;
@@ -181,7 +170,6 @@ import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
 import org.apache.hadoop.hive.metastore.metastore.TransactionHandler;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -200,8 +188,6 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -1311,13 +1297,8 @@ public class ObjectStore implements RawStore, Configurable {
     return builder;
   }
 
-  /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
-  private static <T> List<T> convertList(List<T> dnList) {
-    return (dnList == null) ? null : Lists.newArrayList(dnList);
-  }
-
   /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
-  private static Map<String, String> convertMap(Map<String, String> dnMap, Configuration conf, GetPartitionsArgs... args) {
+  public static Map<String, String> convertMap(Map<String, String> dnMap, Configuration conf, GetPartitionsArgs... args) {
     Map<String, String> parameters = MetaStoreServerUtils.trimMapNulls(dnMap,
         MetastoreConf.getBoolVar(conf, ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
     if (parameters != null && args != null && args.length == 1) {
@@ -1351,96 +1332,7 @@ public class ObjectStore implements RawStore, Configurable {
     return parameters;
   }
 
-  public static Table convertToTable(MTable mtbl, Configuration conf) throws MetaException {
-    if (mtbl == null) {
-      return null;
-    }
-    String tableType = mtbl.getTableType();
-    String viewOriginalText = null;
-    String viewExpandedText = null;
-    if (tableType == null) {
-      // for backwards compatibility with old metastore persistence
-      if (mtbl.getViewOriginalText() != null) {
-        tableType = TableType.VIRTUAL_VIEW.toString();
-      } else if (mtbl.getParameters() != null && Boolean.parseBoolean(mtbl.getParameters().get("EXTERNAL"))) {
-        tableType = TableType.EXTERNAL_TABLE.toString();
-      } else {
-        tableType = TableType.MANAGED_TABLE.toString();
-      }
-    } else {
-      if (tableType.equals(TableType.VIRTUAL_VIEW.toString()) || tableType.equals(TableType.MATERIALIZED_VIEW.toString())) {
-        viewOriginalText = mtbl.getViewOriginalText();
-        viewExpandedText = mtbl.getViewExpandedText();
-      }
-    }
-    Map<String, String> parameters = convertMap(mtbl.getParameters(), conf);
-    boolean isAcidTable = TxnUtils.isAcidTable(parameters);
-    final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase() != null ? mtbl.getDatabase().getName() : null,
-        mtbl.getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl.getRetention(),
-        convertToStorageDescriptor(mtbl.getSd(), false, isAcidTable, conf),
-        convertToFieldSchemas(mtbl.getPartitionKeys()), parameters, viewOriginalText,
-        viewExpandedText, tableType);
-
-    if (Strings.isNullOrEmpty(mtbl.getOwnerType())) {
-      // Before the ownerType exists in an old Hive schema, USER was the default type for owner.
-      // Let's set the default to USER to keep backward compatibility.
-      t.setOwnerType(PrincipalType.USER);
-    } else {
-      t.setOwnerType(PrincipalType.valueOf(mtbl.getOwnerType()));
-    }
-
-    t.setId(mtbl.getId());
-    t.setRewriteEnabled(mtbl.isRewriteEnabled());
-    t.setCatName(mtbl.getDatabase() != null ? mtbl.getDatabase().getCatalogName() : null);
-    t.setWriteId(mtbl.getWriteId());
-    return t;
-  }
-
-  public static MTable convertToMTable(Table tbl, RawStore base) throws InvalidObjectException,
-      MetaException {
-    // NOTE: we don't set writeId in this method. Write ID is only set after validating the
-    //       existing write ID against the caller's valid list.
-    if (tbl == null) {
-      return null;
-    }
-    MDatabase mdb = null;
-    String catName = tbl.isSetCatName() ? tbl.getCatName() : getDefaultCatalog(base.getConf());
-    try {
-      mdb = base.ensureGetMDatabase(catName, tbl.getDbName());
-    } catch (NoSuchObjectException e) {
-      LOG.error("Could not convert to MTable", e);
-      throw new InvalidObjectException("Database " +
-          DatabaseName.getQualified(catName, tbl.getDbName()) + " doesn't exist.");
-    }
-
-    // If the table has property EXTERNAL set, update table type
-    // accordingly
-    String tableType = tbl.getTableType();
-    boolean isExternal = Boolean.parseBoolean(tbl.getParameters().get("EXTERNAL"));
-    if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
-      if (isExternal) {
-        tableType = TableType.EXTERNAL_TABLE.toString();
-      }
-    }
-    if (TableType.EXTERNAL_TABLE.toString().equals(tableType)) {
-      if (!isExternal) {
-        tableType = TableType.MANAGED_TABLE.toString();
-      }
-    }
-
-    PrincipalType ownerPrincipalType = tbl.getOwnerType();
-    String ownerType = (ownerPrincipalType == null) ? PrincipalType.USER.name() : ownerPrincipalType.name();
-
-    // A new table is always created with a new column descriptor
-    return new MTable(normalizeIdentifier(tbl.getTableName()), mdb,
-        convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), ownerType, tbl
-        .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
-        convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
-        tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        tableType);
-  }
-
-  private static List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
+  public static List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
     List<MFieldSchema> mkeys = null;
     if (keys != null) {
       mkeys = new ArrayList<>(keys.size());
@@ -1452,41 +1344,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mkeys;
   }
 
-  public static List<FieldSchema> convertToFieldSchemas(List<MFieldSchema> mkeys) {
-    List<FieldSchema> keys = null;
-    if (mkeys != null) {
-      keys = new ArrayList<>();
-      for (MFieldSchema part : mkeys) {
-        keys.add(new FieldSchema(part.getName(), part.getType(), part
-            .getComment()));
-      }
-    }
-    return keys;
-  }
-
-  private static List<MOrder> convertToMOrders(List<Order> keys) {
-    List<MOrder> mkeys = null;
-    if (keys != null) {
-      mkeys = new ArrayList<>();
-      for (Order part : keys) {
-        mkeys.add(new MOrder(normalizeIdentifier(part.getCol()), part.getOrder()));
-      }
-    }
-    return mkeys;
-  }
-
-  private static List<Order> convertToOrders(List<MOrder> mkeys) {
-    List<Order> keys = null;
-    if (mkeys != null) {
-      keys = new ArrayList<>();
-      for (MOrder part : mkeys) {
-        keys.add(new Order(part.getCol(), part.getOrder()));
-      }
-    }
-    return keys;
-  }
-
-  private static SerDeInfo convertToSerDeInfo(MSerDeInfo ms, Configuration conf, boolean allowNull)
+  public static SerDeInfo convertToSerDeInfo(MSerDeInfo ms, Configuration conf, boolean allowNull)
       throws MetaException {
     if (ms == null) {
       if (allowNull) {
@@ -1511,7 +1369,7 @@ public class ObjectStore implements RawStore, Configurable {
     return serde;
   }
 
-  private static MSerDeInfo convertToMSerDeInfo(SerDeInfo ms) throws MetaException {
+  public static MSerDeInfo convertToMSerDeInfo(SerDeInfo ms) throws MetaException {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
@@ -1525,315 +1383,11 @@ public class ObjectStore implements RawStore, Configurable {
    * @param cols the columns the column descriptor contains
    * @return a new column descriptor db-backed object
    */
-  private static MColumnDescriptor createNewMColumnDescriptor(List<MFieldSchema> cols) {
+  public static MColumnDescriptor createNewMColumnDescriptor(List<MFieldSchema> cols) {
     if (cols == null) {
       return null;
     }
     return new MColumnDescriptor(cols);
-  }
-
-  private static StorageDescriptor convertToStorageDescriptor(
-      MStorageDescriptor msd, boolean noFS, boolean isAcidTable, Configuration conf) throws MetaException {
-    if (msd == null) {
-      return null;
-    }
-    List<MFieldSchema> mFieldSchemas;
-    if (noFS) {
-      mFieldSchemas = Collections.emptyList();
-    } else {
-      mFieldSchemas = msd.getCD() == null ? null : msd.getCD().getCols();
-    }
-    List<Order> orderList = (isAcidTable) ? Collections.emptyList() : convertToOrders(msd.getSortCols());
-    List<String> bucList = convertList(msd.getBucketCols());
-    SkewedInfo skewedInfo = null;
-
-    Map<String, String> sdParams = isAcidTable ? Collections.emptyMap() : convertMap(msd.getParameters(), conf);
-    StorageDescriptor sd = new StorageDescriptor(convertToFieldSchemas(mFieldSchemas),
-        msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
-        .isCompressed(), msd.getNumBuckets(),
-        (!isAcidTable) ? convertToSerDeInfo(msd.getSerDeInfo(), conf, true)
-            : new SerDeInfo(msd.getSerDeInfo().getName(), msd.getSerDeInfo().getSerializationLib(), Collections.emptyMap()),
-        bucList , orderList, sdParams);
-    if (!isAcidTable) {
-      skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
-          convertToSkewedValues(msd.getSkewedColValues()),
-          covertToSkewedMap(msd.getSkewedColValueLocationMaps()));
-    } else {
-      skewedInfo = new SkewedInfo(Collections.emptyList(), Collections.emptyList(),
-          Collections.emptyMap());
-    }
-    sd.setSkewedInfo(skewedInfo);
-    sd.setStoredAsSubDirectories(msd.isStoredAsSubDirectories());
-    return sd;
-  }
-
-  /**
-   * Convert a list of MStringList to a list of list string
-   */
-  private static List<List<String>> convertToSkewedValues(List<MStringList> mLists) {
-    List<List<String>> lists = null;
-    if (mLists != null) {
-      lists = new ArrayList<>();
-      for (MStringList element : mLists) {
-        lists.add(new ArrayList<>(element.getInternalList()));
-      }
-    }
-    return lists;
-  }
-
-  private static List<MStringList> convertToMStringLists(List<List<String>> mLists) {
-    List<MStringList> lists = null ;
-    if (null != mLists) {
-      lists = new ArrayList<>();
-      for (List<String> mList : mLists) {
-        lists.add(new MStringList(mList));
-      }
-    }
-    return lists;
-  }
-
-  /**
-   * Convert a MStringList Map to a Map
-   */
-  private static Map<List<String>, String> covertToSkewedMap(Map<MStringList, String> mMap) {
-    Map<List<String>, String> map = null;
-    if (mMap != null) {
-      map = new HashMap<>();
-      Set<MStringList> keys = mMap.keySet();
-      for (MStringList key : keys) {
-        map.put(new ArrayList<>(key.getInternalList()), mMap.get(key));
-      }
-    }
-    return map;
-  }
-
-  /**
-   * Covert a Map to a MStringList Map
-   */
-  private static Map<MStringList, String> covertToMapMStringList(Map<List<String>, String> mMap) {
-    Map<MStringList, String> map = null;
-    if (mMap != null) {
-      map = new HashMap<>();
-      Set<List<String>> keys = mMap.keySet();
-      for (List<String> key : keys) {
-        map.put(new MStringList(key), mMap.get(key));
-      }
-    }
-    return map;
-  }
-
-  /**
-   * Converts a storage descriptor to a db-backed storage descriptor.  Creates a
-   *   new db-backed column descriptor object for this SD.
-   * @param sd the storage descriptor to wrap in a db-backed object
-   * @return the storage descriptor db-backed object
-   */
-  private static MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd)
-      throws MetaException {
-    if (sd == null) {
-      return null;
-    }
-    MColumnDescriptor mcd = createNewMColumnDescriptor(convertToMFieldSchemas(sd.getCols()));
-    return convertToMStorageDescriptor(sd, mcd);
-  }
-
-  /**
-   * Converts a storage descriptor to a db-backed storage descriptor.  It points the
-   * storage descriptor's column descriptor to the one passed as an argument,
-   * so it does not create a new mcolumn descriptor object.
-   * @param sd the storage descriptor to wrap in a db-backed object
-   * @param mcd the db-backed column descriptor
-   * @return the db-backed storage descriptor object
-   */
-  private static MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd,
-      MColumnDescriptor mcd) throws MetaException {
-    if (sd == null) {
-      return null;
-    }
-    return new MStorageDescriptor(mcd, sd
-        .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
-        .isCompressed(), sd.getNumBuckets(), convertToMSerDeInfo(sd
-        .getSerdeInfo()), sd.getBucketCols(),
-        convertToMOrders(sd.getSortCols()), sd.getParameters(),
-        (null == sd.getSkewedInfo()) ? null
-            : sd.getSkewedInfo().getSkewedColNames(),
-        convertToMStringLists((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
-            .getSkewedColValues()),
-        covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
-            .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
-  }
-
-  public static MCreationMetadata convertToMCreationMetadata(CreationMetadata m, RawStore base)
-      throws MetaException {
-    if (m == null) {
-      return null;
-    }
-    assert !m.isSetMaterializationTime();
-    try {
-      Set<MMVSource> tablesUsed = new HashSet<>();
-      if (m.isSetSourceTables()) {
-        for (SourceTable sourceTable : m.getSourceTables()) {
-          tablesUsed.add(convertToSourceTable(m.getCatName(), sourceTable, base));
-        }
-      } else {
-        for (String fullyQualifiedName : m.getTablesUsed()) {
-          tablesUsed.add(convertToSourceTable(m.getCatName(), fullyQualifiedName, base));
-        }
-      }
-      return new MCreationMetadata(normalizeIdentifier(m.getCatName()), normalizeIdentifier(m.getDbName()),
-          normalizeIdentifier(m.getTblName()), tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
-    } catch (NoSuchObjectException nse) {
-      throw new MetaException(nse.getMessage());
-    }
-  }
-
-  public static MMVSource convertToSourceTable(String catalog, SourceTable sourceTable, RawStore base)
-      throws NoSuchObjectException {
-    Table table = sourceTable.getTable();
-    MTable mtbl = base.ensureGetMTable(catalog, table.getDbName(), table.getTableName());
-    MMVSource source = new MMVSource();
-    source.setTable(mtbl);
-    source.setInsertedCount(sourceTable.getInsertedCount());
-    source.setUpdatedCount(sourceTable.getUpdatedCount());
-    source.setDeletedCount(sourceTable.getDeletedCount());
-    return source;
-  }
-
-  /**
-   * This method resets the stats to 0 and supports only backward compatibility with clients does not
-   * send {@link SourceTable} instances.
-   *
-   * Use {@link ObjectStore#convertToSourceTable(String, SourceTable, RawStore)} instead.
-   *
-   * @param catalog Catalog name where source table is located
-   * @param fullyQualifiedTableName fully qualified name of source table
-   * @return {@link MMVSource} instance represents this source table.
-   */
-  @Deprecated
-  private static MMVSource convertToSourceTable(String catalog, String fullyQualifiedTableName, RawStore base)
-      throws NoSuchObjectException {
-    String[] names = fullyQualifiedTableName.split("\\.");
-    MTable mtbl = base.ensureGetMTable(catalog, names[0], names[1]);
-    MMVSource source = new MMVSource();
-    source.setTable(mtbl);
-    source.setInsertedCount(0L);
-    source.setUpdatedCount(0L);
-    source.setDeletedCount(0L);
-    return source;
-  }
-
-  public static CreationMetadata convertToCreationMetadata(MCreationMetadata s, RawStore base)
-      throws MetaException {
-    if (s == null) {
-      return null;
-    }
-    try {
-      Set<String> tablesUsed = new HashSet<>();
-      List<SourceTable> sourceTables = new ArrayList<>(s.getTables().size());
-      for (MMVSource mtbl : s.getTables()) {
-        tablesUsed.add(
-            Warehouse.getQualifiedName(mtbl.getTable().getDatabase().getName(), mtbl.getTable().getTableName()));
-        sourceTables.add(convertToSourceTable(mtbl, s.getCatalogName(), base));
-      }
-      CreationMetadata r = new CreationMetadata(s.getCatalogName(), s.getDbName(), s.getTblName(), tablesUsed);
-      r.setMaterializationTime(s.getMaterializationTime());
-      if (s.getTxnList() != null) {
-        r.setValidTxnList(s.getTxnList());
-      }
-      r.setSourceTables(sourceTables);
-      return r;
-    } catch (NoSuchObjectException nse) {
-      throw new MetaException(nse.getMessage());
-    }
-  }
-
-  private static SourceTable convertToSourceTable(MMVSource mmvSource, String catalogName, RawStore base)
-      throws MetaException, NoSuchObjectException {
-    SourceTable sourceTable = new SourceTable();
-    MTable mTable = mmvSource.getTable();
-    Table table =
-        convertToTable(base.ensureGetMTable(catalogName, mTable.getDatabase().getName(), mTable.getTableName()),
-            base.getConf());
-    sourceTable.setTable(table);
-    sourceTable.setInsertedCount(mmvSource.getInsertedCount());
-    sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());
-    sourceTable.setDeletedCount(mmvSource.getDeletedCount());
-    return sourceTable;
-  }
-
-  /**
-   * Convert a Partition object into an MPartition, which is an object backed by the db
-   * If the Partition's set of columns is the same as the parent table's AND useTableCD
-   * is true, then this partition's storage descriptor's column descriptor will point
-   * to the same one as the table's storage descriptor.
-   * @param part the partition to convert
-   * @param mt the parent table object
-   * @return the model partition object, and null if the input partition is null.
-   */
-  public static MPartition convertToMPart(Partition part, MTable mt)
-      throws InvalidObjectException, MetaException {
-    // NOTE: we don't set writeId in this method. Write ID is only set after validating the
-    //       existing write ID against the caller's valid list.
-    if (part == null) {
-      return null;
-    }
-    if (mt == null) {
-      throw new InvalidObjectException(
-          "Partition doesn't have a valid table or database name");
-    }
-
-    // If this partition's set of columns is the same as the parent table's,
-    // use the parent table's, so we do not create a duplicate column descriptor,
-    // thereby saving space
-    MStorageDescriptor msd;
-    if (mt.getSd() != null && mt.getSd().getCD() != null &&
-        mt.getSd().getCD().getCols() != null &&
-        part.getSd() != null &&
-        convertToFieldSchemas(mt.getSd().getCD().getCols()).
-        equals(part.getSd().getCols())) {
-      msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
-    } else {
-      msd = convertToMStorageDescriptor(part.getSd());
-    }
-
-    return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
-        .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
-        .getCreateTime(), part.getLastAccessTime(),
-        msd, part.getParameters());
-  }
-
-  public static Partition convertToPart(String catName, String dbName, String tblName,
-      MPartition mpart, boolean isAcidTable, Configuration conf, GetPartitionsArgs... args)
-      throws MetaException {
-    if (mpart == null) {
-      return null;
-    }
-    catName = normalizeIdentifier(catName);
-    dbName = normalizeIdentifier(dbName);
-    tblName = normalizeIdentifier(tblName);
-    Map<String,String> params = convertMap(mpart.getParameters(), conf, args);
-    boolean noFS = args != null && args.length == 1 && args[0].isSkipColumnSchemaForPartition();
-    Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
-        mpart.getCreateTime(), mpart.getLastAccessTime(),
-        convertToStorageDescriptor(mpart.getSd(), noFS, isAcidTable, conf), params);
-    p.setCatName(catName);
-    if(mpart.getWriteId()>0) {
-      p.setWriteId(mpart.getWriteId());
-    }else {
-      p.setWriteId(-1L);
-    }
-    return p;
-  }
-
-  public static List<Partition> convertToParts(String catName, String dbName, String tblName,
-      List<MPartition> mparts, boolean isAcidTable, Configuration conf, GetPartitionsArgs args)
-      throws MetaException {
-    List<Partition> parts = new ArrayList<>(mparts.size());
-    for (MPartition mp : mparts) {
-      parts.add(convertToPart(catName, dbName, tblName, mp, isAcidTable, conf, args));
-      Deadline.checkTimeout();
-    }
-    return parts;
   }
 
   /** Helper class for getting stuff w/transaction, direct SQL, perf logging, etc. */
@@ -2070,7 +1624,14 @@ public class ObjectStore implements RawStore, Configurable {
 
   private Table ensureGetTable(String catName, String dbName, String tblName)
       throws NoSuchObjectException, MetaException {
-    return convertToTable(ensureGetMTable(catName, dbName, tblName), conf);
+    TableName tableName = new TableName(catName, dbName, tblName);
+    Table table =
+        unwrap(TableStore.class).getTable(tableName, null, -1);
+    if (table == null) {
+      throw new NoSuchObjectException(
+          "Specified catalog.database.table does not exist : " + tableName);
+    }
+    return table;
   }
 
   /**
