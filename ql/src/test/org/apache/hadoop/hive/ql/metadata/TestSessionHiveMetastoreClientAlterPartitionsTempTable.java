@@ -247,4 +247,15 @@ public class TestSessionHiveMetastoreClientAlterPartitionsTempTable extends Test
     fail("Exception should have been thrown.");
   }
 
+  @Override
+  @Test(expected = MetaException.class)
+  public void testRenamePartitionChangeTblName() throws Exception {
+    super.testRenamePartitionChangeTblName();
+  }
+
+  @Override
+  @Test(expected = MetaException.class)
+  public void testRenamePartitionChangeDbName() throws Exception {
+    super.testRenamePartitionChangeDbName();
+  }
 }

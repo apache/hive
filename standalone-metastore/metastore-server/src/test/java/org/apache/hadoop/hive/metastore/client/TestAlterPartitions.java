@@ -1157,7 +1157,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     }
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidOperationException.class)
   public void testRenamePartitionChangeTblName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
@@ -1168,7 +1168,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.renamePartition(DB_NAME, TABLE_NAME, oldValues.get(3), partToRename);
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidOperationException.class)
   public void testRenamePartitionChangeDbName() throws Exception {
     List<List<String>> oldValues = createTable4PartColsParts(client);
     List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
