@@ -225,9 +225,7 @@ public class HiveConnection implements java.sql.Connection {
       return;
     }
     try {
-      HiveConf conf = new HiveConf();
-      conf.set(ConfVars.HIVE_QUERY_TIMEOUT_SECONDS.varname, raw.trim());
-      long sec = HiveConf.getTimeVar(conf, ConfVars.HIVE_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+      long sec = HiveConf.toTime(raw.trim(), TimeUnit.SECONDS, TimeUnit.SECONDS);
       if (sec > 0) {
         setSessionQueryTimeoutSeconds(sec);
       }
