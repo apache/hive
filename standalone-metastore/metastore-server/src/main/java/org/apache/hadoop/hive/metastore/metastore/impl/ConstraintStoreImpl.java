@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.metastore.metastore.impl;
 
 import javax.jdo.Query;
@@ -8,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -37,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
 import org.apache.hadoop.hive.metastore.metastore.iface.ConstraintStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
@@ -49,7 +68,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStore {
-
   private Configuration conf;
 
   @Override
@@ -190,6 +208,7 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
         if (childTable == null) {
           throw new InvalidObjectException("Child table not found: " + fkTableName);
         }
+
         MColumnDescriptor childCD = retrieveCD ? nChildTable.mcd : childTable.getSd().getCD();
         final List<MFieldSchema> childCols = childCD == null || childCD.getCols() == null ?
             new ArrayList<>() : new ArrayList<>(childCD.getCols());
@@ -781,16 +800,15 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
       throws MetaException, NoSuchObjectException {
     final String dbName = dbNameInput != null ? normalizeIdentifier(dbNameInput) : null;
     final String tblName = normalizeIdentifier(tblNameInput);
-    return new ObjectStore.GetListHelper<SQLPrimaryKey>(catName, dbName, tblName, true, true) {
+    return new GetListHelper<TableName, SQLPrimaryKey>(this, null) {
 
       @Override
-      protected List<SQLPrimaryKey> getSqlResult(ObjectStore.GetHelper<List<SQLPrimaryKey>> ctx) throws MetaException {
-        return directSql.getPrimaryKeys(catName, dbName, tblName);
+      protected List<SQLPrimaryKey> getSqlResult() throws MetaException {
+        return getDirectSql().getPrimaryKeys(catName, dbName, tblName);
       }
 
       @Override
-      protected List<SQLPrimaryKey> getJdoResult(
-          ObjectStore.GetHelper<List<SQLPrimaryKey>> ctx) throws MetaException, NoSuchObjectException {
+      protected List<SQLPrimaryKey> getJdoResult() throws MetaException, NoSuchObjectException {
         return getPrimaryKeysViaJdo(catName, dbName, tblName);
       }
     }.run(false);
@@ -849,8 +867,7 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     try {
       return getForeignKeysInternal(request.getCatName(),
           request.getParent_db_name(), request.getParent_tbl_name() ,
-          request.getForeign_db_name(),request.getForeign_tbl_name(), true,
-          true);
+          request.getForeign_db_name(),request.getForeign_tbl_name());
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
@@ -858,8 +875,7 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
 
   private List<SQLForeignKey> getForeignKeysInternal(
       final String catName, final String parent_db_name_input, final String parent_tbl_name_input,
-      final String foreign_db_name_input, final String foreign_tbl_name_input, boolean allowSql,
-      boolean allowJdo) throws MetaException, NoSuchObjectException {
+      final String foreign_db_name_input, final String foreign_tbl_name_input) throws MetaException, NoSuchObjectException {
     final String parent_db_name = (parent_db_name_input != null) ? normalizeIdentifier(parent_db_name_input) : null;
     final String parent_tbl_name = (parent_tbl_name_input != null) ? normalizeIdentifier(parent_tbl_name_input) : null;
     final String foreign_db_name = (foreign_db_name_input != null) ? normalizeIdentifier(foreign_db_name_input) : null;
@@ -875,17 +891,16 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
       db_name = foreign_db_name;
       tbl_name = foreign_tbl_name;
     }
-    return new ObjectStore.GetListHelper<SQLForeignKey>(catName, db_name, tbl_name, allowSql, allowJdo) {
+    return new GetListHelper<TableName, SQLForeignKey>(this, null) {
 
       @Override
-      protected List<SQLForeignKey> getSqlResult(ObjectStore.GetHelper<List<SQLForeignKey>> ctx) throws MetaException {
-        return directSql.getForeignKeys(catName, parent_db_name,
+      protected List<SQLForeignKey> getSqlResult() throws MetaException {
+        return getDirectSql().getForeignKeys(catName, parent_db_name,
             parent_tbl_name, foreign_db_name, foreign_tbl_name);
       }
 
       @Override
-      protected List<SQLForeignKey> getJdoResult(
-          ObjectStore.GetHelper<List<SQLForeignKey>> ctx) throws MetaException, NoSuchObjectException {
+      protected List<SQLForeignKey> getJdoResult() throws MetaException, NoSuchObjectException {
         return getForeignKeysViaJdo(catName, parent_db_name,
             parent_tbl_name, foreign_db_name, foreign_tbl_name);
       }
@@ -974,28 +989,28 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException {
     try {
       return getUniqueConstraintsInternal(request.getCatName(),
-          request.getDb_name(),request.getTbl_name(), true, true);
+          request.getDb_name(),request.getTbl_name());
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
   }
 
   private List<SQLUniqueConstraint> getUniqueConstraintsInternal(
-      String catNameInput, final String db_name_input, final String tbl_name_input,
-      boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+      String catNameInput, final String db_name_input, final String tbl_name_input)
+      throws MetaException, NoSuchObjectException {
     final String catName = normalizeIdentifier(catNameInput);
     final String db_name = normalizeIdentifier(db_name_input);
     final String tbl_name = normalizeIdentifier(tbl_name_input);
-    return new ObjectStore.GetListHelper<SQLUniqueConstraint>(catName, db_name, tbl_name, allowSql, allowJdo) {
+    return new GetListHelper<TableName, SQLUniqueConstraint>(this, null) {
 
       @Override
-      protected List<SQLUniqueConstraint> getSqlResult(ObjectStore.GetHelper<List<SQLUniqueConstraint>> ctx)
+      protected List<SQLUniqueConstraint> getSqlResult()
           throws MetaException {
-        return directSql.getUniqueConstraints(catName, db_name, tbl_name);
+        return getDirectSql().getUniqueConstraints(catName, db_name, tbl_name);
       }
 
       @Override
-      protected List<SQLUniqueConstraint> getJdoResult(ObjectStore.GetHelper<List<SQLUniqueConstraint>> ctx)
+      protected List<SQLUniqueConstraint> getJdoResult()
           throws MetaException, NoSuchObjectException {
         return getUniqueConstraintsViaJdo(catName, db_name, tbl_name);
       }
@@ -1029,7 +1044,7 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   @Override
   public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException {
     try {
-      return getNotNullConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name(), true, true);
+      return getNotNullConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name());
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
@@ -1038,7 +1053,7 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   @Override
   public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException {
     try {
-      return getDefaultConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name(), true, true);
+      return getDefaultConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name());
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
@@ -1047,52 +1062,43 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   @Override
   public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException {
     try {
-      return getCheckConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name(), true, true);
+      return getCheckConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name());
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
   }
 
-  private List<SQLDefaultConstraint> getDefaultConstraintsInternal(
-      String catName, final String db_name_input, final String tbl_name_input, boolean allowSql,
-      boolean allowJdo) throws MetaException, NoSuchObjectException {
-    catName = normalizeIdentifier(catName);
-    final String db_name = normalizeIdentifier(db_name_input);
-    final String tbl_name = normalizeIdentifier(tbl_name_input);
-    return new ObjectStore.GetListHelper<SQLDefaultConstraint>(catName, db_name, tbl_name, allowSql, allowJdo) {
-
+  private List<SQLDefaultConstraint> getDefaultConstraintsInternal(String catalog, String dbName, String tableName)
+      throws MetaException, NoSuchObjectException {
+    final String catName = normalizeIdentifier(catalog);
+    final String db_name = normalizeIdentifier(dbName);
+    final String tbl_name = normalizeIdentifier(tableName);
+    return new GetListHelper<TableName, SQLDefaultConstraint>(this, null) {
       @Override
-      protected List<SQLDefaultConstraint> getSqlResult(ObjectStore.GetHelper<List<SQLDefaultConstraint>> ctx)
-          throws MetaException {
-        return directSql.getDefaultConstraints(catName, db_name, tbl_name);
+      protected List<SQLDefaultConstraint> getSqlResult() throws MetaException {
+        return getDirectSql().getDefaultConstraints(catName, db_name, tbl_name);
       }
-
       @Override
-      protected List<SQLDefaultConstraint> getJdoResult(ObjectStore.GetHelper<List<SQLDefaultConstraint>> ctx)
-          throws MetaException, NoSuchObjectException {
+      protected List<SQLDefaultConstraint> getJdoResult()
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
         return getDefaultConstraintsViaJdo(catName, db_name, tbl_name);
       }
     }.run(false);
   }
 
   protected List<SQLCheckConstraint> getCheckConstraintsInternal(String catName, final String db_name_input,
-      final String tbl_name_input, boolean allowSql,
-      boolean allowJdo)
-      throws MetaException, NoSuchObjectException {
+      final String tbl_name_input) throws MetaException, NoSuchObjectException {
     final String db_name = normalizeIdentifier(db_name_input);
     final String tbl_name = normalizeIdentifier(tbl_name_input);
-    return new ObjectStore.GetListHelper<SQLCheckConstraint>(normalizeIdentifier(catName), db_name, tbl_name,
-        allowSql, allowJdo) {
+    return new GetListHelper<TableName, SQLCheckConstraint>(this, null) {
 
       @Override
-      protected List<SQLCheckConstraint> getSqlResult(ObjectStore.GetHelper<List<SQLCheckConstraint>> ctx)
-          throws MetaException {
-        return directSql.getCheckConstraints(catName, db_name, tbl_name);
+      protected List<SQLCheckConstraint> getSqlResult() throws MetaException {
+        return getDirectSql().getCheckConstraints(catName, db_name, tbl_name);
       }
-
       @Override
-      protected List<SQLCheckConstraint> getJdoResult(ObjectStore.GetHelper<List<SQLCheckConstraint>> ctx)
-          throws MetaException, NoSuchObjectException {
+      protected List<SQLCheckConstraint> getJdoResult()
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
         return getCheckConstraintsViaJdo(catName, db_name, tbl_name);
       }
     }.run(false);
@@ -1150,23 +1156,21 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   }
 
   protected List<SQLNotNullConstraint> getNotNullConstraintsInternal(String catName, final String db_name_input,
-      final String tbl_name_input, boolean allowSql, boolean allowJdo)
-      throws MetaException, NoSuchObjectException {
-    catName = normalizeIdentifier(catName);
+      final String tbl_name_input) throws MetaException, NoSuchObjectException {
+    final String cat_name = normalizeIdentifier(catName);
     final String db_name = normalizeIdentifier(db_name_input);
     final String tbl_name = normalizeIdentifier(tbl_name_input);
-    return new ObjectStore.GetListHelper<SQLNotNullConstraint>(catName, db_name, tbl_name, allowSql, allowJdo) {
+    return new GetListHelper<TableName, SQLNotNullConstraint>(this, null) {
 
       @Override
-      protected List<SQLNotNullConstraint> getSqlResult(ObjectStore.GetHelper<List<SQLNotNullConstraint>> ctx)
-          throws MetaException {
-        return directSql.getNotNullConstraints(catName, db_name, tbl_name);
+      protected List<SQLNotNullConstraint> getSqlResult() throws MetaException {
+        return getDirectSql().getNotNullConstraints(cat_name, db_name, tbl_name);
       }
 
       @Override
-      protected List<SQLNotNullConstraint> getJdoResult(ObjectStore.GetHelper<List<SQLNotNullConstraint>> ctx)
-          throws MetaException, NoSuchObjectException {
-        return getNotNullConstraintsViaJdo(catName, db_name, tbl_name);
+      protected List<SQLNotNullConstraint> getJdoResult()
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        return getNotNullConstraintsViaJdo(cat_name, db_name, tbl_name);
       }
     }.run(false);
   }
@@ -1274,58 +1278,5 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
   public void setBaseStore(RawStore store) {
     super.setBaseStore(store);
     this.conf = store.getConf();
-  }
-
-  class AttachedMTableInfo {
-    MTable mtbl;
-    MColumnDescriptor mcd;
-
-    public AttachedMTableInfo() {}
-
-    public AttachedMTableInfo(MTable mtbl, MColumnDescriptor mcd) {
-      this.mtbl = mtbl;
-      this.mcd = mcd;
-    }
-  }
-
-  private AttachedMTableInfo getMTable(String catName, String db, String table,
-      boolean retrieveCD) {
-    AttachedMTableInfo nmtbl = new AttachedMTableInfo();
-    MTable mtbl = null;
-    boolean commited = false;
-    Query query = null;
-    try {
-      openTransaction();
-      catName = normalizeIdentifier(Optional.ofNullable(catName).orElse(getDefaultCatalog(conf)));
-      db = normalizeIdentifier(db);
-      table = normalizeIdentifier(table);
-      query = pm.newQuery(MTable.class,
-          "tableName == table && database.name == db && database.catalogName == catname");
-      query.declareParameters(
-          "java.lang.String table, java.lang.String db, java.lang.String catname");
-      query.setUnique(true);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Executing getMTable for {}",
-            TableName.getQualified(catName, db, table));
-      }
-      mtbl = (MTable) query.execute(table, db, catName);
-      pm.retrieve(mtbl);
-      // Retrieving CD can be expensive and unnecessary, so do it only when required.
-      if (mtbl != null && retrieveCD) {
-        pm.retrieve(mtbl.getSd());
-        pm.retrieveAll(mtbl.getSd().getCD());
-        nmtbl.mcd = mtbl.getSd().getCD();
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
-    }
-    nmtbl.mtbl = mtbl;
-    return nmtbl;
-  }
-
-  private MTable getMTable(String catName, String db, String table) {
-    AttachedMTableInfo nmtbl = getMTable(catName, db, table, false);
-    return nmtbl.mtbl;
   }
 }
