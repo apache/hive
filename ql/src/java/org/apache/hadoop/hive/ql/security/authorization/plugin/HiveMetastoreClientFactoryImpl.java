@@ -40,6 +40,10 @@ public class HiveMetastoreClientFactoryImpl implements HiveMetastoreClientFactor
   public IMetaStoreClient getHiveMetastoreClient() throws HiveAuthzPluginException {
     String errMsg = "Error getting metastore client";
     try {
+      Hive db = Hive.getThreadLocal();
+      if (db != null) {
+        return db.getMSC();
+      }
       return Hive.get(hiveConf, false).getMSC();
     } catch (MetaException e) {
       throw new HiveAuthzPluginException(errMsg, e);

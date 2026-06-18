@@ -116,7 +116,7 @@ public abstract class TxnCommandsBaseForTests {
       HiveMetaStoreClientWithLocalCache.init(hiveConf);
     }
   }
-  void initHiveConf() {
+  protected void initHiveConf() {
     hiveConf = new HiveConfForTest(this.getClass());
     // Multiple tests requires more than one buckets per write. Use a very small value for grouping size to create
     // multiple mapper instances with FileSinkOperators. The number of buckets are depends on the size of the data

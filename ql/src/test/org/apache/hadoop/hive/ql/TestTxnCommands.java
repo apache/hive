@@ -118,7 +118,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   @Override
-  void initHiveConf() {
+  protected void initHiveConf() {
     super.initHiveConf();
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
