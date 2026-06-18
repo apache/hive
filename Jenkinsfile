@@ -96,6 +96,27 @@ export -n HIVE_CONF_DIR
 sw java 21 && . /etc/profile.d/java.sh
 mkdir -p .m2/repository
 cp $SETTINGS .m2/settings.xml
+# TEMP: wipe workspace cache for asm/calcite-core to force re-resolve (Track 1)
+echo "@@@ Wiping asm and calcite-core from workspace .m2 to force re-resolve"
+rm -rf $PWD/.m2/repository/org/ow2/asm
+rm -rf $PWD/.m2/repository/org/apache/calcite/calcite-core
+# TEMP: diagnostic - record what ASM and calcite-core end up looking like in the workspace cache
+record_artifact_fingerprints() {
+  echo "@@@ ASM in workspace .m2:"
+  find $PWD/.m2/repository/org/ow2/asm -type f \\( -name '*.jar' -o -name '*.pom' \\) -exec ls -l {} \\; -exec md5sum {} \\; 2>/dev/null || true
+  echo "@@@ calcite-core jar fingerprint:"
+  CALCITE_CORE_JAR=$PWD/.m2/repository/org/apache/calcite/calcite-core/1.42.0/calcite-core-1.42.0.jar
+  if [ -f "$CALCITE_CORE_JAR" ]; then
+    ls -l "$CALCITE_CORE_JAR"
+    md5sum "$CALCITE_CORE_JAR"
+    echo "@@@ SqlFunctions.class size and md5 (inside calcite-core-1.42.0.jar):"
+    unzip -p "$CALCITE_CORE_JAR" org/apache/calcite/runtime/SqlFunctions.class | wc -c
+    unzip -p "$CALCITE_CORE_JAR" org/apache/calcite/runtime/SqlFunctions.class | md5sum
+  else
+    echo "@@@ calcite-core-1.42.0.jar not yet present in workspace .m2"
+  fi
+}
+record_artifact_fingerprints
 OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
 OPTS+=" -Pitests,qsplits,dist,errorProne"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2/repository"
@@ -103,7 +124,13 @@ git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
+set +e
 mvn $OPTS '''+args+'''
+MVN_RC=$?
+set -e
+# TEMP: diagnostic - record fingerprints after mvn ran (runs even if mvn failed)
+record_artifact_fingerprints
+exit $MVN_RC
 du -h --max-depth=1
 df -h
 '''
