@@ -24,6 +24,8 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Parses Prometheus text exposition format (from JMX Exporter /metrics).
  * Only extracts metric name → value pairs; labels are stripped.
@@ -53,7 +55,7 @@ public final class PrometheusTextParser {
 
   private static Map<String, Double> doParse(String body, boolean keepLabels) {
     Map<String, Double> result = new HashMap<>();
-    if (body == null || body.isEmpty()) {
+    if (StringUtils.isEmpty(body)) {
       return result;
     }
     try (BufferedReader reader = new BufferedReader(new StringReader(body))) {

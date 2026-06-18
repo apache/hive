@@ -56,12 +56,17 @@ public class HiveClusterAutoscaler {
   private static final ConcurrentHashMap<String, Integer> MANAGED_REPLICAS =
       new ConcurrentHashMap<>();
 
+  /** Builds the cache key used for per-component state maps. */
+  static String cacheKey(String namespace, String clusterName, String component) {
+    return namespace + "/" + clusterName + "/" + component;
+  }
+
   /**
    * Returns the autoscaler-managed replica count for a component, or null if the
    * autoscaler hasn't made a decision yet (e.g., first reconcile before evaluation runs).
    */
   public static Integer getManagedReplicas(String namespace, String clusterName, String component) {
-    return MANAGED_REPLICAS.get(namespace + "/" + clusterName + "/" + component);
+    return MANAGED_REPLICAS.get(cacheKey(namespace, clusterName, component));
   }
 
   /**
@@ -70,7 +75,7 @@ public class HiveClusterAutoscaler {
    */
   public static void setManagedReplicas(String namespace, String clusterName,
       String component, int replicas) {
-    MANAGED_REPLICAS.put(namespace + "/" + clusterName + "/" + component, replicas);
+    MANAGED_REPLICAS.put(cacheKey(namespace, clusterName, component), replicas);
   }
 
   private record PendingScaleDown(int targetReplicas, Instant annotatedAt) {}
@@ -249,7 +254,7 @@ public class HiveClusterAutoscaler {
 
     int currentReplicas = getCurrentReplicas(client, namespace, clusterName, component);
 
-    String key = namespace + "/" + clusterName + "/" + component;
+    String key = cacheKey(namespace, clusterName, component);
 
     // For LLAP and TezAM, scaling decisions are based on HS2 metrics (activation gate),
     // not their own pod metrics. Allow evaluation even with 0 own pods.

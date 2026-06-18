@@ -76,7 +76,7 @@ public class BackgroundMetricsScraper {
   public void registerOrUpdate(String namespace, String clusterName,
       String component, Map<String, String> selector,
       int metricsPort, int intervalSecs) {
-    String key = namespace + "/" + clusterName + "/" + component;
+    String key = HiveClusterAutoscaler.cacheKey(namespace, clusterName, component);
     Integer existing = registeredIntervals.get(key);
     if (existing != null && existing == intervalSecs) {
       return; // Already registered with same interval

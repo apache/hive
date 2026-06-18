@@ -53,10 +53,8 @@ public class MetricsCache {
    */
   public List<PodMetrics> getOrEmpty(String key, int maxStaleSecs) {
     CachedResult result = cache.get(key);
-    if (result == null) {
-      return Collections.emptyList();
-    }
-    if (Instant.now().isAfter(result.scrapedAt().plusSeconds(maxStaleSecs))) {
+    if (result == null
+        || Instant.now().isAfter(result.scrapedAt().plusSeconds(maxStaleSecs))) {
       return Collections.emptyList();
     }
     return result.metrics();
