@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
@@ -129,7 +128,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable.isTemporary()) {
       throw new UnsupportedOperationException("Creation of temporary iceberg tables is not supported.");
     }
-    if (MetaStoreUtils.isIcebergView(hmsTable)) {
+    if (HiveTableUtil.isIcebergView(hmsTable)) {
       preCreateIcebergView(request);
       return;
     }
@@ -512,7 +511,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
-        if (MetaStoreUtils.isIcebergView(hmsTable)) {
+        if (HiveTableUtil.isIcebergView(hmsTable)) {
           IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
           return;
         }
