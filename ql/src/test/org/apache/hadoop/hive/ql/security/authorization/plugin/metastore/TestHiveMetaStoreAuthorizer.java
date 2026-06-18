@@ -46,6 +46,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClie
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.TableFilterContext;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.junit.Before;
@@ -68,6 +71,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
@@ -187,11 +191,13 @@ public class TestHiveMetaStoreAuthorizer {
     ArgumentCaptor<List<HivePrivilegeObject>> outputsCapturer = ArgumentCaptor
         .forClass(class_listPrivObjects);
 
-    verify(mockHiveAuthorizer).checkPrivileges(any(HiveOperationType.class),
+    verify(mockHiveAuthorizer, atLeastOnce()).checkPrivileges(any(HiveOperationType.class),
         inputsCapturer.capture(), outputsCapturer.capture(),
         any(HiveAuthzContext.class));
 
-    return new ImmutablePair<>(inputsCapturer.getValue(), outputsCapturer.getValue());
+    int lastIdx = inputsCapturer.getAllValues().size() - 1;
+    return new ImmutablePair<>(inputsCapturer.getAllValues().get(lastIdx),
+        outputsCapturer.getAllValues().get(lastIdx));
   }
 
   @Test
@@ -838,6 +844,74 @@ public class TestHiveMetaStoreAuthorizer {
         String expectedErrMsg = "Operation type " + HiveOperationType.CREATEDATABASE + " not allowed for user:" + unAuthorizedUser;
         assertTrue("Expected HiveAuthzPluginException in exception chain. Message: '" + e.getMessage() + "'",
             e.getMessage().contains(expectedErrMsg));
+      }
+    }
+  }
+
+  @Test
+  public void testW_CreateAvroTable_SchemaUrlDfsUriPrivObject() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    String schemaUrl = "hdfs://namenode:9000/path/to/schema.avsc";
+    try {
+      Table table = new TableBuilder()
+          .setTableName("avro_tbl")
+          .addCol("id", ColumnType.INT_TYPE_NAME)
+          .setSerdeLib(AvroSerDe.class.getName())
+          .addTableParam(AvroTableProperties.SCHEMA_URL.getPropName(), schemaUrl)
+          .setOwner(authorizedUser)
+          .build(conf);
+      hmsHandler.create_table(table);
+
+      Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectsFromLastCall();
+      List<HivePrivilegeObject> inputs = io.getLeft();
+      List<HivePrivilegeObject> dfsUriInputs = inputs.stream()
+          .filter(o -> o.getType() == HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI)
+          .collect(Collectors.toList());
+
+      assertTrue("Should authorize read access to avro.schema.url",
+          dfsUriInputs.stream().anyMatch(o -> schemaUrl.equals(o.getObjectName())));
+    } finally {
+      try {
+        hmsHandler.drop_table("default", "avro_tbl", true);
+      } catch (Exception e) {
+        // Ignore cleanup errors
+      }
+    }
+  }
+
+  @Test
+  public void testX_AlterAvroTable_SchemaUrlDfsUriPrivObject() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    String oldSchemaUrl = "hdfs://namenode:9000/path/to/old_schema.avsc";
+    String newSchemaUrl = "hdfs://namenode:9000/path/to/new_schema.avsc";
+    try {
+      Table table = new TableBuilder()
+          .setTableName("avro_tbl")
+          .addCol("id", ColumnType.INT_TYPE_NAME)
+          .setSerdeLib(AvroSerDe.class.getName())
+          .addTableParam(AvroTableProperties.SCHEMA_URL.getPropName(), oldSchemaUrl)
+          .setOwner(authorizedUser)
+          .build(conf);
+      hmsHandler.create_table(table);
+      GetTableRequest request = new GetTableRequest("default", "avro_tbl");
+      request.setCatName("hive");
+      Table alteredTable = hmsHandler.get_table_core(request);
+      alteredTable.getParameters().put(AvroTableProperties.SCHEMA_URL.getPropName(), newSchemaUrl);
+      hmsHandler.alter_table("default", "avro_tbl", alteredTable);
+
+      Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectsFromLastCall();
+      List<HivePrivilegeObject> inputs = io.getLeft();
+      List<HivePrivilegeObject> dfsUriInputs = inputs.stream()
+          .filter(o -> o.getType() == HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI)
+          .collect(Collectors.toList());
+
+      assertTrue("Should authorize read access to updated avro.schema.url",
+          dfsUriInputs.stream().anyMatch(o -> newSchemaUrl.equals(o.getObjectName())));
+    } finally {
+      try {
+        hmsHandler.drop_table("default", "avro_tbl", true);
+      } catch (Exception e) {
+        // Ignore cleanup errors
       }
     }
   }

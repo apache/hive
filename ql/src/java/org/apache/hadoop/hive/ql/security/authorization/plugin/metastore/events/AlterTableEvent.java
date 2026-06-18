@@ -32,6 +32,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +81,8 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     ret.add(getHivePrivilegeObject(oldTable));
 
+    addAvroSchemaUrlInputAuth(ret, event);
+
     COMMAND_STR = buildCommandString(COMMAND_STR, oldTable);
 
     LOG.debug("<== AlterTableEvent.getInputHObjs(): ret={}", ret);
@@ -120,6 +125,27 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
     }
 
     return ret;
+  }
+
+  private void addAvroSchemaUrlInputAuth(List<HivePrivilegeObject> ret, PreAlterTableEvent event) {
+    Table newTable = event.getNewTable();
+    Table oldTable = event.getOldTable();
+    if (!AvroSerDe.class.getName().equals(newTable.getSd().getSerdeInfo().getSerializationLib())) {
+      return;
+    }
+    String newSchemaUrl = newTable.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
+    if (StringUtils.isEmpty(newSchemaUrl) || AvroSerdeUtils.SCHEMA_NONE.equals(newSchemaUrl)) {
+      return;
+    }
+    String oldSchemaUrl = oldTable == null ? null
+        : oldTable.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
+    if (StringUtils.equals(oldSchemaUrl, newSchemaUrl)) {
+      return;
+    }
+    if (!AvroSerdeUtils.isFilesystemSchemaUrl(newSchemaUrl)) {
+      return;
+    }
+    ret.add(getHivePrivilegeObjectDfsUri(newSchemaUrl));
   }
 
   private String buildCommandString(String cmdStr, Table tbl) {
