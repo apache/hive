@@ -48,11 +48,13 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"tru
 PREHOOK: query: analyze table testAvro compute statistics for columns col1,col3
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@testavro
+#### A masked pattern was here ####
 PREHOOK: Output: default@testavro
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table testAvro compute statistics for columns col1,col3
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@testavro
+#### A masked pattern was here ####
 POSTHOOK: Output: default@testavro
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted testAvro col1

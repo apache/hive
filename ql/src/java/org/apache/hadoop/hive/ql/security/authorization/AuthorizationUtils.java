@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,7 +46,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
@@ -329,17 +330,16 @@ public class AuthorizationUtils {
     if (readEntity == null || !readEntity.isDirect() || readEntity.isUpdateOrDelete()) {
       return;
     }
-    HiveConf conf = SessionState.get() != null ? SessionState.getSessionConf() : new HiveConf();
     switch (readEntity.getTyp()) {
     case TABLE:
       if (readEntity.getTable() != null) {
-        addAvroSchemaUrlInputIfNeeded(inputs, readEntity.getTable(), conf);
+        addAvroSchemaUrlInputIfNeeded(inputs, readEntity.getTable());
       }
       break;
     case PARTITION:
     case DUMMYPARTITION:
       if (readEntity.getPartition() != null) {
-        addAvroSchemaUrlInputIfNeeded(inputs, readEntity.getPartition().getTable(), conf);
+        addAvroSchemaUrlInputIfNeeded(inputs, readEntity.getPartition().getTable());
       }
       break;
     default:
@@ -347,17 +347,31 @@ public class AuthorizationUtils {
     }
   }
 
-  public static void addAvroSchemaUrlInputIfNeeded(Collection<ReadEntity> inputs, Table table,
-      HiveConf conf) throws SemanticException {
+  public static void addAvroSchemaUrlInputIfNeeded(Collection<ReadEntity> inputs, Table table)
+      throws SemanticException {
     String schemaUrl = getFilesystemAvroSchemaUrlToAuthorize(table);
     if (schemaUrl == null) {
       return;
     }
-    ReadEntity schemaUrlInput = BaseSemanticAnalyzer.toReadEntity(new Path(schemaUrl), conf);
+    ReadEntity schemaUrlInput = toAvroSchemaUrlReadEntity(schemaUrl);
     if (inputs instanceof Set) {
       PlanUtils.addInput((Set<ReadEntity>) inputs, schemaUrlInput);
     } else if (!inputs.contains(schemaUrlInput)) {
       inputs.add(schemaUrlInput);
+    }
+  }
+
+  private static ReadEntity toAvroSchemaUrlReadEntity(String schemaUrl) {
+    Path path = new Path(schemaUrl);
+    return new ReadEntity(path, isLocalFilesystemSchemaUrl(schemaUrl));
+  }
+
+  private static boolean isLocalFilesystemSchemaUrl(String schemaUrl) {
+    try {
+      String scheme = new URI(schemaUrl).getScheme();
+      return scheme != null && "file".equalsIgnoreCase(scheme);
+    } catch (URISyntaxException e) {
+      return false;
     }
   }
 
