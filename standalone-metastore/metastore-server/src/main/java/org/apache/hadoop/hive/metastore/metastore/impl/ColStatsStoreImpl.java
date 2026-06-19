@@ -105,7 +105,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   protected int batchSize = NO_BATCHING;
   private boolean areTxnStatsSupported = false;
   private Configuration conf;
-  private DirectSqlAggrStats directSqlAggrStats;
+  private String schema;
   private SQLGenerator sqlGenerator;
   
   @Override
@@ -119,8 +119,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     this.conf = store.getConf();
     this.sqlGenerator = new SQLGenerator(dbType, conf);
     String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
-    schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
-    this.directSqlAggrStats = new DirectSqlAggrStats(pm, conf, schema);
+    this.schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
   }
   
   @Override
@@ -589,7 +588,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
         String catName = normalizeIdentifier(tableName.getCat());
         String dbName = normalizeIdentifier(tableName.getDb());
         String tblName = normalizeIdentifier(tableName.getTable());
-        return directSqlAggrStats.getTableStats(catName, dbName, tblName, colNames, engine, enableBitVector, enableKll);
+        return new DirectSqlAggrStats(pm, conf, schema)
+            .getTableStats(catName, dbName, tblName, colNames, engine, enableBitVector, enableKll);
       }
 
       @Override
@@ -705,7 +705,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
         String catName = normalizeIdentifier(tableName.getCat());
         String dbName = normalizeIdentifier(tableName.getDb());
         String tblName = normalizeIdentifier(tableName.getTable());
-        return directSqlAggrStats.getPartitionStats(
+        return new DirectSqlAggrStats(pm, conf, schema).getPartitionStats(
             catName, dbName, tblName, partNames, colNames, engine, enableBitVector, enableKll);
       }
       @Override
@@ -831,7 +831,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     return new GetHelper<TableName, List<MetaStoreServerUtils.ColStatsObjWithSourceInfo>>(this, null) {
       @Override
       protected List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getSqlResult() throws MetaException {
-        return directSqlAggrStats.getColStatsForAllTablePartitions(catName, dbName, enableBitVector, enableKll);
+        return new DirectSqlAggrStats(pm, conf, schema)
+            .getColStatsForAllTablePartitions(catName, dbName, enableBitVector, enableKll);
       }
 
       @Override
