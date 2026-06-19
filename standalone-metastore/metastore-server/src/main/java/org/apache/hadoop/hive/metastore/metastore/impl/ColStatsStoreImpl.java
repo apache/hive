@@ -43,14 +43,18 @@ import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -87,6 +91,7 @@ import org.apache.hadoop.hive.metastore.utils.RetryingExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
 import static org.apache.hadoop.hive.metastore.ObjectStore.verifyStatsChangeCtx;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -95,6 +100,22 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   private static final Logger LOG = LoggerFactory.getLogger(ColStatsStoreImpl.class);
 
+  private DatabaseProduct dbType;
+  protected int batchSize = NO_BATCHING;
+  private boolean areTxnStatsSupported = false;
+  private Configuration conf;
+
+  @Override
+  public void setBaseStore(RawStore store) {
+    super.setBaseStore(store);
+    this.dbType = PersistenceManagerProvider.getDatabaseProduct();
+    this.batchSize = MetastoreConf.getIntVar(store.getConf(),
+        MetastoreConf.ConfVars.RAWSTORE_PARTITION_BATCH_SIZE);
+    this.areTxnStatsSupported = MetastoreConf.getBoolVar(baseStore.getConf(),
+        MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED);
+    this.conf = store.getConf();
+  }
+  
   @Override
   public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
     return new GetListHelper<TableName, TableName> (this, null) {
@@ -552,8 +573,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   protected ColumnStatistics getTableColumnStatisticsInternal(
       String catName, String dbName, String tableName, final List<String> colNames, String engine,
       boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
-    final boolean enableKll = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_KLL);
+    final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
+    final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     return new ObjectStore.GetStatHelper(normalizeIdentifier(catName), normalizeIdentifier(dbName),
         normalizeIdentifier(tableName), allowSql, allowJdo, null) {
       @Override
@@ -667,8 +688,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   protected List<ColumnStatistics> getPartitionColumnStatisticsInternal(
       String catName, String dbName, String tableName, final List<String> partNames, final List<String> colNames,
       String engine, boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
-    final boolean enableKll = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_KLL);
+    final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
+    final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     return new ObjectStore.GetListHelper<ColumnStatistics>(catName, dbName, tableName, allowSql, allowJdo) {
       @Override
       protected List<ColumnStatistics> getSqlResult(
@@ -754,11 +775,11 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
       final List<String> partNames, final List<String> colNames, String engine)
       throws MetaException, NoSuchObjectException {
-    final boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(getConf(),
+    final boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.STATS_NDV_DENSITY_FUNCTION);
-    final double ndvTuner = MetastoreConf.getDoubleVar(getConf(), MetastoreConf.ConfVars.STATS_NDV_TUNER);
-    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
-    final boolean enableKll = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_KLL);
+    final double ndvTuner = MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.STATS_NDV_TUNER);
+    final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
+    final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     return new ObjectStore.GetHelper<AggrStats>(catName, dbName, tblName, true, false) {
       @Override
       protected AggrStats getSqlResult(ObjectStore.GetHelper<AggrStats> ctx)
@@ -784,8 +805,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   @Override
   public List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
-    final boolean enableKll = MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.STATS_FETCH_KLL);
+    final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
+    final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     return new ObjectStore.GetHelper<List<MetaStoreServerUtils.ColStatsObjWithSourceInfo>>(
         catName, dbName, null, true, false) {
       @Override
