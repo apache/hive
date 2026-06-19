@@ -31,7 +31,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -458,7 +461,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
   }
 
   /**
-   * Validate the data after rebalance compaction
+   * Validate the data after rebalance compaction.
    * - the table is balanced (or if not, only numberOfDeletedRows amount of rows are missing
    * - there is only one writeId
    * - buckets has unique bucketId and the bucketId doesn't change inside a bucket
@@ -474,7 +477,7 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     verifyDataAfterCompaction(expectedData, testDataProvider, (String) null, true);
   }
   /**
-   * Validate the data after rebalance compaction
+   * Validate the data after rebalance compaction.
    * - the table is balanced (or if not, only numberOfDeletedRows amount of rows are missing
    * - writeId must be strictly monotonic
    * - buckets has unique bucketId and the bucketId doesn't change inside a bucket
@@ -487,8 +490,10 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
    * @param sorted            True if the data must be sorted
    * @throws Exception        Any exception that occurs during the execution
    */
-  private void verifyDataAfterCompaction(List<RowData> expectedData, TestDataProvider testDataProvider, String partition, boolean sorted)
-      throws Exception {
+  private void verifyDataAfterCompaction(
+      List<RowData> expectedData, TestDataProvider testDataProvider, String partition, boolean sorted
+  ) throws Exception {
+
     FileSystem fs = FileSystem.get(conf);
     GetTableRequest getTableRequest = new GetTableRequest("default", "rebalance_test");
     Table table = msClient.getTable(getTableRequest);
@@ -506,7 +511,10 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     long previousRowId = Long.MIN_VALUE;
 
     for (int i = 0; i < bucketCount; i++) {
-      List<TestDataProvider.RowInfo> bucket = testDataProvider.getStructuredBucketData(table.getTableName(), BucketCodec.V1.encode(options.bucket(i)) + "");
+      List<TestDataProvider.RowInfo> bucket =
+          testDataProvider.getStructuredBucketData(
+              table.getTableName(), BucketCodec.V1.encode(options.bucket(i)) + ""
+          );
 
       int bucketSize = bucket.size();
       assertTrue(bucketSize <= upperBound);
@@ -519,8 +527,10 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
 
         // RowId must be strictly monotonic
         assertTrue(
-          String.format("RowId must be strictly monotonic rule failed. Previous RowId: %d, Bucket: %s,  ", previousRowId, rowInfo),
-          rowInfo.rowId() > previousRowId);
+            String.format(
+                "RowId must be strictly monotonic rule failed. Previous RowId: %d, Bucket: %s,  ",
+                previousRowId, rowInfo),
+            rowInfo.rowId() > previousRowId);
         previousRowId = rowInfo.rowId();
 
         // Check if writeId is strictly monotonic
@@ -568,7 +578,8 @@ public class TestRebalanceCompactor extends CompactorOnTezTest {
     dropTables(driver, "rebalance_test");
     executeStatementOnDriver("CREATE TABLE " + "rebalance_test" + "(a string, b int) " +
         "STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
-    executeStatementOnDriver("INSERT OVERWRITE TABLE " + "rebalance_test" + " select a, b from " + stageTableName, driver);
+    executeStatementOnDriver(
+        "INSERT OVERWRITE TABLE " + "rebalance_test" + " select a, b from " + stageTableName, driver);
 
     //do some single inserts to have more data in the first bucket.
     executeStatementOnDriver("INSERT INTO TABLE " + "rebalance_test" + " values ('12',12)", driver);
