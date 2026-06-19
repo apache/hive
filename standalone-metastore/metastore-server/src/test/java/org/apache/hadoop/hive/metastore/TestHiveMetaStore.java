@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
-import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
 import org.apache.hadoop.hive.metastore.metastore.impl.ColStatsStoreImpl;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;

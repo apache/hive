@@ -130,7 +130,7 @@ public class WLMStoreImpl extends RawStoreAware implements WLMStore {
     } catch (InvalidOperationException e) {
       throw new RuntimeException(e);
     } catch (Exception e) {
-      checkForConstraintException(e, "Resource plan already exists: ");
+      checkForConstraintException(e, "Resource plan already exists: " + rpName);
       throw e;
     }
   }
@@ -284,7 +284,9 @@ public class WLMStoreImpl extends RawStoreAware implements WLMStore {
     Query query = createGetResourcePlanQuery();
     ns = getNsOrDefault(ns);
     resourcePlan = (MWMResourcePlan) query.execute(name, ns);
-    pm.retrieve(resourcePlan);
+    if (resourcePlan != null) {
+      pm.retrieve(resourcePlan);
+    }
     if (mustExist && resourcePlan == null) {
       throw new NoSuchObjectException("There is no resource plan named: " + name + " in " + ns);
     }
@@ -480,7 +482,9 @@ public class WLMStoreImpl extends RawStoreAware implements WLMStore {
     Query query = createActivePlanQuery();
     result = (MWMResourcePlan) query.execute(
         MWMResourcePlan.Status.ACTIVE.toString(), getNsOrDefault(ns));
-    pm.retrieve(result);
+    if (result != null) {
+      pm.retrieve(result);
+    }
     return result;
   }
 
@@ -649,7 +653,7 @@ public class WLMStoreImpl extends RawStoreAware implements WLMStore {
   public WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     name = normalizeIdentifier(name);
-    Query  query = createGetResourcePlanQuery();
+    Query query = createGetResourcePlanQuery();
     MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(name, ns);
     if (mResourcePlan == null) {
       throw new NoSuchObjectException("Cannot find resourcePlan: " + name + " in " + ns);
@@ -663,10 +667,10 @@ public class WLMStoreImpl extends RawStoreAware implements WLMStore {
     name = normalizeIdentifier(name);
     Query query = createGetResourcePlanQuery();
     MWMResourcePlan resourcePlan = (MWMResourcePlan) query.execute(name, getNsOrDefault(ns));
-    pm.retrieve(resourcePlan); // TODO: why do some codepaths call retrieve and some don't?
     if (resourcePlan == null) {
       throw new NoSuchObjectException("There is no resource plan named: " + name + " in " + ns);
     }
+    pm.retrieve(resourcePlan); // TODO: why do some codepaths call retrieve and some don't?
     if (resourcePlan.getStatus() == MWMResourcePlan.Status.ACTIVE) {
       throw new MetaException("Cannot drop an active resource plan");
     }
@@ -885,7 +889,6 @@ public class WLMStoreImpl extends RawStoreAware implements WLMStore {
   public void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     poolPath = normalizeIdentifier(poolPath);
-    boolean commited = false;
     Query query = null;
     try {
       MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName, ns, true);
@@ -943,6 +946,9 @@ public class WLMStoreImpl extends RawStoreAware implements WLMStore {
       query.setUnique(true);
       MWMMapping mMapping = (MWMMapping) query.execute(
           resourcePlan, entityType.toString(), entityName);
+      if (mMapping == null) {
+        throw new NoSuchObjectException("Cannot find mapping for " + entityType + ":" + entityName);
+      }
       mMapping.setPool(pool);
     }
   }

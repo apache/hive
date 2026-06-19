@@ -199,8 +199,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
         }
         Query query = pm.newQuery(MTable.class, whereStr);
         query.declareParameters(paramStr);
-        Collection<MTable> tbls = (Collection<MTable>) query.executeWithArray(
-            query, MetaStoreDirectSql.STATS_TABLE_TYPES);
+        Collection<MTable> tbls =
+            (Collection<MTable>) query.executeWithArray(MetaStoreDirectSql.STATS_TABLE_TYPES);
         pm.retrieveAll(tbls);
         for (MTable tbl : tbls) {
           result.add(new TableName(
@@ -916,7 +916,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
 
     query.setFilter(filter);
     query.declareParameters(parameters);
-    Long number = query.deletePersistentAll(normalizeIdentifier(dbName), normalizeIdentifier(tableName),
+    query.deletePersistentAll(normalizeIdentifier(dbName), normalizeIdentifier(tableName),
         normalizeIdentifier(catName));
 
     new GetHelper<TableName, Integer>(this, tn) {

@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
-import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.utils.DirectSqlConfigurator;
 import org.slf4j.Logger;
@@ -149,9 +148,9 @@ public class VerifyingObjectStore extends ObjectStore {
         newParts.forEach(newPart -> newPart.setWriteId(writeId));
       }
       TableName tableName = new TableName(catName, dbName, tblName);
-      Table table = unwrap(TableStore.class).getTable(tableName, queryWriteIdList, writeId);
+      Table table = unwrap(TableStore.class).getTable(tableName, queryWriteIdList, -1);
       if (table == null) {
-        throw new NoSuchObjectException("Table " + table + " doesn't exist");
+        throw new NoSuchObjectException("Table " + tableName + " doesn't exist");
       }
       List<FieldSchema> partCols = table.getPartitionKeys();
       List<String> partNames = new ArrayList<>();

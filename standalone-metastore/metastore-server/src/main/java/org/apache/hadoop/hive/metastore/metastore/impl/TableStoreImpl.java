@@ -1061,7 +1061,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
 
   @Override
   public void createTable(Table tbl) throws InvalidObjectException, MetaException {
-    MTable mtbl = convertToMTable(tbl);;
+    MTable mtbl = convertToMTable(tbl);
 
     if (TxnUtils.isTransactionalTable(tbl)) {
       mtbl.setWriteId(tbl.getWriteId());
