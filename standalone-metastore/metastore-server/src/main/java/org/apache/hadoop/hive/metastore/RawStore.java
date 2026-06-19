@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -1301,7 +1302,11 @@ public interface RawStore extends Configurable {
   default Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
       List<String> partVals, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    throw new UnsupportedOperationException();
+    ColumnStatisticsDesc statsDesc = statsObj.getStatsDesc();
+    Table table = unwrap(TableStore.class)
+        .getTable(new TableName(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName()), null, -1);
+    MTable mTable = ensureGetMTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName());
+    return updatePartitionColumnStatistics(table, mTable, statsObj, partVals, validWriteIds, writeId);
   }
 
   default Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable,
