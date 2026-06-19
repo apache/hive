@@ -38,7 +38,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
+import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.utils.DirectSqlConfigurator;
@@ -123,12 +125,14 @@ public class VerifyingObjectStore extends ObjectStore {
   @Override
   public ColumnStatistics getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
-    ColumnStatistics sqlResult = getTableColumnStatisticsInternal(
-        catName, dbName, tableName, colNames, engine, true, false);
-    ColumnStatistics jdoResult = getTableColumnStatisticsInternal(
-        catName, dbName, tableName, colNames, engine, false, true);
-    verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
-    return sqlResult;
+    ColStatsStore colStatsStore = unwrap(ColStatsStore.class);
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, false)) {
+      ColumnStatistics jdoResult = colStatsStore.getTableColumnStatistics(new TableName(catName, dbName, tableName), colNames, engine);
+      configurator.tryDirectSql(true);
+      ColumnStatistics sqlResult = colStatsStore.getTableColumnStatistics(new TableName(catName, dbName, tableName), colNames, engine);
+      verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
+      return sqlResult;
+    }
   }
 
   @Override
@@ -141,11 +145,15 @@ public class VerifyingObjectStore extends ObjectStore {
     boolean success = false;
     try {
       openTransaction();
-      MTable table = ensureGetMTable(catName, dbName, tblName);
       if (writeId > 0) {
         newParts.forEach(newPart -> newPart.setWriteId(writeId));
       }
-      List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
+      TableName tableName = new TableName(catName, dbName, tblName);
+      Table table = unwrap(TableStore.class).getTable(tableName, queryWriteIdList, writeId);
+      if (table == null) {
+        throw new NoSuchObjectException("Table " + table + " doesn't exist");
+      }
+      List<FieldSchema> partCols = table.getPartitionKeys();
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
         partNames.add(Warehouse.makePartName(partCols, partVal));
@@ -186,12 +194,16 @@ public class VerifyingObjectStore extends ObjectStore {
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
       String tableName, List<String> partNames, List<String> colNames, String engine)
       throws MetaException, NoSuchObjectException {
-    List<ColumnStatistics> sqlResult = getPartitionColumnStatisticsInternal(
-        catName, dbName, tableName, partNames, colNames, engine, true, false);
-    List<ColumnStatistics> jdoResult = getPartitionColumnStatisticsInternal(
-        catName, dbName, tableName, partNames, colNames, engine, false, true);
-    verifyLists(sqlResult, jdoResult, ColumnStatistics.class);
-    return sqlResult;
+    ColStatsStore colStatsStore = unwrap(ColStatsStore.class);
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, false)) {
+      List<ColumnStatistics> jdoResult =
+          colStatsStore.getPartitionColumnStatistics(new TableName(catName, dbName, tableName), partNames, colNames, engine);
+      configurator.tryDirectSql(true);
+      List<ColumnStatistics> sqlResult =
+          colStatsStore.getPartitionColumnStatistics(new TableName(catName, dbName, tableName), partNames, colNames, engine);
+      verifyLists(sqlResult, jdoResult, ColumnStatistics.class);
+      return sqlResult;
+    }
   }
 
   private void verifyObjects(

@@ -61,12 +61,15 @@ import javax.jdo.identity.IntIdentity;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -239,7 +242,6 @@ public class ObjectStore implements RawStore, Configurable {
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
   private Counter directSqlErrors;
-  private boolean areTxnStatsSupported = false;
   private PropertyStore propertyStore;
   private Map<Class<?>, Object> cachedImpls = new HashMap<>();
 
@@ -261,7 +263,6 @@ public class ObjectStore implements RawStore, Configurable {
   public void setConf(Configuration conf) {
     isInitialized = false;
     this.conf = conf;
-    this.areTxnStatsSupported = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
     configureSSL(conf);
     PersistenceManagerProvider.updatePmfProperties(conf);
 
@@ -1329,6 +1330,49 @@ public class ObjectStore implements RawStore, Configurable {
     return parameters;
   }
 
+  public static Pair<Query, Map<String, String>> getPartQueryWithParams(
+      PersistenceManager pm,
+      String catName, String dbName, String tblName,
+      List<String> partNames) {
+    Query query = pm.newQuery();
+    Map<String, String> params = new HashMap<>();
+    String filterStr = getJDOFilterStrForPartitionNames(catName, dbName, tblName, partNames, params);
+    query.setFilter(filterStr);
+    LOG.debug(" JDOQL filter is {}", filterStr);
+    query.declareParameters(makeParameterDeclarationString(params));
+    return Pair.of(query, params);
+  }
+
+  public static String getJDOFilterStrForPartitionNames(String catName, String dbName, String tblName,
+      List<String> partNames, Map params) {
+    StringBuilder sb = new StringBuilder(
+        "table.tableName == t1 && table.database.name == t2 &&" + " table.database.catalogName == t3 && (");
+    params.put("t1", normalizeIdentifier(tblName));
+    params.put("t2", normalizeIdentifier(dbName));
+    params.put("t3", normalizeIdentifier(catName));
+    int n = 0;
+    for (Iterator<String> itr = partNames.iterator(); itr.hasNext(); ) {
+      String pn = "p" + n;
+      n++;
+      String part = itr.next();
+      params.put(pn, part);
+      sb.append("partitionName == ").append(pn);
+      sb.append(" || ");
+    }
+    sb.setLength(sb.length() - 4); // remove the last " || "
+    sb.append(')');
+    return sb.toString();
+  }
+
+  public static String makeParameterDeclarationString(Map<String, String> params) {
+    //Create the parameter declaration string
+    StringBuilder paramDecl = new StringBuilder();
+    for (String key : params.keySet()) {
+      paramDecl.append(", java.lang.String ").append(key);
+    }
+    return paramDecl.toString();
+  }
+
   public static List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
     List<MFieldSchema> mkeys = null;
     if (keys != null) {
@@ -1662,6 +1706,42 @@ public class ObjectStore implements RawStore, Configurable {
             " state " + newVal;
   }
 
+  // TODO: move to somewhere else
+  public static boolean isCurrentStatsValidForTheQuery(
+      Map<String, String> statsParams, long statsWriteId, String queryValidWriteIdList,
+      boolean isCompleteStatsWriter) throws MetaException {
+
+    // Note: can be changed to debug/info to verify the calls.
+    LOG.debug("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",
+        statsWriteId, queryValidWriteIdList, isCompleteStatsWriter, statsParams);
+    // return true since the stats does not seem to be transactional.
+    if (statsWriteId < 1) {
+      return true;
+    }
+    // This COLUMN_STATS_ACCURATE(CSA) state checking also includes the case that the stats is
+    // written by an aborted transaction but TXNS has no entry for the transaction
+    // after compaction. Don't check for a complete stats writer - it may replace invalid stats.
+    if (!isCompleteStatsWriter && !StatsSetupConst.areBasicStatsUptoDate(statsParams)) {
+      return false;
+    }
+
+    if (queryValidWriteIdList != null) { // Can be null when stats are being reset to invalid.
+      ValidWriteIdList list4TheQuery = ValidReaderWriteIdList.fromValue(queryValidWriteIdList);
+      // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
+      // that means it cannot possibly be a concurrent write. If it's not valid (we are not
+      // allowed to see it), that means it's either concurrent or aborted, same thing for us.
+      if (list4TheQuery.isWriteIdValid(statsWriteId)) {
+        return true;
+      }
+      // Updater is also allowed to overwrite stats from aborted txns, as long as they are not concurrent.
+      if (isCompleteStatsWriter && list4TheQuery.isWriteIdAborted(statsWriteId)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+  
   @Override
   public String getMetastoreDbUuid() throws MetaException {
     String ret = getGuidFromDB();

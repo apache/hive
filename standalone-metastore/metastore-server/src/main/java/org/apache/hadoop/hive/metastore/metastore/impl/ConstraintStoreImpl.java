@@ -33,7 +33,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
@@ -203,7 +202,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
         final String fkTableName = normalizeIdentifier(foreignKeys.get(i).getFktable_name());
         // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
         // For instance, this is the case when we are creating the table.
-        final ObjectStore.AttachedMTableInfo nChildTable = getMTable(catName, fkTableDB, fkTableName, retrieveCD);
+        final TableStore.AttachedMTableInfo nChildTable =
+            baseStore.unwrap(TableStore.class).getMTable(new TableName(catName, fkTableDB, fkTableName), retrieveCD);
         final MTable childTable = nChildTable.mtbl;
         if (childTable == null) {
           throw new InvalidObjectException("Child table not found: " + fkTableName);
@@ -221,7 +221,7 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
         // For primary keys, we retrieve the column descriptors if retrieveCD is true (which means
         // it is an alter table statement) or if it is a create table statement but we are
         // referencing another table instead of self for the primary key.
-        final ObjectStore.AttachedMTableInfo nParentTable;
+        final TableStore.AttachedMTableInfo nParentTable;
         final MTable parentTable;
         MColumnDescriptor parentCD;
         final List<MFieldSchema> parentCols;
@@ -236,7 +236,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
           existingTablePrimaryKeys = primaryKeys;
           existingTableUniqueConstraints = uniqueConstraints;
         } else {
-          nParentTable = getMTable(catName, pkTableDB, pkTableName, true);
+          nParentTable =
+              baseStore.unwrap(TableStore.class).getMTable(new TableName(catName, pkTableDB, pkTableName), true);
           parentTable = nParentTable.mtbl;
           if (parentTable == null) {
             throw new InvalidObjectException("Parent table not found: " + pkTableName);
@@ -443,7 +444,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      ObjectStore.AttachedMTableInfo nParentTable = getMTable(catName, tableDB, tableName, retrieveCD);
+      TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+          .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
         throw new InvalidObjectException("Parent table not found: " + tableName);
@@ -526,7 +528,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      ObjectStore.AttachedMTableInfo nParentTable = getMTable(catName, tableDB, tableName, retrieveCD);
+      TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+          .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
         throw new InvalidObjectException("Parent table not found: " + tableName);
@@ -641,7 +644,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     String constraintName = null;
     // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
     // For instance, this is the case when we are creating the table.
-    ObjectStore.AttachedMTableInfo nParentTable = getMTable(catName, tableDB, tableName, retrieveCD);
+    TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+        .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
     MTable parentTable = nParentTable.mtbl;
     if (parentTable == null) {
       throw new InvalidObjectException("Parent table not found: " + tableName);
@@ -729,7 +733,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      ObjectStore.AttachedMTableInfo nParentTable = getMTable(catName, tableDB, tableName, retrieveCD);
+      TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+          .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
         throw new InvalidObjectException("Parent table not found: " + tableName);

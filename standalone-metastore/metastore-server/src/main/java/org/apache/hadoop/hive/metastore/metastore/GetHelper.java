@@ -195,13 +195,13 @@ public abstract class GetHelper<A, T> {
     doUseDirectSql = false;
   }
 
-  private void setTransactionSavePoint(String savePoint) {
+  public void setTransactionSavePoint(String savePoint) {
     if (savePoint != null) {
       ((JDOTransaction) pm.currentTransaction()).setSavepoint(savePoint);
     }
   }
 
-  private void rollbackTransactionToSavePoint(String savePoint) {
+  public void rollbackTransactionToSavePoint(String savePoint) {
     if (savePoint != null) {
       ((JDOTransaction) pm.currentTransaction()).rollbackToSavepoint(savePoint);
     }

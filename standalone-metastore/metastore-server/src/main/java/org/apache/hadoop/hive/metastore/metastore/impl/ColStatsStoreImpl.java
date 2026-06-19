@@ -46,12 +46,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -94,6 +91,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
+import static org.apache.hadoop.hive.metastore.ObjectStore.getPartQueryWithParams;
+import static org.apache.hadoop.hive.metastore.ObjectStore.isCurrentStatsValidForTheQuery;
 import static org.apache.hadoop.hive.metastore.ObjectStore.verifyStatsChangeCtx;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -277,22 +276,25 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     int maxRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
     long sleepInterval = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
+    GetHelper<TableName, String> transactionHelper = createSubTransactionHelper(new TableName(catName, statsDesc.getDbName(),
+        statsDesc.getTableName()));
     Map<String, String> result = new RetryingExecutor<>(maxRetries, () -> {
       AtomicReference<Exception> exceptionRef = new AtomicReference<>();
       String savePoint = "uts_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
-      setTransactionSavePoint(savePoint);
+      transactionHelper.setTransactionSavePoint(savePoint);
       executePlainSQL(
           sqlGenerator.addForUpdateNoWait("SELECT \"TBL_ID\" FROM \"TBLS\" WHERE \"TBL_ID\" = " + mTable.getId()),
           true,
           exception -> {
-            rollbackTransactionToSavePoint(savePoint);
+            transactionHelper.rollbackTransactionToSavePoint(savePoint);
             exceptionRef.set(exception);
           });
       if (exceptionRef.get() != null) {
         throw new RetryingExecutor.RetryException(exceptionRef.get());
       }
       pm.refresh(mTable);
-      Table table = convertToTable(mTable, conf);
+      Table table = baseStore.unwrap(TableStore.class).getTable(new TableName(catName, statsDesc.getDbName(),
+          statsDesc.getTableName()), null, -1);
       List<String> colNames = new ArrayList<>();
       for (ColumnStatisticsObj statsObj : statsObjs) {
         colNames.add(statsObj.getColName());
@@ -328,7 +330,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
           if (errorMsg != null) {
             throw new MetaException(errorMsg);
           }
-          if (!isCurrentStatsValidForTheQuery(oldt, validWriteIds, true)) {
+          if (!isCurrentStatsValidForTheQuery(oldt.getParameters(), oldt.getWriteId(), validWriteIds, true)) {
             // Make sure we set the flag to invalid regardless of the current value.
             StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
             LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table " + dbname + "." + name);
@@ -369,23 +371,25 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     int maxRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
     long sleepInterval = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
+    GetHelper<TableName, String> helper =
+        createSubTransactionHelper(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()));
     Map<String, String> result = new RetryingExecutor<>(maxRetries, () -> {
       AtomicReference<Exception> exceptionRef = new AtomicReference<>();
       String savePoint = "ups_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
-      setTransactionSavePoint(savePoint);
+      helper.setTransactionSavePoint(savePoint);
       executePlainSQL(sqlGenerator.addForUpdateNoWait(
               "SELECT \"PART_ID\" FROM \"PARTITIONS\" WHERE \"PART_ID\" = " + mPartition.getId()),
           true,
           exception -> {
-            rollbackTransactionToSavePoint(savePoint);
+            helper.rollbackTransactionToSavePoint(savePoint);
             exceptionRef.set(exception);
           });
       if (exceptionRef.get() != null) {
         throw new RetryingExecutor.RetryException(exceptionRef.get());
       }
       pm.refresh(mPartition);
-      Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(),
-          mPartition, TxnUtils.isAcidTable(table), conf);
+      Partition partition = baseStore.unwrap(TableStore.class)
+          .getPartition(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), mPartition.getValues(), null);
       Map<String, MPartitionColumnStatistics> oldStats = Maps.newHashMap();
       List<MPartitionColumnStatistics> stats =
           getMPartitionColumnStatistics(table, Lists.newArrayList(statsDesc.getPartName()), colNames, colStats.getEngine());
@@ -565,7 +569,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     if (writeIdList != null) {
       MTable table = baseStore.ensureGetMTable(catName, dbName, tblName);
       isCompliant = !TxnUtils.isTransactionalTable(table.getParameters())
-          || (areTxnStatsSupported && isCurrentStatsValidForTheQuery(table, writeIdList, false));
+          || (areTxnStatsSupported && isCurrentStatsValidForTheQuery(table.getParameters(), table.getWriteId(), writeIdList, false));
     }
     ColumnStatistics stats = getTableColumnStatisticsInternal(
         new TableName(catName, dbName, tblName), colNames, engine);
@@ -579,7 +583,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
       TableName tableName, final List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
-    return new GetStatHelper(this, tableName) {
+    return new GetStatHelper(tableName, this) {
       @Override
       protected ColumnStatistics getSqlResult() throws MetaException {
         String catName = normalizeIdentifier(tableName.getCat());
@@ -760,7 +764,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
       GetProjectionsSpec ps = new GetProjectionsSpec();
       ps.setIncludeParamKeyPattern(StatsSetupConst.COLUMN_STATS_ACCURATE + '%');
       ps.setFieldList(Lists.newArrayList("writeId", "parameters", "values"));
-      List<Partition> parts = getPartitionSpecsByFilterAndProjection(table, ps, fs);
+      List<Partition> parts = baseStore.unwrap(TableStore.class)
+          .getPartitionSpecsByFilterAndProjection(table, ps, fs);
 
       // Loop through the given "partNames" list
       // checking isolation-level-compliance of each partition column stats.
@@ -1118,7 +1123,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
       pm.deletePersistentAll(mStatsObjColl);
     }
 
-    MTable mTable = getMTable(catName, dbName, tableName);
+    MTable mTable = baseStore.ensureGetMTable(catName, dbName, tableName);
     if (mTable != null) {
       Map<String, String> tableParams = mTable.getParameters();
       if (tableParams != null && tableParams.containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
@@ -1165,72 +1170,6 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     }
   }
 
-  /**
-   * Return true if the current statistics in the Metastore is valid
-   * for the query of the given "txnId" and "queryValidWriteIdList".
-   *
-   * Note that a statistics entity is valid iff
-   * the stats is written by the current query or
-   * the conjunction of the following two are true:
-   * ~ COLUMN_STATE_ACCURATE(CSA) state is true
-   * ~ Isolation-level (snapshot) compliant with the query
-   * @param tbl                    MTable of the stats entity
-   * @param queryValidWriteIdList  valid writeId list of the query
-   * @Precondition   "tbl" should be retrieved from the TBLS table.
-   */
-  private boolean isCurrentStatsValidForTheQuery(MTable tbl, String queryValidWriteIdList,
-      boolean isCompleteStatsWriter) throws MetaException {
-    return isCurrentStatsValidForTheQuery(tbl.getParameters(), tbl.getWriteId(),
-        queryValidWriteIdList, isCompleteStatsWriter);
-  }
-
-  /**
-   * Return true if the current statistics in the Metastore is valid
-   * for the query of the given "txnId" and "queryValidWriteIdList".
-   *
-   * Note that a statistics entity is valid iff
-   * the stats is written by the current query or
-   * the conjunction of the following two are true:
-   * ~ COLUMN_STATE_ACCURATE(CSA) state is true
-   * ~ Isolation-level (snapshot) compliant with the query
-   * @param queryValidWriteIdList  valid writeId list of the query
-   */
-  // TODO: move to somewhere else
-  public static boolean isCurrentStatsValidForTheQuery(
-      Map<String, String> statsParams, long statsWriteId, String queryValidWriteIdList,
-      boolean isCompleteStatsWriter) throws MetaException {
-
-    // Note: can be changed to debug/info to verify the calls.
-    LOG.debug("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",
-        statsWriteId, queryValidWriteIdList, isCompleteStatsWriter, statsParams);
-    // return true since the stats does not seem to be transactional.
-    if (statsWriteId < 1) {
-      return true;
-    }
-    // This COLUMN_STATS_ACCURATE(CSA) state checking also includes the case that the stats is
-    // written by an aborted transaction but TXNS has no entry for the transaction
-    // after compaction. Don't check for a complete stats writer - it may replace invalid stats.
-    if (!isCompleteStatsWriter && !StatsSetupConst.areBasicStatsUptoDate(statsParams)) {
-      return false;
-    }
-
-    if (queryValidWriteIdList != null) { // Can be null when stats are being reset to invalid.
-      ValidWriteIdList list4TheQuery = ValidReaderWriteIdList.fromValue(queryValidWriteIdList);
-      // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
-      // that means it cannot possibly be a concurrent write. If it's not valid (we are not
-      // allowed to see it), that means it's either concurrent or aborted, same thing for us.
-      if (list4TheQuery.isWriteIdValid(statsWriteId)) {
-        return true;
-      }
-      // Updater is also allowed to overwrite stats from aborted txns, as long as they are not concurrent.
-      if (isCompleteStatsWriter && list4TheQuery.isWriteIdAborted(statsWriteId)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   private abstract class GetStatHelper extends GetHelper<TableName, ColumnStatistics> {
     public GetStatHelper(TableName tableName, RawStoreAware baseStore) throws MetaException {
       super(baseStore, tableName);
@@ -1240,6 +1179,25 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     protected String describeResult() {
       return "statistics for " + (results == null ? 0 : results.getStatsObjSize()) + " columns";
     }
+  }
+
+  private GetHelper<TableName, String> createSubTransactionHelper(TableName tableName) throws MetaException {
+    return new GetHelper<TableName, String>(this, tableName) {
+      @Override
+      protected String describeResult() {
+        return "A helper for managing sub-transaction";
+      }
+
+      @Override
+      protected String getSqlResult() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      protected String getJdoResult() {
+        throw new UnsupportedOperationException();
+      }
+    };
   }
 
   @VisibleForTesting
@@ -1259,5 +1217,6 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
       }
     }
   }
+
 
 }

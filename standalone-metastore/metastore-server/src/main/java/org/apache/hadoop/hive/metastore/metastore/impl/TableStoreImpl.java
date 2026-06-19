@@ -22,7 +22,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
-import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +52,6 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -133,6 +131,10 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.convertToMFieldSchema
 import static org.apache.hadoop.hive.metastore.ObjectStore.convertToMSerDeInfo;
 import static org.apache.hadoop.hive.metastore.ObjectStore.convertToSerDeInfo;
 import static org.apache.hadoop.hive.metastore.ObjectStore.createNewMColumnDescriptor;
+import static org.apache.hadoop.hive.metastore.ObjectStore.getJDOFilterStrForPartitionNames;
+import static org.apache.hadoop.hive.metastore.ObjectStore.getPartQueryWithParams;
+import static org.apache.hadoop.hive.metastore.ObjectStore.isCurrentStatsValidForTheQuery;
+import static org.apache.hadoop.hive.metastore.ObjectStore.makeParameterDeclarationString;
 import static org.apache.hadoop.hive.metastore.ObjectStore.verifyStatsChangeCtx;
 import static org.apache.hadoop.hive.metastore.metastore.impl.PrivilegeStoreImpl.getPrincipalTypeFromStr;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -576,29 +578,18 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     query.deletePersistentAll(queryWithParams.getRight());
   }
 
-  class AttachedMTableInfo {
-    MTable mtbl;
-    MColumnDescriptor mcd;
-
-    public AttachedMTableInfo() {}
-
-    public AttachedMTableInfo(MTable mtbl, MColumnDescriptor mcd) {
-      this.mtbl = mtbl;
-      this.mcd = mcd;
-    }
-  }
-
   private MTable getMTable(String catName, String db, String table) {
-    AttachedMTableInfo nmtbl = getMTable(catName, db, table, false);
+    AttachedMTableInfo nmtbl = getMTable(new TableName(catName, db, table), false);
     return nmtbl.mtbl;
   }
 
-  private AttachedMTableInfo getMTable(String catName, String db, String table,
-      boolean retrieveCD) {
+  @Override
+  public AttachedMTableInfo getMTable(TableName tableName, boolean retrieveCD) {
     AttachedMTableInfo nmtbl = new AttachedMTableInfo();
-    catName = normalizeIdentifier(Optional.ofNullable(catName).orElse(getDefaultCatalog(baseStore.getConf())));
-    db = normalizeIdentifier(db);
-    table = normalizeIdentifier(table);
+    String catName = normalizeIdentifier(Optional.ofNullable(tableName.getCat())
+        .orElse(getDefaultCatalog(baseStore.getConf())));
+    String db = normalizeIdentifier(tableName.getDb());
+    String table = normalizeIdentifier(tableName.getTable());
     Query query = pm.newQuery(MTable.class,
         "tableName == table && database.name == db && database.catalogName == catname");
     query.declareParameters(
@@ -667,42 +658,6 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     MCreationMetadata mcm = (MCreationMetadata) query.execute(tblName, dbName, catName);
     pm.retrieve(mcm);
     return mcm;
-  }
-
-  // TODO: move to somewhere else
-  public static boolean isCurrentStatsValidForTheQuery(
-      Map<String, String> statsParams, long statsWriteId, String queryValidWriteIdList,
-      boolean isCompleteStatsWriter) throws MetaException {
-
-    // Note: can be changed to debug/info to verify the calls.
-    LOG.debug("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",
-        statsWriteId, queryValidWriteIdList, isCompleteStatsWriter, statsParams);
-    // return true since the stats does not seem to be transactional.
-    if (statsWriteId < 1) {
-      return true;
-    }
-    // This COLUMN_STATS_ACCURATE(CSA) state checking also includes the case that the stats is
-    // written by an aborted transaction but TXNS has no entry for the transaction
-    // after compaction. Don't check for a complete stats writer - it may replace invalid stats.
-    if (!isCompleteStatsWriter && !StatsSetupConst.areBasicStatsUptoDate(statsParams)) {
-      return false;
-    }
-
-    if (queryValidWriteIdList != null) { // Can be null when stats are being reset to invalid.
-      ValidWriteIdList list4TheQuery = ValidReaderWriteIdList.fromValue(queryValidWriteIdList);
-      // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
-      // that means it cannot possibly be a concurrent write. If it's not valid (we are not
-      // allowed to see it), that means it's either concurrent or aborted, same thing for us.
-      if (list4TheQuery.isWriteIdValid(statsWriteId)) {
-        return true;
-      }
-      // Updater is also allowed to overwrite stats from aborted txns, as long as they are not concurrent.
-      if (isCompleteStatsWriter && list4TheQuery.isWriteIdAborted(statsWriteId)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   @Override
@@ -852,7 +807,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     }
     MPartition mpart = getMPartition(catName, dbName, tableName, part_vals, table);
     part = convertToPart(catName, dbName, tableName, mpart,
-        TxnUtils.isAcidTable(table.getParameters()), conf);
+        TxnUtils.isAcidTable(table.getParameters()));
     if (part == null) {
       throw new NoSuchObjectException("partition values="
           + part_vals.toString());
@@ -924,7 +879,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       protected List<Partition> getJdoResult() throws MetaException {
         try {
           return convertToParts(catName, dbName, tblName,
-              listMPartitions(catName, dbName, tblName, args.getMax()), false, conf, args);
+              listMPartitions(catName, dbName, tblName, args.getMax()), false, args);
         } catch (Exception e) {
           LOG.error("Failed to convert to parts", e);
           throw new MetaException(e.getMessage());
@@ -1773,7 +1728,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     pm.retrieveAll(mparts); // TODO: why is this inconsistent with what we get by names?
     LOG.debug("Done retrieving all objects for getPartitionsViaOrmFilter");
     List<Partition> results =
-        convertToParts(catName, dbName, tblName, mparts, isAcidTable, conf, args);
+        convertToParts(catName, dbName, tblName, mparts, isAcidTable, args);
     return results;
   }
 
@@ -1804,7 +1759,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
 
           List<MPartition> mparts = (List<MPartition>) query.executeWithMap(queryWithParams.getRight());
           List<Partition> partitions = convertToParts(catName, dbName, tblName, mparts,
-              isAcidTable, conf, args);
+              isAcidTable, args);
 
           return partitions;
         }
@@ -1958,7 +1913,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     }
 
     oldCd.set(oldCD);
-    return convertToPart(catName, dbname, name, oldp, TxnUtils.isAcidTable(table.getParameters()), conf);
+    return convertToPart(catName, dbname, name, oldp, TxnUtils.isAcidTable(table.getParameters()));
   }
 
   @Override
@@ -2213,7 +2168,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         try {
           List<MPartition> mparts = listMPartitionsWithProjection(fieldNames, jdoFilter, params);
           return convertToParts(table.getCatName(), table.getDbName(), table.getTableName(),
-              mparts, false, conf, new GetPartitionsArgs.GetPartitionsArgsBuilder()
+              mparts, false, new GetPartitionsArgs.GetPartitionsArgsBuilder()
               .excludeParamKeyPattern(excludeParamKeyPattern)
               .includeParamKeyPattern(includeParamKeyPattern)
               .build());
@@ -2282,7 +2237,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
             args.getPart_vals(), args.getMax(), null);
         boolean isAcidTable = TxnUtils.isAcidTable(getTable());
         for (MPartition o : parts) {
-          Partition part = convertToPart(catName, dbName, tblName, o, isAcidTable, conf, args);
+          Partition part = convertToPart(catName, dbName, tblName, o, isAcidTable, args);
           result.add(part);
         }
         return result;
@@ -2735,7 +2690,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     }
     MTable mtbl = mpart.getTable();
 
-    Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()), conf);
+    Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()));
     if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
       String partName = Warehouse.makePartName(convertToFieldSchemas(mtbl
           .getPartitionKeys()), partVals);
@@ -2997,49 +2952,6 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         }
       }
     }
-  }
-
-  private Pair<Query, Map<String, String>> getPartQueryWithParams(
-      PersistenceManager pm,
-      String catName, String dbName, String tblName,
-      List<String> partNames) {
-    Query query = pm.newQuery();
-    Map<String, String> params = new HashMap<>();
-    String filterStr = getJDOFilterStrForPartitionNames(catName, dbName, tblName, partNames, params);
-    query.setFilter(filterStr);
-    LOG.debug(" JDOQL filter is {}", filterStr);
-    query.declareParameters(makeParameterDeclarationString(params));
-    return Pair.of(query, params);
-  }
-
-  private String getJDOFilterStrForPartitionNames(String catName, String dbName, String tblName,
-      List<String> partNames, Map params) {
-    StringBuilder sb = new StringBuilder(
-        "table.tableName == t1 && table.database.name == t2 &&" + " table.database.catalogName == t3 && (");
-    params.put("t1", normalizeIdentifier(tblName));
-    params.put("t2", normalizeIdentifier(dbName));
-    params.put("t3", normalizeIdentifier(catName));
-    int n = 0;
-    for (Iterator<String> itr = partNames.iterator(); itr.hasNext(); ) {
-      String pn = "p" + n;
-      n++;
-      String part = itr.next();
-      params.put(pn, part);
-      sb.append("partitionName == ").append(pn);
-      sb.append(" || ");
-    }
-    sb.setLength(sb.length() - 4); // remove the last " || "
-    sb.append(')');
-    return sb.toString();
-  }
-
-  private String makeParameterDeclarationString(Map<String, String> params) {
-    //Create the parameter declaration string
-    StringBuilder paramDecl = new StringBuilder();
-    for (String key : params.keySet()) {
-      paramDecl.append(", java.lang.String ").append(key);
-    }
-    return paramDecl.toString();
   }
 
   private Table convertToTable(MTable mtbl, Configuration conf) throws MetaException {
@@ -3336,8 +3248,6 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
    * This method resets the stats to 0 and supports only backward compatibility with clients does not
    * send {@link SourceTable} instances.
    *
-   * Use {@link ObjectStore#convertToSourceTable(String, SourceTable, RawStore)} instead.
-   *
    * @param catalog Catalog name where source table is located
    * @param fullyQualifiedTableName fully qualified name of source table
    * @return {@link MMVSource} instance represents this source table.
@@ -3436,7 +3346,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
   }
 
   private Partition convertToPart(String catName, String dbName, String tblName,
-      MPartition mpart, boolean isAcidTable, Configuration conf, GetPartitionsArgs... args)
+      MPartition mpart, boolean isAcidTable, GetPartitionsArgs... args)
       throws MetaException {
     if (mpart == null) {
       return null;
@@ -3459,11 +3369,11 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
   }
 
   private List<Partition> convertToParts(String catName, String dbName, String tblName,
-      List<MPartition> mparts, boolean isAcidTable, Configuration conf, GetPartitionsArgs args)
+      List<MPartition> mparts, boolean isAcidTable, GetPartitionsArgs args)
       throws MetaException {
     List<Partition> parts = new ArrayList<>(mparts.size());
     for (MPartition mp : mparts) {
-      parts.add(convertToPart(catName, dbName, tblName, mp, isAcidTable, conf, args));
+      parts.add(convertToPart(catName, dbName, tblName, mp, isAcidTable, args));
       Deadline.checkTimeout();
     }
     return parts;

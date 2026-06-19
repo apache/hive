@@ -225,4 +225,7 @@ public interface ColStatsStore {
   List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
 
   Map<String, List<String>> getPartitionColsWithStats(TableName tableName) throws MetaException, NoSuchObjectException;
+
+  public void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList)
+      throws MetaException, NoSuchObjectException;
 }
