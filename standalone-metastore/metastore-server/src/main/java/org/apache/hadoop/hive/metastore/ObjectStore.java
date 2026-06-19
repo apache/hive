@@ -443,15 +443,16 @@ public class ObjectStore implements RawStore, Configurable {
 
   @VisibleForTesting
   public RawStoreBundle createRawStoreBundle() {
+    final ObjectStore objectStore = this;
     return new RawStoreBundle() {
       @Override
       public RawStore getBaseStore() {
-        return ObjectStore.this;
+        return objectStore;
       }
 
       @Override
       public PersistenceManager getPersistentManager() {
-        return pm;
+        return objectStore.pm;
       }
     };
   }

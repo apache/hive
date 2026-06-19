@@ -1379,7 +1379,7 @@ public class TestObjectStore {
     // recall setup so that we get an object store with the metrics initalized
     setUp();
     Counter directSqlErrors =
-        Metrics.getRegistry().getCounters().get(MetricsConstants.DIRECTSQL_ERRORS);
+        GetHelper.setDirectSqlErrors(Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS));
 
      new GetHelper<DatabaseName, Database>(objectStore.createRawStoreBundle(),
          new DatabaseName(DEFAULT_CATALOG_NAME, "foo")) {
@@ -1402,7 +1402,7 @@ public class TestObjectStore {
 
     Assert.assertEquals(0, directSqlErrors.getCount());
 
-    new GetHelper<DatabaseName, Database> (objectStore.createRawStoreBundle(),
+    new GetHelper<DatabaseName, Database>(objectStore.createRawStoreBundle(),
         new DatabaseName(DEFAULT_CATALOG_NAME, "foo")) {
       @Override
       protected Database getSqlResult() throws MetaException {

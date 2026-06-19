@@ -326,7 +326,6 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     removeUnusedColumnDescriptor(mcd);
   }
 
-
   @Override
   public List<String> dropAllPartitionsAndGetLocations(TableName table, String baseLocationToNotShow,
       AtomicReference<String> message)

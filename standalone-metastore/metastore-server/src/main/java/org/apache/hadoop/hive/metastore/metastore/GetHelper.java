@@ -47,8 +47,8 @@ import org.slf4j.LoggerFactory;
 @VisibleForTesting
 public abstract class GetHelper<A, T> {
   private static final Logger LOG = LoggerFactory.getLogger(GetHelper.class);
-  private static final Counter directSqlErrors = Metrics.getRegistry() != null ?
-      Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS) : new Counter();
+  private static Counter directSqlErrors = setDirectSqlErrors(Metrics.getRegistry() != null ?
+      Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS) : new Counter());
   private final boolean isInTxn, doTrace, allowJdo;
   private boolean doUseDirectSql;
   private long start;
@@ -271,5 +271,11 @@ public abstract class GetHelper<A, T> {
 
   public static long getDirectSqlErrors() {
     return directSqlErrors.getCount();
+  }
+
+  @VisibleForTesting
+  public static Counter setDirectSqlErrors(Counter counter) {
+    directSqlErrors = counter;
+    return counter;
   }
 }
