@@ -336,7 +336,8 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
     LOG.debug("Executing listMSecurityPrincipalMembershipRole");
     Query query = pm.newQuery(MRoleMap.class, "principalName == t1 && principalType == t2");
     query.declareParameters("java.lang.String t1, java.lang.String t2");
-    final List<MRoleMap> mRoleMemebership = (List<MRoleMap>) query.execute(roleName, principalType.toString());
+    final List<MRoleMap> mRoleMemebership =
+        (List<MRoleMap>) query.execute(roleName, principalType.toString());
 
     LOG.debug("Retrieving all objects for listMSecurityPrincipalMembershipRole");
     pm.retrieveAll(mRoleMemebership);
@@ -1258,7 +1259,8 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
       }
       break;
     case TABLE:
-      grants = listTableGrantsAll(new TableName(catName, objToRefresh.getDbName(), objToRefresh.getObjectName()), authorizer);
+      grants = listTableGrantsAll(new TableName(catName, objToRefresh.getDbName(),
+          objToRefresh.getObjectName()), authorizer);
       break;
     case COLUMN:
       Preconditions.checkArgument(objToRefresh.getColumnName()==null, "columnName must be null");

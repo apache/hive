@@ -264,7 +264,8 @@ public class NotificationStoreImpl extends RawStoreAware implements Notification
         TimeUnit.NANOSECONDS.toMillis(finish - start));
   }
 
-  private <T> int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize, Class<T> tableClass, String tableName) {
+  private <T> int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize,
+      Class<T> tableClass, String tableName) {
     int eventsCount = 0;
     Query query = pm.newQuery(tableClass, "eventTime <= tooOld");
     String key = null;

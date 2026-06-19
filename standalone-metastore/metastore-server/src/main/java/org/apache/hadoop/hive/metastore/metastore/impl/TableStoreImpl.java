@@ -661,7 +661,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
   }
 
   @Override
-  public boolean addPartitions(TableName tableName, List<Partition> parts) throws InvalidObjectException, MetaException {
+  public boolean addPartitions(TableName tableName, List<Partition> parts)
+      throws InvalidObjectException, MetaException {
     String catName = normalizeIdentifier(tableName.getCat());
     String dbName = normalizeIdentifier(tableName.getDb());
     String tblName = normalizeIdentifier(tableName.getTable());
@@ -845,7 +846,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
    * @param part_vals The values defining the partition
    * @return The MPartition object in the backend database
    */
-  private MPartition getMPartition(String catName, String dbName, String tableName, List<String> part_vals, MTable mtbl)
+  private MPartition getMPartition(String catName, String dbName, String tableName,
+      List<String> part_vals, MTable mtbl)
       throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
@@ -1011,7 +1013,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         // If we find it, we will change the reference for the CD.
         // If we do not find it, i.e., the column will be deleted, we do not change it
         // and we let the logic in removeUnusedColumnDescriptor take care of it
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD"))) {
+        try (QueryWrapper query = new QueryWrapper(pm.newQuery(MConstraint.class,
+            "parentColumn == inCD || childColumn == inCD"))) {
           query.declareParameters("MColumnDescriptor inCD");
           List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldSd.getCD());
           pm.retrieveAll(mConstraintsList);
@@ -1212,7 +1215,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     } else {
       if (projectionFields.size() > 1) {
         // Execute the query to fetch the partial results.
-        List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
+        List<Object[]> results = (List<Object[]>)
+            query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
         // Declare the tables array to return the list of tables
         mtables = new ArrayList<>(results.size());
         // Iterate through each row of the result and create the MTable object.
@@ -1227,7 +1231,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         }
       } else if (projectionFields.size() == 1) {
         // Execute the query to fetch the partial results.
-        List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
+        List<Object[]> results = (List<Object[]>)
+            query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
         // Iterate through each row of the result and create the MTable object.
         mtables = new ArrayList<>(results.size());
         for (Object row : results) {
@@ -1588,7 +1593,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       }
       @Override
       protected List<String> getSqlResult() throws MetaException {
-        MetaStoreDirectSql.SqlFilterForPushdown filter = new MetaStoreDirectSql.SqlFilterForPushdown(getTable(), false);
+        MetaStoreDirectSql.SqlFilterForPushdown filter =
+            new MetaStoreDirectSql.SqlFilterForPushdown(getTable(), false);
         List<String> partNames = null;
         Table table = getTable();
         if (exprTree != null) {
@@ -1643,7 +1649,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     assert result != null;
     byte[] expr = args.getExpr();
     final ExpressionTree exprTree = expr.length != 0 ? PartFilterExprUtil.makeExpressionTree(
-        expressionProxy, expr, getDefaultPartitionName(args.getDefaultPartName()), baseStore.getConf()) : ExpressionTree.EMPTY_TREE;
+        expressionProxy, expr,
+        getDefaultPartitionName(args.getDefaultPartName()), baseStore.getConf()) : ExpressionTree.EMPTY_TREE;
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
 
     String catName = normalizeIdentifier(tableName.getCat());
@@ -2059,7 +2066,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
   }
 
   @Override
-  public List<Partition> getPartitionSpecsByFilterAndProjection(Table table, GetProjectionsSpec partitionsProjectSpec,
+  public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
+      GetProjectionsSpec partitionsProjectSpec,
       GetPartitionsFilterSpec filterSpec) throws MetaException, NoSuchObjectException {
     List<String> fieldList = null;
     String inputIncludePattern = null;
@@ -2971,7 +2979,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     } else {
-      if (tableType.equals(TableType.VIRTUAL_VIEW.toString()) || tableType.equals(TableType.MATERIALIZED_VIEW.toString())) {
+      if (tableType.equals(TableType.VIRTUAL_VIEW.toString()) ||
+          tableType.equals(TableType.MATERIALIZED_VIEW.toString())) {
         viewOriginalText = mtbl.getViewOriginalText();
         viewExpandedText = mtbl.getViewExpandedText();
       }

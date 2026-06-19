@@ -431,7 +431,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     return addPrimaryKeys(pks, true);
   }
 
-  private List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
+  private List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD)
+      throws InvalidObjectException,
       MetaException {
     List<MConstraint> mpks = new ArrayList<>();
     String constraintName = null;
@@ -452,7 +453,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
+      int parentIntegerIndex =
+          getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
         if (parentTable.getPartitionKeys() != null) {
           parentCD = null;
@@ -536,7 +538,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
+      int parentIntegerIndex =
+          getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
         if (parentTable.getPartitionKeys() != null) {
           parentCD = null;
@@ -637,8 +640,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     return ccs;
   }
 
-  private MConstraint addConstraint(String catName, String tableDB, String tableName, String columnName, String ccName,
-      boolean isEnable, boolean isRely, boolean isValidate, int constraintType,
+  private MConstraint addConstraint(String catName, String tableDB, String tableName, String columnName,
+      String ccName, boolean isEnable, boolean isRely, boolean isValidate, int constraintType,
       String constraintValue, boolean retrieveCD)
       throws InvalidObjectException, MetaException {
     String constraintName = null;
@@ -652,7 +655,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
     }
 
     MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-    int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
+    int parentIntegerIndex =
+        getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
     if (parentIntegerIndex == -1) {
       if (parentTable.getPartitionKeys() != null) {
         parentCD = null;
@@ -704,7 +708,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
       boolean isValidate = dc.isValidate_cstr();
       boolean isRely = dc.isRely_cstr();
       String constraintValue = dc.getDefault_value();
-      MConstraint muk = addConstraint(catName, tableDB, tableName, columnName, dcName, isEnable, isRely, isValidate,
+      MConstraint muk = addConstraint(catName, tableDB, tableName, columnName,
+          dcName, isEnable, isRely, isValidate,
           MConstraint.DEFAULT_CONSTRAINT, constraintValue, retrieveCD);
       cstrs.add(muk);
 
@@ -741,7 +746,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
+      int parentIntegerIndex =
+          getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
         if (parentTable.getPartitionKeys() != null) {
           parentCD = null;
@@ -880,7 +886,8 @@ public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStor
 
   private List<SQLForeignKey> getForeignKeysInternal(
       final String catName, final String parent_db_name_input, final String parent_tbl_name_input,
-      final String foreign_db_name_input, final String foreign_tbl_name_input) throws MetaException, NoSuchObjectException {
+      final String foreign_db_name_input, final String foreign_tbl_name_input)
+      throws MetaException, NoSuchObjectException {
     final String parent_db_name = (parent_db_name_input != null) ? normalizeIdentifier(parent_db_name_input) : null;
     final String parent_tbl_name = (parent_tbl_name_input != null) ? normalizeIdentifier(parent_tbl_name_input) : null;
     final String foreign_db_name = (foreign_db_name_input != null) ? normalizeIdentifier(foreign_db_name_input) : null;

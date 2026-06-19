@@ -276,8 +276,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     int maxRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
     long sleepInterval = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
-    GetHelper<TableName, String> transactionHelper = createSubTransactionHelper(new TableName(catName, statsDesc.getDbName(),
-        statsDesc.getTableName()));
+    GetHelper<TableName, String> transactionHelper =
+        createSubTransactionHelper(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()));
     Map<String, String> result = new RetryingExecutor<>(maxRetries, () -> {
       AtomicReference<Exception> exceptionRef = new AtomicReference<>();
       String savePoint = "uts_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
@@ -1003,7 +1003,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
         } else {
           filter = "t1.contains(partition.partitionName) && partition.table.database.name == t2 && partition.table.tableName == t3 && " +
               "partition.table.database.catalogName == t4" + (engine != null ? " && engine == t5" : "");
-          parameters = "java.util.Collection t1, java.lang.String t2, java.lang.String t3, java.lang.String t4" + (engine != null ? ", java.lang.String t5" : "");
+          parameters = "java.util.Collection t1, java.lang.String t2, java.lang.String t3, java.lang.String t4"
+              + (engine != null ? ", java.lang.String t5" : "");
         }
         query.setFilter(filter);
         query.declareParameters(parameters);
@@ -1036,8 +1037,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
       @Override
       public List<Void> run(List<String> input) throws MetaException {
-        Pair<Query, Map<String, String>> queryWithParams = getPartQueryWithParams(pm, catalog, database, tableName,
-            input);
+        Pair<Query, Map<String, String>> queryWithParams =
+            getPartQueryWithParams(pm, catalog, database, tableName, input);
         try (QueryWrapper qw = new QueryWrapper(queryWithParams.getLeft())) {
           qw.setResultClass(MPartition.class);
           qw.setClass(MPartition.class);
@@ -1086,8 +1087,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     }.run(true);
   }
 
-  private boolean deleteTableColumnStatisticsViaJdo(TableName tblName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  private boolean deleteTableColumnStatisticsViaJdo(TableName tblName, List<String> colNames, String engine)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     String catName = normalizeIdentifier(tblName.getCat());
     String dbName = normalizeIdentifier(tblName.getDb());
     String tableName = normalizeIdentifier(tblName.getTable());
@@ -1098,11 +1099,15 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     String filter;
     String parameters;
     if (colNames != null && !colNames.isEmpty()) {
-      filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && t4.contains(colName)" + (engine != null ? " && engine == t5" : "");
-      parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.util.Collection t4" + (engine != null ? ", java.lang.String t5" : "");
+      filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3 && t4.contains(colName)"
+          + (engine != null ? " && engine == t5" : "");
+      parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.util.Collection t4"
+          + (engine != null ? ", java.lang.String t5" : "");
     } else {
-      filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3" + (engine != null ? " && engine == t4" : "");
-      parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3" + (engine != null ? ", java.lang.String t4" : "");
+      filter = "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3"
+          + (engine != null ? " && engine == t4" : "");
+      parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3"
+          + (engine != null ? ", java.lang.String t4" : "");
     }
 
     query.setFilter(filter);
