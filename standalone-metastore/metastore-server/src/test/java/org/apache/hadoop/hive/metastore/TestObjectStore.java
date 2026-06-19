@@ -22,6 +22,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -77,6 +78,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
+import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
@@ -1379,14 +1381,20 @@ public class TestObjectStore {
     Counter directSqlErrors =
         Metrics.getRegistry().getCounters().get(MetricsConstants.DIRECTSQL_ERRORS);
 
-    objectStore.new GetDbHelper(DEFAULT_CATALOG_NAME, "foo", true, true) {
+     new GetHelper<DatabaseName, Database>(objectStore.createRawStoreAware(),
+         new DatabaseName(DEFAULT_CATALOG_NAME, "foo")) {
       @Override
-      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
+      protected Database getSqlResult() throws MetaException {
         return null;
       }
 
-      @Override
-      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) throws MetaException,
+       @Override
+       protected String describeResult() {
+         return "";
+       }
+
+       @Override
+      protected Database getJdoResult() throws MetaException,
           NoSuchObjectException {
         return null;
       }
@@ -1394,14 +1402,20 @@ public class TestObjectStore {
 
     Assert.assertEquals(0, directSqlErrors.getCount());
 
-    objectStore.new GetDbHelper(DEFAULT_CATALOG_NAME, "foo", true, true) {
+    new GetHelper<DatabaseName, Database> (objectStore.createRawStoreAware(),
+        new DatabaseName(DEFAULT_CATALOG_NAME, "foo")) {
       @Override
-      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
+      protected Database getSqlResult() throws MetaException {
         throw new RuntimeException();
       }
 
       @Override
-      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) throws MetaException,
+      protected String describeResult() {
+        return "";
+      }
+
+      @Override
+      protected Database getJdoResult() throws MetaException,
           NoSuchObjectException {
         return null;
       }
@@ -1962,18 +1976,18 @@ public class TestObjectStore {
     Assert.assertEquals(3, objectStore.getPartitionCount());
 
     objectStore.openTransaction();
-    objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
+    new GetHelper<TableName, Object>(objectStore.createRawStoreAware(),
+        new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1)) {
       @Override
       protected String describeResult() {
         return "test savepoint";
       }
 
       @Override
-      protected Object getSqlResult(ObjectStore.GetHelper<Object> ctx) throws MetaException {
+      protected Object getSqlResult() throws MetaException {
         // drop the partitions with SQL alone
         try (AutoCloseable c = deadline(); AutoCloseable d = new DirectSqlConfigurator(conf, true)) {
-          objectStore.unwrap(TableStore.class)
-              .dropPartitions(new TableName(ctx.catName, ctx.dbName, ctx.tblName), partNames);
+          objectStore.unwrap(TableStore.class).dropPartitions(argument, partNames);
           assertEquals(0, objectStore.getPartitionCount());
         } catch (Exception e) {
           throw new MetaException(e.getMessage());
@@ -1982,12 +1996,11 @@ public class TestObjectStore {
       }
 
       @Override
-      protected Object getJdoResult(ObjectStore.GetHelper<Object> ctx) throws MetaException {
+      protected Object getJdoResult() throws MetaException {
         // drop the partitions with JDO alone
         try (AutoCloseable c = deadline(); AutoCloseable d = new DirectSqlConfigurator(conf, false)) {
           assertEquals(3, objectStore.getPartitionCount());
-          objectStore.unwrap(TableStore.class)
-              .dropPartitions(new TableName(ctx.catName, ctx.dbName, ctx.tblName), partNames);
+          objectStore.unwrap(TableStore.class).dropPartitions(argument, partNames);
         } catch (Exception e) {
           throw new MetaException(e.getMessage());
         }
@@ -2008,14 +2021,14 @@ public class TestObjectStore {
       AtomicBoolean runDirectSql = new AtomicBoolean(false);
       AtomicBoolean runJdo = new AtomicBoolean(false);
       try {
-        objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, true) {
+        new GetHelper<String, Object>(objectStore.createRawStoreAware(), null) {
           @Override
           protected String describeResult() {
             return "test not run jdo for unrecoverable exception";
           }
 
           @Override
-          protected Object getSqlResult(ObjectStore.GetHelper ctx) throws MetaException {
+          protected Object getSqlResult() throws MetaException {
             runDirectSql.set(true);
             MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");
             me.initCause(unrecoverableException);
@@ -2023,7 +2036,7 @@ public class TestObjectStore {
           }
 
           @Override
-          protected Object getJdoResult(ObjectStore.GetHelper ctx) throws MetaException, NoSuchObjectException {
+          protected Object getJdoResult() throws MetaException, NoSuchObjectException {
             runJdo.set(true);
             SQLIntegrityConstraintViolationException ex = new SQLIntegrityConstraintViolationException("Unrecoverable ex");
             MetaException me = new MetaException("Throwing unrecoverable exception to test not run jdo.");

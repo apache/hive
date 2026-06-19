@@ -62,6 +62,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -110,16 +111,14 @@ import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.metastore.GetHelper;
+import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
-import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MCatalog;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
@@ -150,15 +149,10 @@ import org.apache.hadoop.hive.metastore.metastore.TransactionHandler;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.datanucleus.ExecutionContext;
-import org.datanucleus.api.jdo.JDOPersistenceManager;
-import org.datanucleus.api.jdo.JDOTransaction;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
@@ -212,7 +206,6 @@ public class ObjectStore implements RawStore, Configurable {
   private volatile int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
-  private Counter directSqlErrors;
   private PropertyStore propertyStore;
   private final Map<Class<?>, Object> cachedImpls = new HashMap<>();
 
@@ -249,13 +242,6 @@ public class ObjectStore implements RawStore, Configurable {
 
     initialize();
     
-    // Note, if metrics have not been initialized this will return null, which means we aren't
-    // using metrics.  Thus we should always check whether this is non-null before using.
-    MetricRegistry registry = Metrics.getRegistry();
-    if (registry != null) {
-      directSqlErrors = Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS);
-    }
-
     this.batchSize = MetastoreConf.getIntVar(conf, ConfVars.RAWSTORE_PARTITION_BATCH_SIZE);
 
     if (!isInitialized) {
@@ -455,15 +441,30 @@ public class ObjectStore implements RawStore, Configurable {
     return TransactionHandler.getProxy(iface, new TransactionHandler<>(this, simpl, openQueries));
   }
 
+  @VisibleForTesting
+  public RawStoreAware createRawStoreAware() {
+    return new RawStoreAware() {
+      @Override
+      public RawStore getBaseStore() {
+        return ObjectStore.this;
+      }
+
+      @Override
+      public PersistenceManager getPersistentManager() {
+        return pm;
+      }
+    };
+  }
+
   @Override
   public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
     if (updates == null || updates.isEmpty()) {
       return;
     }
 
-    new GetListHelper<Void>(null, null, null, true, false) {
+    new GetListHelper<TableName, Void>(createRawStoreAware(), null) {
       @Override
-      protected List<Void> getSqlResult(GetHelper<List<Void>> ctx) throws MetaException {
+      protected List<Void> getSqlResult() throws MetaException {
         boolean success = false;
         try {
           openTransaction();
@@ -476,7 +477,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       @Override
-      protected List<Void> getJdoResult(GetHelper<List<Void>> ctx) {
+      protected boolean canUseJdoQuery() {
+        return false;
+      }
+
+      @Override
+      protected List<Void> getJdoResult() {
         throw new UnsupportedOperationException("UnsupportedOperationException");
       }
     }.run(false);
@@ -548,20 +554,6 @@ public class ObjectStore implements RawStore, Configurable {
       // being rolled back they are no longer relevant, and this prevents them
       // from reattaching in future transactions
       pm.evictAll();
-    }
-  }
-
-  private void setTransactionSavePoint(String savePoint) {
-    if (savePoint != null) {
-      ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
-      ec.getStoreManager().getConnectionManager().getConnection(ec);
-      ((JDOTransaction) currentTransaction).setSavepoint(savePoint);
-    }
-  }
-
-  private void rollbackTransactionToSavePoint(String savePoint) {
-    if (savePoint != null) {
-      ((JDOTransaction) currentTransaction).rollbackToSavepoint(savePoint);
     }
   }
 
@@ -776,15 +768,21 @@ public class ObjectStore implements RawStore, Configurable {
 
   public Database getDatabaseInternal(String catalogName, String name)
       throws MetaException, NoSuchObjectException {
-    return new GetDbHelper(catalogName, name, true, true) {
+    return new GetHelper<DatabaseName, Database>(createRawStoreAware(),
+        new DatabaseName(catalogName == null? getDefaultCatalog(conf) : catalogName, name)) {
       @Override
-      protected Database getSqlResult(GetHelper<Database> ctx) throws MetaException {
-        return directSql.getDatabase(catalogName, dbName);
+      protected String describeResult() {
+        return "db details for db ".concat(argument.getDb());
       }
 
       @Override
-      protected Database getJdoResult(GetHelper<Database> ctx) throws MetaException, NoSuchObjectException {
-        return getJDODatabase(catalogName, dbName);
+      protected Database getSqlResult() throws MetaException {
+        return directSql.getDatabase(argument.getCat(), argument.getDb());
+      }
+
+      @Override
+      protected Database getJdoResult() throws MetaException, NoSuchObjectException {
+        return getJDODatabase(argument.getCat(), argument.getDb());
       }
     }.run(false);
    }
@@ -1400,250 +1398,6 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     return new MColumnDescriptor(cols);
-  }
-
-  /** Helper class for getting stuff w/transaction, direct SQL, perf logging, etc. */
-  @VisibleForTesting
-  public abstract class GetHelper<T> {
-    private final boolean isInTxn, doTrace, allowJdo;
-    private boolean doUseDirectSql;
-    private long start;
-    private Table table;
-    protected final List<String> partitionFields;
-    protected final String catName, dbName, tblName;
-    private boolean success = false;
-    protected T results = null;
-
-    public GetHelper(String catalogName, String dbName, String tblName,
-        boolean allowSql, boolean allowJdo) throws MetaException {
-      this(catalogName, dbName, tblName, null, allowSql, allowJdo);
-    }
-
-    public GetHelper(String catalogName, String dbName, String tblName,
-        List<String> fields, boolean allowSql, boolean allowJdo) throws MetaException {
-      assert allowSql || allowJdo;
-      this.allowJdo = allowJdo;
-      this.catName = (catalogName != null) ? normalizeIdentifier(catalogName) : null;
-      this.dbName = (dbName != null) ? normalizeIdentifier(dbName) : null;
-      this.partitionFields = fields;
-      if (tblName != null) {
-        this.tblName = normalizeIdentifier(tblName);
-      } else {
-        // tblName can be null in cases of Helper being used at a higher
-        // abstraction level, such as with datbases
-        this.tblName = null;
-        this.table = null;
-      }
-      this.doTrace = LOG.isDebugEnabled();
-      this.isInTxn = isActiveTransaction();
-
-      boolean isConfigEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
-      if (isConfigEnabled && directSql == null) {
-        directSql = new MetaStoreDirectSql(pm, getConf(), "");
-      }
-
-      if (!allowJdo && isConfigEnabled && !directSql.isCompatibleDatastore()) {
-        throw new MetaException("SQL is not operational"); // test path; SQL is enabled and broken.
-      }
-      this.doUseDirectSql = allowSql && isConfigEnabled && directSql.isCompatibleDatastore();
-    }
-
-    protected boolean canUseDirectSql(GetHelper<T> ctx) throws MetaException {
-      return true; // By default, assume we can user directSQL - that's kind of the point.
-    }
-    protected abstract String describeResult();
-    protected abstract T getSqlResult(GetHelper<T> ctx) throws MetaException;
-    protected abstract T getJdoResult(
-        GetHelper<T> ctx) throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
-
-    public T run(boolean initTable) throws MetaException, NoSuchObjectException {
-      try {
-        start(initTable);
-        String savePoint = isInTxn && allowJdo ? "rollback_" + System.nanoTime() : null;
-        if (doUseDirectSql) {
-          try {
-            directSql.prepareTxn();
-            setTransactionSavePoint(savePoint);
-            this.results = getSqlResult(this);
-            LOG.debug("Using direct SQL optimization.");
-          } catch (Exception ex) {
-            handleDirectSqlError(ex, savePoint);
-          }
-        }
-        // Note that this will be invoked in 2 cases:
-        //    1) DirectSQL was disabled to start with;
-        //    2) DirectSQL threw and was disabled in handleDirectSqlError.
-        if (!doUseDirectSql) {
-          this.results = getJdoResult(this);
-          LOG.debug("Not using direct SQL optimization.");
-        }
-        return commit();
-      } catch (NoSuchObjectException | MetaException ex) {
-        throw ex;
-      } catch (Exception ex) {
-        LOG.error("", ex);
-        throw new MetaException(ex.getMessage());
-      } finally {
-        close();
-      }
-    }
-
-    private void start(boolean initTable) throws MetaException, NoSuchObjectException {
-      start = doTrace ? System.nanoTime() : 0;
-      openTransaction();
-      if (initTable && (tblName != null)) {
-        table = ensureGetTable(catName, dbName, tblName);
-      }
-      doUseDirectSql = doUseDirectSql && canUseDirectSql(this);
-    }
-
-    private void handleDirectSqlError(Exception ex, String savePoint) throws MetaException, NoSuchObjectException {
-      String message = null;
-      try {
-        message = generateShorterMessage(ex);
-      } catch (Throwable t) {
-        message = ex.toString() + "; error building a better message: " + t.getMessage();
-      }
-      LOG.warn(message); // Don't log the exception, people just get confused.
-      LOG.debug("Full DirectSQL callstack for debugging (not an error)", ex);
-
-      if (!allowJdo || !DatabaseProduct.isRecoverableException(ex)) {
-        throw ExceptionHandler.newMetaException(ex);
-      }
-      
-      if (!isInTxn) {
-        JDOException rollbackEx = null;
-        try {
-          rollbackTransaction();
-        } catch (JDOException jex) {
-          rollbackEx = jex;
-        }
-        if (rollbackEx != null) {
-          // Datanucleus propagates some pointless exceptions and rolls back in the finally.
-          if (currentTransaction != null && currentTransaction.isActive()) {
-            throw rollbackEx; // Throw if the tx wasn't rolled back.
-          }
-          LOG.info("Ignoring exception, rollback succeeded: " + rollbackEx.getMessage());
-        }
-
-        start = doTrace ? System.nanoTime() : 0;
-        openTransaction();
-        if (table != null) {
-          table = ensureGetTable(catName, dbName, tblName);
-        }
-      } else {
-        rollbackTransactionToSavePoint(savePoint);
-        start = doTrace ? System.nanoTime() : 0;
-      }
-
-      if (directSqlErrors != null) {
-        directSqlErrors.inc();
-      }
-
-      doUseDirectSql = false;
-    }
-
-    private String generateShorterMessage(Exception ex) {
-      StringBuilder message = new StringBuilder(
-          "Falling back to ORM path due to direct SQL failure (this is not an error): ");
-      Throwable t = ex;
-      StackTraceElement[] prevStack = null;
-      while (t != null) {
-        message.append(t.getMessage());
-        StackTraceElement[] stack = t.getStackTrace();
-        int uniqueFrames = stack.length - 1;
-        if (prevStack != null) {
-          int n = prevStack.length - 1;
-          while (uniqueFrames >= 0 && n >= 0 && stack[uniqueFrames].equals(prevStack[n])) {
-            uniqueFrames--; n--;
-          }
-        }
-        for (int i = 0; i <= uniqueFrames; ++i) {
-          StackTraceElement ste = stack[i];
-          message.append(" at ").append(ste);
-          if (ste.getMethodName().contains("getSqlResult")
-              && (ste.getFileName() == null || ste.getFileName().contains("ObjectStore"))) {
-            break;
-          }
-        }
-        prevStack = stack;
-        t = t.getCause();
-        if (t != null) {
-          message.append(";\n Caused by: ");
-        }
-      }
-      return message.toString();
-    }
-
-    private T commit() {
-      success = commitTransaction();
-      if (doTrace) {
-        double time = ((System.nanoTime() - start) / 1000000.0);
-        String result = describeResult();
-        String retrieveType = doUseDirectSql ? "SQL" : "ORM";
-
-        LOG.debug("{} retrieved using {} in {}ms", result, retrieveType, time);
-      }
-      return results;
-    }
-
-    private void close() {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-
-    public Table getTable() {
-      return table;
-    }
-  }
-
-  private abstract class GetListHelper<T> extends GetHelper<List<T>> {
-    public GetListHelper(String catName, String dbName, String tblName, boolean allowSql,
-                         boolean allowJdo) throws MetaException {
-      super(catName, dbName, tblName, null, allowSql, allowJdo);
-    }
-
-    public GetListHelper(String catName, String dbName, String tblName, List<String> fields,
-        boolean allowSql, boolean allowJdo) throws MetaException {
-      super(catName, dbName, tblName, fields, allowSql, allowJdo);
-    }
-
-    @Override
-    protected String describeResult() {
-      return results.size() + " entries";
-    }
-  }
-
-  @VisibleForTesting
-  public abstract class GetDbHelper extends GetHelper<Database> {
-    /**
-     * GetHelper for returning db info using directSql/JDO.
-     * @param dbName The Database Name
-     * @param allowSql Whether or not we allow DirectSQL to perform this query.
-     * @param allowJdo Whether or not we allow ORM to perform this query.
-     */
-    public GetDbHelper(String catalogName, String dbName,boolean allowSql, boolean allowJdo)
-        throws MetaException {
-      super(catalogName, dbName,null,allowSql,allowJdo);
-    }
-
-    @Override
-    protected String describeResult() {
-      return "db details for db ".concat(dbName);
-    }
-  }
-
-  private Table ensureGetTable(String catName, String dbName, String tblName)
-      throws NoSuchObjectException, MetaException {
-    TableName tableName = new TableName(catName, dbName, tblName);
-    Table table =
-        unwrap(TableStore.class).getTable(tableName, null, -1);
-    if (table == null) {
-      throw new NoSuchObjectException(
-          "Specified catalog.database.table does not exist : " + tableName);
-    }
-    return table;
   }
 
   /**
@@ -2335,13 +2089,13 @@ public class ObjectStore implements RawStore, Configurable {
 
   protected List<Function> getFunctionsInternal(String catalogName)
       throws MetaException, NoSuchObjectException {
-    return new GetListHelper<Function>(catalogName, "", "", true, true) {
+    return new GetListHelper<String, Function>(createRawStoreAware(), catalogName) {
       @Override
-      protected List<Function> getSqlResult(GetHelper<List<Function>> ctx) throws MetaException {
+      protected List<Function> getSqlResult() throws MetaException {
         return directSql.getFunctions(catalogName);
       }
       @Override
-      protected List<Function> getJdoResult(GetHelper<List<Function>> ctx) throws MetaException {
+      protected List<Function> getJdoResult() throws MetaException {
         try {
           return getAllFunctionsViaJDO(catalogName);
         } catch (Exception e) {
@@ -2352,7 +2106,7 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(false);
   }
 
-  private List<Function> getAllFunctionsViaJDO (String catName) {
+  private List<Function> getAllFunctionsViaJDO(String catName) {
     boolean commited = false;
     Query query = null;
     try {
