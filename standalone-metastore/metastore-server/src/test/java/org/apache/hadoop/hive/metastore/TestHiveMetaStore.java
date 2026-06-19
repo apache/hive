@@ -3611,8 +3611,7 @@ public abstract class TestHiveMetaStore {
 
       List<String> expectedCols = Lists.newArrayList();
       expectedCols.add("name");
-      ObjectStore objStore = new ObjectStore();
-      ColStatsStoreImpl impl = (ColStatsStoreImpl) objStore.unwrap(ColStatsStore.class);
+      ColStatsStoreImpl impl = new ColStatsStoreImpl();
       try {
         impl.validateTableCols(tbl, expectedCols);
       } catch (MetaException ex) {
