@@ -101,7 +101,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     if (!deep) {
       return 1.0;
     }
-
     /*
      * Ignore any predicates on partition columns because we have already
      * accounted for these in the Table row count.
@@ -160,6 +159,33 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
 
+    case IS_NULL: {
+      if (childRel instanceof HiveTableScan) {
+        HiveTableScan hiveTableScan = (HiveTableScan) childRel;
+        if (hasMissingColumnStats(call, hiveTableScan)) {
+          selectivity = DEFAULT_COMPARISON_SELECTIVITY;
+          break;
+        }
+        double noOfNulls = getMaxNulls(call, hiveTableScan);
+        if (childCardinality >= noOfNulls) {
+          selectivity = noOfNulls / Math.max(childCardinality, 1);
+        } else {
+          HiveConfPlannerContext ctx = childRel.getCluster().getPlanner().getContext().unwrap(HiveConfPlannerContext.class);
+          String msg = "Invalid statistics: Number of null values > number of tuples. " +
+              "Consider recomputing statistics for table: " +
+              ((RelOptHiveTable) childRel.getTable()).getHiveTableMD().getFullyQualifiedName();
+          if (ctx.isExplainPlan()) {
+            SessionState.getConsole().printError("WARNING: " + msg);
+          }
+          LOG.warn(msg);
+          selectivity = DEFAULT_COMPARISON_SELECTIVITY;
+        }
+      } else {
+        selectivity = computeFunctionSelectivity(call);
+      }
+      break;
+    }
+
     case LESS_THAN_OR_EQUAL:
     case GREATER_THAN_OR_EQUAL:
     case LESS_THAN:
@@ -191,7 +217,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       }
       selectivity = computeFunctionSelectivity(call);
     }
-
     return selectivity;
   }
 
@@ -837,6 +862,27 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     return maxNoNulls;
+  }
+
+  /**
+   * Returns true when one or more referenced columns do not have column statistics
+   * or getInputRefs returns empty
+   * Does not account for stale stats
+   */
+  private boolean hasMissingColumnStats(RexCall call, HiveTableScan t) {
+    Set<Integer> iRefSet = HiveCalciteUtil.getInputRefs(call);
+    if (iRefSet.isEmpty()) return true;
+
+    List<ColStatistics> colStats = t.getColStat(new ArrayList<Integer>(iRefSet));
+    if (colStats.size() < iRefSet.size()) return true;
+
+    for (ColStatistics cs : colStats) {
+      // Treat estimated stats as missing stats
+      if (cs == null || cs.isEstimated()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private Double getMaxNDV(RexCall call) {
