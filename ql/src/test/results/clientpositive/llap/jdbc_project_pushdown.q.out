@@ -109,7 +109,7 @@ STAGE PLANS:
             hive.sql.query SELECT "id"
 FROM (SELECT "id", "title"
 FROM "book") AS "t"
-WHERE SUBSTRING("title" FROM 0 FOR 4) = 'Les'
+WHERE SUBSTRING("title", 0, 4) = 'Les'
             hive.sql.query.fieldNames id
             hive.sql.query.fieldTypes int
             hive.sql.query.split true
@@ -357,7 +357,7 @@ WHERE "author" IS NOT NULL
                   properties:
                     hive.sql.query SELECT "id", "fname"
 FROM "author"
-WHERE SUBSTRING("lname" FROM 0 FOR 4) = 'Hug' AND "id" IS NOT NULL
+WHERE SUBSTRING("lname", 0, 4) = 'Hug' AND "id" IS NOT NULL
                     hive.sql.query.fieldNames id,fname
                     hive.sql.query.fieldTypes int,string
                     hive.sql.query.split true
