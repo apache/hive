@@ -24,7 +24,7 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.metastore.RawStore;
 
-public abstract class RawStoreAware {
+public abstract class RawStoreBundle {
   protected RawStore baseStore;
   protected PersistenceManager pm;
 

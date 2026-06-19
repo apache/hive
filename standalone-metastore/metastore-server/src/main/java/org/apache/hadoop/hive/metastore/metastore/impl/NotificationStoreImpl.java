@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
@@ -62,7 +62,7 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.appendSimpleCondition
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class NotificationStoreImpl extends RawStoreAware implements NotificationStore {
+public class NotificationStoreImpl extends RawStoreBundle implements NotificationStore {
   private static final Logger LOG = LoggerFactory.getLogger(NotificationStoreImpl.class);
   private Configuration conf;
   private SQLGenerator sqlGenerator;

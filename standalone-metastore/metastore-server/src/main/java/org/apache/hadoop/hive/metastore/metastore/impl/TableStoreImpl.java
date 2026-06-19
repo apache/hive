@@ -47,8 +47,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
@@ -91,7 +89,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.model.FetchGroups;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
@@ -142,7 +140,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaExcep
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 @SuppressWarnings("unchecked")
-public class TableStoreImpl extends RawStoreAware implements TableStore {
+public class TableStoreImpl extends RawStoreBundle implements TableStore {
   private final static Logger LOG = LoggerFactory.getLogger(TableStoreImpl.class);
   private DatabaseProduct dbType;
   protected int batchSize = NO_BATCHING;

@@ -1381,7 +1381,7 @@ public class TestObjectStore {
     Counter directSqlErrors =
         Metrics.getRegistry().getCounters().get(MetricsConstants.DIRECTSQL_ERRORS);
 
-     new GetHelper<DatabaseName, Database>(objectStore.createRawStoreAware(),
+     new GetHelper<DatabaseName, Database>(objectStore.createRawStoreBundle(),
          new DatabaseName(DEFAULT_CATALOG_NAME, "foo")) {
       @Override
       protected Database getSqlResult() throws MetaException {
@@ -1402,7 +1402,7 @@ public class TestObjectStore {
 
     Assert.assertEquals(0, directSqlErrors.getCount());
 
-    new GetHelper<DatabaseName, Database> (objectStore.createRawStoreAware(),
+    new GetHelper<DatabaseName, Database> (objectStore.createRawStoreBundle(),
         new DatabaseName(DEFAULT_CATALOG_NAME, "foo")) {
       @Override
       protected Database getSqlResult() throws MetaException {
@@ -1976,7 +1976,7 @@ public class TestObjectStore {
     Assert.assertEquals(3, objectStore.getPartitionCount());
 
     objectStore.openTransaction();
-    new GetHelper<TableName, Object>(objectStore.createRawStoreAware(),
+    new GetHelper<TableName, Object>(objectStore.createRawStoreBundle(),
         new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1)) {
       @Override
       protected String describeResult() {
@@ -2021,7 +2021,7 @@ public class TestObjectStore {
       AtomicBoolean runDirectSql = new AtomicBoolean(false);
       AtomicBoolean runJdo = new AtomicBoolean(false);
       try {
-        new GetHelper<String, Object>(objectStore.createRawStoreAware(), null) {
+        new GetHelper<String, Object>(objectStore.createRawStoreBundle(), null) {
           @Override
           protected String describeResult() {
             return "test not run jdo for unrecoverable exception";

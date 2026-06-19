@@ -55,7 +55,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.iface.ConstraintStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
@@ -66,7 +66,7 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class ConstraintStoreImpl extends RawStoreAware implements ConstraintStore {
+public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintStore {
   private Configuration conf;
 
   @Override

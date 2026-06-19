@@ -26,14 +26,14 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.iface.TokenStore;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TokenStoreImpl extends RawStoreAware implements TokenStore {
+public class TokenStoreImpl extends RawStoreBundle implements TokenStore {
   private static final Logger LOG = LoggerFactory.getLogger(TokenStoreImpl.class);
 
   private MDelegationToken getTokenFrom(String tokenId) {

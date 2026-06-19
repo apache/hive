@@ -143,7 +143,7 @@ import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.metastore.PersistenceManagerProxy;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
 import org.apache.hadoop.hive.metastore.metastore.TransactionHandler;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
@@ -434,7 +434,7 @@ public class ObjectStore implements RawStore, Configurable {
       cachedImpls.put(iface, simpl);
     }
     List<Query> openQueries = new LinkedList<>();
-    if (simpl instanceof RawStoreAware rsa) {
+    if (simpl instanceof RawStoreBundle rsa) {
       rsa.setBaseStore(this);
       rsa.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
     }
@@ -442,8 +442,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @VisibleForTesting
-  public RawStoreAware createRawStoreAware() {
-    return new RawStoreAware() {
+  public RawStoreBundle createRawStoreBundle() {
+    return new RawStoreBundle() {
       @Override
       public RawStore getBaseStore() {
         return ObjectStore.this;
@@ -462,7 +462,7 @@ public class ObjectStore implements RawStore, Configurable {
       return;
     }
 
-    new GetListHelper<TableName, Void>(createRawStoreAware(), null) {
+    new GetListHelper<TableName, Void>(createRawStoreBundle(), null) {
       @Override
       protected List<Void> getSqlResult() throws MetaException {
         boolean success = false;
@@ -768,7 +768,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   public Database getDatabaseInternal(String catalogName, String name)
       throws MetaException, NoSuchObjectException {
-    return new GetHelper<DatabaseName, Database>(createRawStoreAware(),
+    return new GetHelper<DatabaseName, Database>(createRawStoreBundle(),
         new DatabaseName(catalogName == null? getDefaultCatalog(conf) : catalogName, name)) {
       @Override
       protected String describeResult() {
@@ -2089,7 +2089,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   protected List<Function> getFunctionsInternal(String catalogName)
       throws MetaException, NoSuchObjectException {
-    return new GetListHelper<String, Function>(createRawStoreAware(), catalogName) {
+    return new GetListHelper<String, Function>(createRawStoreBundle(), catalogName) {
       @Override
       protected List<Function> getSqlResult() throws MetaException {
         return directSql.getFunctions(catalogName);

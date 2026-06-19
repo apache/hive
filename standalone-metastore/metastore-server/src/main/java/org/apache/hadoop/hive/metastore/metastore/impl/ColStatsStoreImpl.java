@@ -76,7 +76,7 @@ import org.apache.hadoop.hive.metastore.directsql.DirectSqlDeleteStats;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.MPartition;
@@ -98,7 +98,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifiers;
 
-public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
+public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
   private static final Logger LOG = LoggerFactory.getLogger(ColStatsStoreImpl.class);
 
   private DatabaseProduct dbType;
@@ -1177,7 +1177,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   }
 
   private abstract class GetStatHelper extends GetHelper<TableName, ColumnStatistics> {
-    public GetStatHelper(TableName tableName, RawStoreAware baseStore) throws MetaException {
+    public GetStatHelper(TableName tableName, RawStoreBundle baseStore) throws MetaException {
       super(baseStore, tableName);
     }
 

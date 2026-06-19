@@ -61,11 +61,11 @@ public abstract class GetHelper<A, T> {
   private boolean success = false;
   protected T results = null;
 
-  public GetHelper(RawStoreAware rsa, A args) throws MetaException {
+  public GetHelper(RawStoreBundle rsa, A args) throws MetaException {
     this(rsa, args, null);
   }
 
-  public GetHelper(RawStoreAware rsa,
+  public GetHelper(RawStoreBundle rsa,
       A args, List<String> fields) throws MetaException {
     this.baseStore = rsa.getBaseStore();
     this.partitionFields = fields;
