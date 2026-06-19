@@ -617,9 +617,9 @@ public class Table implements Serializable {
     if (hasNonNativePartitionSupport()) {
       List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
       for (FieldSchema partCol : partCols) {
-        FieldSchema storageSchemaField = getFieldSchemaByName(partCol.getName());
-        if (storageSchemaField != null && storageSchemaField.getComment() != null) {
-          partCol.setComment(storageSchemaField.getComment());
+        FieldSchema storageSchemaCol = getColumnByName(partCol.getName());
+        if (storageSchemaCol != null && storageSchemaCol.getComment() != null) {
+          partCol.setComment(storageSchemaCol.getComment());
         }
       }
       tablePartCols = partCols;
@@ -771,7 +771,7 @@ public class Table implements Serializable {
     return column != null ? column.index() : null;
   }
 
-  public FieldSchema getFieldSchemaByName(String colName) {
+  public FieldSchema getColumnByName(String colName) {
     ensureColumnsIndexed();
     TableColumn column = columnsByName.get(colName.toLowerCase());
     return column != null ? column.field() : null;
