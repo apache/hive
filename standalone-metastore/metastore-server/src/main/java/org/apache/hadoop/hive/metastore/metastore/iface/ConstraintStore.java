@@ -193,5 +193,4 @@ public interface ConstraintStore {
    * @throws MetaException error accessing the RDBMS
    */
   List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
-
 }

@@ -103,5 +103,4 @@ public interface WLMStore {
 
   /** Removes outdated statistics. */
   int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
-
 }

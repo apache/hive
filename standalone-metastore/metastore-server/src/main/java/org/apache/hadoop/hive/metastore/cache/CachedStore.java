@@ -2239,38 +2239,6 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.cleanupEvents();
   }
 
-  @Override public boolean addToken(String tokenIdentifier, String delegationToken) {
-    return rawStore.addToken(tokenIdentifier, delegationToken);
-  }
-
-  @Override public boolean removeToken(String tokenIdentifier) {
-    return rawStore.removeToken(tokenIdentifier);
-  }
-
-  @Override public String getToken(String tokenIdentifier) {
-    return rawStore.getToken(tokenIdentifier);
-  }
-
-  @Override public List<String> getAllTokenIdentifiers() {
-    return rawStore.getAllTokenIdentifiers();
-  }
-
-  @Override public int addMasterKey(String key) throws MetaException {
-    return rawStore.addMasterKey(key);
-  }
-
-  @Override public void updateMasterKey(Integer seqNo, String key) throws NoSuchObjectException, MetaException {
-    rawStore.updateMasterKey(seqNo, key);
-  }
-
-  @Override public boolean removeMasterKey(Integer keySeq) {
-    return rawStore.removeMasterKey(keySeq);
-  }
-
-  @Override public String[] getMasterKeys() {
-    return rawStore.getMasterKeys();
-  }
-
   @Override public void verifySchema() throws MetaException {
     rawStore.verifySchema();
   }

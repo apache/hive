@@ -121,6 +121,7 @@ import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.ConstraintStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.TokenStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.WLMStore;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MPartition;
@@ -1478,22 +1479,38 @@ public interface RawStore extends Configurable {
 
   long cleanupEvents();
 
-  boolean addToken(String tokenIdentifier, String delegationToken);
+  default boolean addToken(String tokenIdentifier, String delegationToken) {
+    return unwrap(TokenStore.class).addToken(tokenIdentifier, delegationToken);
+  }
 
-  boolean removeToken(String tokenIdentifier);
+  default boolean removeToken(String tokenIdentifier) {
+    return unwrap(TokenStore.class).removeToken(tokenIdentifier);
+  }
 
-  String getToken(String tokenIdentifier);
+  default String getToken(String tokenIdentifier) {
+    return unwrap(TokenStore.class).getToken(tokenIdentifier);
+  }
 
-  List<String> getAllTokenIdentifiers();
+  default List<String> getAllTokenIdentifiers() {
+    return unwrap(TokenStore.class).getAllTokenIdentifiers();
+  }
 
-  int addMasterKey(String key) throws MetaException;
+  default int addMasterKey(String key) throws MetaException {
+    return unwrap(TokenStore.class).addMasterKey(key);
+  }
 
-  void updateMasterKey(Integer seqNo, String key)
-     throws NoSuchObjectException, MetaException;
+  default void updateMasterKey(Integer seqNo, String key)
+     throws NoSuchObjectException, MetaException {
+    unwrap(TokenStore.class).updateMasterKey(seqNo, key);
+  }
 
-  boolean removeMasterKey(Integer keySeq);
+  default boolean removeMasterKey(Integer keySeq) {
+    return unwrap(TokenStore.class).removeMasterKey(keySeq);
+  }
 
-  String[] getMasterKeys();
+  default String[] getMasterKeys() {
+    return unwrap(TokenStore.class).getMasterKeys();
+  }
 
   void verifySchema() throws MetaException;
 
