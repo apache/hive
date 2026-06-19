@@ -13,12 +13,47 @@ spec:
     singular: hivecluster
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .status.clusterPhase
+      name: Phase
+      priority: 0
+      type: string
+    - jsonPath: .status.idleForMinutes
+      name: Idle (min)
+      priority: 0
+      type: integer
+    - jsonPath: .status.suspendedSince
+      name: Suspended Since
+      priority: 1
+      type: string
+    name: v1
     schema:
       openAPIV3Schema:
         properties:
           spec:
             properties:
+              autoSuspend:
+                description: "Auto-suspend configuration. When enabled and all components\
+                  \ are idle for the configured timeout, the cluster scales to 0 replicas."
+                properties:
+                  enabled:
+                    default: false
+                    description: "Whether auto-suspend is enabled. Requires autoscaling\
+                      \ to be enabled on all active components (HS2, LLAP if enabled,\
+                      \ TezAM if enabled, and HMS if includeMetastore is true)."
+                    type: boolean
+                  idleTimeoutMinutes:
+                    default: 15
+                    description: "Minutes of idle time (HS2=0 sessions, LLAP/TezAM\
+                      \ at minReplicas) before the cluster auto-suspends."
+                    type: integer
+                  includeMetastore:
+                    default: true
+                    description: "Whether Metastore participates in auto-suspend.\
+                      \ When false, HMS stays at minReplicas during suspend and HMS\
+                      \ autoscaling is not required for auto-suspend to activate."
+                    type: boolean
+                type: object
               envVars:
                 description: "Environment variables injected into all component pods\
                   \ (e.g., storage credentials, custom JVM options)"
@@ -44,6 +79,70 @@ spec:
               hiveServer2:
                 description: HiveServer2 component configuration
                 properties:
+                  autoscaling:
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
+                    properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 3600
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
+                        type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 600
+                        description: Stabilization window in seconds for scale-down
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. Picks the highest recommendation within this
+                          window to prevent flapping.
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string
@@ -152,6 +251,70 @@ spec:
               llap:
                 description: LLAP daemon configuration. Enabled by default.
                 properties:
+                  autoscaling:
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
+                    properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 3600
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
+                        type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 600
+                        description: Stabilization window in seconds for scale-down
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. Picks the highest recommendation within this
+                          window to prevent flapping.
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string
@@ -235,6 +398,70 @@ spec:
               metastore:
                 description: Metastore component configuration
                 properties:
+                  autoscaling:
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
+                    properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 3600
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
+                        type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 600
+                        description: Stabilization window in seconds for scale-down
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. Picks the highest recommendation within this
+                          window to prevent flapping.
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string
@@ -368,9 +595,77 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              suspend:
+                description: "When true, the cluster is immediately suspended (all\
+                  \ components scaled to 0). Set to false to wake a suspended cluster."
+                type: boolean
               tezAm:
                 description: Tez Application Master configuration. Enabled by default.
                 properties:
+                  autoscaling:
+                    description: "Autoscaling configuration (operator-driven, no external\
+                      \ dependencies)"
+                    properties:
+                      cpuScaleDownThreshold:
+                        default: 30
+                        description: CPU percentage (0-100) below which scale-down
+                          is considered. Only applies to HS2 and HMS.
+                        type: integer
+                      cpuScaleUpThreshold:
+                        default: 90
+                        description: CPU percentage (0-100) that triggers scale-up.
+                          Only applies to HS2 and HMS. Set to 0 to disable CPU-based
+                          scaling.
+                        type: integer
+                      enabled:
+                        default: false
+                        description: Whether autoscaling is enabled for this component
+                        type: boolean
+                      gracePeriodSeconds:
+                        default: 3600
+                        description: Maximum time in seconds to wait for graceful
+                          drain during scale-down before the pod is forcibly terminated.
+                          The pod terminates immediately once sessions/connections
+                          drain to 0; this value is only the upper safety cap.
+                        type: integer
+                      metricsPort:
+                        default: 9404
+                        description: Port on which the Prometheus JMX Exporter serves
+                          metrics. The operator scrapes this port on each pod for
+                          autoscaling decisions.
+                        type: integer
+                      metricsScrapeIntervalSeconds:
+                        default: 10
+                        description: How often (seconds) the operator scrapes JMX
+                          metrics from pods. Lower values make autoscaling react faster.
+                        type: integer
+                      minReplicas:
+                        default: 0
+                        description: "Minimum number of replicas (floor for scale-down).\
+                          \ Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum\
+                          \ is 1)"
+                        type: integer
+                      scaleDownStabilizationSeconds:
+                        default: 600
+                        description: Stabilization window in seconds for scale-down
+                          decisions. How long metrics must consistently indicate fewer
+                          replicas before scale-down occurs. Also acts as the cooldown
+                          between consecutive scale-downs.
+                        type: integer
+                      scaleUpStabilizationSeconds:
+                        default: 60
+                        description: Stabilization window in seconds for scale-up
+                          decisions. Picks the highest recommendation within this
+                          window to prevent flapping.
+                        type: integer
+                      scaleUpThreshold:
+                        default: 80
+                        description: "Threshold that triggers scale-up (component-specific:\
+                          \ sessions per pod for HS2, request rate for HMS, busy slots\
+                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ 1 TezAM per session)."
+                        type: integer
+                    type: object
                   configOverrides:
                     additionalProperties:
                       type: string
@@ -457,6 +752,8 @@ spec:
             x-kubernetes-preserve-unknown-fields: true
           status:
             properties:
+              clusterPhase:
+                type: string
               conditions:
                 items:
                   properties:
@@ -476,16 +773,62 @@ spec:
                 type: array
               hiveServer2:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string
                   readyReplicas:
                     type: integer
                 type: object
+              idleForMinutes:
+                type: integer
+              idleSince:
+                type: string
               llap:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string
@@ -494,7 +837,28 @@ spec:
                 type: object
               metastore:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string
@@ -503,9 +867,32 @@ spec:
                 type: object
               observedGeneration:
                 type: integer
+              suspendedSince:
+                type: string
               tezAm:
                 properties:
-                  desiredReplicas:
+                  autoscaling:
+                    properties:
+                      cpuProposedReplicas:
+                        type: integer
+                      cpuScaleUpThreshold:
+                        type: integer
+                      currentCpuPercent:
+                        type: number
+                      currentMetricValue:
+                        type: integer
+                      lastScaleTime:
+                        type: string
+                      proposedReplicas:
+                        type: integer
+                      scaleUpThreshold:
+                        type: integer
+                    type: object
+                  currentReplicas:
+                    type: integer
+                  maxReplicas:
+                    type: integer
+                  minReplicas:
                     type: integer
                   phase:
                     type: string

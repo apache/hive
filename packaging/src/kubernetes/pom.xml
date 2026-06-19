@@ -26,6 +26,10 @@
   <description>Kubernetes operator for managing Apache Hive clusters</description>
   <properties>
     <hive.path.to.root>../../..</hive.path.to.root>
+    <!-- The operator is a standalone shaded JAR and requires SLF4J 2.x
+         for the log4j-slf4j2-impl binding. This overrides the parent's
+         slf4j.version (1.7.x) intentionally. -->
+    <slf4j2.version>2.0.16</slf4j2.version>
   </properties>
   <dependencies>
     <dependency>
@@ -49,6 +53,10 @@
       <version>${fabric8.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.github.java-diff-utils</groupId>
       <artifactId>java-diff-utils</artifactId>
       <version>4.17</version>
@@ -66,8 +74,13 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j2.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
       <version>${log4j2.version}</version>
     </dependency>
     <dependency>
@@ -189,6 +202,7 @@
                   <executable>docker</executable>
                   <arguments>
                     <argument>build</argument>
+                    <argument>--no-cache</argument>
                     <argument>-t</argument>
                     <argument>apache/hive:operator-${project.version}</argument>
                     <argument>.</argument>
