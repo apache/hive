@@ -1051,7 +1051,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException no such partition
    * @throws MetaException error accessing the RDBMS
    */
- default PrincipalPrivilegeSet getPartitionPrivilegeSet (String catName, String dbName, String tableName,
+ default PrincipalPrivilegeSet getPartitionPrivilegeSet(String catName, String dbName, String tableName,
       String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
    return unwrap(PrivilegeStore.class).getPartitionPrivilegeSet(new TableName(catName, dbName, tableName), partition, userName, groupNames);
  }
@@ -1305,8 +1305,9 @@ public interface RawStore extends Configurable {
       List<String> partVals, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     ColumnStatisticsDesc statsDesc = statsObj.getStatsDesc();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : MetaStoreUtils.getDefaultCatalog(getConf());
     Table table = unwrap(TableStore.class)
-        .getTable(new TableName(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName()), null, -1);
+        .getTable(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), null, -1);
     MTable mTable = ensureGetMTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName());
     return updatePartitionColumnStatistics(table, mTable, statsObj, partVals, validWriteIds, writeId);
   }
