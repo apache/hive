@@ -97,6 +97,12 @@ public class TezExternalSessionState extends TezSessionState {
     boolean llapMode = isLlapMode();
 
     TezConfiguration tezConfig = new TezConfiguration(defaultTezConfiguration);
+    // Propagate per-session tez.am.registry.namespace override (set via JDBC URL)
+    // so the TezClient locates the correct AM for the target LLAP cluster.
+    String registryNs = conf.get("tez.am.registry.namespace");
+    if (registryNs != null && !registryNs.isEmpty()) {
+      tezConfig.set("tez.am.registry.namespace", registryNs);
+    }
     setupSessionAcls(tezConfig, conf);
     ServicePluginsDescriptor spd = createServicePluginDescriptor(llapMode, tezConfig);
     Credentials llapCredentials = createLlapCredentials(llapMode, tezConfig);
