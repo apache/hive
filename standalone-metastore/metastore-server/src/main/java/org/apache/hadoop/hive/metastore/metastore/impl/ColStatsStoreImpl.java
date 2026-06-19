@@ -535,14 +535,11 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
 
   @Override
   public ColumnStatistics getTableColumnStatistics(
-      String catName,
-      String dbName,
-      String tableName,
+      TableName tableName,
       List<String> colNames,
       String engine) throws MetaException, NoSuchObjectException {
     // Note: this will get stats without verifying ACID.
-    return getTableColumnStatisticsInternal(
-        new TableName(catName, dbName, tableName), colNames, engine);
+    return getTableColumnStatisticsInternal(tableName, colNames, engine);
   }
 
   @Override
@@ -571,8 +568,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   }
 
   protected ColumnStatistics getTableColumnStatisticsInternal(
-      String catName, String dbName, String tableName, final List<String> colNames, String engine,
-      boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+      TableName tableName, final List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     return new ObjectStore.GetStatHelper(normalizeIdentifier(catName), normalizeIdentifier(dbName),
@@ -648,7 +644,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
 
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(
-      String catName, String dbName, String tableName,
+      TableName tableName,
       List<String> partNames, List<String> colNames,
       String engine, String writeIdList)
       throws MetaException, NoSuchObjectException {
@@ -686,8 +682,8 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   }
 
   protected List<ColumnStatistics> getPartitionColumnStatisticsInternal(
-      String catName, String dbName, String tableName, final List<String> partNames, final List<String> colNames,
-      String engine, boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+     TableName tableName, final List<String> partNames, final List<String> colNames,
+      String engine) throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     return new ObjectStore.GetListHelper<ColumnStatistics>(catName, dbName, tableName, allowSql, allowJdo) {
@@ -732,7 +728,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   }
 
   @Override
-  public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+  public AggrStats get_aggr_stats_for(TableName tableName,
       final List<String> partNames, final List<String> colNames,
       String engine, String writeIdList) throws MetaException, NoSuchObjectException {
     // If the current stats in the metastore doesn't comply with
@@ -772,7 +768,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   }
 
   @Override
-  public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+  public AggrStats get_aggr_stats_for(TableName tableName,
       final List<String> partNames, final List<String> colNames, String engine)
       throws MetaException, NoSuchObjectException {
     final boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(conf,
@@ -964,7 +960,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   }
 
   @Override
-  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deletePartitionColumnStatistics(TableName tableName,
       List<String> partNames, List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     if (partNames == null || partNames.isEmpty()) {
@@ -1071,7 +1067,7 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
   }
 
   @Override
-  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
+  public boolean deleteTableColumnStatistics(TableName tableName,
       List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
@@ -1252,10 +1248,9 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
     return false;
   }
 
-  private abstract class GetStatHelper extends ObjectStore.GetHelper<ColumnStatistics> {
-    public GetStatHelper(String catalogName, String dbName, String tblName, boolean allowSql,
-        boolean allowJdo, String writeIdList) throws MetaException {
-      super(catalogName, dbName, tblName, allowSql, allowJdo);
+  private abstract class GetStatHelper extends GetHelper<TableName, ColumnStatistics> {
+    public GetStatHelper(TableName tableName, RawStoreAware baseStore) throws MetaException {
+      super(baseStore, tableName);
     }
 
     @Override
