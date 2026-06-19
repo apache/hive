@@ -155,6 +155,7 @@ public class TestZookeeperExternalSessionsRegistryClient {
       HiveConf conf = new HiveConf();
       conf.setVar(ConfVars.HIVE_ZOOKEEPER_QUORUM, connectString);
       conf.setVar(ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE, "/tez_ns_concurrent");
+      conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS, 5);
 
       String namespace = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE);
       String effectivePath = ZookeeperExternalSessionsRegistryClient.normalizeZkPath(namespace);
@@ -211,6 +212,7 @@ public class TestZookeeperExternalSessionsRegistryClient {
       HiveConf conf = new HiveConf();
       conf.setVar(ConfVars.HIVE_ZOOKEEPER_QUORUM, connectString);
       conf.setVar(ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE, "/tez_ns_fifo");
+      conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_WAIT_MAX_ATTEMPTS, 5);
 
       String namespace = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE);
       String effectivePath = ZookeeperExternalSessionsRegistryClient.normalizeZkPath(namespace);

@@ -97,8 +97,6 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
         .build();
 
     synchronized (lock) {
-      client.start();
-
       client.getConnectionStateListenable().addListener((curatorClient, newState) -> {
         if (newState == ConnectionState.CONNECTED || newState == ConnectionState.RECONNECTED) {
           zkConnectionHealthy = true;
@@ -113,6 +111,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
           sessionsToKill.forEach(TezJobMonitor::killRunningDAGsForApplication);
         }
       });
+      client.start();
 
       this.globalQueue = new InterProcessMutex(client, effectivePath + "-queue");
       this.cache = CuratorCache.build(client, effectivePath);
@@ -271,7 +270,7 @@ public class ZookeeperExternalSessionsRegistryClient implements ExternalSessions
           if (available.contains(applicationId) || taken.contains(applicationId)) {
             return; // We do not expect updates to existing sessions; ignore them for now.
           }
-          if (claimsCache.get(claimsPath + PATH_SEPARATOR + applicationId).isPresent()) {
+          if (claimsCache != null && claimsCache.get(claimsPath + PATH_SEPARATOR + applicationId).isPresent()) {
             LOG.info("Ignoring newly added AM {} because it is already claimed by another session.", applicationId);
             return;
           }
