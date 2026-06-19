@@ -129,7 +129,6 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.directsql.DirectSqlAggrStats;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -234,7 +233,6 @@ public class ObjectStore implements RawStore, Configurable {
   protected PersistenceManager pm = null;
   protected SQLGenerator sqlGenerator = null;
   private MetaStoreDirectSql directSql = null;
-  private DirectSqlAggrStats directSqlAggrStats;
   protected DatabaseProduct dbType = null;
   protected Configuration conf;
   private volatile int openTrasactionCalls = 0;
@@ -273,7 +271,6 @@ public class ObjectStore implements RawStore, Configurable {
     // most recent instance of the pmf
     pm = null;
     directSql = null;
-    directSqlAggrStats = null;
     openTrasactionCalls = 0;
     currentTransaction = null;
     transactionStatus = TXN_STATUS.NO_STATE;
@@ -314,7 +311,6 @@ public class ObjectStore implements RawStore, Configurable {
         String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
         schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
         directSql = new MetaStoreDirectSql(pm, conf, schema);
-        directSqlAggrStats = new DirectSqlAggrStats(pm,conf,schema);
       }
     }
     if (propertyStore == null) {
