@@ -34,7 +34,9 @@ import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
+import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
@@ -50,10 +52,21 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class LlapStatefulSetDependent
     extends HiveDependentResource<StatefulSet, HiveCluster> {
 
-  public static final String COMPONENT = "llap";
+  public static final String COMPONENT = ConfigUtils.COMPONENT_LLAP;
 
   public LlapStatefulSetDependent() {
     super(StatefulSet.class);
+  }
+
+  @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
+  protected String getComponentName() {
+    return COMPONENT;
   }
 
   @Override
@@ -65,7 +78,7 @@ public class LlapStatefulSetDependent
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "llap", null));
+    envVars.add(new EnvVar("SERVICE_NAME", COMPONENT, null));
     envVars.add(new EnvVar("IS_RESUME", "true", null));
     envVars.add(new EnvVar("LLAP_MEMORY_MB",
         String.valueOf(llap.memoryMb()), null));
@@ -75,24 +88,38 @@ public class LlapStatefulSetDependent
         spec.zookeeper().quorum(), null));
     envVars.add(new EnvVar("HIVE_LLAP_DAEMON_SERVICE_HOSTS",
         llap.serviceHosts(), null));
+    envVars.add(new EnvVar("LLAP_LOG4J2_PROPERTIES_FILE_NAME",
+        "llap-daemon-log4j2.properties", null));
 
     // User-provided env vars (storage credentials, etc.)
     if (spec.envVars() != null) {
       envVars.addAll(spec.envVars());
     }
 
-    List<ContainerPort> ports = List.of(
-        new ContainerPortBuilder()
-            .withName("management").withContainerPort(15004).build(),
-        new ContainerPortBuilder()
-            .withName("shuffle").withContainerPort(15551).build(),
-        new ContainerPortBuilder()
-            .withName("web").withContainerPort(15002).build(),
-        new ContainerPortBuilder()
-            .withName("output").withContainerPort(15003).build()
-    );
+    int managementPort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_MANAGEMENT_RPC_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_MANAGEMENT_RPC_PORT_DEFAULT);
+    int shufflePort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_DAEMON_SHUFFLE_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_DAEMON_SHUFFLE_PORT_DEFAULT);
+    int webPort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_DEFAULT);
+    int outputPort = ConfigUtils.getInt(llap.configOverrides(),
+        ConfigUtils.HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_KEY, null,
+        ConfigUtils.HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_DEFAULT);
 
-    Probe readinessProbe = buildTcpProbe(15004, llap.readinessProbe(), 15, 10, 3);
+    List<ContainerPort> ports = new ArrayList<>();
+    ports.add(new ContainerPortBuilder()
+        .withName("management").withContainerPort(managementPort).withProtocol("TCP").build());
+    ports.add(new ContainerPortBuilder()
+        .withName("shuffle").withContainerPort(shufflePort).withProtocol("TCP").build());
+    ports.add(new ContainerPortBuilder()
+        .withName("web").withContainerPort(webPort).withProtocol("TCP").build());
+    ports.add(new ContainerPortBuilder()
+        .withName("output").withContainerPort(outputPort).withProtocol("TCP").build());
+
+    Probe readinessProbe = buildTcpProbe(managementPort, llap.readinessProbe(), 15, 10, 3);
 
     String headlessServiceName =
         hiveCluster.getMetadata().getName() + "-llap";
@@ -106,8 +133,8 @@ public class LlapStatefulSetDependent
     List<io.fabric8.kubernetes.api.model.Volume> volumes =
         new ArrayList<>();
     volumes.add(buildProjectedConfigVolume("llap-config",
-        LlapConfigMapDependent.resourceName(hiveCluster),
-        HadoopConfigMapDependent.resourceName(hiveCluster)));
+        HiveConfigMapDependent.Llap.resourceName(hiveCluster),
+        HiveConfigMapDependent.Hadoop.resourceName(hiveCluster)));
 
     List<Container> initContainers = new ArrayList<>();
     addExternalJars(spec.image(), spec.externalJars(),
@@ -115,10 +142,23 @@ public class LlapStatefulSetDependent
     replaceConfMountWithSubPaths(volumeMounts, "llap-config",
         "llap-daemon-site.xml", "core-site.xml");
 
+    // Add Prometheus JMX Exporter when autoscaling is enabled
+    AutoscalingSpec autoscaling = llap.autoscaling();
+    if (autoscaling.isEnabled()) {
+      addJmxExporter(spec.image(), COMPONENT, autoscaling.metricsPort(),
+          initContainers, volumeMounts, volumes, envVars, ports);
+    }
+
     // Pre-compute config hash for the pod template annotation.
     String configHash = sha256(
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
+
+    AutoscalingSpec llapAutoscaling = llap.autoscaling();
+    int initialReplicas = llapAutoscaling != null && llapAutoscaling.isEnabled()
+        ? llapAutoscaling.minReplicas() : llap.replicas();
+    Integer replicas = resolveReplicaCount(
+        hiveCluster, context, llapAutoscaling, llap.replicas(), initialReplicas);
 
     StatefulSet statefulSet = new StatefulSetBuilder()
         .withNewMetadata()
@@ -127,7 +167,8 @@ public class LlapStatefulSetDependent
           .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
         .endMetadata()
         .withNewSpec()
-          .withReplicas(llap.replicas())
+          .withReplicas(replicas)
+          .withPodManagementPolicy("Parallel")
           .withServiceName(headlessServiceName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
@@ -135,13 +176,13 @@ public class LlapStatefulSetDependent
           .withNewTemplate()
             .withNewMetadata()
               .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
-              .addToAnnotations("kubectl.kubernetes.io/default-container", "llap")
+              .addToAnnotations("kubectl.kubernetes.io/default-container", COMPONENT)
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
               .withInitContainers(initContainers)
               .addNewContainer()
-                .withName("llap")
+                .withName(COMPONENT)
                 .withImage(spec.image())
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)
@@ -159,20 +200,27 @@ public class LlapStatefulSetDependent
     applySpreadAffinityIfAbsent(
         statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    if (spec.volumes() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());
+    // Graceful scale-down: poll JMX Exporter until all executors idle.
+    if (autoscaling.isEnabled()) {
+      String preStopScript = buildDualMetricDrainScript(
+          "Waiting for LLAP executors to become idle",
+          "hadoop_llapdaemon_executornumexecutorsavailable{", "AVAILABLE",
+          "hadoop_llapdaemon_executornumexecutors{", "TOTAL",
+          "LLAP executor metrics not found. JMX Exporter may not be configured.",
+          "All executors idle. Shutting down.",
+          "Executors available=$AVAILABLE / total=$TOTAL \u2014 waiting...",
+          10, 6, autoscaling.metricsPort());
+      applyAutoscalingLifecycle(
+          statefulSet.getSpec().getTemplate().getSpec(),
+          statefulSet.getSpec().getTemplate().getMetadata(),
+          preStopScript, autoscaling.gracePeriodSeconds(),
+          autoscaling.metricsScrapeIntervalSeconds());
     }
-    if (spec.volumeMounts() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.volumeMounts());
-    }
-    if (llap.extraVolumes() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(llap.extraVolumes());
-    }
-    if (llap.extraVolumeMounts() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(llap.extraVolumeMounts());
-    }
+
+    appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
+        spec.volumes(), spec.volumeMounts(),
+        llap.extraVolumes(), llap.extraVolumeMounts());
+
     return statefulSet;
   }
 

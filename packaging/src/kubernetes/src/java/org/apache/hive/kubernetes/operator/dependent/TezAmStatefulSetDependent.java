@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
@@ -31,7 +32,9 @@ import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
+import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.TezAmSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
@@ -50,11 +53,22 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class TezAmStatefulSetDependent
     extends HiveDependentResource<StatefulSet, HiveCluster> {
 
-  public static final String COMPONENT = "tezam";
+  public static final String COMPONENT = ConfigUtils.COMPONENT_TEZAM;
   private static final String SCRATCH_MOUNT_PATH = "/opt/hive/scratch";
 
   public TezAmStatefulSetDependent() {
     super(StatefulSet.class);
+  }
+
+  @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
+  protected String getComponentName() {
+    return COMPONENT;
   }
 
   @Override
@@ -66,7 +80,7 @@ public class TezAmStatefulSetDependent
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "tezam", null));
+    envVars.add(new EnvVar("SERVICE_NAME", COMPONENT, null));
     envVars.add(new EnvVar("IS_RESUME", "true", null));
     envVars.add(new EnvVar("HIVE_ZOOKEEPER_QUORUM",
         spec.zookeeper().quorum(), null));
@@ -98,8 +112,8 @@ public class TezAmStatefulSetDependent
     List<io.fabric8.kubernetes.api.model.Volume> volumes =
         new ArrayList<>();
     volumes.add(buildProjectedConfigVolume("hive-config",
-        HiveServer2ConfigMapDependent.resourceName(hiveCluster),
-        HadoopConfigMapDependent.resourceName(hiveCluster)));
+        HiveConfigMapDependent.HiveServer2.resourceName(hiveCluster),
+        HiveConfigMapDependent.Hadoop.resourceName(hiveCluster)));
     volumes.add(new io.fabric8.kubernetes.api.model.VolumeBuilder()
         .withName("scratch")
         .withNewPersistentVolumeClaim()
@@ -107,6 +121,7 @@ public class TezAmStatefulSetDependent
         .endPersistentVolumeClaim()
         .build());
 
+    List<ContainerPort> ports = new ArrayList<>();
     List<Container> initContainers = new ArrayList<>();
     addExternalJars(spec.image(), spec.externalJars(),
         initContainers, volumeMounts, volumes, envVars);
@@ -120,6 +135,12 @@ public class TezAmStatefulSetDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getTezSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
+    AutoscalingSpec tezAmAutoscaling = tezAm.autoscaling();
+    int initialReplicas = tezAmAutoscaling != null && tezAmAutoscaling.isEnabled()
+        ? tezAmAutoscaling.minReplicas() : tezAm.replicas();
+    Integer replicas = resolveReplicaCount(
+        hiveCluster, context, tezAmAutoscaling, tezAm.replicas(), initialReplicas);
+
     StatefulSet statefulSet = new StatefulSetBuilder()
         .withNewMetadata()
           .withName(resourceName(hiveCluster))
@@ -127,7 +148,8 @@ public class TezAmStatefulSetDependent
           .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
         .endMetadata()
         .withNewSpec()
-          .withReplicas(tezAm.replicas())
+          .withReplicas(replicas)
+          .withPodManagementPolicy("Parallel")
           .withServiceName(headlessServiceName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
@@ -135,16 +157,17 @@ public class TezAmStatefulSetDependent
           .withNewTemplate()
             .withNewMetadata()
               .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
-              .addToAnnotations("kubectl.kubernetes.io/default-container", "tezam")
+              .addToAnnotations("kubectl.kubernetes.io/default-container", COMPONENT)
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
               .withInitContainers(initContainers)
               .addNewContainer()
-                .withName("tezam")
+                .withName(COMPONENT)
                 .withImage(spec.image())
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)
+                .withPorts(ports)
                 .withResources(buildResources(tezAm.resources()))
                 .withVolumeMounts(volumeMounts)
               .endContainer()
@@ -157,20 +180,10 @@ public class TezAmStatefulSetDependent
     applySpreadAffinityIfAbsent(
         statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    if (spec.volumes() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());
-    }
-    if (spec.volumeMounts() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.volumeMounts());
-    }
-    if (tezAm.extraVolumes() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getVolumes().addAll(tezAm.extraVolumes());
-    }
-    if (tezAm.extraVolumeMounts() != null) {
-      statefulSet.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(tezAm.extraVolumeMounts());
-    }
+    appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
+        spec.volumes(), spec.volumeMounts(),
+        tezAm.extraVolumes(), tezAm.extraVolumeMounts());
+
     return statefulSet;
   }
 

@@ -55,7 +55,9 @@ public record LlapSpec(
     @JsonPropertyDescription("LLAP service hosts identifier for ZooKeeper registration")
     String serviceHosts,
     @JsonPropertyDescription("Readiness probe configuration")
-    ProbeSpec readinessProbe) {
+    ProbeSpec readinessProbe,
+    @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
+    AutoscalingSpec autoscaling) {
 
   public LlapSpec {
     replicas = replicas != null ? replicas : 1;
@@ -65,6 +67,8 @@ public record LlapSpec(
     serviceHosts = serviceHosts != null ? serviceHosts : "@llap0";
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
+    autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
+        false, 0, 1, 60, 900, 600, 10, 0, 0, null);
   }
 
   public boolean isEnabled() {
