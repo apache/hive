@@ -121,6 +121,7 @@ import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.ConstraintStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.WLMStore;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -2101,60 +2102,96 @@ public interface RawStore extends Configurable {
    */
   String getMetastoreDbUuid() throws MetaException;
 
-  void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
-      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
+  default void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException {
+    unwrap(WLMStore.class).createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
+  }
 
-  WMFullResourcePlan getResourcePlan(String name, String string) throws NoSuchObjectException, MetaException;
+  default WMFullResourcePlan getResourcePlan(String name, String string) throws NoSuchObjectException, MetaException {
+    return unwrap(WLMStore.class).getResourcePlan(name, string);
+  }
 
-  List<WMResourcePlan> getAllResourcePlans(String string) throws MetaException;
+  default List<WMResourcePlan> getAllResourcePlans(String string) throws MetaException {
+    return unwrap(WLMStore.class).getAllResourcePlans(string);
+  }
 
-  WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
+  default WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    return unwrap(WLMStore.class).alterResourcePlan(name, ns, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
+  }
 
-  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException;
+  default WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
+    return unwrap(WLMStore.class).getActiveResourcePlan(ns);
+  }
 
-  WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException;
+  default WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
+      throws NoSuchObjectException, InvalidObjectException, MetaException {
+    return unwrap(WLMStore.class).validateResourcePlan(name, ns);
+  }
 
-  void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException;
+  default void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException {
+    unwrap(WLMStore.class).dropResourcePlan(name, ns);
+  }
 
-  void createWMTrigger(WMTrigger trigger)
+  default void createWMTrigger(WMTrigger trigger)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    unwrap(WLMStore.class).createWMTrigger(trigger);
+  }
 
-  void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WLMStore.class).alterWMTrigger(trigger);
+  }
 
-  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WLMStore.class).dropWMTrigger(resourcePlanName, triggerName, ns);
+  }
 
-  List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException;
+  default List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
+      throws NoSuchObjectException, MetaException {
+    return unwrap(WLMStore.class).getTriggersForResourcePlan(resourcePlanName, ns);
+  }
 
-  void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
-      InvalidOperationException, MetaException;
+  default void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
+      InvalidOperationException, MetaException {
+    unwrap(WLMStore.class).createPool(pool);
+  }
 
-  void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
-      NoSuchObjectException, InvalidOperationException, MetaException;
+  default void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
+      NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WLMStore.class).alterPool(pool, poolPath);
+  }
 
-  void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMPool(String resourcePlanName, String poolPath, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WLMStore.class).dropWMPool(resourcePlanName, poolPath, ns);
+  }
 
-  void createOrUpdateWMMapping(WMMapping mapping, boolean update)
+  default void createOrUpdateWMMapping(WMMapping mapping, boolean update)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    unwrap(WLMStore.class).createOrUpdateWMMapping(mapping, update);
+  }
 
-  void dropWMMapping(WMMapping mapping)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMMapping(WMMapping mapping)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WLMStore.class).dropWMMapping(mapping);
+  }
 
-  void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
+  default void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    unwrap(WLMStore.class).createWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
+  }
 
-  void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WLMStore.class).dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
+  }
 
   /**
    * Create a new ISchema.
@@ -2289,13 +2326,19 @@ public interface RawStore extends Configurable {
   void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException;
 
   /** Adds a RuntimeStat for persistence. */
-  void addRuntimeStat(RuntimeStat stat) throws MetaException;
+  default void addRuntimeStat(RuntimeStat stat) throws MetaException {
+    unwrap(WLMStore.class).addRuntimeStat(stat);
+  }
 
   /** Reads runtime statistic entries. */
-  List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException;
+  default List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+    return unwrap(WLMStore.class).getRuntimeStats(maxEntries, maxCreateTime);
+  }
 
   /** Removes outdated statistics. */
-  int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
+  default int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
+    return unwrap(WLMStore.class).deleteRuntimeStats(maxRetainSecs);
+  }
 
   default List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
     return unwrap(ColStatsStore.class).getTableNamesWithStats();
@@ -2391,7 +2434,10 @@ public interface RawStore extends Configurable {
 
   int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;
 
-  void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList);
+  default void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    unwrap(ColStatsStore.class).deleteAllPartitionColumnStatistics(tn, writeIdList);
+  }
 
   void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
 

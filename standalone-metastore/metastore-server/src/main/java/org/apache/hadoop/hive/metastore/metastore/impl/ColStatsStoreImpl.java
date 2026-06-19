@@ -1217,6 +1217,4 @@ public class ColStatsStoreImpl extends RawStoreAware implements ColStatsStore {
       }
     }
   }
-
-
 }

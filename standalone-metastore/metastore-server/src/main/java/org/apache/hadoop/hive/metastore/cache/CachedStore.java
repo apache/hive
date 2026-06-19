@@ -2542,11 +2542,6 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.createISchema(schema);
   }
 
-  @Override public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
-      throws MetaException, NoSuchObjectException {
-    return rawStore.getPartitionColStatsForDatabase(catName, dbName);
-  }
-
   @Override public void alterISchema(ISchemaName schemaName, ISchema newSchema)
       throws NoSuchObjectException, MetaException {
     rawStore.alterISchema(schemaName, newSchema);
@@ -2611,98 +2606,9 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getMetastoreDbUuid();
   }
 
-  @Override public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
-    rawStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
-  }
-
-  @Override public WMFullResourcePlan getResourcePlan(String name, String ns)
-      throws NoSuchObjectException, MetaException {
-    return rawStore.getResourcePlan(name, ns);
-  }
-
-  @Override public List<WMResourcePlan> getAllResourcePlans(String ns) throws MetaException {
-    return rawStore.getAllResourcePlans(ns);
-  }
-
-  @Override public WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
-      boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
-    return rawStore.alterResourcePlan(name, ns, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
-  }
-
-  @Override public WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
-    return rawStore.getActiveResourcePlan(ns);
-  }
-
-  @Override public WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException {
-    return rawStore.validateResourcePlan(name, ns);
-  }
-
-  @Override public void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException {
-    rawStore.dropResourcePlan(name, ns);
-  }
-
-  @Override public void createWMTrigger(WMTrigger trigger)
-      throws AlreadyExistsException, MetaException, NoSuchObjectException, InvalidOperationException {
-    rawStore.createWMTrigger(trigger);
-  }
-
-  @Override public void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.alterWMTrigger(trigger);
-  }
-
-  @Override public void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.dropWMTrigger(resourcePlanName, triggerName, ns);
-  }
-
-  @Override public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException {
-    return rawStore.getTriggersForResourcePlan(resourcePlanName, ns);
-  }
-
-  @Override public void createPool(WMPool pool)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.createPool(pool);
-  }
-
-  @Override public void alterPool(WMNullablePool pool, String poolPath)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.alterPool(pool, poolPath);
-  }
-
-  @Override public void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.dropWMPool(resourcePlanName, poolPath, ns);
-  }
-
-  @Override public void createOrUpdateWMMapping(WMMapping mapping, boolean update)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.createOrUpdateWMMapping(mapping, update);
-  }
-
-  @Override public void dropWMMapping(WMMapping mapping)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.dropWMMapping(mapping);
-  }
-
-  @Override public void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath,
-      String ns) throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.createWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
-  }
-
-  @Override public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath,
-      String ns) throws NoSuchObjectException, InvalidOperationException, MetaException {
-    rawStore.dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
-  }
-
   public long getCacheUpdateCount() {
     return sharedCache.getUpdateCount();
   }
-
 
   static boolean isNotInBlackList(String catName, String dbName, String tblName) {
     String str = TableName.getQualified(catName, dbName, tblName);
@@ -2777,35 +2683,6 @@ public class CachedStore implements RawStore, Configurable {
     setCachePrewarmedState(false);
   }
 
-  @Override public void addRuntimeStat(RuntimeStat stat) throws MetaException {
-    rawStore.addRuntimeStat(stat);
-  }
-
-  @Override public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
-    return rawStore.getRuntimeStats(maxEntries, maxCreateTime);
-  }
-
-  @Override public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
-    return rawStore.deleteRuntimeStats(maxRetainSecs);
-  }
-
-  @Override public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
-    return rawStore.getTableNamesWithStats();
-  }
-
-  @Override public List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
-    return rawStore.getAllTableNamesForStats();
-  }
-
-  @Override public Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName, String tableName)
-      throws MetaException, NoSuchObjectException {
-    return rawStore.getPartitionColsWithStats(catName, dbName, tableName);
-  }
-
-  @Override public List<String> isPartOfMaterializedView(String catName, String dbName, String tblName) {
-     return rawStore.isPartOfMaterializedView(catName, dbName, tblName);
-   }
-
   @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
     return rawStore.scheduledQueryPoll(request);
@@ -2851,11 +2728,6 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return rawStore.markScheduledExecutionsTimedOut(timeoutSecs);
-  }
-
-  @Override
-  public void deleteAllPartitionColumnStatistics(TableName tn, String w) {
-    rawStore.deleteAllPartitionColumnStatistics(tn, w);
   }
 
   @Override

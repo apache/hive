@@ -17,6 +17,91 @@
  */
 
 package org.apache.hadoop.hive.metastore.metastore.iface;
+
+import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
+import org.apache.hadoop.hive.metastore.metastore.impl.WLMStoreImpl;
+
 // work load management
+@MetaDescriptor(alias = "wlm", defaultImpl = WLMStoreImpl.class)
 public interface WLMStore {
+  void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
+
+  WMFullResourcePlan getResourcePlan(String name, String string) throws NoSuchObjectException, MetaException;
+
+  List<WMResourcePlan> getAllResourcePlans(String string) throws MetaException;
+
+  WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
+      boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+      MetaException;
+
+  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException;
+
+  WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
+      throws NoSuchObjectException, InvalidObjectException, MetaException;
+
+  void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException;
+
+  void createWMTrigger(WMTrigger trigger)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+      MetaException;
+
+  void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
+      throws NoSuchObjectException, MetaException;
+
+  void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
+      InvalidOperationException, MetaException;
+
+  void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
+      NoSuchObjectException, InvalidOperationException, MetaException;
+
+  void dropWMPool(String resourcePlanName, String poolPath, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  void createOrUpdateWMMapping(WMMapping mapping, boolean update)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+      MetaException;
+
+  void dropWMMapping(WMMapping mapping)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+      MetaException;
+
+  void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  /** Adds a RuntimeStat for persistence. */
+  void addRuntimeStat(RuntimeStat stat) throws MetaException;
+
+  /** Reads runtime statistic entries. */
+  List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException;
+
+  /** Removes outdated statistics. */
+  int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
+
 }

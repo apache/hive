@@ -226,6 +226,6 @@ public interface ColStatsStore {
 
   Map<String, List<String>> getPartitionColsWithStats(TableName tableName) throws MetaException, NoSuchObjectException;
 
-  public void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList)
+  void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList)
       throws MetaException, NoSuchObjectException;
 }
