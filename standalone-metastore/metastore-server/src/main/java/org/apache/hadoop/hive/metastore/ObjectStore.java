@@ -214,7 +214,7 @@ public class ObjectStore implements RawStore, Configurable {
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
   private Counter directSqlErrors;
   private PropertyStore propertyStore;
-  private Map<Class<?>, Object> cachedImpls = new HashMap<>();
+  private final Map<Class<?>, Object> cachedImpls = new HashMap<>();
 
   public ObjectStore() {
   }

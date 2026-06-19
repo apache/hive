@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
-import org.apache.hadoop.hive.metastore.metastore.iface.WLMStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.WMStore;
 import org.apache.hadoop.hive.metastore.model.MRuntimeStat;
 import org.apache.hadoop.hive.metastore.model.MWMMapping;
 import org.apache.hadoop.hive.metastore.model.MWMPool;
@@ -64,8 +64,8 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class WLMStoreImpl extends RawStoreAware implements WLMStore {
-  private static final Logger LOG = LoggerFactory.getLogger(WLMStoreImpl.class);
+public class WMStoreImpl extends RawStoreAware implements WMStore {
+  private static final Logger LOG = LoggerFactory.getLogger(WMStoreImpl.class);
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
 

@@ -35,11 +35,11 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
-import org.apache.hadoop.hive.metastore.metastore.impl.WLMStoreImpl;
+import org.apache.hadoop.hive.metastore.metastore.impl.WMStoreImpl;
 
-// work load management
-@MetaDescriptor(alias = "wlm", defaultImpl = WLMStoreImpl.class)
-public interface WLMStore {
+// work management
+@MetaDescriptor(alias = "wm", defaultImpl = WMStoreImpl.class)
+public interface WMStore {
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
       throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
 
