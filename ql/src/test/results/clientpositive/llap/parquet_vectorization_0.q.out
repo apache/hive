@@ -1211,7 +1211,7 @@ POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`alltypesparquet`
-WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR `cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) < 50 AND `cstring1` LIKE '%n' AND CHARACTER_LENGTH(`cstring1`) > 0
+WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR `cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) > 0 AND CHARACTER_LENGTH(`cstring1`) < 50 AND `cstring1` LIKE '%n'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1228,12 +1228,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or (null and (cstring1 like '%n') and null)) (type: boolean)
+                  filterExpr: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) > 0) and (length(cstring1) < 50) and (cstring1 like '%n'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or (null and (cstring1 like '%n') and null)) (type: boolean)
+                    predicate: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) > 0) and (length(cstring1) < 50) and (cstring1 like '%n'))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
