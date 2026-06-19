@@ -173,7 +173,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
         if (prunable && table.isNonNative() &&
             table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
           // Non-native tables (e.g. Iceberg): the storage handler decides whether the column is prunable.
-          String columnType = table.getFieldSchemaByName(column).getType();
+          String columnType = table.getColumnByName(column).getType();
           generateEventOperatorPlan(ctx, parseContext, ts, column, columnType, ctx.parent);
         } else if (prunable && table.isPartitionKey(column) && !table.hasNonNativePartitionSupport()) {
           // Native partitioned table.
