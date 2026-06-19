@@ -90,11 +90,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/web_sales_2k' OVERWRIT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@web_sales_txt
-PREHOOK: query: select  ws_bill_customer_sk,ws_item_sk from web_sales_txt
+PREHOOK: query: select ws_bill_customer_sk, ws_item_sk from web_sales_txt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@web_sales_txt
 #### A masked pattern was here ####
-POSTHOOK: query: select  ws_bill_customer_sk,ws_item_sk from web_sales_txt
+POSTHOOK: query: select ws_bill_customer_sk, ws_item_sk from web_sales_txt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales_txt
 #### A masked pattern was here ####
@@ -2098,14 +2098,13 @@ POSTHOOK: Input: default@web_sales_txt
 98729	2385
 98729	7891
 61908	4250
-hive.vectorized.execution.enabled=true
 PREHOOK: query: SELECT
     ws_bill_customer_sk,
     ws_item_sk,
     ws_sold_date_sk,
     ws_sales_price,
     LAG(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS prev_sales_price,
     ws_sales_price - LAG(ws_sales_price) OVER (
@@ -2123,7 +2122,7 @@ POSTHOOK: query: SELECT
     ws_sold_date_sk,
     ws_sales_price,
     LAG(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS prev_sales_price,
     ws_sales_price - LAG(ws_sales_price) OVER (
@@ -6177,7 +6176,7 @@ PREHOOK: query: SELECT
     ws_sold_date_sk,
     ws_sales_price,
     FIRST_VALUE(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS first_price,
     LAST_VALUE(ws_sales_price) OVER (
@@ -6196,7 +6195,7 @@ POSTHOOK: query: SELECT
     ws_sold_date_sk,
     ws_sales_price,
     FIRST_VALUE(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS first_price,
     LAST_VALUE(ws_sales_price) OVER (
@@ -8209,14 +8208,13 @@ POSTHOOK: Input: default@web_sales_txt
 99295	17002	2451499	155.28	155.28	155.28
 99295	17101	2451499	18.95	18.95	18.95
 99295	17599	2451499	63.18	63.18	63.18
-hive.vectorized.execution.enabled=false
 PREHOOK: query: SELECT
     ws_bill_customer_sk,
     ws_item_sk,
     ws_sold_date_sk,
     ws_sales_price,
     LAG(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS prev_sales_price,
     ws_sales_price - LAG(ws_sales_price) OVER (
@@ -8234,7 +8232,7 @@ POSTHOOK: query: SELECT
     ws_sold_date_sk,
     ws_sales_price,
     LAG(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS prev_sales_price,
     ws_sales_price - LAG(ws_sales_price) OVER (
@@ -12288,7 +12286,7 @@ PREHOOK: query: SELECT
     ws_sold_date_sk,
     ws_sales_price,
     FIRST_VALUE(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS first_price,
     LAST_VALUE(ws_sales_price) OVER (
@@ -12307,7 +12305,7 @@ POSTHOOK: query: SELECT
     ws_sold_date_sk,
     ws_sales_price,
     FIRST_VALUE(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS first_price,
     LAST_VALUE(ws_sales_price) OVER (

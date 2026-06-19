@@ -40,16 +40,20 @@ row format delimited fields terminated by '|'
 stored as textfile;
 
 LOAD DATA LOCAL INPATH '../../data/files/web_sales_2k' OVERWRITE INTO TABLE web_sales_txt;
-select  ws_bill_customer_sk,ws_item_sk from web_sales_txt;
 
-SET hive.vectorized.execution.enabled;
+-- Baseline query to verify data load.
+select ws_bill_customer_sk, ws_item_sk from web_sales_txt;
+
+-- Vectorized LAG: verify output column order follows the SELECT list
+-- (ws_bill_customer_sk, ws_item_sk), not the PARTITION BY order, when window
+-- functions use different PARTITION BY column orderings.
 SELECT
     ws_bill_customer_sk,
     ws_item_sk,
     ws_sold_date_sk,
     ws_sales_price,
     LAG(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS prev_sales_price,
     ws_sales_price - LAG(ws_sales_price) OVER (
@@ -59,6 +63,7 @@ SELECT
 FROM
     web_sales_txt;
 
+-- Vectorized LEAD: same column-ordering check using LEAD window functions.
 SELECT
     ws_bill_customer_sk,
     ws_item_sk,
@@ -75,15 +80,15 @@ SELECT
 FROM
     web_sales_txt;
 
-
-
+-- Vectorized FIRST_VALUE/LAST_VALUE: same column-ordering check using FIRST_VALUE and
+-- LAST_VALUE window functions with differing PARTITION BY orderings.
 SELECT
     ws_bill_customer_sk,
     ws_item_sk,
     ws_sold_date_sk,
     ws_sales_price,
     FIRST_VALUE(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS first_price,
     LAST_VALUE(ws_sales_price) OVER (
@@ -96,14 +101,14 @@ FROM
 
 SET hive.vectorized.execution.enabled=false;
 
-SET hive.vectorized.execution.enabled;
+-- Non-vectorized LAG: reference results for validating vectorized LAG query execution above.
 SELECT
     ws_bill_customer_sk,
     ws_item_sk,
     ws_sold_date_sk,
     ws_sales_price,
     LAG(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS prev_sales_price,
     ws_sales_price - LAG(ws_sales_price) OVER (
@@ -113,6 +118,7 @@ SELECT
 FROM
     web_sales_txt;
 
+-- Non-vectorized LEAD: reference results for validating vectorized LEAD query execution above.
 SELECT
     ws_bill_customer_sk,
     ws_item_sk,
@@ -129,15 +135,15 @@ SELECT
 FROM
     web_sales_txt;
 
-
-
+-- Non-vectorized FIRST_VALUE/LAST_VALUE: reference results for validating vectorized
+-- FIRST_VALUE/LAST_VALUE query execution above.
 SELECT
     ws_bill_customer_sk,
     ws_item_sk,
     ws_sold_date_sk,
     ws_sales_price,
     FIRST_VALUE(ws_sales_price) OVER (
-        PARTITION BY ws_item_sk,ws_bill_customer_sk
+        PARTITION BY ws_item_sk, ws_bill_customer_sk
         ORDER BY ws_sold_date_sk
     ) AS first_price,
     LAST_VALUE(ws_sales_price) OVER (
